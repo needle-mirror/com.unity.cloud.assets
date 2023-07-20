@@ -1,0 +1,35 @@
+.AssetGridItem {
+    transition-duration: 0.25s;
+    transition-timing-fuction: ease-out-back;
+    background-color: rgb(46, 46, 46);
+    color: rgb(210, 210, 210);
+    border-color: rgba(0, 0, 0, 0.33);
+    -unity-background-scale-mode: scale-to-fit;
+}
+
+.AssetInfoItem {
+    transition-duration: 0.25s;
+    transition-timing-fuction: ease-out-back;
+    background-color: rgb(0, 0, 0);
+    border-radius: 15px;
+    padding: 5px 10px;
+    font-size: 13px;
+    color: rgb(210, 210, 210);
+    border-color: rgb(210, 210, 210);
+}
+
+.AssetGridItem:hover {
+    background-color: rgb(34, 34, 34);
+    border-left-width: 2px;
+    border-right-width: 2px;
+    border-top-width: 2px;
+    border-bottom-width: 2px;
+    border-left-color: rgba(41, 161, 255, 255);
+    border-right-color: rgba(41, 161, 255, 255);
+    border-top-color: rgba(41, 161, 255, 255);
+    border-bottom-color: rgba(41, 161, 255, 255);
+}
+
+.AssetInfoItem:hover {
+    background-color: rgb(29, 29, 29);
+}

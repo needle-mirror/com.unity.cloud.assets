@@ -1,0 +1,8 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Packages/com.unity.cloud.assets/Samples/AssetDiscovery/UI/StyleSheets/OrganizationsStyleSheet.uss?fileID=7433441132597879392&amp;guid=fa56df2968d0d43119d7eed582301ab4&amp;type=3#OrganizationsStyleSheet" />
+    <ui:VisualElement name="OrganizationsContainer" style="align-items: flex-end; display: flex; margin-left: 5px; margin-right: 5px; margin-top: 5px; margin-bottom: 5px;">
+        <ui:VisualElement name="OrganizationsContainer" class="ContentContainer" style="display: flex; margin-bottom: 0; align-items: auto; margin-right: 0;">
+            <ui:DropdownField label="Dropdown" index="-1" choices="System.Collections.Generic.List`1[System.String]" name="OrganizationsDropdown" style="width: 100%; margin-left: 3px; margin-right: 12px; flex-direction: column; flex-grow: 0;" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

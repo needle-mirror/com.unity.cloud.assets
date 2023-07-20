@@ -1,0 +1,20 @@
+{
+    "name": "Unity.Cloud.Assets.Editor",
+    "rootNamespace": "Unity.Cloud.Assets.Editor",
+    "references": [
+        "GUID:498d02e03062b2649b108f31a9668c56",
+        "GUID:18a3ee135d24342f7ae628142b5114cb",
+        "GUID:234b356a69de64fa79f48940000c93ef"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -1,0 +1,37 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <ui:Template name="LoginBar" src="project://database/Packages/com.unity.cloud.assets/Samples/AssetDiscovery/UI/Templates/LoginBar.uxml?fileID=9197481963319205126&amp;guid=9fa56a2abec2c41e39ce0436d53028a5&amp;type=3#LoginBar" />
+    <ui:Template name="ProjectsListContainer" src="project://database/Packages/com.unity.cloud.assets/Samples/AssetDiscovery/UI/Templates/ProjectsListContainer.uxml?fileID=9197481963319205126&amp;guid=bc40760b2b12c4af4a3fe093fd2c100a&amp;type=3#ProjectsListContainer" />
+    <ui:Template name="SearchBarTemplate" src="project://database/Packages/com.unity.cloud.assets/Samples/AssetDiscovery/UI/Templates/SearchBarTemplate.uxml?fileID=9197481963319205126&amp;guid=16616135b714e43a6ae0a18c9ccf3732&amp;type=3#SearchBarTemplate" />
+    <Style src="project://database/Packages/com.unity.cloud.assets/Samples/AssetDiscovery/UI/StyleSheets/AssetDiscoveryStyleSheet.uss?fileID=7433441132597879392&amp;guid=7376c3d25e9f04a989663c45cc94f5c7&amp;type=3#AssetDiscoveryStyleSheet" />
+    <ui:VisualElement name="MainContainer" style="background-color: rgb(0, 0, 0); width: 100%; height: 100%;">
+        <ui:Instance template="LoginBar" name="LoginBar" />
+        <ui:VisualElement name="ContentContainer" style="flex-direction: row; height: 100%; display: flex;">
+            <ui:VisualElement name="ProjectsPanel" class="ContentContainer" style="width: 20%; height: auto; margin-top: 0; margin-bottom: 10px; display: none;">
+                <ui:Instance template="ProjectsListContainer" name="ProjectsListContainer" style="display: flex;" />
+            </ui:VisualElement>
+            <ui:VisualElement name="ContentPanel" style="width: 80%; flex-direction: column;">
+                <ui:Instance template="SearchBarTemplate" name="SearchBarContainer" style="display: none;" />
+                <ui:VisualElement name="AssetsPanel" style="flex-direction: row;">
+                    <ui:VisualElement name="CenterPanel" class="ContentContainer" style="width: 50%; align-items: stretch; justify-content: flex-end;">
+                        <ui:ScrollView name="AssetGridScrollView" style="width: auto; height: 100%; align-items: stretch; justify-content: flex-end; display: flex;">
+                            <ui:VisualElement name="AssetGridList" style="background-color: rgb(0, 0, 0); width: 100%; height: 100%; flex-direction: row; flex-wrap: wrap; align-items: flex-start; display: none;" />
+                        </ui:ScrollView>
+                    </ui:VisualElement>
+                    <ui:VisualElement name="RightPanel" class="ContentContainer" style="width: 50%; height: auto; justify-content: flex-end; display: flex;">
+                        <ui:VisualElement name="AssetInformationContainer" tooltip="Download" style="width: 100%; height: 100%; display: none; align-items: center;">
+                            <ui:VisualElement name="AssetInformationPanel" style="width: 100%; height: 85%; margin-left: 10px;">
+                                <ui:Label text="Label" display-tooltip-when-elided="true" name="AssetInformationLabel" style="font-size: 18px; color: rgba(255, 255, 255, 0.82); -unity-font-style: bold;" />
+                                <ui:ScrollView name="AssetInformationScrollView" />
+                            </ui:VisualElement>
+                            <ui:Button text="Download" display-tooltip-when-elided="true" name="AssetDownloadButton" style="height: 7%;" />
+                            <ui:VisualElement name="AssetDownloadSuccessful" style="display: none; height: 3%; transition-duration: 1s; transition-timing-function: ease-in;">
+                                <ui:Label text="Download successful to Desktop!" display-tooltip-when-elided="true" name="AssetDownloadSuccessfulLabel" />
+                            </ui:VisualElement>
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                <ui:ListView name="SearchValues" show-border="true" selection-type="Single" style="align-items: stretch; white-space: nowrap; background-color: rgb(78, 78, 78); border-left-color: rgb(117, 117, 117); border-right-color: rgb(117, 117, 117); border-top-color: rgb(117, 117, 117); border-bottom-color: rgb(117, 117, 117); border-left-width: 1px; border-right-width: 1px; border-top-width: 1px; border-bottom-width: 1px; color: rgb(210, 210, 210); -unity-font-style: bold; -unity-background-scale-mode: scale-and-crop; display: none; position: absolute; left: 0; top: 60px; width: 60%; height: 80%; margin-left: 12px; margin-right: 12px; padding-left: 3px; padding-right: 3px;" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

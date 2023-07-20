@@ -1,0 +1,10 @@
+{
+  "SharedAssetDependencies": [
+    "Shared"
+  ],
+  "SampleEntries": [
+    {
+      "Path": "AssetDiscovery"
+    }
+  ]
+}

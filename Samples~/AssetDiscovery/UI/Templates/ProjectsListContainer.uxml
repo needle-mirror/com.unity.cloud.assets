@@ -1,0 +1,9 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <ui:VisualElement name="ProjectsContainer" style="height: 100%; display: flex;">
+        <ui:Label text="Projects" display-tooltip-when-elided="true" name="ProjectsLabel" style="font-size: 18px; color: rgba(255, 255, 255, 0.82); padding-left: 7px; -unity-font-style: bold;" />
+        <ui:ListView focusable="true" name="ProjectsList" style="height: 100%; display: none;" />
+        <ui:VisualElement name="ProjectsDisplayMessageContainer" style="height: 100%; align-items: center; justify-content: center; display: none;">
+            <ui:Label text="Empty" display-tooltip-when-elided="true" name="ProjectsDisplayMessage" style="-unity-font-style: italic; font-size: 16px; color: rgb(210, 210, 210);" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

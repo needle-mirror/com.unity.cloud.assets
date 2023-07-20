@@ -1,0 +1,13 @@
+.unity-collection-view__item {
+    transition-duration: 0.25s;
+    transition-timing-fuction: ease-out-back;
+    border-radius: 3px;
+}
+
+.unity-collection-view__item:hover {
+    background-color: rgba(255, 255, 255, 0.12);
+}
+
+.unity-collection-view__item--selected {
+    background-color: rgba(255, 255, 255, 0.12);
+}
