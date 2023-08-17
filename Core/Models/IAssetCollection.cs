@@ -8,11 +8,6 @@ namespace Unity.Cloud.Assets
     public interface IAssetCollection
     {
         /// <summary>
-        /// The organization in which the collection resides.
-        /// </summary>
-        IOrganization Organization { get; }
-
-        /// <summary>
         /// The project in which the collection resides.
         /// </summary>
         IProject Project { get; }

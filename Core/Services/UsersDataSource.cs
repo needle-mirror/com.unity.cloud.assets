@@ -28,19 +28,6 @@ namespace Unity.Cloud.Assets
             return CopyFrom(userAndOrganizationsDto);
         }
 
-        /// <inheritdoc/>
-        public async Task<IProjectPage> ListProjectsAsync(IOrganization organization, string userId,
-            Pagination pagination,
-            CancellationToken token,
-            bool enrichWithUsersCount = false, string xCorrelationId = null)
-        {
-            var request = new GetProjectsByOrganizationAndUserIdsRequest(organization.GenesisId, userId, pagination.PageNumber, pagination.PageSize, enrichWithUsersCount, xCorrelationId);
-            var response = await m_Client.GetAsync(request, ServiceHttpClientOptions.Default(), token);
-            var projectPageDto = IsolatedJsonConvert.DeserializeObject<ProjectPageDto>(response, IsolatedJsonConvert.jsonSerializerSettingsWithoutType);
-
-            return new ProjectPage(this, organization, userId, pagination, projectPageDto.MapFrom());
-        }
-
         static (IUser, IOrganization[]) CopyFrom(UserAndOrganizationsDto dto)
         {
             var user = new User

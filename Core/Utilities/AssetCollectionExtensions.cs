@@ -16,7 +16,7 @@ namespace Unity.Cloud.Assets
         /// <returns>A task with no result.</returns>
         public static Task InsertAssetsToCollectionAsync(this IAssetCollectionManager collectionManager, IAssetCollection assetCollection, IEnumerable<IAsset> assets, CancellationToken token)
         {
-            return collectionManager.InsertAssetsToCollectionAsync(assetCollection.Organization, assetCollection.Project, assetCollection.GetFullCollectionPath(), assets, token);
+            return collectionManager.InsertAssetsToCollectionAsync(assetCollection.Project, assetCollection.GetFullCollectionPath(), assets, token);
         }
 
         /// <summary>
@@ -29,7 +29,7 @@ namespace Unity.Cloud.Assets
         /// <returns>A task with no result.</returns>
         public static Task RemoveAssetsFromCollectionAsync(this IAssetCollectionManager collectionManager, IAssetCollection assetCollection, IEnumerable<IAsset> assets, CancellationToken token)
         {
-            return collectionManager.RemoveAssetsFromCollectionAsync(assetCollection.Organization, assetCollection.Project, assetCollection.GetFullCollectionPath(), assets, token);
+            return collectionManager.RemoveAssetsFromCollectionAsync(assetCollection.Project, assetCollection.GetFullCollectionPath(), assets, token);
         }
     }
 }

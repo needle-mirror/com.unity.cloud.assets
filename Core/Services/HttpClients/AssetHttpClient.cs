@@ -30,11 +30,19 @@ namespace Unity.Cloud.Assets
         }
 
         /// <inheritdoc />
-        public async Task<string> GetAsync(ApiRequest request, ServiceHttpClientOptions serviceHttpClientOptions, CancellationToken token)
+        public async Task<string> GetAsync(ApiRequest request, ServiceHttpClientOptions options, CancellationToken token)
         {
             var uri = new Uri(m_ServiceUrl, request.ConstructUrl(GetApiPath()));
 
-            var response = await m_ServiceHttpClient.GetAsync(uri, serviceHttpClientOptions, cancellationToken: token);
+            var httpRequestMessage = new HttpRequestMessage
+            {
+                Method = HttpMethod.Get,
+                RequestUri = uri
+            };
+
+            AddHeaders(httpRequestMessage, request);
+
+            var response = await m_ServiceHttpClient.SendAsync(httpRequestMessage, options, token);
             return await response.Content.ReadAsStringAsync();
         }
 
@@ -42,8 +50,18 @@ namespace Unity.Cloud.Assets
         public async Task<string> PostAsync(ApiRequest request, ServiceHttpClientOptions options, CancellationToken token)
         {
             var uri = new Uri(m_ServiceUrl, request.ConstructUrl(GetApiPath()));
+            var content = request.ConstructBody();
 
-            var response = await m_ServiceHttpClient.PostAsync(uri, request.ConstructBody(), options, cancellationToken: token);
+            var httpRequestMessage = new HttpRequestMessage
+            {
+                Method = HttpMethod.Post,
+                RequestUri = uri,
+                Content = content
+            };
+
+            AddHeaders(httpRequestMessage, request);
+
+            var response = await m_ServiceHttpClient.SendAsync(httpRequestMessage, options, token);
             return await response.Content.ReadAsStringAsync();
         }
 
@@ -51,8 +69,18 @@ namespace Unity.Cloud.Assets
         public async Task<string> PutAsync(ApiRequest request, ServiceHttpClientOptions options, CancellationToken token)
         {
             var uri = new Uri(m_ServiceUrl, request.ConstructUrl(GetApiPath()));
+            var content = request.ConstructBody();
 
-            var response = await m_ServiceHttpClient.PutAsync(uri, request.ConstructBody(), options, cancellationToken: token);
+            var httpRequestMessage = new HttpRequestMessage
+            {
+                Method = HttpMethod.Put,
+                RequestUri = uri,
+                Content = content
+            };
+
+            AddHeaders(httpRequestMessage, request);
+
+            var response = await m_ServiceHttpClient.SendAsync(httpRequestMessage, options, token);
             return await response.Content.ReadAsStringAsync();
         }
 
@@ -60,8 +88,18 @@ namespace Unity.Cloud.Assets
         public async Task<string> PatchAsync(ApiRequest request, ServiceHttpClientOptions options, CancellationToken token)
         {
             var uri = new Uri(m_ServiceUrl, request.ConstructUrl(GetApiPath()));
+            var content = request.ConstructBody();
 
-            var response = await m_ServiceHttpClient.PatchAsync(uri, request.ConstructBody(), options, cancellationToken: token);
+            var httpRequestMessage = new HttpRequestMessage
+            {
+                Method = new HttpMethod("PATCH"),
+                RequestUri = uri,
+                Content = content
+            };
+
+            AddHeaders(httpRequestMessage, request);
+
+            var response = await m_ServiceHttpClient.SendAsync(httpRequestMessage, options, token);
             return await response.Content.ReadAsStringAsync();
         }
 
@@ -69,15 +107,25 @@ namespace Unity.Cloud.Assets
         public async Task<string> DeleteAsync(ApiRequest request, ServiceHttpClientOptions options, CancellationToken token)
         {
             var uri = new Uri(m_ServiceUrl, request.ConstructUrl(GetApiPath()));
+            var content = request.ConstructBody();
 
-            var response = await m_ServiceHttpClient.DeleteAsync(uri, request.ConstructBody(), options, cancellationToken: token);
+            var httpRequestMessage = new HttpRequestMessage
+            {
+                Method = HttpMethod.Delete,
+                RequestUri = uri,
+                Content = content
+            };
+
+            AddHeaders(httpRequestMessage, request);
+
+            var response = await m_ServiceHttpClient.SendAsync(httpRequestMessage, options, token);
             return await response.Content.ReadAsStringAsync();
         }
 
         /// <inheritdoc />
         public Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, ServiceHttpClientOptions options, CancellationToken token)
         {
-            return m_ServiceHttpClient.SendAsync(request, options, cancellationToken: token);
+            return m_ServiceHttpClient.SendAsync(request, options, token);
         }
 
         /// <summary>
@@ -87,6 +135,14 @@ namespace Unity.Cloud.Assets
         protected virtual string GetApiPath()
         {
             return $"/api/assets/{apiVersion}";
+        }
+
+        static void AddHeaders(HttpRequestMessage request, ApiRequest apiRequest)
+        {
+            foreach (var (key, value) in apiRequest.GetHeaders())
+            {
+                request.Headers.Add(key, value);
+            }
         }
     }
 }

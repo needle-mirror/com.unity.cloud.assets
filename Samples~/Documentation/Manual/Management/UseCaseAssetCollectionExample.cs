@@ -8,9 +8,9 @@ namespace Unity.Cloud.Assets.Documentation.Management
     {
         readonly UseCaseAssetCollectionExampleBehaviour m_Behaviour = new();
 
-        public void DisplayExample(IOrganization organization, IProject project, IAsset asset)
+        public void DisplayExample(IProject project, IAsset asset)
         {
-            m_Behaviour.Initialize(organization, project, asset);
+            m_Behaviour.Initialize(project, asset);
             AssetActions();
         }
 
@@ -57,13 +57,11 @@ namespace Unity.Cloud.Assets.Documentation.Management
     class UseCaseAssetCollectionExampleBehaviour
     {
         // Member names should match with the names of the get-started behaviour snippets.
-        IOrganization m_CurrentOrganization;
         IProject m_CurrentProject;
         public IAsset CurrentAsset;
 
-        public void Initialize(IOrganization organization, IProject project, IAsset asset)
+        public void Initialize(IProject project, IAsset asset)
         {
-            m_CurrentOrganization = organization;
             m_CurrentProject = project;
             CurrentAsset = asset;
         }
@@ -83,7 +81,7 @@ namespace Unity.Cloud.Assets.Documentation.Management
         public async Task RemoveAssetFromCollectionAsync(string collectionPath)
         {
             var cancellationTokenSrc = new CancellationTokenSource();
-            await PlatformServices.AssetCollectionManager.RemoveAssetsFromCollectionAsync(m_CurrentOrganization, m_CurrentProject, collectionPath, new[] {CurrentAsset}, cancellationTokenSrc.Token);
+            await PlatformServices.AssetCollectionManager.RemoveAssetsFromCollectionAsync(m_CurrentProject, collectionPath, new[] {CurrentAsset}, cancellationTokenSrc.Token);
             await RefreshAssetCollections();
             Debug.Log("Asset removed from collection.");
         }

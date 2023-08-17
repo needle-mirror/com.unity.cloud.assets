@@ -42,31 +42,31 @@ namespace Unity.Cloud.Assets
         }
 
         /// <inheritdoc />
-        public Task<IAssetFile> CreateAssetFileAsync(IOrganization organization, IProject project, IAsset asset, IAssetFileCreation assetFileCreation, CancellationToken token)
+        public Task<IAssetFile> CreateAssetFileAsync(IProject project, IAsset asset, IAssetFileCreation assetFileCreation, CancellationToken token)
         {
-            return m_AssetFileDataSource.CreateAssetFileAsync(organization, project, asset, assetFileCreation, token);
+            return m_AssetFileDataSource.CreateAssetFileAsync(project, asset, assetFileCreation, token);
         }
 
         /// <inheritdoc />
-        public Task FinalizeAssetFileUploadAsync(IOrganization organization, IProject project, IAssetFile assetFile, CancellationToken token)
+        public Task FinalizeAssetFileUploadAsync(IProject project, IAssetFile assetFile, CancellationToken token)
         {
-            return m_AssetFileDataSource.FinalizeAssetFileUploadAsync(organization, project, assetFile, token);
+            return m_AssetFileDataSource.FinalizeAssetFileUploadAsync(project, assetFile, token);
         }
 
         /// <inheritdoc />
-        public Task UpdateAssetFileAsync(IOrganization organization, IProject project, IAssetFile assetFile, CancellationToken token)
+        public Task UpdateAssetFileAsync(IProject project, IAssetFile assetFile, CancellationToken token)
         {
-            return m_AssetFileDataSource.UpdateAssetFileAsync(organization, project, assetFile, token);
+            return m_AssetFileDataSource.UpdateAssetFileAsync(project, assetFile, token);
         }
 
         /// <inheritdoc />
-        public Task DeleteAssetFileAsync(IOrganization organization, IProject project, IAssetFile assetFile, CancellationToken token)
+        public Task DeleteAssetFileAsync(IProject project, IAssetFile assetFile, CancellationToken token)
         {
-            return m_AssetFileDataSource.DeleteAssetFileAsync(organization, project, assetFile, token);
+            return m_AssetFileDataSource.DeleteAssetFileAsync(project, assetFile, token);
         }
 
         /// <inheritdoc />
-        public Task<string> GetAssetFileUrlAsync(IOrganization organization, IProject project, IAssetFile assetFile, AssetFileUrlType urlType, CancellationToken token)
+        public Task<string> GetAssetFileUrlAsync(IProject project, IAssetFile assetFile, AssetFileUrlType urlType, CancellationToken token)
         {
             if (!string.IsNullOrEmpty(assetFile.DownloadUrl) && urlType == AssetFileUrlType.Download)
             {
@@ -78,16 +78,13 @@ namespace Unity.Cloud.Assets
                 return Task.FromResult(assetFile.UploadUrl);
             }
 
-            return m_AssetFileDataSource.GetAssetFileUrlAsync(organization, project, assetFile, urlType, token);
+            return m_AssetFileDataSource.GetAssetFileUrlAsync(project, assetFile, urlType, token);
         }
 
         /// <inheritdoc />
-        public async Task<bool> UploadAssetFileAsync(IOrganization organization, IProject project, IAssetFile assetFile, Stream contentStream, CancellationToken token)
+        public Task<bool> UploadAssetFileAsync(IProject project, IAssetFile assetFile, Stream contentStream, CancellationToken token)
         {
-            var response = await m_AssetFileDataSource.UploadAssetFileAsync(organization, project, assetFile, contentStream, token);
-
-            var result = response.EnsureSuccessStatusCode();
-            return result.IsSuccessStatusCode;
+            return m_AssetFileDataSource.UploadAssetFileAsync(project, assetFile, contentStream, token);
         }
     }
 }

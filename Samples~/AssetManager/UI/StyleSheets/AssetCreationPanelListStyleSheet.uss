@@ -1,0 +1,44 @@
+Label {
+    color: rgba(255, 255, 255, 0.82);
+    font-size: 13px;
+}
+
+.LabelContainer {
+    -unity-text-align: middle-left;
+}
+
+#AssetListContainer {
+    max-height: 55px;
+    min-height: 55px;
+    padding-left: 24px;
+    padding-right: 24px;
+    background-color: rgb(19, 19, 19);
+    border-color: rgb(48, 48, 48);
+    border-width: 1px;
+}
+
+#AssetListContainer:hover {
+    border-color: rgb(48, 48, 48);
+    background-color: rgb(48, 48, 48);
+}
+
+#AssetDeleteIcon {
+    width: 20px;
+    height: 20px;
+    background-image: url('../Sprites/delete_can.png?fileID=21300000&guid=6c9cea01357fe4f299a5d51b5e7f57ae&type=3#delete_can');
+    -unity-background-image-tint-color: rgb(112, 112, 112);
+}
+
+#AssetDeleteIcon:hover {
+    -unity-background-image-tint-color: rgb(160, 160, 160);
+}
+
+#AssetDeleteIconContainer {
+    height: 25px;
+    width: 25px;
+    border-radius: 6px;
+}
+
+#AssetDeleteIconContainer:hover {
+    background-color: rgb(40, 40, 40);
+}

@@ -18,7 +18,7 @@ public class AssetFileManagerExample
     #region AssetFileManagerConstruction
 
     var httpClient = new UnityHttpClient();
-    var cloudConfiguration = UnityRuntimeServiceHostConfigurationFactory.Create();
+    var cloudConfiguration = UnityRuntimeServiceHostResolverFactory.Create();
     var playerSettings = UnityCloudPlayerSettings.Instance;
     var platformSupport = PlatformSupportFactory.GetAuthenticationPlatformSupport();
 
@@ -37,54 +37,54 @@ public class AssetFileManagerExample
 
     #region CreateAssetFile
 
-    async Task CreateAssetFileAsync(IOrganization organization, IProject project, IAsset asset, IAssetFileCreation assetFileCreation, CancellationToken token)
+    async Task CreateAssetFileAsync(IProject project, IAsset asset, IAssetFileCreation assetFileCreation, CancellationToken token)
     {
-        await m_AssetFileManager.CreateAssetFileAsync(organization, project, asset, assetFileCreation, token);
+        await m_AssetFileManager.CreateAssetFileAsync(project, asset, assetFileCreation, token);
     }
 
     #endregion
 
     #region FinalizeAssetFileUpload
 
-    async Task FinalizeAssetFileUploadAsync(IOrganization organization, IProject project, IAssetFile assetFile, CancellationToken token)
+    async Task FinalizeAssetFileUploadAsync(IProject project, IAssetFile assetFile, CancellationToken token)
     {
-        await m_AssetFileManager.FinalizeAssetFileUploadAsync(organization, project, assetFile, token);
+        await m_AssetFileManager.FinalizeAssetFileUploadAsync(project, assetFile, token);
     }
 
     #endregion
 
     #region UpdateAssetFile
 
-    async Task UpdateAssetFileAsync(IOrganization organization, IProject project, IAssetFile assetFile, CancellationToken token)
+    async Task UpdateAssetFileAsync(IProject project, IAssetFile assetFile, CancellationToken token)
     {
-        await m_AssetFileManager.UpdateAssetFileAsync(organization, project, assetFile, token);
+        await m_AssetFileManager.UpdateAssetFileAsync(project, assetFile, token);
     }
 
     #endregion
 
     #region DeleteAssetFile
 
-    async Task DeleteAssetFileAsync(IOrganization organization, IProject project, IAssetFile assetFile, CancellationToken token)
+    async Task DeleteAssetFileAsync(IProject project, IAssetFile assetFile, CancellationToken token)
     {
-        await m_AssetFileManager.DeleteAssetFileAsync(organization, project, assetFile, token);
+        await m_AssetFileManager.DeleteAssetFileAsync(project, assetFile, token);
     }
 
     #endregion
 
     #region GetAssetFileUrl
 
-    async Task<string> GetAssetFileUrlAsync(IOrganization organization, IProject project, IAssetFile assetFile, AssetFileUrlType urlType, CancellationToken token)
+    async Task<string> GetAssetFileUrlAsync(IProject project, IAssetFile assetFile, AssetFileUrlType urlType, CancellationToken token)
     {
-        return await m_AssetFileManager.GetAssetFileUrlAsync(organization, project, assetFile, urlType, token);
+        return await m_AssetFileManager.GetAssetFileUrlAsync(project, assetFile, urlType, token);
     }
 
     #endregion
 
     #region UploadAssetFile
 
-    async Task<bool> UploadAssetFileAsync(IOrganization organization, IProject project, IAssetFile assetFile, Stream stream, CancellationToken token)
+    async Task<bool> UploadAssetFileAsync(IProject project, IAssetFile assetFile, Stream stream, CancellationToken token)
     {
-        return await m_AssetFileManager.UploadAssetFileAsync(organization, project, assetFile, stream, token);
+        return await m_AssetFileManager.UploadAssetFileAsync(project, assetFile, stream, token);
     }
 
     #endregion

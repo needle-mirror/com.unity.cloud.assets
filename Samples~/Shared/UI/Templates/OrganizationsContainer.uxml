@@ -1,0 +1,6 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="../StyleSheets/OrganizationsStyleSheet.uss?fileID=7433441132597879392&amp;guid=fa56df2968d0d43119d7eed582301ab4&amp;type=3#OrganizationsStyleSheet" />
+    <ui:VisualElement name="OrganizationsContainer">
+        <ui:DropdownField label="Organizations" name="OrganizationsDropdown" index="-1" />
+    </ui:VisualElement>
+</ui:UXML>

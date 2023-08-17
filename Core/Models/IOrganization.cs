@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace Unity.Cloud.Assets
+﻿namespace Unity.Cloud.Assets
 {
     /// <summary>
     /// This interface represents an organization.
@@ -21,10 +19,5 @@ namespace Unity.Cloud.Assets
         /// The organization name.
         /// </summary>
         string Name { get; }
-
-        /// <summary>
-        /// The organization's projects.
-        /// </summary>
-        List<IProject> Projects { get; }
     }
 }

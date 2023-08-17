@@ -27,10 +27,7 @@ namespace Unity.Cloud.Assets
         [DataMember(Name = "attachments")]
         protected internal List<AssetFile> m_Attachments;
         [DataMember(Name = "collections")]
-        protected internal List<string> m_Collections;
-
-        /// <inheritdoc />
-        public IOrganization Organization { get; set; }
+        protected internal List<CollectionPath> m_Collections;
 
         /// <inheritdoc />
         public IProject Project { get; set; }
@@ -101,7 +98,7 @@ namespace Unity.Cloud.Assets
         public string PreviewFileId { get; set; }
 
         /// <inheritdoc />
-        public IEnumerable<string> Collections => m_Collections;
+        public IEnumerable<CollectionPath> Collections => m_Collections;
 
         /// <inheritdoc />
         public IEnumerable<IAssetFile> Files => m_Files;
@@ -141,6 +138,14 @@ namespace Unity.Cloud.Assets
         [DataMember(Name = "storageId")]
         public string StorageId { get; set; }
 
+        /// <inheritdoc />
+        [DataMember(Name = "projectIds")]
+        public List<string> ProjectIds { get; }
+
+        /// <inheritdoc />
+        [DataMember(Name = "sourceProjectId")]
+        public string SourceProjectId { get; set; }
+
         [JsonConstructor]
         public Asset()
         {
@@ -149,9 +154,10 @@ namespace Unity.Cloud.Assets
 
             m_Details = new Dictionary<string, IDeserializable>();
             Tags = new List<string>();
-            m_Collections = new List<string>();
+            m_Collections = new List<CollectionPath>();
             Categories = new List<string>();
             m_Metadata = new Dictionary<string, IDeserializable>();
+            ProjectIds = new List<string>();
         }
 
         /// <summary>
@@ -171,7 +177,7 @@ namespace Unity.Cloud.Assets
         /// <param name="assetCollections">An updated list of collections. </param>
         public void OnCollectionsUpdated(IEnumerable<AssetCollection> assetCollections)
         {
-            m_Collections = new List<string>();
+            m_Collections = new List<CollectionPath>();
 
             foreach (var assetCollection in assetCollections)
             {

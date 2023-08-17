@@ -4,13 +4,15 @@ namespace Unity.Cloud.Assets.Documentation.Discovery
 
     using System;
     using Unity.Cloud.Identity;
-    using UnityEditor;
     using UnityEngine;
 
     public class AssetDiscoveryUI : MonoBehaviour
     {
         protected readonly AssetDiscoveryBehaviour m_Behaviour = new();
         IAuthenticationStateProvider m_AuthenticationStateProvider;
+
+        Vector2 m_ProjectListScrollPosition;
+        Vector2 m_AssetListScrollPosition;
 
         bool IsLoggedIn => m_AuthenticationStateProvider?.AuthenticationState == AuthenticationState.LoggedIn;
 
@@ -68,7 +70,7 @@ namespace Unity.Cloud.Assets.Documentation.Discovery
                 // Refresh the org list
                 if (GUILayout.Button("Refresh"))
                 {
-                    _ = m_Behaviour.GetProjectsAsync();
+                    m_Behaviour.GetProjects();
                     return;
                 }
 
@@ -140,12 +142,12 @@ namespace Unity.Cloud.Assets.Documentation.Discovery
             GUILayout.Label("Available Projects:");
             GUILayout.Space(10);
 
-            var projectPage = m_Behaviour.AvailableProjects;
-            if (projectPage != null)
+            var projects = m_Behaviour.AvailableProjects;
+            if (projects.Count > 0)
             {
-                var projects = projectPage.Elements;
+                m_ProjectListScrollPosition = GUILayout.BeginScrollView(m_ProjectListScrollPosition, GUILayout.Height(Screen.height * 0.8f));
 
-                for (var i = 0; i < projects.Length; ++i)
+                for (var i = 0; i < projects.Count; ++i)
                 {
                     if (GUILayout.Button(projects[i].Name))
                     {
@@ -153,33 +155,11 @@ namespace Unity.Cloud.Assets.Documentation.Discovery
                     }
                 }
 
-                GUILayout.BeginHorizontal();
-
-                EditorGUI.BeginDisabledGroup(projectPage.PreviousPage == null);
-
-                // Go back to select a different scene.
-                if (GUILayout.Button("Previous Page"))
-                {
-                    m_Behaviour.GetPreviousProjects();
-                }
-
-                EditorGUI.EndDisabledGroup();
-
-                EditorGUI.BeginDisabledGroup(string.IsNullOrEmpty(projectPage.NextPageToken));
-
-                // Go back to select a different scene.
-                if (GUILayout.Button("Next Page"))
-                {
-                    _ = m_Behaviour.GetNextAvailableProjectsAsync();
-                }
-
-                EditorGUI.EndDisabledGroup();
-
-                GUILayout.EndHorizontal();
+                GUILayout.EndScrollView();
             }
             else
             {
-                GUILayout.Label("Loading...");
+                GUILayout.Label("No projects found.");
             }
 
             GUILayout.EndVertical();
@@ -195,12 +175,12 @@ namespace Unity.Cloud.Assets.Documentation.Discovery
             GUILayout.Label("Available Assets:");
             GUILayout.Space(10);
 
-            var assetPage = m_Behaviour.AvailableAssets;
-            if (assetPage != null)
+            var assets = m_Behaviour.AvailableAssets;
+            if (assets.Count > 0)
             {
-                var assets = assetPage.Elements;
+                m_AssetListScrollPosition = GUILayout.BeginScrollView(m_AssetListScrollPosition, GUILayout.Height(Screen.height * 0.3f));
 
-                for (var i = 0; i < assets.Length; ++i)
+                for (var i = 0; i < assets.Count; ++i)
                 {
                     if (GUILayout.Button(assets[i].Name))
                     {
@@ -209,33 +189,11 @@ namespace Unity.Cloud.Assets.Documentation.Discovery
                     }
                 }
 
-                GUILayout.BeginHorizontal();
-
-                EditorGUI.BeginDisabledGroup(assetPage.PreviousPage == null);
-
-                // Go back to select a different scene.
-                if (GUILayout.Button("Previous Page"))
-                {
-                    m_Behaviour.GetPreviousAssets();
-                }
-
-                EditorGUI.EndDisabledGroup();
-
-                EditorGUI.BeginDisabledGroup(string.IsNullOrEmpty(assetPage.NextPageToken));
-
-                // Go back to select a different scene.
-                if (GUILayout.Button("Next Page"))
-                {
-                    _ = m_Behaviour.GetNextAvailableAssetsAsync();
-                }
-
-                EditorGUI.EndDisabledGroup();
-
-                GUILayout.EndHorizontal();
+                GUILayout.EndScrollView();
             }
             else
             {
-                GUILayout.Label("Loading...");
+                GUILayout.Label("No assets found.");
             }
 
             GUILayout.EndVertical();

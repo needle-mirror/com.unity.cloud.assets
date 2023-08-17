@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace Unity.Cloud.Assets
 {
     /// <summary>
@@ -11,7 +13,7 @@ namespace Unity.Cloud.Assets
         /// <summary>Accessor for projectId </summary>
         public string ProjectId { get; }
 
-        /// <summary>Accessor for xCorrelationId </summary>
+        /// <summary>Accessor for X-Correlation-Id </summary>
         public string XCorrelationId { get; }
 
         /// <summary>
@@ -28,6 +30,14 @@ namespace Unity.Cloud.Assets
             m_PathAndQueryParams = $"/organizations/{OrganizationId}/projects/{ProjectId}";
 
             XCorrelationId = xCorrelationId;
+        }
+
+        public override IEnumerable<(string, string)> GetHeaders()
+        {
+            if (!string.IsNullOrEmpty(XCorrelationId))
+            {
+                yield return ("X-Correlation-Id", XCorrelationId);
+            }
         }
     }
 }

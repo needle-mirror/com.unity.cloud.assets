@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -6,26 +7,18 @@ namespace Unity.Cloud.Assets.Documentation.Manual
 {
     public class UseCaseSearchAssetsExample
     {
-        readonly IOrganization organization;
         readonly IProject project;
 
-        public UseCaseSearchAssetsExample(IOrganization organization, IProject project)
+        public UseCaseSearchAssetsExample(IProject project)
         {
-            this.organization = organization;
             this.project = project;
         }
 
-        public void Example(IOrganization newOrganization, IProject newProject)
+        public void Example(IProject newProject)
         {
 #region Example_Constructor
 
-var assetSearchFilter = new AssetSearchFilter(organization, project);
-
-#endregion
-
-#region Example_Organization
-
-assetSearchFilter.Organization.Include(newOrganization);
+var assetSearchFilter = new AssetSearchFilter(project);
 
 #endregion
 
@@ -61,12 +54,48 @@ assetSearchFilter.Tags.Include("tag1", "tag2", "tag3");
 
         }
 
-        async Task SearchAsync(IAssetProvider assetProvider, AssetSearchFilter assetSearchFilter)
+        IAsyncEnumerable<IAsset> SearchAsync(IAssetProvider assetProvider, IAssetSearchFilter assetSearchFilter)
         {
 #region Example_Search
 
-Pagination pagination = new Pagination(nameof(IAsset.Name), 10);
-IAssetPage results = await assetProvider.SearchAsync(assetSearchFilter, pagination, CancellationToken.None);
+Pagination pagination = new Pagination(nameof(IAsset.Name), new Range(0, 10), Pagination.Order.Ascending);
+return assetProvider.SearchAsync(assetSearchFilter, pagination, CancellationToken.None);
+
+#endregion
+        }
+
+        async Task DisplayResultsIndividually(IAssetProvider assetProvider, IAssetSearchFilter assetSearchFilter)
+        {
+            var pagination = new Pagination(nameof(IAsset.Name), Range.All);
+
+#region Example_Foreach
+
+var assets = assetProvider.SearchAsync(assetSearchFilter, pagination, CancellationToken.None);
+await foreach (var asset in assets)
+{
+    Console.WriteLine(asset.Name + " is available for use.");
+
+    // Do something with each `asset` as it becomes available.
+}
+
+#endregion
+        }
+
+        async Task DisplayResults(IAssetProvider assetProvider, IAssetSearchFilter assetSearchFilter)
+        {
+            var pagination = new Pagination(nameof(IAsset.Name), Range.All);
+
+#region Example_ToList
+
+var assets = assetProvider.SearchAsync(assetSearchFilter, pagination, CancellationToken.None);
+
+var assetList = new List<IAsset>();
+await foreach (var asset in assets)
+{
+    assetList.Add(asset);
+}
+
+// Do something with the complete `assetList`
 
 #endregion
         }

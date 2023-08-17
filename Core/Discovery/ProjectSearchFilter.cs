@@ -9,9 +9,9 @@ namespace Unity.Cloud.Assets
         IProject m_Project;
 
         public override string SearchKey => nameof(IAsset.Project);
-        public override Type SearchFieldType => typeof(CloudProject);
+        public override Type SearchFieldType => typeof(AssetProject);
 
-        private protected override Type InstantiatedType => typeof(CloudProject);
+        private protected override Type InstantiatedType => typeof(AssetProject);
 
         private protected override bool IncludeInSearch => false;
 

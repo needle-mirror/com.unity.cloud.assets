@@ -11,9 +11,9 @@ namespace Unity.Cloud.Assets.Documentation.Management
     {
         readonly UseCaseFileCreationExampleBehaviour m_Behaviour = new();
 
-        public void DisplayExample(IOrganization organization, IProject project, IAsset asset)
+        public void DisplayExample(IProject project, IAsset asset)
         {
-            m_Behaviour.Initialize(organization, project, asset);
+            m_Behaviour.Initialize(project, asset);
             AssetActions();
         }
 
@@ -63,13 +63,11 @@ namespace Unity.Cloud.Assets.Documentation.Management
     class UseCaseFileCreationExampleBehaviour
     {
         // Member names should match with the names of the get-started behaviour snippets.
-        IOrganization m_CurrentOrganization;
         IProject m_CurrentProject;
         public IAsset CurrentAsset;
 
-        public void Initialize(IOrganization organization, IProject project, IAsset asset)
+        public void Initialize(IProject project, IAsset asset)
         {
-            m_CurrentOrganization = organization;
             m_CurrentProject = project;
             CurrentAsset = asset;
         }
@@ -98,7 +96,7 @@ namespace Unity.Cloud.Assets.Documentation.Management
 
             try
             {
-                var assetFile = await PlatformServices.AssetFileManager.CreateAssetFileAsync(m_CurrentOrganization, m_CurrentProject, CurrentAsset, fileCreation, cancellationTokenSrc.Token);
+                var assetFile = await PlatformServices.AssetFileManager.CreateAssetFileAsync(m_CurrentProject, CurrentAsset, fileCreation, cancellationTokenSrc.Token);
                 if (assetFile != null)
                 {
                     NewAssetFiles.Add((CurrentAsset, assetFile));
@@ -123,13 +121,13 @@ namespace Unity.Cloud.Assets.Documentation.Management
             var cancellationTokenSrc = new CancellationTokenSource();
             try
             {
-                var didUpload = await PlatformServices.AssetFileManager.UploadAssetFileAsync(asset.Organization, asset.Project, assetFile, contentStream, cancellationTokenSrc.Token);
+                var didUpload = await PlatformServices.AssetFileManager.UploadAssetFileAsync(asset.Project, assetFile, contentStream, cancellationTokenSrc.Token);
                 if (!didUpload)
                 {
                     throw new Exception();
                 }
 
-                await PlatformServices.AssetFileManager.FinalizeAssetFileUploadAsync(asset.Organization, asset.Project, assetFile, cancellationTokenSrc.Token);
+                await PlatformServices.AssetFileManager.FinalizeAssetFileUploadAsync(asset.Project, assetFile, cancellationTokenSrc.Token);
                 Debug.Log($"Asset file upload: {assetFile.Name} finalized.");
             }
             catch (Exception e)

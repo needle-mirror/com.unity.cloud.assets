@@ -1,9 +1,12 @@
-﻿using System.Threading;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Unity.Cloud.Common;
 using Unity.Cloud.Common.Runtime;
 using Unity.Cloud.Identity;
 using Unity.Cloud.Identity.Runtime;
+using UnityEngine;
 
 namespace Unity.Cloud.Assets.Documentation.Scripting
 {
@@ -15,29 +18,30 @@ public class AssetManagerExample
     {
     #region AssetManagerConstruction
 
-        var httpClient = new UnityHttpClient();
-        var cloudConfiguration = UnityRuntimeServiceHostConfigurationFactory.Create();
-        var playerSettings = UnityCloudPlayerSettings.Instance;
-        var platformSupport = PlatformSupportFactory.GetAuthenticationPlatformSupport();
+    var httpClient = new UnityHttpClient();
+    var cloudConfiguration = UnityRuntimeServiceHostResolverFactory.Create();
+    var playerSettings = UnityCloudPlayerSettings.Instance;
+    var platformSupport = PlatformSupportFactory.GetAuthenticationPlatformSupport();
 
-        var compositeAuthenticatorSettings = new CompositeAuthenticatorSettingsBuilder(httpClient, platformSupport, cloudConfiguration)
-            .AddDefaultPkceAuthenticator(playerSettings)
-            .Build();
+    var compositeAuthenticatorSettings = new CompositeAuthenticatorSettingsBuilder(httpClient, platformSupport, cloudConfiguration)
+        .AddDefaultPkceAuthenticator(playerSettings)
+        .Build();
 
-        var authenticator = new CompositeAuthenticator(compositeAuthenticatorSettings);
+    var authenticator = new CompositeAuthenticator(compositeAuthenticatorSettings);
 
-        var serviceHttpClient = new ServiceHttpClient(httpClient, authenticator, playerSettings);
+    var serviceHttpClient = new ServiceHttpClient(httpClient, authenticator, playerSettings);
+    var assetServiceConfiguration = new AssetServiceConfiguration();
 
-        m_AssetManager = new CloudAssetManager(serviceHttpClient, cloudConfiguration);
+    m_AssetManager = new CloudAssetManager(serviceHttpClient, cloudConfiguration, assetServiceConfiguration);
 
     #endregion
     }
 
     #region GetAsset
 
-    async Task<IAsset> GetAsset(IOrganization organization, IProject project, string assetId, int assetVersion, CancellationToken cancellationToken)
+    async Task<IAsset> GetAsset(IProject project, string assetId, int assetVersion, CancellationToken cancellationToken)
     {
-        var asset = await m_AssetManager.GetAssetAsync(organization, project, assetId, assetVersion, cancellationToken);
+        var asset = await m_AssetManager.GetAssetAsync(project, assetId, assetVersion, cancellationToken);
         return asset;
     }
 
@@ -45,9 +49,9 @@ public class AssetManagerExample
 
     #region GetAssetSpecifiedType
 
-    async Task<Asset> GetAsset_GenericType(IOrganization organization, IProject project, string assetId, int assetVersion, CancellationToken cancellationToken)
+    async Task<Asset> GetAsset_GenericType(IProject project, string assetId, int assetVersion, CancellationToken cancellationToken)
     {
-        var asset = await m_AssetManager.GetAssetAsync<Asset>(organization, project, assetId, assetVersion, cancellationToken);
+        var asset = await m_AssetManager.GetAssetAsync<Asset>(project, assetId, assetVersion, cancellationToken);
         return asset;
     }
 
@@ -55,44 +59,76 @@ public class AssetManagerExample
 
     #region SearchForAssets
 
-    async Task<IAssetPage> SearchForAssets(IOrganization organization, IProject project, string assetName, CancellationToken cancellationToken)
+    IAsyncEnumerable<IAsset> SearchForAssets(IProject project, string assetName, CancellationToken cancellationToken)
     {
-        var assetSearchFilter = new AssetSearchFilter(organization, project);
+        var assetSearchFilter = new AssetSearchFilter(project);
         assetSearchFilter.Name.Include(assetName);
 
-        var pagination = new Pagination(nameof(IAsset.VersionName), 20);
+        var pagination = new Pagination(nameof(IAsset.VersionName), Range.All);
 
-        var assetPage = await m_AssetManager.SearchAsync(assetSearchFilter, pagination, cancellationToken);
-        return assetPage;
+        var assets = m_AssetManager.SearchAsync(assetSearchFilter, pagination, cancellationToken);
+        return assets;
+    }
+
+    IAsyncEnumerable<IAsset> SearchForAssets(IOrganization organization, IEnumerable<IProject> projects, string assetName, CancellationToken cancellationToken)
+    {
+        var assetSearchFilter = new AssetSearchFilter(null);
+        assetSearchFilter.Name.Include(assetName);
+
+        var pagination = new Pagination(nameof(IAsset.VersionName), Range.All);
+
+        var assets = m_AssetManager.SearchAsync(organization, projects, assetSearchFilter, pagination, cancellationToken);
+        return assets;
     }
 
     #endregion
 
     #region SearchForAssetSpecifiedType
 
-    async Task<IAssetPage> SearchForAssets_GenericType(IOrganization organization, IProject project, string assetName, CancellationToken cancellationToken)
+    IAsyncEnumerable<IAsset> SearchForAssets_GenericType(IProject project, string assetName, CancellationToken cancellationToken)
     {
-        var assetSearchFilter = new AssetSearchFilter(organization, project);
+        var assetSearchFilter = new AssetSearchFilter(project);
         assetSearchFilter.Name.Include(assetName);
 
-        var pagination = new Pagination(nameof(IAsset.VersionName), 20);
+        var pagination = new Pagination(nameof(IAsset.VersionName), Range.All);
 
-        var assetPage = await m_AssetManager.SearchAsync<Asset>(assetSearchFilter, pagination, cancellationToken);
-        return assetPage;
+        var assets = m_AssetManager.SearchAsync<Asset>(assetSearchFilter, pagination, cancellationToken);
+        return assets;
+    }
+
+    IAsyncEnumerable<IAsset> SearchForAssets_GenericType(IOrganization organization, IEnumerable<IProject> projects, string assetName, CancellationToken cancellationToken)
+    {
+        var assetSearchFilter = new AssetSearchFilter(null);
+        assetSearchFilter.Name.Include(assetName);
+
+        var pagination = new Pagination(nameof(IAsset.VersionName), Range.All);
+
+        var assets = m_AssetManager.SearchAsync<Asset>(organization, projects, assetSearchFilter, pagination, cancellationToken);
+        return assets;
     }
 
     #endregion
 
     #region AggregateAssets
 
-    async Task<Aggregation> AggregateAssets(IOrganization organization, IProject project, string assetName, CancellationToken cancellationToken)
+    async Task<Aggregation> AggregateAssets(IProject project, string assetName, CancellationToken cancellationToken)
     {
-        var assetSearchFilter = new AssetSearchFilter(organization, project);
+        var assetSearchFilter = new AssetSearchFilter(project);
         assetSearchFilter.Project.Include(project);
 
         var aggregationParameters = new AggregationParameters(nameof(IAsset.Project), 20);
 
         var aggregation = await m_AssetManager.AggregateAsync(assetSearchFilter, aggregationParameters, cancellationToken);
+        return aggregation;
+    }
+
+    async Task<Aggregation> AggregateAssets(IOrganization organization, IEnumerable<IProject> projects,string assetName, CancellationToken cancellationToken)
+    {
+        var assetSearchFilter = new AssetSearchFilter(null);
+
+        var aggregationParameters = new AggregationParameters(nameof(IAsset.Project), 20);
+
+        var aggregation = await m_AssetManager.AggregateAsync(organization, projects, assetSearchFilter, aggregationParameters, cancellationToken);
         return aggregation;
     }
 

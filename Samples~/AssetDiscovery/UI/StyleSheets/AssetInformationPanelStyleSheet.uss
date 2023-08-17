@@ -1,6 +1,6 @@
 .AssetGridItem {
     transition-duration: 0.25s;
-    transition-timing-fuction: ease-out-back;
+    transition-timing-function: ease-out-back;
     background-color: rgb(46, 46, 46);
     color: rgb(210, 210, 210);
     border-color: rgba(0, 0, 0, 0.33);
@@ -9,7 +9,7 @@
 
 .AssetInfoItem {
     transition-duration: 0.25s;
-    transition-timing-fuction: ease-out-back;
+    transition-timing-function: ease-out-back;
     background-color: rgb(0, 0, 0);
     border-radius: 15px;
     padding: 5px 10px;

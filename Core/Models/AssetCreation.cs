@@ -2,7 +2,6 @@ namespace Unity.Cloud.Assets
 {
     public class AssetCreation : IAssetCreation
     {
-        public IOrganization Organization { get; set; }
         public IProject Project { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }

@@ -18,6 +18,11 @@ namespace Unity.Cloud.Assets
         {
             return new HashSet<U>();
         }
+
+        private protected override HashSet<U> CreateCollection(ICollection<U> values)
+        {
+            return new HashSet<U>(values);
+        }
     }
 
     public abstract class CollectionSearchCriteria<U, T> : SearchCriteria<T> where T : ICollection<U>
@@ -32,16 +37,31 @@ namespace Unity.Cloud.Assets
             UpdateCollection(m_Included, values);
         }
 
+        public void Include(ICollection<U> values)
+        {
+            m_Included = CreateCollection(values);
+        }
+
         public void Exclude(params U[] values)
         {
             m_Excluded ??= CreateCollection();
             UpdateCollection(m_Excluded, values);
         }
 
+        public void Exclude(ICollection<U> values)
+        {
+            m_Excluded = CreateCollection(values);
+        }
+
         public void ForAny(params U[] values)
         {
             m_Any ??= CreateCollection();
             UpdateCollection(m_Any, values);
+        }
+
+        public void ForAny(ICollection<U> values)
+        {
+            m_Any = CreateCollection(values);
         }
 
         protected override bool IsValidType(object input)
@@ -98,5 +118,6 @@ namespace Unity.Cloud.Assets
         }
 
         private protected abstract T CreateCollection();
+        private protected abstract T CreateCollection(ICollection<U> values);
     }
 }

@@ -15,7 +15,7 @@ namespace Unity.Cloud.Assets.Samples.AssetDatabaseUploader
     {
         public event Action OnOrgOrProjectChanged;
 
-        static readonly Pagination k_ProjectPagination = new(nameof(IProject.Name), 25);
+        static readonly Pagination k_ProjectPagination = new(nameof(IProject.Name), Range.All);
 
         IOrganizationProvider m_OrganizationProvider;
         IProjectProvider m_ProjectProvider;
@@ -114,14 +114,18 @@ namespace Unity.Cloud.Assets.Samples.AssetDatabaseUploader
 
             try
             {
-                var projectsPage = await m_ProjectProvider.GetCurrentUserProjectList(m_SelectedOrganization, k_ProjectPagination, cancellationTokenSource.Token);
+                var projects = m_ProjectProvider.ListProjectsAsync(m_SelectedOrganization, k_ProjectPagination, cancellationTokenSource.Token);
+                m_Projects = new List<IProject>();
+                await foreach (var project in projects)
+                {
+                    m_Projects.Add(project);
+                }
 
-                m_Projects = projectsPage?.Elements.ToList();
-                if (m_Projects?.Count > 0)
+                if (m_Projects.Count > 0)
                 {
                     var selectedProj = m_Projects.FirstOrDefault(project => project.Id == m_SelectedProjectId);
                     m_SelectedProject = selectedProj ?? m_Projects[0];
-                    m_SelectedProjectId = m_SelectedProject.Id;// Ensure the selected project id is set
+                    m_SelectedProjectId = m_SelectedProject.Id; // Ensure the selected project id is set
                 }
                 else
                 {

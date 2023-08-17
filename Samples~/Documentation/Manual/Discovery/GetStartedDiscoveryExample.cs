@@ -3,6 +3,7 @@ namespace Unity.Cloud.Assets.Documentation.Discovery
     #region Example
 
     using System;
+    using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
     using Unity.Cloud.Assets;
@@ -10,29 +11,32 @@ namespace Unity.Cloud.Assets.Documentation.Discovery
 
     public class AssetDiscoveryBehaviour
     {
-        static readonly Pagination m_DefaultPagination = new(nameof(IAsset.Name), 25);
+        static readonly Pagination m_DefaultPagination = new(nameof(IAsset.Name), Range.All);
 
         IOrganization[] m_AvailableOrganizations;
         IOrganization m_CurrentOrganization;
 
-        IProjectPage m_AvailableProjects;
-        IProject m_CurrentProject;
-
-        IAssetPage m_AvailableAssets;
+        CancellationTokenSource m_ProjectCancellationTokenSrc = new();
+        CancellationTokenSource m_AssetCancellationTokenSrc = new();
 
         public IOrganization[] AvailableOrganizations => m_AvailableOrganizations;
         public IOrganization CurrentOrganization => m_CurrentOrganization;
         public bool IsOrganizationSelected => m_CurrentOrganization != null;
-        public IProjectPage AvailableProjects => m_AvailableProjects;
-        public IProject CurrentProject => m_CurrentProject;
-        public bool IsProjectSelected => m_CurrentProject != null;
-        public IAssetPage AvailableAssets => m_AvailableAssets;
+        public List<IProject> AvailableProjects { get; } = new();
+        public IProject CurrentProject { get; private set; }
+        public bool IsProjectSelected => CurrentProject != null;
+        public List<IAsset> AvailableAssets { get; } = new();
         public IAsset CurrentAsset { get; set; }
 
         public void Clear()
         {
-            m_CurrentProject = null;
-            m_AvailableProjects = null;
+            m_ProjectCancellationTokenSrc.Cancel();
+            m_ProjectCancellationTokenSrc.Dispose();
+            m_AssetCancellationTokenSrc.Cancel();
+            m_AssetCancellationTokenSrc.Dispose();
+
+            CurrentAsset = null;
+            CurrentProject = null;
             m_CurrentOrganization = null;
         }
 
@@ -41,16 +45,16 @@ namespace Unity.Cloud.Assets.Documentation.Discovery
             m_CurrentOrganization = organization;
             if (m_CurrentOrganization != null)
             {
-                _ = GetProjectsAsync();
+                GetProjects();
             }
         }
 
         public void SetSelectedProject(IProject project)
         {
-            m_CurrentProject = project;
-            if (m_CurrentProject != null)
+            CurrentProject = project;
+            if (CurrentProject != null)
             {
-                _ = GetAssetsAsync();
+                GetAssets();
             }
         }
 
@@ -77,14 +81,16 @@ namespace Unity.Cloud.Assets.Documentation.Discovery
             }
         }
 
-        public async Task GetProjectsAsync()
+        public void GetProjects()
         {
-            m_AvailableProjects = null;
+            m_ProjectCancellationTokenSrc.Cancel();
+            m_ProjectCancellationTokenSrc.Dispose();
+            m_ProjectCancellationTokenSrc = new CancellationTokenSource();
 
             try
             {
-                var cancellationTokenSrc = new CancellationTokenSource();
-                m_AvailableProjects = await PlatformServices.ProjectProvider.GetCurrentUserProjectList(m_CurrentOrganization, m_DefaultPagination, cancellationTokenSrc.Token);
+                var projects = PlatformServices.ProjectProvider.ListProjectsAsync(m_CurrentOrganization, m_DefaultPagination, m_ProjectCancellationTokenSrc.Token);
+                _ = PopulateProjectsAsync(projects);
             }
             catch (OperationCanceledException oe)
             {
@@ -100,48 +106,51 @@ namespace Unity.Cloud.Assets.Documentation.Discovery
             }
         }
 
-        public void GetPreviousProjects()
+        async Task PopulateProjectsAsync(IAsyncEnumerable<IProject> projects)
         {
-            m_AvailableProjects = m_AvailableProjects?.PreviousPage as IProjectPage;
+            AvailableProjects.Clear();
+            CurrentProject = null;
+
+            await foreach (var project in projects.WithCancellation(m_ProjectCancellationTokenSrc.Token))
+            {
+                AvailableProjects.Add(project);
+            }
         }
 
-        public Task GetNextAvailableProjectsAsync()
+        void GetAssets()
         {
-            return Task.CompletedTask;
+            m_AssetCancellationTokenSrc.Cancel();
+            m_AssetCancellationTokenSrc.Dispose();
+            m_AssetCancellationTokenSrc = new CancellationTokenSource();
+
+            try
+            {
+                var assets = PlatformServices.AssetProvider.SearchAsync(new AssetSearchFilter(CurrentProject), m_DefaultPagination, m_AssetCancellationTokenSrc.Token);
+                _ = PopulateAssetsAsync(assets);
+            }
+            catch (OperationCanceledException oe)
+            {
+                Debug.LogError(oe);
+            }
+            catch (AggregateException e)
+            {
+                Debug.LogError(e.InnerException);
+            }
+            catch (Exception e)
+            {
+                Debug.LogError(e);
+            }
         }
 
-        async Task GetAssetsAsync()
+        async Task PopulateAssetsAsync(IAsyncEnumerable<IAsset> assets)
         {
-            m_AvailableAssets = null;
+            AvailableAssets.Clear();
             CurrentAsset = null;
 
-            try
+            await foreach (var asset in assets.WithCancellation(m_AssetCancellationTokenSrc.Token))
             {
-                var cancellationTokenSrc = new CancellationTokenSource();
-                m_AvailableAssets = await PlatformServices.AssetProvider.SearchAsync(new AssetSearchFilter(m_CurrentOrganization, m_CurrentProject), m_DefaultPagination, cancellationTokenSrc.Token);
+                AvailableAssets.Add(asset);
             }
-            catch (OperationCanceledException oe)
-            {
-                Debug.LogError(oe);
-            }
-            catch (AggregateException e)
-            {
-                Debug.LogError(e.InnerException);
-            }
-            catch (Exception e)
-            {
-                Debug.LogError(e);
-            }
-        }
-
-        public void GetPreviousAssets()
-        {
-            m_AvailableAssets = m_AvailableAssets?.PreviousPage as IAssetPage;
-        }
-
-        public Task GetNextAvailableAssetsAsync()
-        {
-            return Task.CompletedTask;
         }
     }
 

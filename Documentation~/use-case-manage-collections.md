@@ -86,6 +86,10 @@ The code snippet does the following:
 * Moves the selected collection to the specified parent collection.
 * Prints a message to the console on success.
 
+#### Known issues
+
+* Nesting a collection on creation or by moving it results in the collection being unusable. It cannot be moved again or deleted and assets cannot be added or removed from it. This is a known issue and will be fixed in a future release.
+
 ### Add an asset to a collection
 
 To add an asset to a collection, open the `AssetManagementBehaviour` script you created and add the following code to the end of the class:

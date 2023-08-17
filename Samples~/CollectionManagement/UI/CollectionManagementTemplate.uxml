@@ -1,0 +1,36 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <ui:Template name="ProjectsListContainer" src="../../Shared/UI/Templates/ListContainer.uxml?fileID=9197481963319205126&amp;guid=bc40760b2b12c4af4a3fe093fd2c100a&amp;type=3#ListContainer" />
+    <ui:VisualElement style="flex-direction: row; justify-content: space-between;">
+        <ui:VisualElement name="CollectionsPanel" class="ContentContainer" style="width: 50%; height: auto; margin-top: 0; margin-bottom: 10px; overflow: hidden;">
+            <ui:VisualElement name="CreateCollectionContainer">
+                <ui:Label text="Create New" name="Label" style="font-size: 18px; -unity-font-style: bold; padding-left: 7px; margin-bottom: 9px; color: rgb(210, 210, 210);" />
+                <ui:TextField text="My New Collection" password="false" name="Input" picking-mode="Ignore" style="margin-left: 7px; margin-right: 2px; align-items: center; flex-direction: row-reverse;">
+                    <ui:Label name="Label" text="Collection Name" style="color: rgb(210, 210, 210); justify-content: flex-start; margin-right: 9px;" />
+                </ui:TextField>
+                <ui:VisualElement name="ButtonContainer" style="align-items: flex-end;">
+                    <ui:Button text="Create" name="Button" style="margin-left: 7px; margin-right: 2px; width: 100px;" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:VisualElement name="Separator" style="height: 3px; border-top-width: 3px; border-left-color: rgb(47, 47, 47); border-right-color: rgb(47, 47, 47); border-top-color: rgb(47, 47, 47); border-bottom-color: rgb(47, 47, 47); margin-left: 7px; margin-right: 2px; margin-top: 9px; margin-bottom: 9px;" />
+            <ui:Instance template="ProjectsListContainer" name="CollectionsListContainer" style="display: flex;">
+                <AttributeOverrides element-name="ListLabel" text="Collections" />
+            </ui:Instance>
+        </ui:VisualElement>
+        <ui:VisualElement name="Assets" style="width: 50%;">
+            <ui:GroupBox style="flex-direction: row; justify-content: center;">
+                <ui:Button text="All Assets" name="AllAssetsButton" style="margin-right: 0; width: 45%; border-top-right-radius: 0; border-bottom-right-radius: 0; font-size: 10px;" />
+                <ui:Button text="Collection Only" name="CollectionAssetsButton" style="margin-left: 0; width: 45%; border-top-left-radius: 0; border-bottom-left-radius: 0; font-size: 10px; -unity-text-align: middle-center;" />
+            </ui:GroupBox>
+            <ui:VisualElement name="AssetsPanel" class="ContentContainer" style="margin-top: 0; margin-bottom: 10px; overflow: hidden;">
+                <ui:Instance template="ProjectsListContainer" name="AssetsListContainer" style="display: flex;">
+                    <AttributeOverrides element-name="ListLabel" text="All Assets" />
+                </ui:Instance>
+            </ui:VisualElement>
+            <ui:VisualElement name="AssetCollectionsPanel" class="ContentContainer" style="margin-top: 0; margin-bottom: 10px; overflow: hidden;">
+                <ui:Instance template="ProjectsListContainer" name="AssetsListContainer" style="display: flex;">
+                    <AttributeOverrides element-name="ListLabel" text="Assets in Collection" />
+                </ui:Instance>
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

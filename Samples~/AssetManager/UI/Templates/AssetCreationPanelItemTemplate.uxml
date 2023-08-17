@@ -1,0 +1,14 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="../StyleSheets/AssetCreationPanelListStyleSheet.uss?fileID=7433441132597879392&amp;guid=5f5ecbfedbf794110a29acf9218a7be4&amp;type=3#AssetCreationPanelListStyleSheet" />
+    <ui:VisualElement name="AssetListContainer" style="flex-direction: row; align-items: center; justify-content: space-between;">
+        <ui:VisualElement name="AssetNameContainer" class="LabelContainer">
+            <ui:Label text="Label" display-tooltip-when-elided="true" name="AssetNameLabel" />
+        </ui:VisualElement>
+        <ui:VisualElement name="AssetSizeContainer" class="LabelContainer">
+            <ui:Label text="Label" display-tooltip-when-elided="true" name="AssetSizeLabel" />
+        </ui:VisualElement>
+        <ui:VisualElement name="AssetDeleteIconContainer" style="width: 25px; height: 25px; align-items: center; justify-content: center;">
+            <ui:VisualElement name="AssetDeleteIcon" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

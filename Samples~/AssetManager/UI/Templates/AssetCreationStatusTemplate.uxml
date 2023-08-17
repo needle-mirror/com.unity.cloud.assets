@@ -1,0 +1,9 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="../StyleSheets/AssetCreationStatusStyleSheet.uss?fileID=7433441132597879392&amp;guid=9208c9eb823d94d3fb60552a93c3df17&amp;type=3#AssetCreationStatusStyleSheet" />
+    <ui:VisualElement name="AssetStatusContainer" style="flex-direction: row; align-items: center;">
+        <ui:VisualElement name="StatusCircle" class="StatusContent" style="background-image: url(&apos;../Sprites/circle.png?fileID=21300000&amp;guid=4ed74cdf079474f2995fef61e432e694&amp;type=3#circle&apos;);" />
+        <ui:VisualElement name="StatusNameContainer" class="StatusContent" style="width: 90%; -unity-text-align: middle-left;">
+            <ui:Label text="Label" display-tooltip-when-elided="true" name="StatusNameLabel" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

@@ -8,8 +8,8 @@ Assets are collections of files and metadata uploaded to the Asset Manager.
 
 Assets can be created, viewed, edited and downloaded.
 
-- For information about finding and downloading published assets in your projects, see the [Asset Discovery Sample](./asset-discovery-sample.md)
-- For more information about creating, viewing and editing assets, see the [Asset Management Sample](./asset-management-sample.md).
+- For information about finding and downloading published assets in your projects, see the [Asset Discovery Sample](./asset-discovery-sample.md).
+- For information about creating, viewing and editing assets, see the [Asset Management Sample](./asset-management-sample.md).
 
 ## Projects
 

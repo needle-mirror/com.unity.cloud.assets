@@ -314,7 +314,6 @@ namespace Unity.Cloud.Assets.Samples.AssetDatabaseUploader
             {
                 var assetCreation = new AssetCreation
                 {
-                    Organization = m_OrgAndProjectSelector.SelectedOrganization,
                     Project = m_OrgAndProjectSelector.SelectedProject,
                     Name = assetName,
                     Description = $"Uploaded using {nameof(AssetDatabaseUploaderSample)}",
@@ -353,14 +352,14 @@ namespace Unity.Cloud.Assets.Samples.AssetDatabaseUploader
 
                 var fileCreation = new AssetFileCreation
                 {
-                    Name = Path.GetFileNameWithoutExtension(assetPath),
+                    Name = Path.GetFileName(assetPath),
                     Description = $"Uploaded using {nameof(AssetDatabaseUploaderSample)}",
                     Type = assetFileType,
                     FileSize = fileInfo.Length,
                     Tags = GetAssetFileTags(assetFileType)
                 };
 
-                assetFile = await m_AssetFileManager.CreateAssetFileAsync(m_OrgAndProjectSelector.SelectedOrganization, m_OrgAndProjectSelector.SelectedProject, createdAsset, fileCreation, cancellationTokenSource.Token);
+                assetFile = await m_AssetFileManager.CreateAssetFileAsync(m_OrgAndProjectSelector.SelectedProject, createdAsset, fileCreation, cancellationTokenSource.Token);
             }
             catch (OperationCanceledException oe)
             {
@@ -393,7 +392,6 @@ namespace Unity.Cloud.Assets.Samples.AssetDatabaseUploader
                 var fileStream = File.OpenRead(Application.dataPath + assetPath.Replace("Assets/","/"));
 
                 var didUpload = await m_AssetFileManager.UploadAssetFileAsync(
-                    m_OrgAndProjectSelector.SelectedOrganization,
                     m_OrgAndProjectSelector.SelectedProject,
                     assetFile,
                     fileStream,
@@ -402,7 +400,6 @@ namespace Unity.Cloud.Assets.Samples.AssetDatabaseUploader
                 if (didUpload)
                 {
                     await m_AssetFileManager.FinalizeAssetFileUploadAsync(
-                        m_OrgAndProjectSelector.SelectedOrganization,
                         m_OrgAndProjectSelector.SelectedProject,
                         assetFile,
                         cancellationTokenSource.Token);
@@ -430,17 +427,20 @@ namespace Unity.Cloud.Assets.Samples.AssetDatabaseUploader
         {
             var cancellationTokenSource = new CancellationTokenSource(m_AssetDatabaseUploaderSample.CancellationTokenTimeout);
 
-            IAssetPage assetPage = null;
-
             try
             {
-                var assetSearchFilter = new AssetSearchFilter(m_OrgAndProjectSelector.SelectedOrganization, m_OrgAndProjectSelector.SelectedProject);
+                var assetSearchFilter = new AssetSearchFilter(m_OrgAndProjectSelector.SelectedProject);
                 assetSearchFilter.Name.ForAny(assetName);
 
-                var pagination = new Pagination(nameof(IAsset.Name), 25);
+                var pagination = new Pagination(nameof(IAsset.Name), new Range(0, 1));
 
-                assetPage = await m_AssetManager.SearchAsync(assetSearchFilter, pagination, cancellationTokenSource.Token);
-                if (assetPage == null || assetPage.Elements == null || assetPage.Elements.Length == 0)
+                var assetsEnumerator = m_AssetManager.SearchAsync(assetSearchFilter, pagination, cancellationTokenSource.Token).GetAsyncEnumerator(cancellationTokenSource.Token);
+                try
+                {
+                    await assetsEnumerator.MoveNextAsync();
+                    return assetsEnumerator.Current;
+                }
+                catch (Exception)
                 {
                     Debug.Log($"Asset: {assetName} does not exist in the project: {m_OrgAndProjectSelector.SelectedProject.Name}");
                 }
@@ -454,7 +454,7 @@ namespace Unity.Cloud.Assets.Samples.AssetDatabaseUploader
                 Debug.LogException(e);
             }
 
-            return assetPage?.Elements?.FirstOrDefault();
+            return null;
         }
 
         string GetAssetType(string assetPath)

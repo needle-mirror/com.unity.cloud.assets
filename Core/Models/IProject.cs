@@ -14,6 +14,8 @@ namespace Unity.Cloud.Assets
             archived
         }
 
+        IOrganization Organization { get; }
+
         /// <summary>
         /// The project ID.
         /// </summary>

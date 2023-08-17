@@ -1,4 +1,7 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Unity.Cloud.Common;
@@ -7,32 +10,46 @@ namespace Unity.Cloud.Assets
 {
     class AssetDataSource : IAssetDataSource
     {
-        readonly IAssetHttpClient m_Client;
-        readonly string m_AssetPath;
+        readonly IAssetHttpClient m_DiscoveryClient;
+        readonly IAssetHttpClient m_ManagementClient;
+        readonly AssetServiceConfiguration m_AssetServiceConfiguration;
 
-        internal AssetDataSource(IAssetHttpClient client, string assetPath = "")
+        IAssetHttpClient Client => m_AssetServiceConfiguration.IsDiscovery ? m_DiscoveryClient : m_ManagementClient;
+        string AssetPath => m_AssetServiceConfiguration.IsDiscovery ? "" : "/assets";
+
+        internal AssetDataSource(IServiceHttpClient serviceHttpClient, string serviceAddress, AssetServiceConfiguration assetServiceConfiguration)
         {
-            m_Client = client;
-            m_AssetPath = assetPath;
+            m_DiscoveryClient = new AssetDiscoveryHttpClient(serviceHttpClient, serviceAddress);
+            m_ManagementClient = new AssetHttpClient(serviceHttpClient, serviceAddress);
+            m_AssetServiceConfiguration = assetServiceConfiguration;
+        }
+
+        internal AssetDataSource(IAssetHttpClient client)
+        {
+            m_DiscoveryClient = client;
+            m_ManagementClient = client;
+            m_AssetServiceConfiguration = new AssetServiceConfiguration();
         }
 
         /// <inheritdoc/>
-        public async Task<TAsset> GetAssetAsync<TAsset>(IOrganization organization, IProject project, string assetId, int assetVersion, CancellationToken token)
+        public async Task<TAsset> GetAssetAsync<TAsset>(IProject project, string assetId, int assetVersion, CancellationToken token)
             where TAsset : IAsset, new()
         {
-            var request = new GetAssetByIdAndVersionRequest(organization.GenesisId, project.Id, assetId, assetVersion);
-            var response = await m_Client.GetAsync(request, ServiceHttpClientOptions.Default(), token);
+            var request = new GetAssetByIdAndVersionRequest(project.Organization.GenesisId, project.Id, assetId, assetVersion);
+            var response = await Client.GetAsync(request, ServiceHttpClientOptions.Default(), token);
 
             var asset = IsolatedJsonConvert.DeserializeObject<TAsset>(response, new JsonAssetConverter());
-            InitializeAsset(asset);
-            return asset;
+            return GetInitializedAsset(asset, project);
         }
 
-        public async Task<IAssetPage> GetAssetPageAsync<TAsset>(IOrganization organization, IProject project, IAssetSearchFilter assetSearchFilter, Pagination pagination, CancellationToken token)
+        public async IAsyncEnumerable<TAsset> ListAssetsAsync<TAsset>(IProject project, IAssetSearchFilter assetSearchFilter, Pagination pagination, [EnumeratorCancellation] CancellationToken cancellationToken)
             where TAsset : IAsset, new()
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            // Set up the request.
             var requestFilter = GetRequestFilter(assetSearchFilter);
-            var searchPagination = new SearchRequestPagination(pagination.SortingField, pageSize: pagination.PageSize);
+            var searchPagination = new SearchRequestPagination(pagination.SortingField, pagination.SortingOrder.ToString());
 
             // Still missing definitions for optional params:
             // - SearchRequestResultFields resultFields
@@ -41,69 +58,141 @@ namespace Unity.Cloud.Assets
 
             // Still missing definitions for optional params:
             // - string xCorrelationId
-            var request = new SearchRequest(organization.GenesisId,
+            var request = new SearchRequest(project.Organization.GenesisId,
                 project.Id,
-                m_AssetPath,
+                AssetPath,
                 null,
                 requestParams);
-            var response = await m_Client.PostAsync(request, ServiceHttpClientOptions.NoRetryOption(), token);
-            var assetPageDto = IsolatedJsonConvert.DeserializeObject<AssetPageDto<TAsset>>(response, IsolatedJsonConvert.jsonSerializerSettingsWithoutType);
 
-            // Convert to IAsset array and return a constructed page.
-            var assets = new IAsset[assetPageDto.Assets.Length];
-            for (var i = 0; i < assets.Length; ++i)
+            var offsetAndLength = await pagination.Range.GetOffsetAndLengthAsync(token => GetTotalCount(project, token), cancellationToken);
+            if (offsetAndLength.Length == 0) yield break;
+
+            const int maxPageSize = 99;
+
+            var limit = offsetAndLength.Offset + offsetAndLength.Length;
+            var pageSize = Math.Min(maxPageSize, limit);
+            request.SearchRequestParameter.Pagination.PageSize = pageSize;
+            var startPage = offsetAndLength.Offset / pageSize;
+
+            var firstPage = await AdvanceTokenToFirstPageAsync<TAsset>(request, startPage, cancellationToken);
+
+            limit = Math.Min(limit, firstPage.Assets.Length);
+            int index;
+            for (index = offsetAndLength.Offset % pageSize; index < limit; ++index)
             {
-                assets[i] = assetPageDto.Assets[i];
-                assets[i].Organization = organization;
-                assets[i].Project = project;
-                InitializeAsset(assets[i]);
+                yield return GetInitializedAsset(firstPage.Assets[index], project);
             }
 
-            return new CloudAssetPage(this, organization, project, assets, assetPageDto.Token, pagination);
+            if (string.IsNullOrEmpty(firstPage.Token)) yield break;
+
+            searchPagination.Token = firstPage.Token;
+            pageSize = Math.Min(maxPageSize, offsetAndLength.Length);
+            searchPagination.PageSize = pageSize;
+
+            while (index < offsetAndLength.Length)
+            {
+                var response = await Client.PostAsync(request, ServiceHttpClientOptions.NoRetryOption(), cancellationToken);
+                var dto = IsolatedJsonConvert.DeserializeObject<AssetPageDto<TAsset>>(response, IsolatedJsonConvert.jsonSerializerSettingsWithoutType);
+
+                // To prevent an infinite loop, return if no assets were returned
+                // or if the token is empty.
+                if (dto.Assets.Length == 0 || string.IsNullOrEmpty(dto.Token))
+                {
+                    break;
+                }
+
+                foreach (var asset in dto.Assets)
+                {
+                    ++index;
+                    yield return GetInitializedAsset(asset, project);
+                }
+
+                searchPagination.Token = dto.Token;
+            }
         }
 
-        /// <inheritdoc/>
-        public async Task<IAssetPage> GetNextAssetPageAsync<TAsset>(IAssetPage assetPage, CancellationToken token)
+        /// <inheritdoc />
+        public async IAsyncEnumerable<TAsset> ListAssetsAsync<TAsset>(IOrganization organization, IEnumerable<IProject> projects, IAssetSearchFilter assetSearchFilter, Pagination pagination, CancellationToken cancellationToken)
             where TAsset : IAsset, new()
         {
-            var searchPagination = new SearchRequestPagination(
-                assetPage.Pagination.SortingField,
-                assetPage.NextPageToken,
-                assetPage.Pagination.PageSize);
+            cancellationToken.ThrowIfCancellationRequested();
 
-            var requestParams = new SearchRequestParameters(pagination: searchPagination);
-            var request = new SearchRequest(assetPage.Organization.GenesisId,
-                assetPage.Project.Id,
-                m_AssetPath,
+            // Set up the request.
+            var requestFilter = GetRequestFilter(assetSearchFilter);
+            var searchPagination = new SearchRequestPagination(pagination.SortingField, pagination.SortingOrder.ToString());
+
+            // Still missing definitions for optional params:
+            // - SearchRequestResultFields resultFields
+            // - bool includeThumbnailDownloadURLs
+            var requestParams = new AcrossProjectsSearchRequestParameters(projects.Select(p => p.Id), requestFilter, pagination: searchPagination);
+
+            // Still missing definitions for optional params:
+            // - string xCorrelationId
+            var request = new AcrossProjectsSearchRequest(organization.GenesisId,
+                AssetPath,
                 null,
                 requestParams);
-            var response = await m_Client.PostAsync(request, ServiceHttpClientOptions.NoRetryOption(), token);
-            var assetPageDto = IsolatedJsonConvert.DeserializeObject<AssetPageDto<TAsset>>(response, IsolatedJsonConvert.jsonSerializerSettingsWithoutType);
 
-            // Convert to IAsset array
-            var assets = new IAsset[assetPageDto.Assets.Length];
-            for (var i = 0; i < assets.Length; ++i)
+            var offsetAndLength = await pagination.Range.GetOffsetAndLengthAsync(token => GetAcrossProjectsTotalCount(organization, projects, token), cancellationToken);
+            if (offsetAndLength.Length == 0) yield break;
+
+            const int maxPageSize = 99;
+
+            var limit = offsetAndLength.Offset + offsetAndLength.Length;
+            var pageSize = Math.Min(maxPageSize, limit);
+            request.AcrossProjectsSearchRequestParameters.Pagination.PageSize = pageSize;
+            var startPage = offsetAndLength.Offset / pageSize;
+
+            var firstPage = await AdvanceTokenToFirstPageAsync<TAsset>(request, startPage, cancellationToken);
+
+            limit = Math.Min(limit, firstPage.Assets.Length);
+            int index;
+            for (index = offsetAndLength.Offset % pageSize; index < limit; ++index)
             {
-                assets[i] = assetPageDto.Assets[i];
-                assets[i].Organization = assetPage.Organization;
-                assets[i].Project = assetPage.Project;
-                InitializeAsset(assets[i]);
+                var asset = firstPage.Assets[index];
+
+                yield return GetInitializedAsset(asset, projects.FirstOrDefault(p => p.Id == asset.SourceProjectId));
             }
 
-            return new CloudAssetPage(this, assets, assetPageDto.Token, assetPage);
+            if (string.IsNullOrEmpty(firstPage.Token)) yield break;
+
+            searchPagination.Token = firstPage.Token;
+            pageSize = Math.Min(maxPageSize, offsetAndLength.Length);
+            searchPagination.PageSize = pageSize;
+
+            while (index < offsetAndLength.Length)
+            {
+                var response = await Client.PostAsync(request, ServiceHttpClientOptions.Default(), cancellationToken);
+                var dto = IsolatedJsonConvert.DeserializeObject<AssetPageDto<TAsset>>(response, IsolatedJsonConvert.jsonSerializerSettingsWithoutType);
+
+                // To prevent an infinite loop, return if no assets were returned
+                // or if the token is empty.
+                if (dto.Assets.Length == 0 || string.IsNullOrEmpty(dto.Token))
+                {
+                    break;
+                }
+
+                foreach (var asset in dto.Assets)
+                {
+                    ++index;
+                    yield return GetInitializedAsset(asset, projects.FirstOrDefault(p => p.Id == asset.SourceProjectId));
+                }
+
+                searchPagination.Token = dto.Token;
+            }
         }
 
-        public async Task<Aggregation> GetAssetAggregateAsync(IOrganization organization, IProject project, IAssetSearchFilter assetSearchFilter, AggregationParameters parameters, CancellationToken token)
+        public async Task<Aggregation> GetAssetAggregateAsync(IProject project, IAssetSearchFilter assetSearchFilter, AggregationParameters parameters, CancellationToken token)
         {
             var requestFilter = GetRequestFilter(assetSearchFilter);
             var requestParams = new SearchAndAggregateRequestParameters(requestFilter, parameters.AggregationField, parameters.ResultLimit);
-            var request = new SearchAndAggregateRequest(organization.GenesisId,
+            var request = new SearchAndAggregateRequest(project.Organization.GenesisId,
                 project.Id,
-                m_AssetPath,
+                AssetPath,
                 null,
                 requestParams);
 
-            var response = await m_Client.PostAsync(request, ServiceHttpClientOptions.NoRetryOption(), token);
+            var response = await Client.PostAsync(request, ServiceHttpClientOptions.NoRetryOption(), token);
             var aggregations = IsolatedJsonConvert.DeserializeObject<AggregationsDto>(response, IsolatedJsonConvert.jsonSerializerSettingsWithoutType).Aggregations;
 
             var data = new Dictionary<string, int>();
@@ -116,16 +205,37 @@ namespace Unity.Cloud.Assets
         }
 
         /// <inheritdoc />
-        public async Task<IAsset> CreateAssetAsync(IOrganization organization, IProject project, IAssetCreation assetCreation, CancellationToken token)
+        public async Task<Aggregation> GetAssetAggregateAsync(IOrganization organization, IEnumerable<IProject> projects, IAssetSearchFilter assetSearchFilter, AggregationParameters parameters, CancellationToken token)
+        {
+            var requestFilter = GetRequestFilter(assetSearchFilter);
+            var requestParams = new AcrossProjectsSearchAndAggregateRequestParameters(projects.Select(p => p.Id), requestFilter, parameters.AggregationField, parameters.ResultLimit);
+            var request = new AcrossProjectsSearchAndAggregateRequest(organization.GenesisId,
+                AssetPath,
+                null,
+                requestParams);
+
+            var response = await Client.PostAsync(request, ServiceHttpClientOptions.Default(), token);
+            var aggregations = IsolatedJsonConvert.DeserializeObject<AggregationsDto>(response, IsolatedJsonConvert.jsonSerializerSettingsWithoutType).Aggregations;
+
+            var data = new Dictionary<string, int>();
+            for (var i = 0; i < aggregations.Length; ++i)
+            {
+                data.TryAdd(aggregations[i].Value, aggregations[i].Count);
+            }
+
+            return new Aggregation(data);
+        }
+
+        /// <inheritdoc />
+        public async Task<IAsset> CreateAssetAsync(IProject project, IAssetCreation assetCreation, CancellationToken token)
         {
             var asset = assetCreation.MapFrom();
-            var request = new CreateAssetRequest(organization.GenesisId, project.Id, asset);
-            var response = await m_Client.PostAsync(request, ServiceHttpClientOptions.NoRetryOption(), token);
+            var request = new CreateAssetRequest(project.Organization.GenesisId, project.Id, asset);
+            var response = await m_ManagementClient.PostAsync(request, ServiceHttpClientOptions.NoRetryOption(), token);
 
             var createdAsset = IsolatedJsonConvert.DeserializeObject<CreatedAssetDto>(response, IsolatedJsonConvert.jsonSerializerSettingsWithoutType);
 
-            asset.Organization = organization;
-            asset.Project = project;
+            asset = GetInitializedAsset(asset, project);
             asset.Id = createdAsset.AssetId;
             asset.Version = createdAsset.AssetVersion;
             asset.StorageId = createdAsset.StorageId;
@@ -134,26 +244,26 @@ namespace Unity.Cloud.Assets
         }
 
         /// <inheritdoc />
-        public async Task<IAsset> UpdateAssetAsync(IOrganization organization, IProject project, IAsset asset, CancellationToken token)
+        public async Task<IAsset> UpdateAssetAsync(IProject project, IAsset asset, CancellationToken token)
         {
-            var request = new UpdateAssetRequest(organization.GenesisId, project.Id, asset);
-            _ = await m_Client.PatchAsync(request, ServiceHttpClientOptions.Default(), token);
+            var request = new UpdateAssetRequest(project.Organization.GenesisId, project.Id, asset);
+            _ = await m_ManagementClient.PatchAsync(request, ServiceHttpClientOptions.Default(), token);
 
             return asset;
         }
 
         /// <inheritdoc />
-        public async Task DeleteAssetAsync(IOrganization organization, IProject project, string assetId, int assetVersion, CancellationToken token)
+        public async Task DeleteAssetAsync(IProject project, string assetId, int assetVersion, CancellationToken token)
         {
-            var request = new DeleteAssetRequest(organization.GenesisId, project.Id, assetId, assetVersion);
-            _ = await m_Client.DeleteAsync(request, ServiceHttpClientOptions.Default(), token);
+            var request = new DeleteAssetRequest(project.Organization.GenesisId, project.Id, assetId, assetVersion);
+            _ = await m_ManagementClient.DeleteAsync(request, ServiceHttpClientOptions.Default(), token);
         }
 
         /// <inheritdoc />
-        public async Task<IAsset> GetAssetDownloadUrlsAsync(IOrganization organization, IProject project, IAsset asset, CancellationToken token)
+        public async Task<IAsset> GetAssetDownloadUrlsAsync(IProject project, IAsset asset, CancellationToken token)
         {
-            var request = new GetAssetDownloadUrlsRequest(organization.GenesisId, project.Id, asset.Id, asset.Version);
-            var response = await m_Client.GetAsync(request, ServiceHttpClientOptions.Default(), token);
+            var request = new GetAssetDownloadUrlsRequest(project.Organization.GenesisId, project.Id, asset.Id, asset.Version);
+            var response = await m_ManagementClient.GetAsync(request, ServiceHttpClientOptions.Default(), token);
 
             var assetDownloadUrlsDto = IsolatedJsonConvert.DeserializeObject<AssetDownloadUrlsDto>(response, IsolatedJsonConvert.jsonSerializerSettingsWithoutType);
 
@@ -161,16 +271,14 @@ namespace Unity.Cloud.Assets
                 assetDownloadUrlsDto.Files.ToArray(),
                 assetDownloadUrlsDto.Attachments.ToArray());
 
-            InitializeAsset(asset);
-
-            return asset;
+            return GetInitializedAsset(asset);
         }
 
         /// <inheritdoc />
-        public async Task<IAsset> GetAssetCollectionsAsync(IOrganization organization, IProject project, IAsset asset, CancellationToken token)
+        public async Task<IAsset> GetAssetCollectionsAsync(IProject project, IAsset asset, CancellationToken token)
         {
-            var request = new GetAssetCollectionsRequest(organization.GenesisId, project.Id, asset.Id, asset.Version);
-            var response = await m_Client.GetAsync(request, ServiceHttpClientOptions.Default(), token);
+            var request = new GetAssetCollectionsRequest(project.Organization.GenesisId, project.Id, asset.Id, asset.Version);
+            var response = await m_ManagementClient.GetAsync(request, ServiceHttpClientOptions.Default(), token);
 
             var assetCollectionsDto = IsolatedJsonConvert.DeserializeObject<AssetCollectionListDto>(response, IsolatedJsonConvert.jsonSerializerSettingsWithoutType);
 
@@ -180,69 +288,77 @@ namespace Unity.Cloud.Assets
         }
 
         /// <inheritdoc />
-        public async Task LinkAnAssetToProjectAsync(IOrganization organization, IProject project, string assetId, int assetVersion, ulong destinationOrganizationId, string destinationProjectId, CancellationToken token)
+        public async Task LinkAnAssetToProjectAsync(IProject project, string assetId, int assetVersion, ulong destinationOrganizationId, string destinationProjectId, CancellationToken token)
         {
-            var linkRequest = new LinkAssetToProjectRequest(organization.GenesisId, project.Id, assetId, assetVersion, destinationOrganizationId, destinationProjectId);
-            _ = await m_Client.PostAsync(linkRequest, ServiceHttpClientOptions.NoRetryOption(), token);
+            var linkRequest = new LinkAssetToProjectRequest(project.Organization.GenesisId,
+                project.Id,
+                assetId,
+                assetVersion,
+                destinationOrganizationId,
+                destinationProjectId);
+            _ = await m_ManagementClient.PostAsync(linkRequest, ServiceHttpClientOptions.NoRetryOption(), token);
         }
 
         /// <inheritdoc />
-        public async Task UnlinkAssetFromProjectAsync(IOrganization organization, IProject project, string assetId, int assetVersion, CancellationToken token)
+        public async Task UnlinkAssetFromProjectAsync(IProject project, string assetId, int assetVersion, CancellationToken token)
         {
-            var unlinkRequest = new UnlinkAssetFromProjectRequest(organization.GenesisId, project.Id, assetId, assetVersion);
-            _ = await m_Client.PostAsync(unlinkRequest, ServiceHttpClientOptions.NoRetryOption(), token);
+            var unlinkRequest = new UnlinkAssetFromProjectRequest(project.Organization.GenesisId,
+                project.Id,
+                assetId,
+                assetVersion);
+            _ = await m_ManagementClient.PostAsync(unlinkRequest, ServiceHttpClientOptions.NoRetryOption(), token);
         }
 
         /// <inheritdoc />
-        public async Task<bool> CheckProjectIsAssetSourceProjectAsync(IOrganization organization, IProject project, string assetId, int assetVersion, CancellationToken token)
+        public async Task<bool> CheckProjectIsAssetSourceProjectAsync(IProject project, string assetId, int assetVersion, CancellationToken token)
         {
-            var checkRequest = new CheckProjectIsAssetSourceProjectRequest(organization.GenesisId, project.Id, assetId, assetVersion);
-            var response = await m_Client.GetAsync(checkRequest, ServiceHttpClientOptions.Default(), token);
+            var checkRequest = new CheckProjectIsAssetSourceProjectRequest(project.Organization.GenesisId, project.Id, assetId, assetVersion);
+            var response = await m_ManagementClient.GetAsync(checkRequest, ServiceHttpClientOptions.Default(), token);
 
             return bool.Parse(response);
         }
 
         /// <inheritdoc />
-        public async Task<string> PublishApprovedAssetAsync(IOrganization organization, IProject project, string assetId, int assetVersion, CancellationToken token)
+        public async Task<string> PublishApprovedAssetAsync(IProject project, string assetId, int assetVersion, CancellationToken token)
         {
-            var request = new ChangeAssetStatusRequest(organization.GenesisId, project.Id, assetId, assetVersion, ChangeAssetStatusAction.publish);
-            var response = await m_Client.PostAsync(request, ServiceHttpClientOptions.NoRetryOption(), token);
+            var request = new ChangeAssetStatusRequest(project.Organization.GenesisId, project.Id, assetId, assetVersion, ChangeAssetStatusAction.publish);
+            var response = await m_ManagementClient.PostAsync(request, ServiceHttpClientOptions.NoRetryOption(), token);
 
             return response;
         }
 
         /// <inheritdoc />
-        public async Task<string> WithdrawPublishedAssetAsync(IOrganization organization, IProject project, string assetId, int assetVersion, CancellationToken token)
+        public async Task<string> WithdrawPublishedAssetAsync(IProject project, string assetId, int assetVersion, CancellationToken token)
         {
-            var request = new ChangeAssetStatusRequest(organization.GenesisId, project.Id, assetId, assetVersion, ChangeAssetStatusAction.withdraw);
-            var response = await m_Client.PostAsync(request, ServiceHttpClientOptions.NoRetryOption(), token);
+            var request = new ChangeAssetStatusRequest(project.Organization.GenesisId, project.Id, assetId, assetVersion, ChangeAssetStatusAction.withdraw);
+            var response = await m_ManagementClient.PostAsync(request, ServiceHttpClientOptions.NoRetryOption(), token);
 
             return response;
         }
 
         /// <inheritdoc />
-        public async Task<string> SendAssetToReviewAsync(IOrganization organization, IProject project, string assetId, int assetVersion, CancellationToken token)
+        public async Task<string> SendAssetToReviewAsync(IProject project, string assetId, int assetVersion, CancellationToken token)
         {
-            var request = new ChangeAssetStatusRequest(organization.GenesisId, project.Id, assetId, assetVersion, ChangeAssetStatusAction.review);
-            var response = await m_Client.PostAsync(request, ServiceHttpClientOptions.NoRetryOption(), token);
+            var request = new ChangeAssetStatusRequest(project.Organization.GenesisId, project.Id, assetId, assetVersion, ChangeAssetStatusAction.review);
+            var response = await m_ManagementClient.PostAsync(request, ServiceHttpClientOptions.NoRetryOption(), token);
 
             return response;
         }
 
         /// <inheritdoc />
-        public async Task<string> ApproveAssetAsync(IOrganization organization, IProject project, string assetId, int assetVersion, CancellationToken token)
+        public async Task<string> ApproveAssetAsync(IProject project, string assetId, int assetVersion, CancellationToken token)
         {
-            var request = new ChangeAssetStatusRequest(organization.GenesisId, project.Id, assetId, assetVersion, ChangeAssetStatusAction.approve);
-            var response = await m_Client.PostAsync(request, ServiceHttpClientOptions.NoRetryOption(), token);
+            var request = new ChangeAssetStatusRequest(project.Organization.GenesisId, project.Id, assetId, assetVersion, ChangeAssetStatusAction.approve);
+            var response = await m_ManagementClient.PostAsync(request, ServiceHttpClientOptions.NoRetryOption(), token);
 
             return response;
         }
 
         /// <inheritdoc />
-        public async Task<string> RejectAssetAsync(IOrganization organization, IProject project, string assetId, int assetVersion, CancellationToken token)
+        public async Task<string> RejectAssetAsync(IProject project, string assetId, int assetVersion, CancellationToken token)
         {
-            var request = new ChangeAssetStatusRequest(organization.GenesisId, project.Id, assetId, assetVersion, ChangeAssetStatusAction.reject);
-            var response = await m_Client.PostAsync(request, ServiceHttpClientOptions.NoRetryOption(), token);
+            var request = new ChangeAssetStatusRequest(project.Organization.GenesisId, project.Id, assetId, assetVersion, ChangeAssetStatusAction.reject);
+            var response = await m_ManagementClient.PostAsync(request, ServiceHttpClientOptions.NoRetryOption(), token);
 
             return response;
         }
@@ -257,7 +373,14 @@ namespace Unity.Cloud.Assets
                 anyQuery is {Count: > 0} ? assetSearchFilter.AnyQueryMinimumMatch : null);
         }
 
-        static void InitializeAsset(IAsset asset)
+        static TAsset GetInitializedAsset<TAsset>(TAsset asset, IProject project) where TAsset : IAsset
+        {
+            asset.Project = project;
+
+            return GetInitializedAsset(asset);
+        }
+
+        static TAsset GetInitializedAsset<TAsset>(TAsset asset) where TAsset : IAsset
         {
             foreach (var file in asset.Files)
             {
@@ -270,6 +393,54 @@ namespace Unity.Cloud.Assets
                 file.AssetId = asset.Id;
                 file.AssetVersion = asset.Version;
             }
+
+            return asset;
+        }
+
+        async Task<int> GetTotalCount(IProject project, CancellationToken cancellationToken)
+        {
+            var aggregation = await GetAssetAggregateAsync(project, new AssetSearchFilter(), new AggregationParameters(nameof(IAsset.Type)), cancellationToken);
+            return aggregation.Total;
+        }
+
+        async Task<int> GetAcrossProjectsTotalCount(IOrganization organization, IEnumerable<IProject> projects, CancellationToken cancellationToken)
+        {
+            var aggregation = await GetAssetAggregateAsync(organization, projects, new AssetSearchFilter(), new AggregationParameters(nameof(IAsset.Type)), cancellationToken);
+            return aggregation.Total;
+        }
+
+        async Task<AssetPageDto<TAsset>> AdvanceTokenToFirstPageAsync<TAsset>(SearchRequest request, int startPage, CancellationToken cancellationToken)
+            where TAsset : IAsset, new()
+        {
+            var currentPage = 0;
+
+            var response = await Client.PostAsync(request, ServiceHttpClientOptions.NoRetryOption(), cancellationToken);
+            while (currentPage < startPage)
+            {
+                ++currentPage;
+                var pageTokenDto = IsolatedJsonConvert.DeserializeObject<PageTokenDto>(response, IsolatedJsonConvert.jsonSerializerSettingsWithoutType);
+                request.SearchRequestParameter.Pagination.Token = pageTokenDto.Token;
+                response = await Client.PostAsync(request, ServiceHttpClientOptions.NoRetryOption(), cancellationToken);
+            }
+
+            return IsolatedJsonConvert.DeserializeObject<AssetPageDto<TAsset>>(response, IsolatedJsonConvert.jsonSerializerSettingsWithoutType);
+        }
+
+        async Task<AssetPageDto<TAsset>> AdvanceTokenToFirstPageAsync<TAsset>(AcrossProjectsSearchRequest request, int startPage, CancellationToken cancellationToken)
+            where TAsset : IAsset, new()
+        {
+            var currentPage = 0;
+
+            var response = await Client.PostAsync(request, ServiceHttpClientOptions.Default(), cancellationToken);
+            while (currentPage < startPage)
+            {
+                ++currentPage;
+                var pageTokenDto = IsolatedJsonConvert.DeserializeObject<PageTokenDto>(response, IsolatedJsonConvert.jsonSerializerSettingsWithoutType);
+                request.AcrossProjectsSearchRequestParameters.Pagination.Token = pageTokenDto.Token;
+                response = await Client.PostAsync(request, ServiceHttpClientOptions.Default(), cancellationToken);
+            }
+
+            return IsolatedJsonConvert.DeserializeObject<AssetPageDto<TAsset>>(response, IsolatedJsonConvert.jsonSerializerSettingsWithoutType);
         }
     }
 }

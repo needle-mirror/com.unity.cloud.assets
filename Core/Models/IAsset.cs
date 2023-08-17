@@ -22,11 +22,6 @@ namespace Unity.Cloud.Assets
         int Version { get; set; }
 
         /// <summary>
-        /// The organization of the asset.
-        /// </summary>
-        IOrganization Organization { get; set; }
-
-        /// <summary>
         /// The project of the asset.
         /// </summary>
         IProject Project { get; set; }
@@ -78,7 +73,7 @@ namespace Unity.Cloud.Assets
         /// <summary>
         /// The collections of the asset.
         /// </summary>
-        IEnumerable<string> Collections { get;}
+        IEnumerable<CollectionPath> Collections { get;}
         /// <summary>
         /// The files of the asset.
         /// </summary>
@@ -119,6 +114,14 @@ namespace Unity.Cloud.Assets
         /// The storage id of the asset.
         /// </summary>
         string StorageId { get; }
+        /// <summary>
+        /// The project id's to which the asset is linked.
+        /// </summary>
+        List<string> ProjectIds { get; }
+        /// <summary>
+        /// The source project id of the asset.
+        /// </summary>
+        string SourceProjectId { get; set; }
 
         /// <summary>
         /// Implement this method to handle the addition of new files and attachments.
@@ -130,7 +133,7 @@ namespace Unity.Cloud.Assets
         /// <summary>
         /// Implement this method to handle the addition of new collections.
         /// </summary>
-        /// <param name="assetCollection">An updated list of collections. </param>
-        void OnCollectionsUpdated(IEnumerable<AssetCollection> assetCollection);
+        /// <param name="assetCollections">An updated list of collections. </param>
+        void OnCollectionsUpdated(IEnumerable<AssetCollection> assetCollections);
     }
 }

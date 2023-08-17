@@ -1,0 +1,38 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="../StyleSheets/AssetListStyleSheet.uss?fileID=7433441132597879392&amp;guid=5d7fd9da907ac410c98b37643d5cf632&amp;type=3#AssetListStyleSheet" />
+    <ui:VisualElement name="AssetListTopBar" style="flex-direction: row; min-height: 50px;">
+        <ui:VisualElement name="LeftTopPanel" class="LeftPanel AssetListItemLeftBar" style="border-top-left-radius: 0; border-bottom-left-radius: 0; border-top-right-radius: 0; border-bottom-right-radius: 0; justify-content: flex-start;">
+            <ui:VisualElement name="TitleContainer" class="AssetListItem">
+                <ui:Label text="Title" display-tooltip-when-elided="true" name="TitleLabel" class="AssetListItemLabel" style="flex-wrap: wrap; white-space: normal;" />
+            </ui:VisualElement>
+            <ui:VisualElement name="IngestedContainer" class="AssetListItem" style="flex-direction: column; justify-content: center;">
+                <ui:Label text="Ingested" display-tooltip-when-elided="true" name="IngestedDateLabel" class="AssetListItemLabel" style="white-space: normal;" />
+                <ui:Label text="Label" display-tooltip-when-elided="true" name="IngestedTimeLabel" style="font-size: 11px; margin-top: -6px;" />
+            </ui:VisualElement>
+            <ui:VisualElement name="DescriptionContainer" class="AssetListItem">
+                <ui:Label text="Description" display-tooltip-when-elided="true" name="DescriptionLabel" class="AssetListItemLabel" style="white-space: normal;" />
+            </ui:VisualElement>
+            <ui:VisualElement name="TagsContainer" class="AssetListItem">
+                <ui:Label text="Tags" display-tooltip-when-elided="true" name="TagsLabel" class="AssetListItemLabel" style="white-space: normal;" />
+            </ui:VisualElement>
+            <ui:VisualElement name="TypeContainer" class="AssetListItem">
+                <ui:Label text="Type" display-tooltip-when-elided="true" name="TypeLabel" class="AssetListItemLabel" style="white-space: normal;" />
+            </ui:VisualElement>
+            <ui:VisualElement name="VersionContainer" class="AssetListItem">
+                <ui:Label text="Version" display-tooltip-when-elided="true" name="VersionLabel" class="AssetListItemLabel" style="white-space: normal;" />
+            </ui:VisualElement>
+            <ui:VisualElement name="StatusContainer" class="AssetListItem">
+                <ui:Label text="Status" display-tooltip-when-elided="true" name="StatusLabel" class="AssetListItemLabel" style="white-space: normal;" />
+            </ui:VisualElement>
+            <ui:VisualElement name="FilesContainer" class="AssetListItem">
+                <ui:Label text="Files" display-tooltip-when-elided="true" name="FilesLabel" class="AssetListItemLabel" style="white-space: normal;" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement name="RightPanel" class="AssetListRightBar AssetListItemRightBar" style="border-bottom-right-radius: 0; align-items: center; justify-content: center; border-top-left-radius: 0; border-bottom-left-radius: 0; border-top-right-radius: 0; border-top-color: rgba(81, 81, 81, 0);">
+            <ui:Button display-tooltip-when-elided="true" name="ExpandButton" />
+            <ui:VisualElement name="MenuPopup" style="display: none;">
+                <ui:Button text="Open" display-tooltip-when-elided="true" name="OpenButton" class="MenuPopupButton" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

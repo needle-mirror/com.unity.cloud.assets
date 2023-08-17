@@ -30,7 +30,7 @@ namespace Unity.Cloud.Assets
         /// <param name="path">A path. </param>
         public CollectionPath(string path)
         {
-            this.path = path;
+            this.path = string.IsNullOrEmpty(path) ? "" : path;
         }
 
         /// <summary>

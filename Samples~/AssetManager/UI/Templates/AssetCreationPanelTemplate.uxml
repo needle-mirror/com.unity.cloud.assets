@@ -1,0 +1,56 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <ui:Template name="AssetCreationStatusTemplate" src="./AssetCreationStatusTemplate.uxml?fileID=9197481963319205126&amp;guid=d9c920e1e88944d778bb4f519a50db76&amp;type=3#AssetCreationStatusTemplate" />
+    <Style src="../StyleSheets/AssetCreationPanelStyleSheet.uss?fileID=7433441132597879392&amp;guid=2a9d0e7b4e75049048525c21e638987e&amp;type=3#AssetCreationPanelStyleSheet" />
+    <ui:VisualElement name="AssetCreationContainer" style="height: 100%; width: 100%; background-color: rgb(19, 19, 19); justify-content: center; min-width: 100%; min-height: 100%; max-width: 100%; max-height: 100%;">
+        <ui:VisualElement name="ContentContainer" style="flex-direction: row; height: 90%; width: 100%;">
+            <ui:VisualElement name="LeftPanel" style="width: 50%; height: 97%;">
+                <ui:VisualElement name="AssetFileListContainer" style="height: 100%; width: 100%; justify-content: center; align-items: center; display: flex;">
+                    <ui:ScrollView name="AssetFileScrollView" class="AssetFile" style="display: none;">
+                        <ui:VisualElement name="AssetFileList" />
+                    </ui:ScrollView>
+                    <ui:VisualElement name="AssetFileUpload" class="AssetFile" style="display: flex;">
+                        <ui:VisualElement name="AssetFileUploadIcon" style="background-image: url(&apos;../Sprites/upload.png?fileID=21300000&amp;guid=f44e3bc83b7624066b709ce2b697218e&amp;type=3#upload&apos;); width: 30px; height: 30px; -unity-background-image-tint-color: rgb(128, 128, 128);" />
+                        <ui:Button text="Browse" display-tooltip-when-elided="true" name="AssetFileUploadButton" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:VisualElement name="RightPanel" style="width: 50%; height: 97%;">
+                <ui:VisualElement name="AssetTitleContainer">
+                    <ui:VisualElement name="AssetTitle" class="AssetTitle">
+                        <ui:Label text="Asset Name" display-tooltip-when-elided="true" name="AssetTitleLabel" style="-unity-font-style: bold;" />
+                    </ui:VisualElement>
+                    <ui:VisualElement name="AssetSubtitle" class="AssetTitle" style="height: 50%; flex-direction: row;">
+                        <ui:VisualElement name="AssetStatus">
+                            <ui:Instance template="AssetCreationStatusTemplate" name="AssetCreationStatusTemplate" />
+                        </ui:VisualElement>
+                        <ui:VisualElement name="AssetLastEdit" class="AssetLastEdit" style="flex-direction: row; -unity-text-align: middle-left; display: none;">
+                            <ui:Label text="Last Edit: " display-tooltip-when-elided="true" name="AssetLastEditLabel" />
+                            <ui:Label text="Label" display-tooltip-when-elided="true" name="AssetLastEditDateLabel" />
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                <ui:VisualElement name="AssetInfoContainer" style="justify-content: flex-start;">
+                    <ui:VisualElement name="AssetType" class="RightPanelInputs">
+                        <ui:DropdownField label="Dropdown" index="-1" choices="System.Collections.Generic.List`1[System.String]" name="AssetTypeDropdown" />
+                    </ui:VisualElement>
+                    <ui:VisualElement name="AssetName" class="RightPanelInputs">
+                        <ui:TextField picking-mode="Ignore" label="Text Field" value="filler text" name="AssetNameField" />
+                    </ui:VisualElement>
+                    <ui:VisualElement name="AssetTags" class="RightPanelInputs">
+                        <ui:TextField picking-mode="Ignore" label="Text Field" value="filler text" name="AssetTagsField" />
+                        <ui:VisualElement name="AssetTagsChipContainer" style="flex-direction: row; flex-wrap: wrap;" />
+                    </ui:VisualElement>
+                    <ui:VisualElement name="AssetDescription" style="min-height: 30%;">
+                        <ui:TextField picking-mode="Ignore" label="Text Field" value="filler text" text="Description" name="AssetDescriptionField" style="color: rgb(210, 210, 210);" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                <ui:VisualElement name="AssetPublishContainer" style="justify-content: flex-end; align-items: flex-end;">
+                    <ui:VisualElement name="AssetButtonContainer" style="flex-direction: row; align-items: center; justify-content: flex-end;">
+                        <ui:Toggle label="Publish" name="AssetPublishToggle" />
+                        <ui:Button text="Button" display-tooltip-when-elided="true" name="AssetSaveButton" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

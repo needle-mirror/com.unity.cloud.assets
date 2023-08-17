@@ -64,7 +64,10 @@ namespace Unity.Cloud.Assets.Documentation.Management
 
             OrganizationProvider = new CloudOrganizationProvider(serviceHttpClient, serviceHostResolver);
             ProjectProvider = new CloudProjectProvider(serviceHttpClient, serviceHostResolver);
-            AssetManager = new CloudAssetManager(serviceHttpClient, serviceHostResolver);
+
+            var assetServiceConfiguration = new AssetServiceConfiguration();
+
+            AssetManager = new CloudAssetManager(serviceHttpClient, serviceHostResolver, assetServiceConfiguration);
             AssetFileManager = new CloudAssetFileManager(serviceHttpClient, serviceHostResolver);
             AssetCollectionManager = new CloudAssetCollectionManager(serviceHttpClient, serviceHostResolver);
         }

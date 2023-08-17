@@ -8,9 +8,9 @@ namespace Unity.Cloud.Assets.Documentation.Discovery
     {
         readonly UseCaseAggregationExampleBehaviour m_Behaviour = new();
 
-        public void DisplayExample(IOrganization organization, IProject project, IAssetProvider assetProvider)
+        public void DisplayExample(IProject project, IAssetProvider assetProvider)
         {
-            m_Behaviour.Initialize(organization, project, assetProvider);
+            m_Behaviour.Initialize(project, assetProvider);
             AssetActions();
         }
 
@@ -58,12 +58,10 @@ namespace Unity.Cloud.Assets.Documentation.Discovery
 
         // Member names should match with the names of the get-started behaviour snippets.
         PlatformServicesProxy PlatformServices;
-        IOrganization m_CurrentOrganization;
         IProject m_CurrentProject;
 
-        public void Initialize(IOrganization organization, IProject project, IAssetProvider assetProvider)
+        public void Initialize(IProject project, IAssetProvider assetProvider)
         {
-            m_CurrentOrganization = organization;
             m_CurrentProject = project;
             PlatformServices.AssetProvider = assetProvider;
         }
@@ -74,7 +72,7 @@ namespace Unity.Cloud.Assets.Documentation.Discovery
 
         public async Task AggregateByField(string aggregationField)
         {
-            var assetSearchFilter = new AssetSearchFilter(m_CurrentOrganization, m_CurrentProject);
+            var assetSearchFilter = new AssetSearchFilter(m_CurrentProject);
             var aggregationParameters = new AggregationParameters(aggregationField);
 
             var cancellationTokenSrc = new CancellationTokenSource();

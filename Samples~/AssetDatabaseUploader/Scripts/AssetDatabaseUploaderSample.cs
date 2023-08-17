@@ -44,7 +44,7 @@ namespace Unity.Cloud.Assets.Samples.AssetDatabaseUploader
             }
         }
 
-        async Task Awake()
+        void Awake()
         {
             TryGetComponent(out m_OrgAndProjectSelector);
             TryGetComponent(out m_AssetsUploader);

@@ -17,6 +17,6 @@ namespace Unity.Cloud.Assets
         public string Email { get; set; }
 
         [JsonProperty("organizations")]
-        public CloudOrganization[] Organizations { get; set; }
+        public Organization[] Organizations { get; set; }
     }
 }

@@ -5,6 +5,12 @@
   "SampleEntries": [
     {
       "Path": "AssetDiscovery"
+    },
+    {
+      "Path": "AssetManager"
+    },
+    {
+      "Path": "CollectionManagement"
     }
   ]
 }

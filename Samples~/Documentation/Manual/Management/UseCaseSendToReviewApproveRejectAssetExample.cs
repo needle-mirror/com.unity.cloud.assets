@@ -9,9 +9,9 @@ namespace Unity.Cloud.Assets.Documentation.Management
     {
         readonly UseCaseSendToReviewApproveRejectAssetExampleBehaviour m_Behaviour = new();
 
-        public void DisplayExample(IOrganization organization, IProject project, IAsset asset)
+        public void DisplayExample(IAsset asset)
         {
-            m_Behaviour.Initialize(organization, project, asset);
+            m_Behaviour.Initialize(asset);
             AdditionalActions();
         }
 
@@ -57,14 +57,10 @@ namespace Unity.Cloud.Assets.Documentation.Management
         const int k_DefaultCancellationTimeout = 5000;
 
         // Member names should match with the names of the get-started behaviour snippets.
-        IOrganization m_CurrentOrganization;
-        IProject m_CurrentProject;
         public IAsset CurrentAsset;
 
-        public void Initialize(IOrganization organization, IProject project, IAsset asset)
+        public void Initialize(IAsset asset)
         {
-            m_CurrentOrganization = organization;
-            m_CurrentProject = project;
             CurrentAsset = asset;
         }
 
@@ -132,7 +128,7 @@ namespace Unity.Cloud.Assets.Documentation.Management
                 var cancellationTokenSrc = new CancellationTokenSource(k_DefaultCancellationTimeout);
 
 
-                var upToDateAsset = await PlatformServices.AssetManager.GetAssetAsync(CurrentAsset.Organization, CurrentAsset.Project, CurrentAsset.Id, CurrentAsset.Version, cancellationTokenSrc.Token);
+                var upToDateAsset = await PlatformServices.AssetManager.GetAssetAsync(CurrentAsset.Project, CurrentAsset.Id, CurrentAsset.Version, cancellationTokenSrc.Token);
 
                 // Update the asset status and status details
                 if (upToDateAsset != null)

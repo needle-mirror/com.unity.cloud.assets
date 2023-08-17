@@ -1,7 +1,0 @@
-#SearchBarChipDeleteButton {
-    -unity-background-image-tint-color: rgba(160, 160, 160, 255);
-}
-
-#SearchBarChipDeleteButton:hover {
-    -unity-background-image-tint-color: rgba(112, 112, 112, 255);
-}

@@ -64,7 +64,7 @@ namespace Unity.Cloud.Assets
         public SearchCriteria<string> PreviewFileId { get; } = new(nameof(IAsset.PreviewFileId));
 
         /// <inheritdoc cref="IAsset.Collections"/>
-        public HashsetSearchCriteria<string> Collections { get; } = new(nameof(IAsset.Collections));
+        public HashsetSearchCriteria<CollectionPath> Collections { get; } = new(nameof(IAsset.Collections));
 
         /// <inheritdoc cref="IAsset.Author"/>
         public AuthorSearchFilter Author { get; } = new();
@@ -87,20 +87,22 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc cref="IAsset.Attachments"/>
         public AttachmentSearchFilter Attachments { get; } = new();
 
-        /// <inheritdoc cref="IAsset.Organization"/>
-        public OrganizationSearchFilter Organization { get; } = new();
-
         /// <inheritdoc cref="IAsset.Project"/>
         public ProjectSearchFilter Project { get; } = new();
+
+        /// <inheritdoc cref="IAsset.ProjectIds"/>
+        public HashsetSearchCriteria<string> ProjectIds { get; } = new(nameof(IAsset.ProjectIds));
+
+        /// <inheritdoc cref="IAsset.SourceProjectId"/>
+        public SearchCriteria<string> SourceProjectId { get; } = new(nameof(IAsset.SourceProjectId));
 
         public int AnyQueryMinimumMatch { get; set; } = 1;
 
         public IEnumerable<ISearchCriteria> AllCriteria => m_AllCriterias.Concat(m_UserCriterias);
 
-        public AssetSearchFilter(IOrganization organization, IProject project)
+        public AssetSearchFilter(IProject project)
             : this()
         {
-            Organization.Include(organization);
             Project.Include(project);
         }
 
@@ -265,9 +267,6 @@ namespace Unity.Cloud.Assets
 
             return criteria.Count > 0 ? criteria : null;
         }
-
-        /// <inheritdoc/>
-        public IOrganization GetOrganizationToSearch() => Organization.GetOrganization();
 
         /// <inheritdoc/>
         public IProject GetProjectToSearch() => Project.GetProject();

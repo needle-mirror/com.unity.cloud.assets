@@ -19,7 +19,7 @@ To install the Unity Cloud Assets package, follow these steps:
 1. In your Unity project, go to **Windows** > **Package Manager**.
 2. On the status bar, select the Add (**+**) button.
 3. From the Add menu, select  **Add + package by name**. **Name** and **Version** fields appear.
-4. In the **Name** field, enter the name of the package you want to install. </br> **Example**: **com.unity.cloud.[packageName]**.
+4. In the **Name** field, enter `com.unity.cloud.assets`.
 5. Select **Add**.
 
 The Editor installs the latest available version of the package and any dependent packages.

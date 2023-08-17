@@ -1,9 +1,0 @@
-<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
-    <Style src="project://database/Assets/ProjectsListStyleSheet.uss?fileID=7433441132597879392&amp;guid=e37d2372fc2ff4dbeb9e932cca5e7a46&amp;type=3#ProjectsListStyleSheet" />
-    <ui:VisualElement name="ProjectListItemContainer" style="flex-direction: row; justify-content: space-between; align-items: center; flex-wrap: nowrap; margin-top: 0; margin-bottom: 0; margin-left: 0; margin-right: 0; padding-left: 5px; border-left-color: rgb(0, 0, 0); border-right-color: rgb(0, 0, 0); border-top-color: rgb(0, 0, 0); border-bottom-color: rgb(0, 0, 0);">
-        <ui:VisualElement name="ProjectItemName" style="width: auto; max-width: 40%; height: 100%; align-items: center; justify-content: center;">
-            <ui:Label text="Label" display-tooltip-when-elided="true" name="ProjectItemNameLabel" style="width: auto; align-items: center; color: rgb(210, 210, 210); -unity-font-style: normal; justify-content: center;" />
-        </ui:VisualElement>
-        <ui:VisualElement name="ProjectItemChevron" style="background-image: url(&apos;project://database/Packages/com.unity.cloud.assets/Samples/AssetDiscovery/UI/Sprites/chevron.png?fileID=21300000&amp;guid=3ae2a8344a33c47c280866345a3020b0&amp;type=3#chevron&apos;); width: 25px; height: 30px; max-width: 60%;" />
-    </ui:VisualElement>
-</ui:UXML>

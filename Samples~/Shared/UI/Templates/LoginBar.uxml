@@ -1,0 +1,15 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <ui:Template name="OrganizationsContainer" src="./OrganizationsContainer.uxml?fileID=9197481963319205126&amp;guid=7774487f886b24ea28232786a6edeb40&amp;type=3#OrganizationsContainer" />
+    <ui:VisualElement name="TopBarContainer" style="background-color: rgb(46, 46, 46);">
+        <ui:VisualElement name="LoginBarContainer" style="height: 35px; background-color: rgb(46, 46, 46); justify-content: flex-end; flex-direction: row;">
+            <ui:VisualElement name="UserInfo" style="flex-direction: row; display: none;">
+                <ui:Label text="User:" display-tooltip-when-elided="true" name="UserLabel" style="font-size: 18px; -unity-font: url(&apos;project://database/Library/unity%20default%20resources?fileID=10102&amp;guid=0000000000000000e000000000000000&amp;type=0#Arial&apos;); color: rgb(210, 210, 210);" />
+                <ui:Label text="Name here" display-tooltip-when-elided="true" name="UserName" style="font-size: 18px; color: rgba(210, 210, 210, 0.5); -unity-font: url(&apos;project://database/Library/unity%20default%20resources?fileID=10102&amp;guid=0000000000000000e000000000000000&amp;type=0#Arial&apos;);" />
+            </ui:VisualElement>
+            <ui:Label text="Status..." display-tooltip-when-elided="true" name="StatusLabel" style="color: rgb(255, 235, 71); font-size: 18px; -unity-font: url(&apos;project://database/Library/unity%20default%20resources?fileID=10102&amp;guid=0000000000000000e000000000000000&amp;type=0#Arial&apos;); padding-bottom: 0; display: none;" />
+            <ui:Button text="Login" display-tooltip-when-elided="true" name="LoginButton" style="background-color: rgb(46, 46, 46); color: rgb(238, 238, 238); width: 120px; height: 25px; font-size: 14px; border-top-left-radius: 5px; border-bottom-left-radius: 5px; border-top-right-radius: 5px; border-bottom-right-radius: 5px; display: flex;" />
+            <ui:Button text="Logout" display-tooltip-when-elided="true" name="LogoutButton" style="background-color: rgb(159, 159, 159); color: rgb(238, 238, 238); width: 120px; height: 25px; font-size: 14px; border-top-left-radius: 5px; border-bottom-left-radius: 5px; border-top-right-radius: 5px; border-bottom-right-radius: 5px; display: none;" />
+        </ui:VisualElement>
+        <ui:Instance template="OrganizationsContainer" name="OrganizationsContainer" style="min-width: 25%; align-items: flex-end;" />
+    </ui:VisualElement>
+</ui:UXML>

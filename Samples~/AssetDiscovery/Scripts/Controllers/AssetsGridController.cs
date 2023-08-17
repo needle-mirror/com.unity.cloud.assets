@@ -16,16 +16,22 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
         MonoBehaviour m_CoroutineHandler;
 
         IAsset m_SelectedAsset;
+        internal event Action<IAsset> AssetSelected;
 
-        internal void Init(VisualElement assetGridList, VisualTreeAsset assetGridItem, MonoBehaviour coroutineHandler)
+        internal void Init(VisualElement root, VisualTreeAsset assetGridItem, MonoBehaviour coroutineHandler)
         {
-            m_AssetGridList = assetGridList;
             m_AssetGridItemTemplate = assetGridItem;
+            m_AssetGridList = root.Q<VisualElement>("AssetGridList");
+            var scrollView = root.Q<ScrollView>("AssetGridScrollView");
+
+            scrollView.verticalScrollerVisibility = ScrollerVisibility.Hidden;
             m_CoroutineHandler = coroutineHandler;
         }
 
         internal void PopulateAssetsGrid(List<IAsset> assetsInfo)
         {
+            m_AssetGridList.Clear();
+
             foreach (var asset in assetsInfo)
             {
                 var item = m_AssetGridItemTemplate.Instantiate();
@@ -36,40 +42,49 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
 
                 m_AssetGridList.Add(item);
 
-                item.RegisterCallback<ClickEvent>(evt =>
+                item.RegisterCallback<ClickEvent>(_ =>
                 {
-                    m_SelectedAsset = asset;
+                    AssetSelected?.Invoke(asset);
                 });
             }
         }
 
-        internal IAsset GetAsset()
+        internal void DisplayAssetGrid()
         {
-            return m_SelectedAsset;
+            if (m_AssetGridList != null) m_AssetGridList.style.display = DisplayStyle.Flex;
         }
 
+        internal void HideAssetGrid()
+        {
+            if (m_AssetGridList != null) m_AssetGridList.style.display = DisplayStyle.None;
+        }
 
-        void  DownloadThumbnail(Button button, IAsset asset)
+        internal void ClearAssetGrid()
+        {
+            if (m_AssetGridList != null && m_AssetGridList.childCount != 0)
+                m_AssetGridList.Clear();
+        }
+
+        void DownloadThumbnail(VisualElement visual, IAsset asset)
         {
             foreach (var file in asset.Files)
             {
                 if (file.Id == asset.PreviewFileId && file.DownloadUrl != null)
                 {
                     using var requestMessage = new HttpRequestMessage(HttpMethod.Get, new Uri(file.DownloadUrl));
-                    m_CoroutineHandler.StartCoroutine(SetImage(button, file.DownloadUrl));
+                    m_CoroutineHandler.StartCoroutine(SetImage(visual, file.DownloadUrl));
                     break;
                 }
             }
         }
 
-
-        IEnumerator SetImage(Button button, string url)
+        static IEnumerator SetImage(VisualElement visual, string url)
         {
 #if USE_WEBTEXTURE
             using var uwr = new UnityWebRequest(url, UnityWebRequest.kHttpVerbGET);
             uwr.downloadHandler = new DownloadHandlerTexture();
             yield return uwr.SendWebRequest();
-            button.style.backgroundImage = new StyleBackground(DownloadHandlerTexture.GetContent(uwr));
+            visual.style.backgroundImage = new StyleBackground(DownloadHandlerTexture.GetContent(uwr));
 #endif
         }
     }

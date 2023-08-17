@@ -53,6 +53,11 @@ namespace Unity.Cloud.Assets.Samples
         public static IAssetFileManager AssetFileManager { get; private set; }
 
         /// <summary>
+        /// Returns an <see cref="IAssetCollectionManager"/>
+        /// </summary>
+        public static IAssetCollectionManager AssetCollectionManager { get; private set; }
+
+        /// <summary>
         /// Returns a <see cref="UnityHttpClient"/>
         /// </summary>
         public static IHttpClient HttpClient { get; private set; }
@@ -78,19 +83,12 @@ namespace Unity.Cloud.Assets.Samples
             OrganizationProvider = new CloudOrganizationProvider(serviceHttpClient, serviceHostResolver);
             ProjectProvider = new CloudProjectProvider(serviceHttpClient, serviceHostResolver);
 
-            if (isDiscovery)
-            {
-                AssetProvider = new CloudAssetDiscovery(serviceHttpClient, serviceHostResolver);
-                AssetManager = new CloudAssetManager(serviceHttpClient, serviceHostResolver);
-                AssetFileManager = null;
-            }
-            else
-            {
-                var assetManager = new CloudAssetManager(serviceHttpClient, serviceHostResolver);
-                AssetManager = assetManager;
-                AssetProvider = assetManager;
-                AssetFileManager = new CloudAssetFileManager(serviceHttpClient, serviceHostResolver);
-            }
+            var assetServiceConfiguration = new AssetServiceConfiguration(isDiscovery);
+
+            AssetProvider = new CloudAssetProvider(serviceHttpClient, serviceHostResolver, assetServiceConfiguration);
+            AssetManager = new CloudAssetManager(serviceHttpClient, serviceHostResolver, assetServiceConfiguration);
+            AssetFileManager = new CloudAssetFileManager(serviceHttpClient, serviceHostResolver);
+            AssetCollectionManager = new CloudAssetCollectionManager(serviceHttpClient, serviceHostResolver);
         }
 
         /// <summary>

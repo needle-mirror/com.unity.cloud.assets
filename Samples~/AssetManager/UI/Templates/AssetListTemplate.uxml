@@ -1,0 +1,51 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="../StyleSheets/AssetListStyleSheet.uss?fileID=7433441132597879392&amp;guid=5d7fd9da907ac410c98b37643d5cf632&amp;type=3#AssetListStyleSheet" />
+    <ui:VisualElement name="AssetListContainer">
+        <ui:VisualElement name="AssetListTopBar" style="height: 10%; flex-direction: row; align-items: center; justify-content: center;">
+            <ui:VisualElement name="AssetListTitle" style="flex-direction: row; align-items: center; justify-content: space-between; width: 95%;">
+                <ui:Label text="Manage Assets" display-tooltip-when-elided="true" name="AssetListLabel" />
+                <ui:Button text="Add Asset" display-tooltip-when-elided="true" name="AddAssetButton" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement name="AssetListContent" style="height: 90%; align-items: center;">
+            <ui:VisualElement name="AssetListBox" style="width: 95%; height: 95%;">
+                <ui:VisualElement name="AssetListTopBar" style="min-height: 30px; max-height: 30px; flex-direction: row;">
+                    <ui:VisualElement name="LeftTopPanel" class="AssetListLeftBar LeftPanel" style="justify-content: flex-start;">
+                        <ui:VisualElement name="TitleContainer" class="AssetListItem">
+                            <ui:Label text="Title" display-tooltip-when-elided="true" name="TitleLabel" />
+                        </ui:VisualElement>
+                        <ui:VisualElement name="IngestedContainer" class="AssetListItem">
+                            <ui:Label text="Ingested" display-tooltip-when-elided="true" name="IngestedLabel" />
+                        </ui:VisualElement>
+                        <ui:VisualElement name="DescriptionContainer" class="AssetListItem">
+                            <ui:Label text="Description" display-tooltip-when-elided="true" name="DescriptionLabel" />
+                        </ui:VisualElement>
+                        <ui:VisualElement name="TagsContainer" class="AssetListItem">
+                            <ui:Label text="Tags" display-tooltip-when-elided="true" name="TagsLabel" />
+                        </ui:VisualElement>
+                        <ui:VisualElement name="TypeContainer" class="AssetListItem">
+                            <ui:Label text="Type" display-tooltip-when-elided="true" name="TypeLabel" />
+                        </ui:VisualElement>
+                        <ui:VisualElement name="VersionContainer" class="AssetListItem">
+                            <ui:Label text="Version" display-tooltip-when-elided="true" name="VersionLabel" />
+                        </ui:VisualElement>
+                        <ui:VisualElement name="StatusContainer" class="AssetListItem">
+                            <ui:Label text="Status" display-tooltip-when-elided="true" name="StatusLabel" />
+                        </ui:VisualElement>
+                        <ui:VisualElement name="FilesContainer" class="AssetListItem">
+                            <ui:Label text="Files" display-tooltip-when-elided="true" name="FilesLabel" />
+                        </ui:VisualElement>
+                    </ui:VisualElement>
+                    <ui:VisualElement name="RightPanel" class="AssetListRightBar" style="border-bottom-right-radius: 0;" />
+                </ui:VisualElement>
+                <ui:ScrollView name="AssetListScrollView">
+                    <ui:VisualElement name="AssetList" />
+                </ui:ScrollView>
+                <ui:VisualElement name="AssetListBottomBar" style="min-height: 30px; max-height: 30px; flex-direction: row;">
+                    <ui:VisualElement name="LeftBottomPanel" class="AssetListLeftBar LeftPanel" style="width: 100%;" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+    <ui:ListView name="SearchValues" show-border="true" selection-type="Single" style="align-items: stretch; white-space: nowrap; background-color: rgb(78, 78, 78); border-left-color: rgb(117, 117, 117); border-right-color: rgb(117, 117, 117); border-top-color: rgb(117, 117, 117); border-bottom-color: rgb(117, 117, 117); border-left-width: 1px; border-right-width: 1px; border-top-width: 1px; border-bottom-width: 1px; color: rgb(210, 210, 210); -unity-font-style: bold; -unity-background-scale-mode: scale-and-crop; display: none; position: absolute; left: 0; top: 60px; width: 60%; height: 80%; margin-left: 12px; margin-right: 12px; padding-left: 3px; padding-right: 3px;" />
+</ui:UXML>

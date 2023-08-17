@@ -1,27 +1,27 @@
 {
   "name": "com.unity.cloud.assets",
-  "version": "0.2.1",
+  "version": "0.4.0",
   "displayName": "Unity Asset Manager SDK",
   "description": "Client-side SDK to interface with the Asset Manager service.",
   "unity": "2021.3",
   "dependencies": {
-    "com.unity.cloud.common": "0.14.1",
+    "com.unity.cloud.common": "0.14.3",
     "com.unity.editorcoroutines": "1.0.0"
   },
   "relatedPackages": {
-    "com.unity.cloud.assets.tests": "0.2.1"
+    "com.unity.cloud.assets.tests": "0.4.0"
   },
   "_upm": {
-    "changelog": "### Added\n- Added Send asset to review, Approve asset in review and Reject asset in review requests in `IAssetManager`\n- Added Check on GetAssetByIdAndVersionRequest.IncludeThumbnailDownloadURLs value before adding it to the query parameters\n- Adds search value selection to Discovery sample\n\n### Changed\n- Updated miscellaneous existing documentation pages\n\n### Fixed\n- Fixed a bug where the `GetAssetFileUrlAsync` of `CloudFileAssetManager` was failing and no url was returned."
+    "changelog": "### Added\n- Added `IOrganization` property to `IProject`\n- Added `AssetServiceConfiguration` parameter to `CloudAssetProvider` and `CloudAssetManager` constructors\n- Added `SearchAsync` of `IAssetProvider` allow search across projects\n- Updated Asset Database Uploader to keep the extension of source file in the Asset file name.\n- Added search across all projects to Discovery sample\n- New documentation.\n\n### Removed\n- [Breaking] Removed `IOrganization` parameter from all API methods that also have an `IProject` parameter."
   },
   "upmCi": {
-    "footprint": "df7586f4d8977a5986db95137b48589745808fa1"
+    "footprint": "b910f7f3b7f2ce75eea75b82dd61e7abafd6f471"
   },
-  "documentationUrl": "https://docs.unity3d.com/Packages/com.unity.cloud.assets@0.2/manual/index.html",
+  "documentationUrl": "https://docs.unity3d.com/Packages/com.unity.cloud.assets@0.4/manual/index.html",
   "repository": {
     "url": "https://github.cds.internal.unity3d.com/unity/digital-twins-sdk.git",
     "type": "git",
-    "revision": "7bccfadbd3adbd5c73d2de247b801883ff447742"
+    "revision": "26a8430a1d8ea9aee869c7e61e148ef8e36bd420"
   },
   "samples": [
     {
@@ -33,6 +33,11 @@
       "displayName": "Asset Discovery",
       "description": "Search for published assets.",
       "path": "Samples~/AssetDiscovery"
+    },
+    {
+      "displayName": "Asset Collection Management",
+      "description": "Manage the asset collections in a project.",
+      "path": "Samples~/CollectionManagement"
     }
   ]
 }

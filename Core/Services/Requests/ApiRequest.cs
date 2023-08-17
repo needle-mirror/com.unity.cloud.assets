@@ -7,14 +7,9 @@
 // </auto-generated>
 //-----------------------------------------------------------------------------
 
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
 using System.Text;
-using System.Text.RegularExpressions;
-using Newtonsoft.Json;
-using Unity.Cloud.Common;
 
 namespace Unity.Cloud.Assets
 {
@@ -26,13 +21,22 @@ namespace Unity.Cloud.Assets
         protected string m_PathAndQueryParams;
 
         /// <summary>
-        /// Method function for constructing URL from request base path and query params.
+        /// Method for constructing URL from request base path and query params.
         /// </summary>
         /// <param name="requestBasePath">The start path of a request. </param>
         /// <returns>The full request url. </returns>
         public virtual string ConstructUrl(string requestBasePath)
         {
             return requestBasePath + m_PathAndQueryParams;
+        }
+
+        /// <summary>
+        /// Method for constructing the request headers.
+        /// </summary>
+        /// <returns>A dictionary containing the request headers.</returns>
+        public virtual IEnumerable<(string, string)> GetHeaders()
+        {
+            yield break;
         }
 
         /// <summary>

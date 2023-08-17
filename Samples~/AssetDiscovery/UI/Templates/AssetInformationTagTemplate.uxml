@@ -1,4 +1,0 @@
-<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
-    <Style src="project://database/Assets/AssetDiscoverySample/StyleSheets/AssetInformationPanelStyleSheet.uss?fileID=7433441132597879392&amp;guid=6106b709427544a248238f9563ef3780&amp;type=3#AssetInformationPanelStyleSheet" />
-    <ui:Button text="Button" display-tooltip-when-elided="true" name="AssetInformationTag" class="AssetInfoItem" />
-</ui:UXML>

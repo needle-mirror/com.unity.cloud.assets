@@ -25,32 +25,36 @@ namespace Unity.Cloud.Assets
         /// <summary>
         /// The pagination of the request.
         /// </summary>
-        /// <param name="sortingField">The field to sort the assets from the page.</param>
-        /// <param name="token">The pagination token.</param>
-        /// <param name="pageSize">The amount of assets per page.</param>
-        public SearchRequestPagination(string sortingField, string token = default, int pageSize = default)
+        /// <param name="sortingField">The field with which to sort the assets.</param>
+        /// <param name="sortingOrder">The order in which to sort the assets.</param>
+        public SearchRequestPagination(string sortingField, string sortingOrder)
         {
-            Token = token;
-            PageSize = pageSize;
             SortingField = sortingField;
+            SortingOrder = sortingOrder;
         }
 
         /// <summary>
         /// The pagination token.
         /// </summary>
         [DataMember(Name = "token", EmitDefaultValue = false)]
-        public string Token{ get; }
+        public string Token { get; set; }
 
         /// <summary>
         /// The amount of assets per page.
         /// </summary>
         [DataMember(Name = "pageSize", EmitDefaultValue = false)]
-        public int PageSize{ get; }
+        public int PageSize { get; set; }
 
         /// <summary>
         /// The field to sort the assets from the page.
         /// </summary>
         [DataMember(Name = "sortingField", IsRequired = true, EmitDefaultValue = true)]
-        public string SortingField{ get; }
+        public string SortingField { get; }
+
+        /// <summary>
+        /// The order to sort the assets from the page.
+        /// </summary>
+        [DataMember(Name = "sortingOrder", IsRequired = true, EmitDefaultValue = true)]
+        public string SortingOrder { get; }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Unity.Cloud.Common;
 
@@ -9,7 +10,7 @@ namespace Unity.Cloud.Assets
     /// </summary>
     public sealed class CloudProjectProvider : IProjectProvider
     {
-        readonly IUsersDataSource m_UsersDataSource;
+        readonly IProjectDataSource m_DataSource;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CloudProjectProvider"/> class.
@@ -25,29 +26,21 @@ namespace Unity.Cloud.Assets
         /// Initializes a new instance of the <see cref="CloudProjectProvider"/> class.
         /// </summary>
         /// <param name="serviceHttpClient"> The <see cref="IServiceHttpClient"/> used to fetch the data. </param>
-        /// <param name="serviceHostConfiguration"> The configuration object. </param>
+        /// <param name="serviceHostConfiguration"> The host configuration object. </param>
         CloudProjectProvider(IServiceHttpClient serviceHttpClient, AssetHostConfiguration serviceHostConfiguration)
-            : this(new UsersDataSource(serviceHttpClient, serviceHostConfiguration.GetServiceAddress()))
+            : this(new ProjectDataSource(serviceHttpClient, serviceHostConfiguration.GetServiceAddress()))
         {}
 
-        internal CloudProjectProvider(IUsersDataSource dataSource)
+        internal CloudProjectProvider(IProjectDataSource dataSource)
         {
-            m_UsersDataSource = dataSource;
+            m_DataSource = dataSource;
         }
 
         /// <inheritdoc />
-        public Task<IProjectPage> GetProjectsByOrganizationAndUserIdsAsync(IOrganization organization, string userId, Pagination pagination,
-            CancellationToken token, bool enrichWithUsersCount = false, string xCorrelationId = default)
+        public IAsyncEnumerable<IProject> ListProjectsAsync(IOrganization organization, Pagination pagination,
+            CancellationToken token, bool enrichWithUsersCount = false, string xCorrelationId = null)
         {
-            return m_UsersDataSource.ListProjectsAsync(organization, userId, pagination, token, enrichWithUsersCount, xCorrelationId);
-        }
-
-        /// <inheritdoc />
-        public Task<IProjectPage> GetCurrentUserProjectList(IOrganization organization, Pagination pagination,
-            CancellationToken token,
-            bool enrichWithUsersCount = false, string xCorrelationId = null)
-        {
-            return m_UsersDataSource.ListProjectsAsync(organization, null, pagination, token, enrichWithUsersCount, xCorrelationId);
+            return m_DataSource.ListProjectsAsync(organization, null, pagination, token, enrichWithUsersCount, xCorrelationId);
         }
     }
 }

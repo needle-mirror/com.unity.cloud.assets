@@ -3,18 +3,12 @@
 You can use the Unity Cloud Assets package to manage the collections of an asset.
 
 Collection management is only available through the Asset Management pathway.
-> Note: Collection management requires users have the role of `Asset Management Contributor` OR a minimum role of `Manager` in their organization.
+
+> Note: Collection management requires users to have the role of `Asset Management Contributor` or a minimum role of `Manager` in their organization.
 
 ## Prerequisites
 
-Before you start, set up a Unity scene in with an organization and project browser.
-See [Get started with Asset Management](get-started-management.md) for more information.
-
-Next, you must have some assets in the cloud. There are several ways to do so:
-
-* Assets can be created through the [Get started with Asset Management](get-started-management.md).
-* Assets can be uploaded from existing Unity assets; see the [Asset Uploader sample](./asset-database-uploader-sample.md).
-* You can create assets through the dashboard; see the [Managing assets on the dashboard](https://docs.unity3d.com/docs-asset-manager/manual/add-asset.html) documentation.
+[!INCLUDE [prerequisites](../includes/prerequisites.md)]
 
 ## Methodology
 

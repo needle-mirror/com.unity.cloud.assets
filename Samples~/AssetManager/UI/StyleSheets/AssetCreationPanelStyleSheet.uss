@@ -1,0 +1,141 @@
+.unity-base-field {
+    flex-direction: column;
+}
+
+.unity-base-field__label {
+    color: rgb(210, 210, 210);
+    -unity-font-style: bold;
+    padding-bottom: 5px;
+}
+
+.unity-base-field__input {
+    background-color: rgb(48, 48, 48);
+    color: rgba(255, 255, 255, 0.82);
+    border-radius: 4px;
+    border-color: rgb(59, 59, 59);
+}
+
+.unity-base-field__input:hover {
+    border-color: rgba(255, 255, 255, 0.82);
+}
+
+.unity-base-popup-field__arrow {
+    -unity-background-image-tint-color: rgb(155, 155, 155);
+    background-image: url('../Sprites/expand-more.png?fileID=21300000&guid=4061895147129422f9f8ec4dad3b1087&type=3#expand-more');
+    height: 100%;
+    width: 3%;
+}
+
+#AssetDescriptionField > #unity-text-input {
+    height: 100px;
+    -unity-text-align: upper-left;
+}
+
+.AssetFile {
+    border-color: rgb(28, 28, 28);
+    border-radius: 0.5px;
+    border-width: 2px;
+    width: 95%;
+}
+
+#AssetFileScrollView {
+    max-height: 80%;
+    min-height: 80%;
+}
+
+#AssetFileUpload {
+    background-color: rgb(28, 28, 28);
+    border-radius: 0.5px;
+    align-items: center;
+    justify-content: center;
+    max-height: 100%;
+    min-height: 20%;
+    height: 100%;
+}
+
+#AssetFileUpload:hover {
+    background-color: rgb(19, 19, 19);
+    border-top-width: 0;
+}
+
+#AssetFileUploadButton {
+    background-color: rgb(28, 28, 28);
+    border-color: rgb(59, 59, 59);
+    border-radius: 6px;
+    color: rgb(210, 210, 210);
+}
+
+#AssetFileUploadButton:hover {
+    background-color: rgba(255, 255, 255, 0.12);
+    border-color: rgb(155, 155, 155);
+    border-radius: 6px;
+}
+
+.AssetLastEdit Label {
+    color: rgba(255, 255, 255, 0.48);
+}
+
+#AssetLastEditLabel {
+    padding-left: 6px;
+}
+
+Label {
+    color: rgba(255, 255, 255, 0.82);
+}
+
+#AssetInfoContainer {
+    height: 100%;
+    width: 95%;
+}
+
+.RightPanelInputs {
+    width: 100%;
+    min-height: 10%;
+}
+
+.unity-toggle {
+    flex-direction: row;
+    padding: 4px 8px;
+    margin: -2px -3px -4px;
+}
+
+.unity-toggle__label {
+    margin-right: -95px;
+    padding-bottom: -10px;
+}
+
+.AssetTitle {
+    margin: 5px;
+}
+
+#AssetTitleContainer {
+    width: 95%;
+}
+
+#AssetTitleLabel {
+    font-size: 20px;
+}
+
+#AssetPublishContainer {
+    width: 95%;
+}
+
+#AssetSaveButton {
+    color: rgba(255, 255, 255, 0.82);
+    background-color: rgb(41, 161, 255);
+    border-color: rgb(41, 161, 255);
+    transition-duration: 0.25s;
+    transition-timing-function: ease-out-back;
+    padding: 4px 8px;
+}
+
+#AssetSaveButton:hover {
+    background-color: rgb(76, 176, 255);
+    border-color: rgb(76, 176, 255);
+}
+
+#TopBarContainer {
+    margin-left: 10px;
+    margin-bottom: 10px;
+    margin-top: 10px;
+}

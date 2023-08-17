@@ -30,9 +30,9 @@ namespace Unity.Cloud.Assets
         }
 
         /// <inheritdoc/>
-        public async Task<IAssetCollection[]> ListCollectionsAsync(IOrganization organization, IProject project, CancellationToken token)
+        public async Task<IAssetCollection[]> ListCollectionsAsync(IProject project, CancellationToken token)
         {
-            var response = await m_Client.GetAsync(new GetCollectionListRequest(organization.GenesisId, project.Id), ServiceHttpClientOptions.Default(), token);
+            var response = await m_Client.GetAsync(new GetCollectionListRequest(project.Organization.GenesisId, project.Id), ServiceHttpClientOptions.Default(), token);
 
             var collectionListDto = IsolatedJsonConvert.DeserializeObject<AssetCollectionListDto>(response, IsolatedJsonConvert.jsonSerializerSettingsWithoutType);
 
@@ -41,23 +41,23 @@ namespace Unity.Cloud.Assets
                 return Array.Empty<IAssetCollection>();
             }
 
-            return collectionListDto.Collections.Select(x => InitializeAssetCollection(x, organization, project)).ToArray();
+            return collectionListDto.Collections.Select(x => InitializeAssetCollection(x, project)).ToArray();
         }
 
         /// <inheritdoc/>
-        public async Task<IAssetCollection> GetCollectionAsync(IOrganization organization, IProject project, CollectionPath collectionPath, CancellationToken token)
+        public async Task<IAssetCollection> GetCollectionAsync(IProject project, CollectionPath collectionPath, CancellationToken token)
         {
-            var request = new CollectionRequest(organization.GenesisId, project.Id, collectionPath);
+            var request = new CollectionRequest(project.Organization.GenesisId, project.Id, collectionPath);
             var response = await m_Client.GetAsync(request, ServiceHttpClientOptions.Default(), token);
 
             var assetCollection = IsolatedJsonConvert.DeserializeObject<AssetCollection>(response, IsolatedJsonConvert.jsonSerializerSettingsWithoutType);
-            return InitializeAssetCollection(assetCollection, organization, project);
+            return InitializeAssetCollection(assetCollection, project);
         }
 
         /// <inheritdoc/>
-        public async Task<CollectionPath> CreateCollectionAsync(IOrganization organization, IProject project, IAssetCollection assetCollection, CancellationToken token)
+        public async Task<CollectionPath> CreateCollectionAsync(IProject project, IAssetCollection assetCollection, CancellationToken token)
         {
-            var request = new CreateCollectionRequest(organization.GenesisId, project.Id, assetCollection);
+            var request = new CreateCollectionRequest(project.Organization.GenesisId, project.Id, assetCollection);
             var response = await m_Client.PostAsync(request, ServiceHttpClientOptions.NoRetryOption(), token);
 
             var pathDto = IsolatedJsonConvert.DeserializeObject<AssetCollectionPathDto>(response, IsolatedJsonConvert.jsonSerializerSettingsWithoutType);
@@ -65,61 +65,60 @@ namespace Unity.Cloud.Assets
         }
 
         /// <inheritdoc/>
-        public async Task UpdateCollectionAsync(IOrganization organization, IProject project, IAssetCollection assetCollection, CancellationToken token)
+        public async Task UpdateCollectionAsync(IProject project, IAssetCollection assetCollection, CancellationToken token)
         {
             var collectionPath = CollectionPath.CombinePaths(assetCollection.ParentPath, assetCollection.Name);
-            var request = new UpdateCollectionRequest(organization.GenesisId, project.Id, collectionPath, assetCollection);
+            var request = new UpdateCollectionRequest(project.Organization.GenesisId, project.Id, collectionPath, assetCollection);
             _ = await m_Client.PutAsync(request, ServiceHttpClientOptions.NoRetryOption(), token);
         }
 
         /// <inheritdoc/>
-        public async Task DeleteCollectionAsync(IOrganization organization, IProject project, CollectionPath collectionPath, CancellationToken token)
+        public async Task DeleteCollectionAsync(IProject project, CollectionPath collectionPath, CancellationToken token)
         {
-            var request = new CollectionRequest(organization.GenesisId, project.Id, collectionPath);
+            var request = new CollectionRequest(project.Organization.GenesisId, project.Id, collectionPath);
             _ = await m_Client.DeleteAsync(request, ServiceHttpClientOptions.Default(), token);
         }
 
         /// <inheritdoc />
-        public async Task<string> InsertAssetsToCollectionAsync(IOrganization organization, IProject project, CollectionPath collectionPath, IEnumerable<IAsset> assets, CancellationToken token)
+        public async Task<string> InsertAssetsToCollectionAsync(IProject project, CollectionPath collectionPath, IEnumerable<IAsset> assets, CancellationToken token)
         {
             var assetsInCollectionDto = new AssetsInCollectionDto
             {
                 Assets = assets.Select(a => a.AssetToCollectionElementMapFrom()).ToArray()
             };
 
-            var request = new InsertAssetsInCollectionRequest(organization.GenesisId, project.Id, collectionPath, assetsInCollectionDto);
+            var request = new InsertAssetsInCollectionRequest(project.Organization.GenesisId, project.Id, collectionPath, assetsInCollectionDto);
             var response = await m_Client.PostAsync(request, ServiceHttpClientOptions.NoRetryOption(), token);
 
             return response;
         }
 
         /// <inheritdoc />
-        public async Task<string> RemoveAssetsFromCollectionAsync(IOrganization organization, IProject project, CollectionPath collectionPath, IEnumerable<IAsset> assets, CancellationToken token)
+        public async Task<string> RemoveAssetsFromCollectionAsync(IProject project, CollectionPath collectionPath, IEnumerable<IAsset> assets, CancellationToken token)
         {
             var assetsInCollectionDto = new AssetsInCollectionDto
             {
                 Assets = assets.Select(a => a.AssetToCollectionElementMapFrom()).ToArray()
             };
 
-            var request = new RemoveAssetsFromCollectionRequest(organization.GenesisId, project.Id, collectionPath, assetsInCollectionDto);
+            var request = new RemoveAssetsFromCollectionRequest(project.Organization.GenesisId, project.Id, collectionPath, assetsInCollectionDto);
             var response = await m_Client.PatchAsync(request, ServiceHttpClientOptions.Default(), token);
 
             return response;
         }
 
         /// <inheritdoc />
-        public async Task<string> MoveCollectionToNewPathAsync(IOrganization organization, IProject project, CollectionPath collectionPath, CollectionPath newCollectionPath, CancellationToken token)
+        public async Task<string> MoveCollectionToNewPathAsync(IProject project, CollectionPath collectionPath, CollectionPath newCollectionPath, CancellationToken token)
         {
-            var request = new MoveCollectionToNewPathRequest(organization.GenesisId, project.Id, collectionPath, newCollectionPath);
+            var request = new MoveCollectionToNewPathRequest(project.Organization.GenesisId, project.Id, collectionPath, newCollectionPath);
             var response = await m_Client.PatchAsync(request, ServiceHttpClientOptions.Default(), token);
 
             var pathDto = IsolatedJsonConvert.DeserializeObject<AssetCollectionPathDto>(response, IsolatedJsonConvert.jsonSerializerSettingsWithoutType);
             return pathDto.Path;
         }
 
-        static IAssetCollection InitializeAssetCollection(AssetCollection assetCollection, IOrganization organization, IProject project)
+        static IAssetCollection InitializeAssetCollection(AssetCollection assetCollection, IProject project)
         {
-            assetCollection.Organization = organization;
             assetCollection.Project = project;
             return assetCollection;
         }

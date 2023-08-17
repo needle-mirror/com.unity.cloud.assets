@@ -35,9 +35,9 @@ namespace Unity.Cloud.Assets.Documentation.Scripting
 
         #region GetCollection
 
-        async Task<IAssetCollection> GetCollection(IOrganization organization, IProject project, CollectionPath collectionPath, CancellationToken cancellationToken)
+        async Task<IAssetCollection> GetCollection(IProject project, CollectionPath collectionPath, CancellationToken cancellationToken)
         {
-            var collection = await m_AssetCollectionManager.GetCollectionAsync(organization, project, collectionPath, cancellationToken);
+            var collection = await m_AssetCollectionManager.GetCollectionAsync(project, collectionPath, cancellationToken);
             return collection;
         }
 
@@ -45,9 +45,9 @@ namespace Unity.Cloud.Assets.Documentation.Scripting
 
         #region ListCollections
 
-        async Task<IAssetCollection[]> ListCollections(IOrganization organization, IProject project, CancellationToken cancellationToken)
+        async Task<IAssetCollection[]> ListCollections(IProject project, CancellationToken cancellationToken)
         {
-            var collections = await m_AssetCollectionManager.ListCollectionsAsync(organization, project, cancellationToken);
+            var collections = await m_AssetCollectionManager.ListCollectionsAsync(project, cancellationToken);
             return collections;
         }
 
@@ -55,10 +55,10 @@ namespace Unity.Cloud.Assets.Documentation.Scripting
 
         #region CreateCollection
 
-        async Task<string> CreateCollection(IOrganization organization, IProject project, CancellationToken cancellationToken)
+        async Task<string> CreateCollection(IProject project, CancellationToken cancellationToken)
         {
             var assetCollection = new AssetCollection("My Collection", "A description of my collection.");
-            var collectionPath = await m_AssetCollectionManager.CreateCollectionAsync(organization, project, assetCollection, cancellationToken);
+            var collectionPath = await m_AssetCollectionManager.CreateCollectionAsync(project, assetCollection, cancellationToken);
 
             return collectionPath;
         }

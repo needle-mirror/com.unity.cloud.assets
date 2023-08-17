@@ -54,7 +54,10 @@ namespace Unity.Cloud.Assets.Documentation.Discovery
 
             OrganizationProvider = new CloudOrganizationProvider(serviceHttpClient, serviceHostResolver);
             ProjectProvider = new CloudProjectProvider(serviceHttpClient, serviceHostResolver);
-            AssetProvider = new CloudAssetDiscovery(serviceHttpClient, serviceHostResolver);
+
+            var assetServiceConfiguration = new AssetServiceConfiguration(true);
+
+            AssetProvider = new CloudAssetProvider(serviceHttpClient, serviceHostResolver, assetServiceConfiguration);
         }
 
         /// <summary>

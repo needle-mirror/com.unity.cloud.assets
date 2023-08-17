@@ -58,12 +58,6 @@ namespace Unity.Cloud.Assets
         Dictionary<string, object> AccumulateAnyCriteria();
 
         /// <summary>
-        /// Returns the default organization for the search.
-        /// </summary>
-        /// <returns>An organization to be used in the search. </returns>
-        IOrganization GetOrganizationToSearch();
-
-        /// <summary>
         /// Returns the default project for the search.
         /// </summary>
         /// <returns>A project to be used in the search. </returns>

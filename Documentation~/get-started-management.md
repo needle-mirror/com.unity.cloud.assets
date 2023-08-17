@@ -1,13 +1,13 @@
 # Get started with Asset Management
 
 Asset Management is a Unity Cloud service that allows you to manage your project's assets. You can use Asset Management to:
+
 * Get an asset
 * Search for assets
 * Aggregate assets based on a set of criteria
-* Create, Read, update, and delete assets
+* Create, read, update, and delete assets
 
-This section explains how to set up a basic scene and script to initialize and use the Unity Cloud Assets package with Asset Management.
-It performs a basic search for all assets of the selected project and displays the results in a simple GUI.
+This section explains how to set up a basic scene and script to initialize and use the Unity Cloud Assets package with Asset Management. The script performs a basic search for all assets of the selected project and displays the results in a simple GUI.
 
 ## Requirements
 

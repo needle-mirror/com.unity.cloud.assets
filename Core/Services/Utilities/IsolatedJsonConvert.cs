@@ -12,7 +12,7 @@ namespace Unity.Cloud.Assets
     /// </summary>
     static class IsolatedJsonConvert
     {
-        public static JsonSerializerSettings jsonSerializerSettingsWithoutType = new()
+        public static readonly JsonSerializerSettings jsonSerializerSettingsWithoutType = new()
         {
             TypeNameHandling = TypeNameHandling.None,
             NullValueHandling = NullValueHandling.Ignore,

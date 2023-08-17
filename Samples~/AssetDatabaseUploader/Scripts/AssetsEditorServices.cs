@@ -1,3 +1,4 @@
+#if !UC_EXCLUDE_SAMPLES && UNITY_EDITOR
 using System;
 using System.Threading.Tasks;
 using Unity.Cloud.Common;
@@ -36,11 +37,6 @@ namespace Unity.Cloud.Assets.Samples.AssetDatabaseUploader
         /// </summary>
         public static IAssetFileManager AssetFileManager { get; private set; }
 
-        /// <summary>
-        /// Returns a <see cref="UnityHttpClient"/>
-        /// </summary>
-        public static IServiceHttpClient HttpClient { get; private set; }
-
         public static bool IsInitialized { get; private set; }
 
         public static async Task Create(bool isDiscovery)
@@ -50,24 +46,16 @@ namespace Unity.Cloud.Assets.Samples.AssetDatabaseUploader
             var playerSettings = UnityCloudPlayerSettings.Instance;
 
             s_Authenticator = new UnityEditorAuthenticator(new TargetClientIdTokenToUnityServicesTokenExchanger(httpClient, serviceHostResolver));
-            HttpClient = new ServiceHttpClient(httpClient, s_Authenticator, playerSettings);
+            var serviceHttpClient = new ServiceHttpClient(httpClient, s_Authenticator, playerSettings);
 
-            OrganizationProvider = new CloudOrganizationProvider(HttpClient, serviceHostResolver);
-            ProjectProvider = new CloudProjectProvider(HttpClient, serviceHostResolver);
+            OrganizationProvider = new CloudOrganizationProvider(serviceHttpClient, serviceHostResolver);
+            ProjectProvider = new CloudProjectProvider(serviceHttpClient, serviceHostResolver);
 
-            if (isDiscovery)
-            {
-                AssetProvider = new CloudAssetDiscovery(HttpClient, serviceHostResolver);
-                AssetManager = new CloudAssetManager(HttpClient, serviceHostResolver);
-                AssetFileManager = null;
-            }
-            else
-            {
-                var assetManager = new CloudAssetManager(HttpClient, serviceHostResolver);
-                AssetManager = assetManager;
-                AssetProvider = assetManager;
-                AssetFileManager = new CloudAssetFileManager(HttpClient, serviceHostResolver);
-            }
+            var assetServiceConfiguration = new AssetServiceConfiguration(isDiscovery);
+
+            AssetProvider = new CloudAssetProvider(serviceHttpClient, serviceHostResolver, assetServiceConfiguration);
+            AssetManager = new CloudAssetManager(serviceHttpClient, serviceHostResolver, assetServiceConfiguration);
+            AssetFileManager = new CloudAssetFileManager(serviceHttpClient, serviceHostResolver);
 
             IsInitialized = true;
 
@@ -86,3 +74,4 @@ namespace Unity.Cloud.Assets.Samples.AssetDatabaseUploader
         }
     }
 }
+#endif

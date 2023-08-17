@@ -37,11 +37,11 @@ namespace Unity.Cloud.Assets
         }
 
         /// <inheritdoc />
-        public async Task<IAssetFile> CreateAssetFileAsync(IOrganization organization, IProject project, IAsset asset, IAssetFileCreation assetFileCreation, CancellationToken token)
+        public async Task<IAssetFile> CreateAssetFileAsync(IProject project, IAsset asset, IAssetFileCreation assetFileCreation, CancellationToken token)
         {
             var assetFile = assetFileCreation.MapFrom();
 
-            var request = new CreateAssetFileRequest(organization.GenesisId, project.Id, asset.Id, asset.Version, assetFile);
+            var request = new CreateAssetFileRequest(project.Organization.GenesisId, project.Id, asset.Id, asset.Version, assetFile);
             var response = await m_Client.PostAsync(request, ServiceHttpClientOptions.NoRetryOption(), token);
 
             var createdAssetFileDto = IsolatedJsonConvert.DeserializeObject<CreatedAssetFileDto>(response, IsolatedJsonConvert.jsonSerializerSettingsWithoutType);
@@ -56,32 +56,32 @@ namespace Unity.Cloud.Assets
         }
 
         /// <inheritdoc />
-        public async Task FinalizeAssetFileUploadAsync(IOrganization organization, IProject project, IAssetFile assetFile, CancellationToken token)
+        public async Task FinalizeAssetFileUploadAsync(IProject project, IAssetFile assetFile, CancellationToken token)
         {
-            var request = new FinalizeUploadAssetFileRequest(organization.GenesisId, project.Id, assetFile.AssetId, assetFile.AssetVersion, assetFile.Id);
+            var request = new FinalizeUploadAssetFileRequest(project.Organization.GenesisId, project.Id, assetFile.AssetId, assetFile.AssetVersion, assetFile.Id);
             _ = await m_Client.PostAsync(request, ServiceHttpClientOptions.NoRetryOption(), token);
         }
 
         /// <inheritdoc />
-        public async Task<IAssetFile> UpdateAssetFileAsync(IOrganization organization, IProject project, IAssetFile assetFile, CancellationToken token)
+        public async Task<IAssetFile> UpdateAssetFileAsync(IProject project, IAssetFile assetFile, CancellationToken token)
         {
-            var request = new UpdateAssetFileRequest(organization.GenesisId, project.Id, assetFile.AssetId, assetFile.AssetVersion, assetFile.MapFrom());
+            var request = new UpdateAssetFileRequest(project.Organization.GenesisId, project.Id, assetFile.AssetId, assetFile.AssetVersion, assetFile.MapFrom());
             _ = await m_Client.PatchAsync(request, ServiceHttpClientOptions.Default(), token);
 
             return assetFile;
         }
 
         /// <inheritdoc />
-        public async Task DeleteAssetFileAsync(IOrganization organization, IProject project, IAssetFile assetFile, CancellationToken token)
+        public async Task DeleteAssetFileAsync(IProject project, IAssetFile assetFile, CancellationToken token)
         {
-            var request = new DeleteAssetFileRequest(organization.GenesisId, project.Id, assetFile.AssetId, assetFile.AssetVersion, assetFile.Id);
+            var request = new DeleteAssetFileRequest(project.Organization.GenesisId, project.Id, assetFile.AssetId, assetFile.AssetVersion, assetFile.Id);
             _ = await m_Client.DeleteAsync(request, ServiceHttpClientOptions.Default(), token);
         }
 
         /// <inheritdoc />
-        public async Task<string> GetAssetFileUrlAsync(IOrganization organization, IProject project, IAssetFile assetFile, AssetFileUrlType urlType, CancellationToken token)
+        public async Task<string> GetAssetFileUrlAsync(IProject project, IAssetFile assetFile, AssetFileUrlType urlType, CancellationToken token)
         {
-            var request = new GetAssetFileUrlRequest(organization.GenesisId, project.Id, assetFile.AssetId, assetFile.AssetVersion, assetFile.Id, urlType);
+            var request = new GetAssetFileUrlRequest(project.Organization.GenesisId, project.Id, assetFile.AssetId, assetFile.AssetVersion, assetFile.Id, urlType);
             var response = await m_Client.GetAsync(request, ServiceHttpClientOptions.Default(), token);
 
             var url = IsolatedJsonConvert.DeserializeObject<UrlDto>(response);
@@ -104,10 +104,9 @@ namespace Unity.Cloud.Assets
         }
 
         /// <inheritdoc />
-        public async Task<HttpResponseMessage> UploadAssetFileAsync(IOrganization organization, IProject project, IAssetFile assetFile, Stream contentStream, CancellationToken token)
+        public async Task<bool> UploadAssetFileAsync(IProject project, IAssetFile assetFile, Stream contentStream, CancellationToken token)
         {
             var uploadUrl = assetFile.UploadUrl ?? await GetAssetFileUrlAsync(
-                organization,
                 project,
                 assetFile,
                 AssetFileUrlType.Upload,
@@ -132,7 +131,10 @@ namespace Unity.Cloud.Assets
 
             var httpClientOptions = new ServiceHttpClientOptions(true, false, false, false, retryPolicy: new NoRetryPolicy());
 
-            return await m_Client.SendAsync(httpRequestMessage, httpClientOptions, token);
+            var response = await m_Client.SendAsync(httpRequestMessage, httpClientOptions, token);
+
+            var result = response.EnsureSuccessStatusCode();
+            return result.IsSuccessStatusCode;
         }
     }
 }

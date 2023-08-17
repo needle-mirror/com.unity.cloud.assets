@@ -23,6 +23,16 @@
             "name": "com.unity.cloud.identity",
             "expression": "0.16.0",
             "define": "USE_CLOUD_IDENTITY"
+        },
+        {
+            "name": "com.unity.modules.uielements",
+            "expression": "1.0.0",
+            "define": "USE_UIELEMENTS"
+        },
+        {
+            "name": "com.unity.modules.unitywebrequesttexture",
+            "expression": "1.0.0",
+            "define": "USE_WEBTEXTURE"
         }
     ],
     "noEngineReferences": false

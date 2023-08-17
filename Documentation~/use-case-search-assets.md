@@ -2,10 +2,11 @@
 
 You can use the Unity Cloud Assets package to filter assets in a project based on a set of search criteria.
 
-There are two workflows when searching for assets.
-In Asset Discovery, the `CloudAssetDiscovery` implementation of the `IAssetProvider` interface will fetch and search among published assets only, while in AssetManagement, the `CloudAssetManager` implementation of the `IAssetProvider` interface will fetch and search among all assets regardless of status.
+There are two workflows when searching for assets which can be controlled from the `AssetServiceConfiguration` class.
+Setting the `IsDiscovery` to `true` in the `AssetServiceConfiguration` will fetch and search among published assets only.
+While setting the value to `false` will fetch and search among all assets regardless of status.
 
-The implementation you choose will depend on the project roles of your users.
+The flag you choose will depend on the project roles of your users.
 > Note: The Asset Discovery pathway requires users have the minimum role of `Asset Management Viewer`, while the Asset Management requires higher permissions with a minimum role of `Asset Management Contributor`.
 
 ## Methodology
@@ -21,11 +22,7 @@ You can create a new search filter by instantiating the `AssetSearchFilter` clas
 
 [!code-cs [behaviour-script](../Samples/Documentation/Manual/UseCaseSearchAssetsExample.cs#Example_Constructor)]
 
-Searches are scoped to a specific organization and project. However, the instance can be reused to search for assets in different projects and organizations by updating the properties.
-
-To update the search to another organization, you can use the `Organization` property, like so:
-
-[!code-cs [behaviour-script](../Samples/Documentation/Manual/UseCaseSearchAssetsExample.cs#Example_Organization)]
+Searches are scoped to a specific project. However, the instance can be reused to search for assets in different projects by updating the properties.
 
 To update the search to another project, you can use the `Project` property, like so:
 
@@ -37,14 +34,21 @@ Each searchable property provides 3 avenues for searching:
 - `Exclude` - The property must not match the value.
 - `Any` - The property may contain the value. This represents an `OR` operation to be applied on all properties that include the `Any` value.
 
-To compute the search results, you can use the `Search` method of an `IAssetProvider`, like so:
+To compute the search results, you can use the `SearchAsync` method of an `IAssetProvider`, like so:
 
 [!code-cs [behaviour-script](../Samples/Documentation/Manual/UseCaseSearchAssetsExample.cs#Example_Search)]
 
-The `Pagination` struct is used to control the number of results returned and the page of results to return.
-It is also used to define how the results should be sorted.
+The `Pagination` struct is used to control the range of results to be returned and the ordering of results.
 In this example, we display the first 10 results sorted by the asset name in ascending order.
-The `Search` method returns a `Task` that can be awaited to get an `IAssetPage` containing the search results.
+The `SearchAsync` method returns an awaitable `IAsyncEnumerable` that will return each `IAsset` result.
+
+The results can be iterated over using a `foreach` loop and used as they become available, like so:
+
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/UseCaseSearchAssetsExample.cs#Example_Foreach)]
+
+Alternatively, the results can be iterated over and compiled into a list, so that the complete set of results can be used, like so:
+
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/UseCaseSearchAssetsExample.cs#Example_ToList)]
 
 #### Search by Name
 

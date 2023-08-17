@@ -17,9 +17,7 @@ namespace Unity.Cloud.Assets
         /// <param name="serviceHttpClient"> The <see cref="IServiceHttpClient"/> used to fetch the data. </param>
         /// <param name="serviceHostResolver">The <see cref="IServiceHostResolver"/> object. </param>
         public CloudOrganizationProvider(IServiceHttpClient serviceHttpClient, IServiceHostResolver serviceHostResolver)
-            : this(serviceHttpClient, ServiceHostConfigurationFactory.Create(serviceHostResolver))
-        {
-        }
+            : this(serviceHttpClient, ServiceHostConfigurationFactory.Create(serviceHostResolver)) { }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CloudOrganizationProvider"/> class.
@@ -27,8 +25,7 @@ namespace Unity.Cloud.Assets
         /// <param name="serviceHttpClient"> The <see cref="IServiceHttpClient"/> used to fetch the data. </param>
         /// <param name="serviceHostConfiguration"> The configuration object. </param>
         CloudOrganizationProvider(IServiceHttpClient serviceHttpClient, AssetHostConfiguration serviceHostConfiguration)
-            : this(new UsersDataSource(serviceHttpClient, serviceHostConfiguration.GetServiceAddress()))
-        {}
+            : this(new UsersDataSource(serviceHttpClient, serviceHostConfiguration.GetServiceAddress())) { }
 
         internal CloudOrganizationProvider(IUsersDataSource dataSource)
         {

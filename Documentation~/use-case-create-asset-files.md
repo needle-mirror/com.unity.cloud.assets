@@ -2,8 +2,9 @@
 
 You can use the Unity Cloud Assets package to manage the files linked to an asset.
 
-File management is only available through the Asset Management pathway.
-> Note: File management requires users have the role of `Asset Management Contributor` OR a minimum role of `Manager` in the organization.
+File management is only available through the Asset Management pathway..
+
+> Note: File management requires users to have the role of `Asset Management Contributor` or a minimum role of `Manager` in their organization.
 
 ## Prerequisites
 

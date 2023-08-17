@@ -72,13 +72,11 @@ namespace Unity.Cloud.Assets.Samples.AssetDatabaseUploader.Editor
 
             m_CloudKnownAssetsSubSection ??= new VisualElement();
 
-            bool canSearch = false;
             if (m_AssetsUploader.Assets == null || m_AssetsUploader.Assets.Count == 0)
             {
                 var knowAssetsLabelText = $"The assets to upload from the path {m_AssetsUploader.AssetsSourcePath}, don't already exist in the selected cloud project.";
 
                 m_CloudKnownAssetsSubSection.Add(new Label(knowAssetsLabelText));
-                canSearch = true;
             }
             else
             {
@@ -98,7 +96,6 @@ namespace Unity.Cloud.Assets.Samples.AssetDatabaseUploader.Editor
                 text = "Search Assets",
                 tooltip = "Search the assets in the cloud to know if they already exist"
             };
-            searchAssetsBtn.SetEnabled(canSearch);
 
             m_CloudKnownAssetsSubSection.Add(searchAssetsBtn);
         }

@@ -4,6 +4,36 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2023-08-17
+
+### Added
+- Added `IOrganization` property to `IProject`
+- Added `AssetServiceConfiguration` parameter to `CloudAssetProvider` and `CloudAssetManager` constructors
+- Added `SearchAsync` of `IAssetProvider` allow search across projects
+- Updated Asset Database Uploader to keep the extension of source file in the Asset file name.
+- Added search across all projects to Discovery sample
+- New documentation.
+
+### Removed
+- [Breaking] Removed `IOrganization` parameter from all API methods that also have an `IProject` parameter.
+
+## [0.3.0] - 2023-08-03
+
+### Added
+- Added asset manager sample to allow publish or saving of an asset.
+- Added asset collection management sample to allow creation, deletion, and updating of asset collections.
+
+### Changed
+- Updated Asset Database Uploader to keep the extension of source file in the Asset file name.
+- Added headers to requests.
+- [Breaking] `SearchAsync` of `IAssetProvider` now returns an `IAsyncEnumerable<IAsset>`.
+- [Breaking] `GetCurrentUserProjectList` of `IProjectProvider` renamed to `ListProjectsAsync` and now returns an `IAsyncEnumerable<IProject>`.
+
+### Removed
+- [Breaking] Removed `GetProjectsByOrganizationAndUserIdsAsync` from `IProjectProvider`
+- [Breaking] Removed `IPagedResponse<T>`, `IAssetPage`, and `IProjectPage`.
+- [Breaking] Removed `Projects` list property from `IOrganization`.
+
 ## [0.2.1] - 2023-07-20
 
 ### Added
@@ -12,7 +42,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Adds search value selection to Discovery sample
 
 ### Changed
-- Updated miscellaneous existing documentation pages
+- Updated miscellaneous existing documentation pages.
 
 ### Fixed
 - Fixed a bug where the `GetAssetFileUrlAsync` of `CloudFileAssetManager` was failing and no url was returned.
