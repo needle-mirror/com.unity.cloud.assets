@@ -98,11 +98,16 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
         async void OnProjectSelected()
         {
+            // Handle 'All' selection
+            if (m_UserController.IsAllProjectSelected) return;
+
             m_SearchBarUi.DisplaySearchBar(m_UserController.SelectedProject);
 
             m_NewListCancellationTokenSource.Cancel();
             m_NewListCancellationTokenSource.Dispose();
             m_NewListCancellationTokenSource = new CancellationTokenSource();
+
+            var newListToken = m_NewListCancellationTokenSource.Token;
 
             m_ProjectAssetsList.Clear();
             RefreshAssetList(m_ProjectAssetsList);
@@ -110,8 +115,8 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
             var token = GetCancellationToken();
 
-            var assets = m_UserController.GetAssetsAsync();
-            await foreach (var asset in assets.WithCancellation(m_NewListCancellationTokenSource.Token))
+            var assets = m_UserController.GetAssetsAsync(newListToken);
+            await foreach (var asset in assets)
             {
                 m_ProjectAssetsList.Add(asset);
             }

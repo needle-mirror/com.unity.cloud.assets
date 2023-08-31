@@ -104,7 +104,56 @@ namespace Unity.Cloud.Assets
         }
 
         /// <inheritdoc />
+        public async Task DownloadAssetFileAsync(IProject project, IAssetFile assetFile, Stream destinationStream, IProgress<HttpProgress> progress, CancellationToken token)
+        {
+            var downloadUrl = assetFile.DownloadUrl ?? await GetAssetFileUrlAsync(
+                project,
+                assetFile,
+                AssetFileUrlType.Download,
+                token
+            );
+
+            if (string.IsNullOrEmpty(downloadUrl))
+            {
+                throw new InvalidDownloadUrlException("Download url is null or empty");
+            }
+
+            using var httpRequestMessage = new HttpRequestMessage
+            {
+                Method = HttpMethod.Get,
+                RequestUri = new Uri(downloadUrl)
+            };
+
+            using var response = await m_Client.SendAsync(httpRequestMessage, HttpCompletionOption.ResponseContentRead, progress, token);
+            response.EnsureSuccessStatusCode();
+
+            var source = await response.Content.ReadAsStreamAsync();
+
+            try
+            {
+                await source.CopyToAsync(destinationStream, token);
+            }
+            catch (Exception e)
+            {
+                throw new ArgumentException($"Could not write to {nameof(destinationStream)}", nameof(destinationStream), e);
+            }
+            finally
+            {
+                await source.DisposeAsync();
+            }
+        }
+
+        /// <inheritdoc />
+        [Obsolete("Use UploadAssetFileAsync(IProject project, IAssetFile assetFile, Stream contentStream, IProgress<HttpProgress> progress, CancellationToken token) instead.")]
         public async Task<bool> UploadAssetFileAsync(IProject project, IAssetFile assetFile, Stream contentStream, CancellationToken token)
+        {
+            var result = await UploadAssetFileAsync(project, assetFile, contentStream, null, token);
+
+            return result;
+        }
+
+        /// <inheritdoc />
+        public async Task<bool> UploadAssetFileAsync(IProject project, IAssetFile assetFile, Stream contentStream, IProgress<HttpProgress> progress, CancellationToken token)
         {
             var uploadUrl = assetFile.UploadUrl ?? await GetAssetFileUrlAsync(
                 project,
@@ -131,7 +180,7 @@ namespace Unity.Cloud.Assets
 
             var httpClientOptions = new ServiceHttpClientOptions(true, false, false, false, retryPolicy: new NoRetryPolicy());
 
-            var response = await m_Client.SendAsync(httpRequestMessage, httpClientOptions, token);
+            var response = await m_Client.SendAsync(httpRequestMessage, httpClientOptions, progress, token);
 
             var result = response.EnsureSuccessStatusCode();
             return result.IsSuccessStatusCode;

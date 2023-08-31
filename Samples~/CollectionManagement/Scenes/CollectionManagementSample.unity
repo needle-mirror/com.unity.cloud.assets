@@ -247,7 +247,10 @@ MonoBehaviour:
   m_UiDocument: {fileID: 472770735}
   m_UserController: {fileID: 472770739}
   m_LayoutTemplate: {fileID: 9197481963319205126, guid: 350b59751bc604591872d3a16b858b80, type: 3}
-  m_CollectionListItemTemplate: {fileID: 9197481963319205126, guid: fe132f387ff0943b0a92e1dd91e5ab2d, type: 3}
+  m_CollectionListItemTemplate: {fileID: 9197481963319205126, guid: 170c22319e5524cafb0bce78c15a35a7, type: 3}
+  m_AssetPanelUi:
+    m_ListItemTemplate: {fileID: 9197481963319205126, guid: 170c22319e5524cafb0bce78c15a35a7, type: 3}
+    m_PopupListItemTemplate: {fileID: 9197481963319205126, guid: fe132f387ff0943b0a92e1dd91e5ab2d, type: 3}
 --- !u!114 &472770739
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -262,6 +265,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_SampleUiDocument: {fileID: 472770735}
   m_ListItemTemplate: {fileID: 9197481963319205126, guid: 934d61f4884ef4bd58a5f15dce4f2289, type: 3}
+  m_IncludeAllProject: 0
 --- !u!1 &1866004488
 GameObject:
   m_ObjectHideFlags: 0

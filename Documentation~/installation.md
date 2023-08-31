@@ -1,20 +1,12 @@
 # Installation
 
-This section outlines how to install Unity Cloud Platform Assets in your Unity project. </br> Before you install the package, make sure you meet the [prerequisites](#prerequisites).
+This topic describes how to install Unity Asset Manager SDK in your Unity Editor project. Before you install the package, make sure you meet the [prerequisites](prerequisites.md).
 
-## <a id="prerequisites"></a>Prerequisites
+> **Important**: Unity Creator SDKs are categorized as Experimental Packages. Before you can successfully install them from the Unity Package Manager, you must enable Experimental Packages from the Unity Editor. For more information on how Unity manages quality for packages, see: [Experimental packages](https://docs.unity3d.com/Manual/pack-exp.html).
 
-To use the package, you require the following:
+## Install the Unity Asset Manager SDK package from the Unity Package Manager
 
-* A Unity version of 2021.3 or later
-* A Unity account (required to generate an identifier for your application)
-* A new or existing Unity project
-
-## Install the Unity Cloud Assets package from the Unity Package Manager
-
-> **Important**: Unity Cloud SDKs are categorized as Experimental Packages. Before you can successfully install them from the Unity Package Manager, you must enable Experimental Packages from the Editor. See: [Experimental packages](https://docs.unity3d.com/Manual/pack-exp.html)
-
-To install the Unity Cloud Assets package, follow these steps:
+To install the Unity Asset Manager SDK package, follow these steps:
 
 1. In your Unity project, go to **Windows** > **Package Manager**.
 2. On the status bar, select the Add (**+**) button.

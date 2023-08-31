@@ -157,13 +157,12 @@ namespace Unity.Cloud.Assets.Samples
             HideAndClearSearchBar();
         }
 
-        public void UpdateSearchBarProjectsLabel(IProject project, IOrganization organization, IEnumerable<IProject> projects)
+        public void UpdateSearchBarProjectsLabel(IOrganization organization, IEnumerable<IProject> projects)
         {
             m_Organization = organization;
             m_Projects = projects;
 
-            if (project != null)
-                m_SearchBarProjectLabel.text = $"In: {project.Name}";
+            m_SearchBarProjectLabel.text = $"In: All Projects";
 
             HideAndClearSearchBar();
         }
@@ -386,22 +385,28 @@ namespace Unity.Cloud.Assets.Samples
                         : new StyleEnum<FontStyle>(FontStyle.Normal);
             };
 
-            m_SearchValuesContainer.onSelectionChange += enumerable =>
+#if UNITY_2022_3_OR_NEWER
+            m_SearchValuesContainer.selectionChanged += OnSelectionChanged;
+#else
+            m_SearchValuesContainer.onSelectionChange += OnSelectionChanged;
+#endif
+        }
+
+        void OnSelectionChanged(IEnumerable<object> enumerable)
+        {
+            var selection = enumerable?.OfType<string>().ToList();
+            if (selection == null || selection.Count == 0) return;
+
+            var value = selection[0];
+
+            m_SearchValuesContainer.ClearSelection();
+
+            if (!string.IsNullOrWhiteSpace(value) && !value.StartsWith("<<"))
             {
-                var selection = enumerable?.OfType<string>().ToList();
-                if (selection == null || selection.Count == 0) return;
-
-                var value = selection[0];
-
-                m_SearchValuesContainer.ClearSelection();
-
-                if (!string.IsNullOrWhiteSpace(value) && !value.StartsWith("<<"))
-                {
-                    m_SearchBarField.Blur();
-                    m_SearchBarField.value = value;
-                    AddChipAsync();
-                }
-            };
+                m_SearchBarField.Blur();
+                m_SearchBarField.value = value;
+                AddChipAsync();
+            }
         }
     }
 }

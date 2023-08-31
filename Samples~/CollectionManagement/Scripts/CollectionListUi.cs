@@ -13,32 +13,15 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
     {
         public class CollectionListController : ListController<IAssetCollection>
         {
-            public event Action<IAssetCollection> AssetCollectionDeleted;
-
             protected override void OnBindItem(VisualElement element, int i)
             {
                 element.Q<Label>("ItemNameLabel").text = m_List[i].Name;
-
-                var button = element.Q<Button>("ItemButton");
-                button.style.display = DisplayStyle.Flex;
-                button.text = "Delete";
-                button.clicked += () =>
-                {
-                    button.style.display = DisplayStyle.None;
-                    AssetCollectionDeleted?.Invoke(m_List[i]);
-                };
             }
         }
 
         public event Action CollectionSelected;
 
         IAssetCollection m_SelectedCollection;
-
-        public event Action<IAssetCollection> CollectionDeleted
-        {
-            add => m_ListController.AssetCollectionDeleted += value;
-            remove => m_ListController.AssetCollectionDeleted -= value;
-        }
 
         public IAssetCollection SelectedCollection
         {
@@ -59,7 +42,7 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
             Show();
 
             var collections = await GetCollectionsAsync(project);
-            UpdateList(collections);
+            UpdateList(collections, true);
 
             if (m_SelectedCollection != null)
             {
@@ -97,7 +80,16 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
 
         protected override void OnSelectionChange(IEnumerable<object> selectedItems)
         {
-            SelectedCollection = selectedItems.FirstOrDefault() as IAssetCollection;
+            var selection = selectedItems.FirstOrDefault();
+            if (selection == m_SelectedCollection)
+            {
+                m_ListController.SetSelectionWithoutNotify(Array.Empty<int>());
+                SelectedCollection = null;
+            }
+            else
+            {
+                SelectedCollection = selection as IAssetCollection;
+            }
         }
     }
 }

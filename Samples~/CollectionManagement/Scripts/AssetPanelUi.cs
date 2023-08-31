@@ -1,116 +1,97 @@
 #if !UC_EXCLUDE_SAMPLES
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace Unity.Cloud.Assets.Samples.CollectionManagement
 {
+    [Serializable]
     public class AssetPanelUi
     {
-        readonly AssetListUi m_AssetListUi = new();
         readonly CollectionAssetListUi m_CollectionAssetListUi = new();
+        ContextMenuController m_ContextMenu;
+        AddToCollectionPopupController m_AddToCollectionPopup;
 
-        VisualElement m_AssetsPanelContainer;
-        Button m_DisplayAllButton;
-        Button m_DisplayCollectionButton;
+        [SerializeField]
+        VisualTreeAsset m_ListItemTemplate;
 
-        bool m_IsDisplayingAll = true;
+        [SerializeField]
+        VisualTreeAsset m_PopupListItemTemplate;
 
-        public event Action<IAsset> AssetAddedToCollection
+        public event Action<IEnumerable<IAsset>> AssetAddedToCollection
         {
-            add => m_AssetListUi.AssetAddedToCollection += value;
-            remove => m_AssetListUi.AssetAddedToCollection -= value;
+            add => m_AddToCollectionPopup.AssetsAddedToCollection += value;
+            remove => m_AddToCollectionPopup.AssetsAddedToCollection -= value;
         }
 
-        public event Action<IAsset> AssetRemovedFromCollection
+        public event Action<IAsset> RemoveAssetFromCollection;
+
+        public void Initialize(VisualElement uiDocumentRoot)
         {
-            add => m_CollectionAssetListUi.AssetRemovedFromCollection += value;
-            remove => m_CollectionAssetListUi.AssetRemovedFromCollection -= value;
-        }
+            m_CollectionAssetListUi.Initialize(uiDocumentRoot, m_ListItemTemplate);
+            m_CollectionAssetListUi.AssetSelected += OnAssetSelected;
+            m_AddToCollectionPopup = new AddToCollectionPopupController(uiDocumentRoot, m_PopupListItemTemplate);
+            m_AddToCollectionPopup.AssetListUpdated += OnAssetListUpdated;
 
-        public void Initialize(VisualElement uiDocumentRoot, VisualTreeAsset listItemTemplate)
-        {
-            m_AssetsPanelContainer = uiDocumentRoot.Q<VisualElement>("Assets");
+            m_ContextMenu = new ContextMenuController(uiDocumentRoot.Q("AssetsContextMenu"));
+            m_ContextMenu.RegisterButtonAction("Add", m_AddToCollectionPopup.Show);
+            m_ContextMenu.RegisterButtonAction("Remove", RemoveAsset);
 
-            m_DisplayAllButton = m_AssetsPanelContainer.Q<Button>("AllAssetsButton");
-            m_DisplayAllButton.clicked += OnDisplayAll;
-            m_DisplayCollectionButton = m_AssetsPanelContainer.Q<Button>("CollectionAssetsButton");
-            m_DisplayCollectionButton.clicked += OnDisplayCollection;
+            m_ContextMenu.SetEnabled(false);
 
-            m_AssetListUi.Initialize(uiDocumentRoot, listItemTemplate);
-            m_CollectionAssetListUi.Initialize(uiDocumentRoot, listItemTemplate);
-
-            OnDisplayChanged();
+            OnAssetSelected(null);
         }
 
         public void Cleanup()
         {
-            m_DisplayAllButton.clicked -= OnDisplayAll;
-            m_DisplayCollectionButton.clicked -= OnDisplayCollection;
+            m_CollectionAssetListUi.AssetSelected -= OnAssetSelected;
+            m_AddToCollectionPopup.AssetListUpdated -= OnAssetListUpdated;
+            m_ContextMenu.UnregisterButtonAction("Add", m_AddToCollectionPopup.Show);
+            m_ContextMenu.UnregisterButtonAction("Remove", RemoveAsset);
         }
 
         public void Hide()
         {
-            m_AssetListUi.Hide();
             m_CollectionAssetListUi.Hide();
-            m_AssetsPanelContainer.style.display = DisplayStyle.None;
+            m_AddToCollectionPopup.Hide();
         }
 
         public void Populate(IProject project)
         {
-            m_AssetsPanelContainer.style.display = DisplayStyle.Flex;
-
-            if (m_IsDisplayingAll)
-            {
-                m_AssetListUi.Show();
-            }
-
             m_CollectionAssetListUi.Populate(null, null);
-            _ = m_AssetListUi.Populate(project);
+            m_AddToCollectionPopup.Populate(project);
         }
 
         public void OnCollectionSelected(IAssetCollection collection)
         {
-            if (!m_IsDisplayingAll)
+            m_ContextMenu.SetEnabled(collection != null);
+
+            m_CollectionAssetListUi.Populate(collection, m_AddToCollectionPopup.Assets);
+        }
+
+        void OnAssetListUpdated()
+        {
+            m_CollectionAssetListUi.Populate(m_AddToCollectionPopup.Assets);
+        }
+
+        void OnAssetSelected(IAsset asset)
+        {
+            if (asset == null)
             {
-                m_CollectionAssetListUi.Show();
-            }
-
-            m_CollectionAssetListUi.Populate(collection, m_AssetListUi.Assets);
-            m_AssetListUi.OnCollectionSelected(collection);
-        }
-
-        void OnDisplayAll()
-        {
-            if (m_IsDisplayingAll) return;
-
-            m_IsDisplayingAll = true;
-            OnDisplayChanged();
-        }
-
-        void OnDisplayCollection()
-        {
-            if (!m_IsDisplayingAll) return;
-
-            m_IsDisplayingAll = false;
-            OnDisplayChanged();
-        }
-
-        void OnDisplayChanged()
-        {
-            m_DisplayAllButton.SetEnabled(!m_IsDisplayingAll);
-            m_DisplayCollectionButton.SetEnabled(m_IsDisplayingAll);
-
-            if (m_IsDisplayingAll)
-            {
-                m_AssetListUi.Show();
-                m_CollectionAssetListUi.Hide();
+                m_ContextMenu.SetButtonVisibility("Add", true);
+                m_ContextMenu.SetButtonVisibility("Remove", false);
             }
             else
             {
-                m_AssetListUi.Hide();
-                m_CollectionAssetListUi.Show();
+                m_ContextMenu.SetButtonVisibility("Add", false);
+                m_ContextMenu.SetButtonVisibility("Remove", true);
             }
+        }
+
+        void RemoveAsset()
+        {
+            RemoveAssetFromCollection?.Invoke(m_CollectionAssetListUi.SelectedAsset);
         }
     }
 }

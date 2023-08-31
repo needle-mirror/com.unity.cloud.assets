@@ -1,31 +1,37 @@
-# View the collections of an asset and manage its associations to these collections.
+# View the collections of an asset and manage its associations to these collections
 
-You can use the Unity Cloud Assets package to manage the collections of an asset.
+You can use the Unity Asset Manager SDK package to manage the collections of an asset.
 
 Collection management is only available through the Asset Management pathway.
 
-> Note: Collection management requires users to have the role of `Asset Management Contributor` or a minimum role of `Manager` in their organization.
+> **Note**: Collection management requires users have the role of [`Asset Management Contributor`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html) OR a minimum role of [`Manager`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html) in their organization.
 
-## Prerequisites
+## Before you start
 
-[!INCLUDE [prerequisites](../includes/prerequisites.md)]
+2. Have some assets in the cloud. There are several ways to do so:
 
-## Methodology
+   * You can create assets through the [Get started with Asset Management](get-started-management.md).
+   * You can upload assets from existing Unity assets; see the [Asset Database Uploader sample](./asset-database-uploader-sample.md).
+   * You can create assets through the dashboard; see the [Managing assets on the dashboard](https://docs.unity3d.com/docs-asset-manager/manual/add-asset.html) documentation.
+## How do I...?
 
 ### List the collections of an asset
 
-By default, an asset's collections are not included when you get an asset.
-To fetch the collections of an asset, open the `AssetManagementBehaviour` script you created and add the following code to the end of the class:
+By default, an asset's collections are not included when you get an asset. To fetch the collections of an asset:
+
+1. Open the `AssetManagementBehaviour` script you created.
+2. Add the following code to the end of the class:
 
 [!code-cs [behaviour-script](../Samples/Documentation/Manual/Management/UseCaseAssetCollectionExample.cs#Example_Behaviour_RefreshCollections)]
 
-The code snippet does the following:
-
-* Populates a list of the collections of the selected asset.
+The code snippet populates a list of the collections of the selected asset.
 
 ### Remove an asset from a collection
 
-To remove an asset from a collection, open the `AssetManagementBehaviour` script you created and add the following code to the end of the class:
+To remove an asset from a collection:
+
+1. Open the `AssetManagementBehaviour` script you created. 
+2. Add the following code to the end of the class:
 
 [!code-cs [behaviour-script](../Samples/Documentation/Manual/Management/UseCaseAssetCollectionExample.cs#Example_Behaviour_RemoveFromCollection)]
 
@@ -37,11 +43,14 @@ The code snippet does the following:
 
 ### Add the UI for viewing and creating collections
 
-To add UI for the example, open the `AssetManagementUI` script you created and replace the `AssetActions` function with the following code:
+To add UI for the example:
+
+1. Open the `AssetManagementUI` script you created.
+2. Replace the `AssetActions` function with the following code:
 
 [!code-cs [behaviour-script](../Samples/Documentation/Manual/Management/UseCaseAssetCollectionExample.cs#Example_UI)]
 
-The code snippet does the following:
+The code snippet displays:
 
-* Displays a list of the selected asset's collections.
-* Displays a UI button beside each collection to remove the selected asset from it.
+* A list of the selected asset's collections.
+* A UI button beside each collection to remove the selected asset from it.

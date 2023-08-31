@@ -123,9 +123,27 @@ namespace Unity.Cloud.Assets
         }
 
         /// <inheritdoc />
+        public Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationToken token)
+        {
+            return SendAsync(request, completionOption, null, token);
+        }
+
+        /// <inheritdoc />
+        public Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, HttpCompletionOption completionOption, IProgress<HttpProgress> progress, CancellationToken token)
+        {
+            return m_ServiceHttpClient.SendAsync(request, completionOption, progress, token);
+        }
+
+        /// <inheritdoc />
         public Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, ServiceHttpClientOptions options, CancellationToken token)
         {
             return m_ServiceHttpClient.SendAsync(request, options, token);
+        }
+
+        /// <inheritdoc />
+        public Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, ServiceHttpClientOptions options, IProgress<HttpProgress> progress, CancellationToken token)
+        {
+            return m_ServiceHttpClient.SendAsync(request, options, HttpCompletionOption.ResponseContentRead, progress, token);
         }
 
         /// <summary>

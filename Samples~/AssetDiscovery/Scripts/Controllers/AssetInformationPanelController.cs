@@ -23,6 +23,8 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
             nameof(IAsset.Attachments),
             nameof(IAsset.CreatedBy),
             nameof(IAsset.UpdatedBy),
+            nameof(IAsset.SourceProjectId),
+            nameof(IAsset.ProjectIds),
         };
         const string k_NoneLabel = "None";
         const string k_NoCategoriesLabel = "Not Available";
@@ -117,7 +119,17 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
                 m_AssetInformationPanelScrollView.Add(item);
             }
 
-            UpdateDownloadButton(!m_InProgressDownloads.Contains(m_SelectedAsset));
+            // In the case the Project is unknown, the download button will be disabled.
+            if (assetInfo.Project == null)
+            {
+                m_AssetDownloadButton.SetEnabled(false);
+                m_AssetDownloadButton.tooltip = "Without knowing the asset's project, the asset cannot be downloaded.";
+            }
+            else
+            {
+                m_AssetDownloadButton.tooltip = "";
+                UpdateDownloadButton(!m_InProgressDownloads.Contains(m_SelectedAsset));
+            }
         }
 
         void PopulateTags(VisualElement item, ICollection<string> propertyValueTags)
@@ -198,14 +210,9 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
                 foreach (var file in assetToDownload.Files)
                 {
                     await using var destination = File.OpenWrite(Path.Combine(path, file.Name));
-                    using var requestMessage = new HttpRequestMessage(HttpMethod.Get, new Uri(file.DownloadUrl));
 
-                    using var response = await PlatformServices.HttpClient.SendAsync(requestMessage, HttpCompletionOption.ResponseContentRead, null,
-                        CancellationToken.None);
-                    response.EnsureSuccessStatusCode();
-
-                    var source = await response.Content.ReadAsStreamAsync();
-                    await source.CopyToAsync(destination);
+                    // Evaluate the need of having a UI progress bar corresponding to the download progress.
+                    await PlatformServices.AssetFileManager.DownloadAssetFileAsync(assetToDownload.Project, file, destination, null, CancellationToken.None);
                 }
 
                 m_CoroutineHandler.StartCoroutine(ShowSuccessfulDownload());

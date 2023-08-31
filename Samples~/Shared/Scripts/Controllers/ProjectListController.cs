@@ -3,11 +3,21 @@ using UnityEngine.UIElements;
 
 namespace Unity.Cloud.Assets.Samples
 {
-    public class ProjectListController : ListController<IProject>
+    public class ProjectListController : ListController<object>
     {
         protected override void OnBindItem(VisualElement element, int i)
         {
-            element.Q<Label>("ItemNameLabel").text = m_List[i].Name;
+            string label;
+            if (m_List[i] is IProject project)
+            {
+                label = project.Name;
+            }
+            else
+            {
+                label = m_List[i].ToString();
+            }
+
+            element.Q<Label>("ItemNameLabel").text = label;
         }
     }
 }

@@ -245,7 +245,7 @@ namespace Unity.Cloud.Assets.Samples.AssetDatabaseUploader
 
                 Debug.Log($"Uploading asset : {uploadingAssetName} ({assetUploadIndex}/{assetUploadCount})");
 
-                await UploadAssetAsync(assetWithPath.Key, assetWithPath.Value, assetFile);
+                await UploadAssetAsync(assetWithPath.Key, assetFile);
             }
         }
 
@@ -301,7 +301,7 @@ namespace Unity.Cloud.Assets.Samples.AssetDatabaseUploader
 
             Debug.Log($"Asset file created: {assetPath}");
 
-            await UploadAssetAsync(assetPath, createdAsset, createdAssetFile);
+            await UploadAssetAsync(assetPath, createdAssetFile);
         }
 
         async Task<IAsset> CreateAssetAsync(string assetPath, string assetName)
@@ -375,7 +375,7 @@ namespace Unity.Cloud.Assets.Samples.AssetDatabaseUploader
             return assetFile;
         }
 
-        async Task UploadAssetAsync(string assetPath, IAsset asset, IAssetFile assetFile)
+        async Task UploadAssetAsync(string assetPath, IAssetFile assetFile)
         {
             var cancellationTokenSource = new CancellationTokenSource(m_UploadTimeout);
 
@@ -395,6 +395,7 @@ namespace Unity.Cloud.Assets.Samples.AssetDatabaseUploader
                     m_OrgAndProjectSelector.SelectedProject,
                     assetFile,
                     fileStream,
+                    null,// will be done in another PR
                     cancellationTokenSource.Token);
 
                 if (didUpload)

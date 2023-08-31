@@ -1,5 +1,5 @@
-﻿using System.IO;
-using System.Net.Http;
+﻿using System;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Unity.Cloud.Common;
@@ -80,11 +80,20 @@ public class AssetFileManagerExample
 
     #endregion
 
+    #region DownloadAssetFile
+
+    async Task DownloadAssetFileAsync(IProject project, IAssetFile assetFile, Stream stream, IProgress<HttpProgress> progress, CancellationToken token)
+    {
+        await m_AssetFileManager.DownloadAssetFileAsync(project, assetFile, stream, progress, token);
+    }
+
+    #endregion
+
     #region UploadAssetFile
 
-    async Task<bool> UploadAssetFileAsync(IProject project, IAssetFile assetFile, Stream stream, CancellationToken token)
+    async Task<bool> UploadAssetFileAsync(IProject project, IAssetFile assetFile, Stream stream, IProgress<HttpProgress> progress, CancellationToken token)
     {
-        return await m_AssetFileManager.UploadAssetFileAsync(project, assetFile, stream, token);
+        return await m_AssetFileManager.UploadAssetFileAsync(project, assetFile, stream, progress, token);
     }
 
     #endregion

@@ -4,6 +4,23 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] - 2023-08-31
+
+### Added
+- [Breaking] Added the `DownloadAssetFileAsync` to `IAssetFileManager`.
+- Added UseCaseDownloadFileExample documentation page.
+- [Breaking] Added two new methods SendAsync to `IAssetHttpClient` to provide ways to do requests passing HttpCompletionOption argument.
+- Added `InvalidDownloadUrlException` to `AssetExceptions`.
+- Added official support for the latest LTS Editor 2022.3 while maintaining support for 2021.3.
+
+### Changed
+- [Breaking] Changed the `UploadAssetFileAsync` from `IAssetFileManager` to add the progress tracking.
+- Changed the DiscoverySample download action to use the new `DownloadAssetFileAsync` method.
+- Put `InternalsVisibleTo` attributes under conditional compilation in `Core\AssemblyInfo.cs`
+
+### Fixed
+- Fixed issue where search wasn't returning all results.
+
 ## [0.4.0] - 2023-08-17
 
 ### Added
@@ -14,13 +31,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Added search across all projects to Discovery sample
 - New documentation.
 
+### Changed
+- Updated the UI of the Collection Management sample
+
 ### Removed
 - [Breaking] Removed `IOrganization` parameter from all API methods that also have an `IProject` parameter.
 
 ## [0.3.0] - 2023-08-03
 
 ### Added
-- Added asset manager sample to allow publish or saving of an asset.
 - Added asset collection management sample to allow creation, deletion, and updating of asset collections.
 
 ### Changed

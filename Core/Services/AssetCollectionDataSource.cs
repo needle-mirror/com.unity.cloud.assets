@@ -67,8 +67,7 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc/>
         public async Task UpdateCollectionAsync(IProject project, IAssetCollection assetCollection, CancellationToken token)
         {
-            var collectionPath = CollectionPath.CombinePaths(assetCollection.ParentPath, assetCollection.Name);
-            var request = new UpdateCollectionRequest(project.Organization.GenesisId, project.Id, collectionPath, assetCollection);
+            var request = new UpdateCollectionRequest(project.Organization.GenesisId, project.Id, assetCollection.GetFullCollectionPath(), assetCollection);
             _ = await m_Client.PutAsync(request, ServiceHttpClientOptions.NoRetryOption(), token);
         }
 

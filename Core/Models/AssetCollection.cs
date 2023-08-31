@@ -11,8 +11,7 @@ namespace Unity.Cloud.Assets
     [DataContract]
     public class AssetCollection : IAssetCollection
     {
-        /// <inheritdoc/>
-        public IOrganization Organization { get; set; }
+        string m_OriginalPath;
 
         /// <inheritdoc/>
         public IProject Project { get; set; }
@@ -73,6 +72,11 @@ namespace Unity.Cloud.Assets
                 throw new ArgumentNullException(nameof(name));
             }
 
+            if (string.IsNullOrEmpty(m_OriginalPath))
+            {
+                m_OriginalPath = Name;
+            }
+
             Name = name;
         }
 
@@ -93,7 +97,7 @@ namespace Unity.Cloud.Assets
 
         public string GetFullCollectionPath()
         {
-            return CollectionPath.CombinePaths(ParentPath, Name);
+            return CollectionPath.CombinePaths(ParentPath, string.IsNullOrEmpty(m_OriginalPath) ? Name : m_OriginalPath);
         }
 
         /// <summary>

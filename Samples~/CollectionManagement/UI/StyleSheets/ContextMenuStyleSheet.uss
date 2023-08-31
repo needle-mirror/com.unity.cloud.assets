@@ -1,0 +1,50 @@
+.ContextMenuContainer {
+    position: absolute;
+    right: 0;
+    top: 0;
+    align-items: flex-end;
+}
+
+.ContextMenuButton {
+    border-left-width: 0;
+    border-right-width: 0;
+    border-top-width: 0;
+    border-bottom-width: 0;
+    background-color: rgba(88, 88, 88, 0);
+    background-image: url('../../../Shared/UI/Sprites/expand.png?fileID=21300000&guid=f003f64c5b9534b98a42a77250bb34fa&type=3#expand');
+    -unity-background-scale-mode: scale-to-fit;
+    border-left-color: rgb(47, 47, 47);
+    border-right-color: rgb(47, 47, 47);
+    border-top-color: rgb(47, 47, 47);
+    border-bottom-color: rgb(47, 47, 47);
+    width: 24px;
+    height: 24px;
+}
+
+.ContextMenu {
+    background-color: rgb(56, 56, 56);
+    border-left-color: rgb(47, 47, 47);
+    border-right-color: rgb(47, 47, 47);
+    border-top-color: rgb(47, 47, 47);
+    border-bottom-color: rgb(47, 47, 47);
+    border-left-width: 2px;
+    border-right-width: 2px;
+    border-top-width: 2px;
+    border-bottom-width: 2px;
+    align-items: center;
+    width: 80px;
+}
+
+.ContextMenuEntry {
+    border-left-width: 0;
+    border-right-width: 0;
+    border-top-width: 0;
+    border-bottom-width: 0;
+    width: 100%;
+    padding-left: 3px;
+    padding-right: 3px;
+    padding-top: 3px;
+    padding-bottom: 3px;
+    color: rgb(210, 210, 210);
+    background-color: rgba(0, 0, 0, 0);
+}

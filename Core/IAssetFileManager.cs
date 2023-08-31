@@ -1,6 +1,8 @@
+using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Unity.Cloud.Common;
 
 namespace Unity.Cloud.Assets
 {
@@ -72,6 +74,20 @@ namespace Unity.Cloud.Assets
         Task<string> GetAssetFileUrlAsync(IProject project, IAssetFile assetFile, AssetFileUrlType urlType, CancellationToken token);
 
         /// <summary>
+        /// Implement this method to download an asset file.
+        /// </summary>
+        /// <param name="project">The project in which the asset resides. </param>
+        /// <param name="assetFile">The asset file</param>
+        /// <param name="destinationStream">The destination stream for the file content</param>
+        /// <param name="progress">The progress provider.</param>
+        /// <param name="token">The cancellation token</param>
+        /// <returns>A task.</returns>
+        /// <example>
+        /// <code source="../Samples/Documentation/Scripting/AssetFileManagerExample.cs" region="DownloadAssetFile"/>
+        /// </example>
+        Task DownloadAssetFileAsync(IProject project, IAssetFile assetFile, Stream destinationStream, IProgress<HttpProgress> progress, CancellationToken token);
+
+        /// <summary>
         /// Implement this method to upload an asset file.
         /// </summary>
         /// <param name="project">The project in which the asset resides. </param>
@@ -82,6 +98,21 @@ namespace Unity.Cloud.Assets
         /// <example>
         /// <code source="../Samples/Documentation/Scripting/AssetFileManagerExample.cs" region="UploadAssetFile"/>
         /// </example>
+        [Obsolete("Use UploadAssetFileAsync(IProject project, IAssetFile assetFile, Stream contentStream, IProgress<HttpProgress> progress, CancellationToken token) instead.")]
         Task<bool> UploadAssetFileAsync(IProject project, IAssetFile assetFile, Stream contentStream, CancellationToken token);
+
+        /// <summary>
+        /// Implement this method to upload an asset file.
+        /// </summary>
+        /// <param name="project">The project in which the asset resides. </param>
+        /// <param name="assetFile">The asset file</param>
+        /// <param name="contentStream">The stream to the file content</param>
+        /// <param name="progress">The progress provider.</param>
+        /// <param name="token">The cancellation token</param>
+        /// <returns>A task whose result signals the success of the upload.</returns>
+        /// <example>
+        /// <code source="../Samples/Documentation/Scripting/AssetFileManagerExample.cs" region="UploadAssetFile"/>
+        /// </example>
+        Task<bool> UploadAssetFileAsync(IProject project, IAssetFile assetFile, Stream contentStream, IProgress<HttpProgress> progress, CancellationToken token);
     }
 }

@@ -89,23 +89,26 @@ namespace Unity.Cloud.Assets
             pageSize = Math.Min(maxPageSize, offsetAndLength.Length);
             searchPagination.PageSize = pageSize;
 
-            while (index < offsetAndLength.Length)
+            var lastIndex = offsetAndLength.Offset + offsetAndLength.Length;
+            while (index < lastIndex)
             {
                 var response = await Client.PostAsync(request, ServiceHttpClientOptions.NoRetryOption(), cancellationToken);
                 var dto = IsolatedJsonConvert.DeserializeObject<AssetPageDto<TAsset>>(response, IsolatedJsonConvert.jsonSerializerSettingsWithoutType);
 
                 // To prevent an infinite loop, return if no assets were returned
                 // or if the token is empty.
-                if (dto.Assets.Length == 0 || string.IsNullOrEmpty(dto.Token))
-                {
-                    break;
-                }
+                if (dto.Assets.Length == 0) break;
 
                 foreach (var asset in dto.Assets)
                 {
-                    ++index;
+                    if (++index < offsetAndLength.Offset) continue;
+                    if (index > lastIndex) break;
+
                     yield return GetInitializedAsset(asset, project);
                 }
+
+                // Break if the token is empty.
+                if (string.IsNullOrEmpty(dto.Token)) break;
 
                 searchPagination.Token = dto.Token;
             }
@@ -160,23 +163,25 @@ namespace Unity.Cloud.Assets
             pageSize = Math.Min(maxPageSize, offsetAndLength.Length);
             searchPagination.PageSize = pageSize;
 
-            while (index < offsetAndLength.Length)
+            var lastIndex = offsetAndLength.Offset + offsetAndLength.Length;
+            while (index <= lastIndex)
             {
                 var response = await Client.PostAsync(request, ServiceHttpClientOptions.Default(), cancellationToken);
                 var dto = IsolatedJsonConvert.DeserializeObject<AssetPageDto<TAsset>>(response, IsolatedJsonConvert.jsonSerializerSettingsWithoutType);
 
                 // To prevent an infinite loop, return if no assets were returned
                 // or if the token is empty.
-                if (dto.Assets.Length == 0 || string.IsNullOrEmpty(dto.Token))
-                {
-                    break;
-                }
+                if (dto.Assets.Length == 0) break;
 
                 foreach (var asset in dto.Assets)
                 {
-                    ++index;
+                    if (++index < offsetAndLength.Offset) continue;
+                    if (index > lastIndex) break;
+
                     yield return GetInitializedAsset(asset, projects.FirstOrDefault(p => p.Id == asset.SourceProjectId));
                 }
+
+                if (string.IsNullOrEmpty(dto.Token)) break;
 
                 searchPagination.Token = dto.Token;
             }

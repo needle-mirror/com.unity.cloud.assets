@@ -58,23 +58,14 @@ namespace Unity.Cloud.Assets.Samples
             }
         }
 
-        public void DisplaySearchBar(IProject project, IOrganization organization, IEnumerable<IProject> projects)
+        public void DisplaySearchBar(IOrganization organization, IEnumerable<IProject> projects)
         {
             m_SearchBarController.DisplaySearchBar();
-            m_SearchBarController.UpdateSearchBarProjectsLabel(project, organization, projects);
+            m_SearchBarController.UpdateSearchBarProjectsLabel(organization, projects);
 
-            if (project != null)
-            {
-                _ = UpdateSearchBarValuesAsync(SearchBarController.SearchCriterion.Type, organization, project, projects);
-                _ = UpdateSearchBarValuesAsync(SearchBarController.SearchCriterion.Name, organization, project, projects);
-                _ = UpdateSearchBarValuesAsync(SearchBarController.SearchCriterion.Tags, organization, project, projects);
-            }
-            else
-            {
-                m_SearchBarController.UpdateSearchValues(SearchBarController.SearchCriterion.Type, Array.Empty<string>());
-                m_SearchBarController.UpdateSearchValues(SearchBarController.SearchCriterion.Name, Array.Empty<string>());
-                m_SearchBarController.UpdateSearchValues(SearchBarController.SearchCriterion.Tags, Array.Empty<string>());
-            }
+            _ = UpdateSearchBarValuesAsync(SearchBarController.SearchCriterion.Type, organization, projects);
+            _ = UpdateSearchBarValuesAsync(SearchBarController.SearchCriterion.Name, organization, projects);
+            _ = UpdateSearchBarValuesAsync(SearchBarController.SearchCriterion.Tags, organization, projects);
         }
 
         async Task UpdateSearchBarValuesAsync(SearchBarController.SearchCriterion criterion, IProject project)
@@ -103,12 +94,12 @@ namespace Unity.Cloud.Assets.Samples
             }
         }
 
-        async Task UpdateSearchBarValuesAsync(SearchBarController.SearchCriterion criterion, IOrganization organization, IProject project, IEnumerable<IProject> projects)
+        async Task UpdateSearchBarValuesAsync(SearchBarController.SearchCriterion criterion, IOrganization organization, IEnumerable<IProject> projects)
         {
             try
             {
                 var parameters = new AggregationParameters(criterion.ToString());
-                var aggregation = await PlatformServices.AssetProvider.AggregateAsync(organization, projects, new AssetSearchFilter(project), parameters, CancellationToken.None);
+                var aggregation = await PlatformServices.AssetProvider.AggregateAsync(organization, projects, new AssetSearchFilter(null), parameters, CancellationToken.None);
 
                 m_SearchBarController.UpdateSearchValues(criterion, aggregation.Values.Keys.ToArray());
             }

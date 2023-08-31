@@ -24,11 +24,11 @@ To install the sample, follow these steps:
 1. Inside your Unity project window, go to **Package Manager** > **Unity Cloud Assets**.
 2. Expand the **Samples** section and select **Import** next to the Asset Discovery sample.
    </br>
-   ![Screenshot of the samples import section of the package manager window](images/sample-import-collection-management.png)
+   <img alt="Screenshot of the samples import section of the package manager window" height="64" src="images/sample-import-collection-management.png"/>
 
 After the import process is complete, you can view your imported assets under the `Assets/Samples/Unity Cloud Assets` folder.
 </br>
-![Screenshot of the imported sample](images/tac-sample-collections-scene.png)
+<img alt="Screenshot of the imported sample" height="256" src="images/tac-sample-collections-scene.png"/>
 
 ## Run the sample
 
@@ -37,48 +37,75 @@ To run the sample, follow these steps:
 1. Go to `Assets/Samples/Unity Cloud Assets/<package-version>/Asset Collection Management/Scenes/CollectionManagementSample.unity` and run the scene. If this is your first time launching the sample, make sure to sign in with your Unity Gaming Services account. For more information on creating a Unity project, see the [Asset Manager documentation](https://docs.unity3d.com/docs-asset-manager/manual/index.html).
 2. Select an Organization. The list of projects from that organization will be displayed on the left column.
    </br>
-   ![Screenshot of the organization selection](images/organizations.png)
-3. Select a project. The list of collections for that project will be displayed in the middle column as well as a section for creating a new collection. In the right column, the list of assets for the project will be displayed.
+   <img alt="Screenshot of the organization selection" width="260" src="images/organizations.png"/>
+3. Select a project. The list of collections for that project will be displayed in the middle column. The right column displays the list of assets for a selected collection.
    </br>
-   ![Screenshot of the project list](images/project-list.png)
+   <img alt="Screenshot of the project list" width="300" src="images/project-list.png"/>
    </br>
-   ![Screenshot of the collection list](images/collection-list.png)
-   </br>
-   ![Screenshot of the collection list](images/collection-asset-list.png)
+   <img alt="Screenshot of the collection list" width="800" src="images/collection-list.png"/>
 
 ### Create a new collection
 
 To create a new collection, follow these steps:
 
-1. In the text field to the right of the `Collection Name` label, type a name for your collection. The create button will become active.
-2. Click **Create**.
+1. Ensure no collection is selected in the list.
+2. Open the context menu by clicking the **...** button next to the `Collections` label.
    </br>
-   ![Screenshot of the created topic](images/create-collection.png)
+   <img alt="Screenshot of the context menu" width="460" src="images/collections-context-menu-noselection.png"/>
+3. Click **Create**.
+   </br>
+   <img alt="Screenshot of creating collection popup" width="380" src="images/create-collection-popup.png"/>
+4. Enter a name and a description for the collection and click **Create**.
+   </br>
+   <img alt="Screenshot of the created collection" width="460" src="images/collection-created.png"/>
+
+### Edit an existing collection
+
+To edit an existing collection, follow these steps:
+
+1. Select one of the collections in the list.
+2. Open the context menu by clicking the **...** button next to the `Collections` label.
+   </br>
+   <img alt="Screenshot of the context menu" width="460" src="images/collections-context-menu.png"/>
+3. Click **Edit**.
+   </br>
+   <img alt="Screenshot of editing collection popup" width="380" src="images/edit-collection-popup.png"/>
+4. Enter a new name and a new description for the collection and click **Apply**.
 
 #### Delete an existing collection
 
-To delete an existing collection, click **Delete** next to the collection you want to delete.
+To delete an existing collection, follow these steps:
+
+1. Select one of the collections in the list.
+2. Open the context menu by clicking the **...** button next to the `Collections` label.
+   </br>
+   <img alt="Screenshot of the context menu" width="460" src="images/collections-context-menu.png"/>
+3. Click **Delete**.
 
 ### Add assets to a collection
 
 To add an asset to a collection, follow these steps:
 
 1. Select one of the collections in the list.
-2. Click **All Assets** to display all the assets for the selected project. If it is already selected, it will appear greyed out.
-3. Assets that are not already in the collection will display button. Click **Add to Collection** next to the asset you want to add to the collection. The button will disappear.
-    </br>
-    ![Screenshot of the created topic](images/collection-asset-add.png)
-4. To view the assets that are in the selected collection, click **Collection Only**.
+2. Open the context menu by clicking the **...** button next to the `Assets in Collection` label.
+   </br>
+   <img alt="Screenshot of the context menu" width="460" src="images/collection-assets-context-menu-no-selection.png"/>
+3. Click **Add**.
+   </br>
+   <img alt="Screenshot of adding assets to collection popup" width="380" src="images/add-to-collection-popup.png"/>
+4. Select all the assets you want to add to the collection and click **Add**.
+   </br>
+   <img alt="Screenshot of selected assets" width="460" src="images/collection-assets-added.png"/>
 
 ### Remove assets from a collection
 
 To remove an asset from a collection, follow these steps:
 
-1. Select one of the collections in the list.
-2. Click **Collection Only** to display only the assets that are in the collection. If it is already selected, it will appear greyed out.
-3. Click **Remove from Collection** next to the asset you want to remove from the collection. The asset will disappear from the list.
-    </br>
-    ![Screenshot of the created topic](images/collection-asset-remove.png)
+1. Select one of the assets in the list.
+2. Open the context menu by clicking the **...** button next to the `Assets in Collection` label.
+   </br>
+   <img alt="Screenshot of the context menu" width="460" src="images/collection-assets-context-menu.png"/>
+3. Click **Remove**.
 
 ## Main components
 
@@ -112,11 +139,7 @@ To open the Asset Discovery sample script, go to your `Assets/Samples/Unity Clou
 ### Collection list, asset list, and collection asset list UI scripts
 
 The `CollectionListUi`, `AssetListUi`, and `CollectionAssetListUi` classes are used to display the list of assets, collections, and assets belonging to a collection in the sample.
-While the `AssetPanelUi` class is used to toggle between the `AssetListUi` and `CollectionAssetListUi`.
-
-### Collection creation controller
-
-The `CollectionCreationController` class is used to display the UI that allows you to create a new collection.
+While the `AssetPanelUi` class is used to bridge data between the `AssetListUi` and `CollectionAssetListUi`.
 
 ### Shared UI scripts
 
@@ -141,8 +164,3 @@ If you aren't automatically redirected to the Editor and nothing happens when yo
 ### I can't see my assets
 
 If you can't see any assets, it might be that your organization doesn't have the asset management feature flag enabled. You'll need to [request access to the beta](https://docs.unity3d.com/docs-asset-manager/manual/request-access.html).
-
-## Known issues
-
-- Removing or adding assets quickly from a collection causes errors
-- "Add to collection" button is not working properly

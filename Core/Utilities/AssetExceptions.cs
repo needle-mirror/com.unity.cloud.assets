@@ -12,4 +12,14 @@ namespace Unity.Cloud.Assets
         InvalidUploadUrlException(SerializationInfo info, StreamingContext context)
             : base(info, context) { }
     }
+
+    [Serializable]
+    public sealed class InvalidDownloadUrlException : Exception
+    {
+        public InvalidDownloadUrlException(string message)
+            : base(message) { }
+
+        InvalidDownloadUrlException(SerializationInfo info, StreamingContext context)
+            : base(info, context) { }
+    }
 }

@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Unity.Cloud.Common;
@@ -82,9 +81,22 @@ namespace Unity.Cloud.Assets
         }
 
         /// <inheritdoc />
+        public Task DownloadAssetFileAsync(IProject project, IAssetFile assetFile, Stream destinationStream, IProgress<HttpProgress> progress, CancellationToken token)
+        {
+            return m_AssetFileDataSource.DownloadAssetFileAsync(project, assetFile, destinationStream, progress, token);
+        }
+
+        /// <inheritdoc />
+        [Obsolete("Use UploadAssetFileAsync(IProject project, IAssetFile assetFile, Stream contentStream, IProgress<HttpProgress> progress, CancellationToken token) instead.")]
         public Task<bool> UploadAssetFileAsync(IProject project, IAssetFile assetFile, Stream contentStream, CancellationToken token)
         {
             return m_AssetFileDataSource.UploadAssetFileAsync(project, assetFile, contentStream, token);
+        }
+
+        /// <inheritdoc />
+        public Task<bool> UploadAssetFileAsync(IProject project, IAssetFile assetFile, Stream contentStream, IProgress<HttpProgress> progress, CancellationToken token)
+        {
+            return m_AssetFileDataSource.UploadAssetFileAsync(project, assetFile, contentStream, progress, token);
         }
     }
 }

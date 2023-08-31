@@ -4,17 +4,20 @@ You can use the Asset Discovery sample to search and download published assets f
 
 The sample only displays published assets, using the discovery endpoints that require only user-level permissions.
 
-## Prerequisites
+## Before you start
 
 Before you use the Asset Discovery sample, you must have the following:
 
-* The [Assets](installation.md) and [Identity](https://docs.unity3d.com/Packages/com.unity.cloud.identity@0.16/manual/installation.html) packages installed
-* A valid [Unity ID Account](https://dashboard.unity3d.com/) and [access to the asset manager service](https://docs.unity3d.com/docs-asset-manager/manual/get-started.html)
-* At least one published asset in an [Asset Management](https://docs.unity3d.com/docs-asset-manager/manual/add-asset.html) project
+* An installed [Assets](installation.md) package
+* An installed [Identity](https://docs.unity3d.com/Packages/com.unity.cloud.identity@latest) package
+* A valid [Unity ID Account](https://dashboard.unity3d.com/)
+* An access to [Asset Manager service](https://docs.unity3d.com/docs-asset-manager/manual/get-started.html)
+* At least 1 published asset in an Asset Management project (see [Asset Manager documentation](https://docs.unity3d.com/docs-asset-manager/manual/add-asset.html))
+* A Unity project with the Asset Manager service enabled (see [Asset Manager documentation](https://docs.unity3d.com/docs-asset-manager/manual/modify-project.html))
 
 > **Note**: While the Assets package doesn't depend on the Identity service, it is used in the sample to control the authentication flow.
 
-## Installation
+## Install the sample
 
 To install the sample, follow these steps:
 
@@ -32,14 +35,11 @@ To install the sample, follow these steps:
 
 To run the sample, follow these steps:
 
-1. Go to `Assets/Samples/Unity Cloud Assets/<package-version>/Asset Discovery/Scenes/AssetDiscoverySample.unity` and run the scene. If this is your first time launching the sample, sign in with your Unity Gaming Services account.
-   
-   > **Note:** For more information about creating a project, see the [Asset Manager documentation](https://docs.unity3d.com/docs-asset-manager/manual/index.html).
-
-2. Select an Organization. The list of projects from that organization will be displayed on the left column.
+1. Go to `Assets/Samples/Unity Cloud Assets/<package-version>/Asset Discovery/Scenes/AssetDiscoverySample.unity` and run the scene. If this is your first time launching the sample, make sure to sign in with your Unity Gaming Services account.
+2. Select an Organization. The list of projects from that organization appears on the left column.
    </br>
    ![Screenshot of the organization selection](images/organizations.png)
-3. Select a project. The list of published assets from that project will be displayed on the right column.
+3. Select a project. The list of published assets from that project appears on the right column.
    </br>
    ![Screenshot of the project list](images/project-list.png)
    </br>
@@ -50,10 +50,11 @@ To run the sample, follow these steps:
 To search for specific assets by tag or name in this sample, follow these steps:
 
 1. Select a project.
-2. In the search bar, type the keywords by which you want to search your assets and click **Search**.
+2. In the search bar, type the keywords by which you want to search your assets and select **Search**.
    </br>
    ![Screenshot of the created topic](images/search.png)
-> **Note**: While using the sdk, you will be able to build different and more complex queries. For more information on asset search, see the [Search Assets manual](use-case-search-assets.md).
+
+> **Note**: While using the SDK, you will be able to build different and more complex queries. For more information on asset search, see the [Search Assets manual](use-case-search-assets.md).
 
 #### Search prompts
 
@@ -64,13 +65,13 @@ To select a keyword, click on it. The search bar will add it as a parameter and 
 
 To see your asset information in this sample, follow these steps:
 
-1. Select one of the assets in the grid.
-2. The asset details view will be displayed.
+1. Select one of the assets in the grid. The asset details view appears.
     </br>
     ![Screenshot of the created topic](images/asset-detail.png)
-3. To download your asset files, click on **Download**.
 
-To modify the download's filepath, update the `path` variable in `AssetInformationPanelController.OnAssetDownloadButtonClicked()`.
+2. To download your asset files, select **Download**.
+
+To edit the download's filepath, update the `path` variable in `AssetInformationPanelController.OnAssetDownloadButtonClicked()`.
 ```C#
 async void OnAssetDownloadButtonClicked()
 {
@@ -80,7 +81,6 @@ async void OnAssetDownloadButtonClicked()
 ```
 
 > **Note**: To download assets, you will need the right permissions in your project to **consume** assets.
-
 
 ## Main components
 
@@ -96,7 +96,7 @@ The `PlatformServices` class has two accompanying classes called `PlatformServic
 
 ### User Controller script
 
-The `UserController` class lets you sign in and provides the Asset Discovery sample with your Unity Gaming Services ID. For more information on authentication, see the [Identity package documentation](https://docs.unity3d.com/Packages/com.unity.cloud.identity@0.16/manual/use-case-getting-user-information.html).
+The `UserController` class lets you sign in and provides the Asset Discovery sample with your Unity Gaming Services ID. For more information on authentication, see the **Get user information** page of the [Identity package documentation](https://docs.unity3d.com/Packages/com.unity.cloud.identity@latest).
 
 To open the UserController script, go to your `Assets/Samples/Unity Cloud Assets/<package-version>/Shared/Scripts/Controllers/UserController.cs` file.
 
@@ -113,7 +113,7 @@ To open the Asset Discovery sample script, go to your `Assets/Samples/Unity Clou
 
 ### Shared UI scripts
 
-The `UI` sample includes a set of UI scripts and prefabs used by our samples. To open shared UI scripts, go to `Assets/Samples/Unity Cloud Assets/<package-version>/Shared/Scripts/Controllers`.
+The `UI` sample includes a set of UI scripts and prefabs used by Unity Asset Manager SDK samples. To open shared UI scripts, go to `Assets/Samples/Unity Cloud Assets/<package-version>/Shared/Scripts/Controllers`.
 
 ## Go further with your sample
 
@@ -121,28 +121,12 @@ This section describes other actions you can perform with the Asset Discovery sa
 
 ### Search published, unpublished, and draft assets
 
-If you want to search among all assets, not only the published assets, you can replace the Asset provider implementation to Asset Management instead of discovery by switching them in the AssetsPlatformServices.
+If you want to search among all assets, not only the published assets, you can replace the Asset provider implementation to Asset Management instead of discovery by switching them in the `AssetsPlatformServices`.
     </br>
     ![Switch asset providers](images/gofurther-managerprovider.png)
     </br>
-> **Note**: The Asset Managemment provider type will use different endpoints that require a 'manager' permission. For more information on permissions, see the [Asset Manager documentation](https://docs.unity3d.com/docs-asset-manager/manual/modify-project.html).
+> **Note**: The Asset Management provider type will use different endpoints that require a 'manager' permission. For more information on permissions, see the [Asset Manager documentation](https://docs.unity3d.com/docs-asset-manager/manual/modify-project.html).
 
-## Troubleshoot
+## Troubleshooting
 
-This section describes issues you might have while using the Asset Discovery sample.
-
-### Missing dependency
-
-If you get a missing dependency error about a specific package, ensure you have installed all the packages listed in the [Prerequisites](#prerequisites).
-
-### The automatic browser redirection doesn't work
-
-If you run the sample in the Unity Editor, you should see the following page after you successfully login through your browser.
-
-![Login Successful](images/login-redirect.png)
-
-If you aren't automatically redirected to the Editor and nothing happens when you select **Launch Application**, return to the Editor. This should continue the authentication process.
-
-### I can't see my assets
-
-If you can't see any assets, your organization may not have the Asset Management feature enabled. You'll need to [request access to the beta](https://docs.unity3d.com/docs-asset-manager/manual/request-access.html).
+Refer to the [troubleshooting](troubleshooting.md#sample-issues) section for help with sample issues.

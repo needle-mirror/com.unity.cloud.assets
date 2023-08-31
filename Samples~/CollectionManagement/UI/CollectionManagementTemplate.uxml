@@ -1,35 +1,82 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
     <ui:Template name="ProjectsListContainer" src="../../Shared/UI/Templates/ListContainer.uxml?fileID=9197481963319205126&amp;guid=bc40760b2b12c4af4a3fe093fd2c100a&amp;type=3#ListContainer" />
+    <Style src="./StyleSheets/CollectionManagementStyleSheet.uss?fileID=7433441132597879392&amp;guid=2cc08862a1c4e43878281c7d6f84f6a6&amp;type=3#CollectionManagementStyleSheet" />
+    <Style src="./StyleSheets/ContextMenuStyleSheet.uss?fileID=7433441132597879392&amp;guid=aad11b3cc0a914227ad16f5524ef8075&amp;type=3#ContextMenuStyleSheet" />
+    <Style src="./StyleSheets/Popups.uss?fileID=7433441132597879392&amp;guid=ea7c14029cf904c2e9d83863be857eec&amp;type=3#Popups" />
     <ui:VisualElement style="flex-direction: row; justify-content: space-between;">
-        <ui:VisualElement name="CollectionsPanel" class="ContentContainer" style="width: 50%; height: auto; margin-top: 0; margin-bottom: 10px; overflow: hidden;">
-            <ui:VisualElement name="CreateCollectionContainer">
-                <ui:Label text="Create New" name="Label" style="font-size: 18px; -unity-font-style: bold; padding-left: 7px; margin-bottom: 9px; color: rgb(210, 210, 210);" />
-                <ui:TextField text="My New Collection" password="false" name="Input" picking-mode="Ignore" style="margin-left: 7px; margin-right: 2px; align-items: center; flex-direction: row-reverse;">
-                    <ui:Label name="Label" text="Collection Name" style="color: rgb(210, 210, 210); justify-content: flex-start; margin-right: 9px;" />
-                </ui:TextField>
-                <ui:VisualElement name="ButtonContainer" style="align-items: flex-end;">
-                    <ui:Button text="Create" name="Button" style="margin-left: 7px; margin-right: 2px; width: 100px;" />
-                </ui:VisualElement>
-            </ui:VisualElement>
-            <ui:VisualElement name="Separator" style="height: 3px; border-top-width: 3px; border-left-color: rgb(47, 47, 47); border-right-color: rgb(47, 47, 47); border-top-color: rgb(47, 47, 47); border-bottom-color: rgb(47, 47, 47); margin-left: 7px; margin-right: 2px; margin-top: 9px; margin-bottom: 9px;" />
-            <ui:Instance template="ProjectsListContainer" name="CollectionsListContainer" style="display: flex;">
+        <ui:VisualElement name="CollectionsPanel" class="ContentContainer" style="width: 50%; height: 100%; margin-top: 0; margin-bottom: 10px;">
+            <ui:Instance template="ProjectsListContainer" name="CollectionsListContainer" style="display: flex; height: 100%;">
                 <AttributeOverrides element-name="ListLabel" text="Collections" />
+                <ui:VisualElement name="CollectionsContextMenu" class="ContextMenuContainer">
+                    <ui:Button display-tooltip-when-elided="true" name="ContextMenuButton" class="ContextMenuButton" />
+                    <ui:VisualElement name="ContextMenu" class="ContextMenu">
+                        <ui:Button text="Create" display-tooltip-when-elided="true" name="Create" class="ContextMenuEntry" />
+                        <ui:Button text="Edit" display-tooltip-when-elided="true" name="Edit" class="ContextMenuEntry" />
+                        <ui:Button text="Delete" display-tooltip-when-elided="true" name="Delete" class="ContextMenuEntry" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
             </ui:Instance>
         </ui:VisualElement>
-        <ui:VisualElement name="Assets" style="width: 50%;">
-            <ui:GroupBox style="flex-direction: row; justify-content: center;">
-                <ui:Button text="All Assets" name="AllAssetsButton" style="margin-right: 0; width: 45%; border-top-right-radius: 0; border-bottom-right-radius: 0; font-size: 10px;" />
-                <ui:Button text="Collection Only" name="CollectionAssetsButton" style="margin-left: 0; width: 45%; border-top-left-radius: 0; border-bottom-left-radius: 0; font-size: 10px; -unity-text-align: middle-center;" />
-            </ui:GroupBox>
-            <ui:VisualElement name="AssetsPanel" class="ContentContainer" style="margin-top: 0; margin-bottom: 10px; overflow: hidden;">
-                <ui:Instance template="ProjectsListContainer" name="AssetsListContainer" style="display: flex;">
-                    <AttributeOverrides element-name="ListLabel" text="All Assets" />
-                </ui:Instance>
+        <ui:VisualElement name="AssetsPanel" style="width: 50%;">
+            <ui:Instance template="ProjectsListContainer" name="AssetsListContainer" style="margin-bottom: 10px;">
+                <AttributeOverrides element-name="ListLabel" text="Assets in Collection" />
+                <ui:VisualElement name="AssetsContextMenu" class="ContextMenuContainer">
+                    <ui:Button display-tooltip-when-elided="true" name="ContextMenuButton" class="ContextMenuButton" />
+                    <ui:VisualElement name="ContextMenu" class="ContextMenu">
+                        <ui:Button text="Add" display-tooltip-when-elided="true" name="Add" class="ContextMenuEntry" />
+                        <ui:Button text="Remove" display-tooltip-when-elided="true" name="Remove" class="ContextMenuEntry" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+            </ui:Instance>
+        </ui:VisualElement>
+        <ui:VisualElement picking-mode="Ignore" class="PopupContainer">
+            <ui:VisualElement name="CreateCollectionPopup" class="Popup" style="min-width: 400px;">
+                <ui:VisualElement style="flex-direction: row; align-items: center; justify-content: space-between;">
+                    <ui:Label text="New Collection" style="font-size: 18px; -unity-font-style: bold; margin-bottom: 9px; color: rgb(210, 210, 210); margin-top: 7px; margin-left: 7px; margin-right: 2px; padding-left: 0; padding-right: 0; padding-top: 0; padding-bottom: 0;" />
+                    <ui:Button display-tooltip-when-elided="true" name="Close" class="PopupClose" />
+                </ui:VisualElement>
+                <ui:TextField password="false" name="Name" picking-mode="Ignore" style="margin-left: 7px; margin-right: 7px; align-items: center; flex-direction: row-reverse;">
+                    <ui:Label text="Name*" style="color: rgb(210, 210, 210); justify-content: flex-start; margin-right: 9px;" />
+                </ui:TextField>
+                <ui:TextField password="false" name="Description" picking-mode="Ignore" style="margin-left: 7px; margin-right: 7px; align-items: center; flex-direction: row-reverse;">
+                    <ui:Label text="Description*" style="color: rgb(210, 210, 210); justify-content: flex-start; margin-right: 9px;" />
+                </ui:TextField>
+                <ui:VisualElement style="align-items: center; margin-top: 7px; margin-bottom: 7px;">
+                    <ui:Button text="Create" name="Action" style="margin-left: 7px; margin-right: 2px; min-width: 120px;" />
+                </ui:VisualElement>
             </ui:VisualElement>
-            <ui:VisualElement name="AssetCollectionsPanel" class="ContentContainer" style="margin-top: 0; margin-bottom: 10px; overflow: hidden;">
-                <ui:Instance template="ProjectsListContainer" name="AssetsListContainer" style="display: flex;">
-                    <AttributeOverrides element-name="ListLabel" text="Assets in Collection" />
-                </ui:Instance>
+            <ui:VisualElement name="EditCollectionPopup" class="Popup" style="min-width: 400px;">
+                <ui:VisualElement style="flex-direction: row; align-items: center; justify-content: space-between;">
+                    <ui:Label text="Edit Collection" style="font-size: 18px; -unity-font-style: bold; margin-bottom: 9px; color: rgb(210, 210, 210); margin-top: 7px; margin-left: 7px; margin-right: 2px; padding-left: 0; padding-right: 0; padding-top: 0; padding-bottom: 0;" />
+                    <ui:Button display-tooltip-when-elided="true" name="Close" class="PopupClose" />
+                </ui:VisualElement>
+                <ui:VisualElement style="min-width: auto; min-height: auto;">
+                    <ui:TextField text="My New Collection" password="false" name="Name" picking-mode="Ignore" style="margin-left: 7px; margin-right: 7px; align-items: center; flex-direction: row-reverse;">
+                        <ui:Label text="Name*" style="color: rgb(210, 210, 210); justify-content: flex-start; margin-right: 9px;" />
+                    </ui:TextField>
+                    <ui:TextField password="false" name="Description" picking-mode="Ignore" style="margin-left: 7px; margin-right: 7px; align-items: center; flex-direction: row-reverse;">
+                        <ui:Label text="Description*" style="color: rgb(210, 210, 210); justify-content: flex-start; margin-right: 9px;" />
+                    </ui:TextField>
+                    <ui:Label display-tooltip-when-elided="true" name="ErrorLabel" text="Error:" class="PopupError" />
+                </ui:VisualElement>
+                <ui:VisualElement style="align-items: center; margin-top: 7px; margin-bottom: 7px;">
+                    <ui:Button text="Apply" name="Action" style="margin-left: 7px; margin-right: 2px; min-width: 120px;" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:VisualElement name="AddToCollectionPopup" class="Popup" style="min-width: 400px; max-height: 500px;">
+                <ui:VisualElement style="flex-direction: row; justify-content: space-between; flex-shrink: 0;">
+                    <ui:Label text="Add Assets to Collection" style="font-size: 18px; -unity-font-style: bold; margin-bottom: 9px; color: rgb(210, 210, 210); margin-top: 7px; margin-left: 7px; margin-right: 2px; padding-left: 0; padding-right: 0; padding-top: 0; padding-bottom: 0; flex-grow: 1;" />
+                    <ui:Button display-tooltip-when-elided="true" name="Close" class="PopupClose" />
+                </ui:VisualElement>
+                <ui:VisualElement name="AssetsListContainer">
+                    <ui:ListView focusable="true" name="AssetList" fixed-item-height="32" selection-type="None" style="min-height: auto; max-height: none; flex-grow: 1;" />
+                    <ui:VisualElement name="DisplayMessageContainer" style="align-items: center; justify-content: center; display: none; flex-shrink: 0;">
+                        <ui:Label text="Empty" display-tooltip-when-elided="true" name="DisplayMessage" style="-unity-font-style: italic; font-size: 16px; color: rgb(210, 210, 210);" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                <ui:VisualElement style="align-items: center; margin-top: 7px; margin-bottom: 7px; flex-shrink: 0;">
+                    <ui:Button text="Add" name="Action" style="margin-left: 7px; margin-right: 2px; min-width: 120px;" />
+                </ui:VisualElement>
             </ui:VisualElement>
         </ui:VisualElement>
     </ui:VisualElement>

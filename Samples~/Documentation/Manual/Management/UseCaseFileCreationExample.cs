@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Unity.Cloud.Common;
 using UnityEngine;
 
 namespace Unity.Cloud.Assets.Documentation.Management
@@ -113,6 +114,16 @@ namespace Unity.Cloud.Assets.Documentation.Management
 
         #region Example_Behaviour_UploadAssetFile
 
+        class LogProgress : IProgress<HttpProgress>
+        {
+            public void Report(HttpProgress value)
+            {
+                if (!value.UploadProgress.HasValue) return;
+
+                Debug.Log($"Upload progress: {value.UploadProgress*100} %");
+            }
+        }
+
         public async Task UploadAssetFile(IAsset asset, IAssetFile assetFile)
         {
             // Uses the same texture as the file creation.
@@ -121,7 +132,8 @@ namespace Unity.Cloud.Assets.Documentation.Management
             var cancellationTokenSrc = new CancellationTokenSource();
             try
             {
-                var didUpload = await PlatformServices.AssetFileManager.UploadAssetFileAsync(asset.Project, assetFile, contentStream, cancellationTokenSrc.Token);
+                var progress = new LogProgress();
+                var didUpload = await PlatformServices.AssetFileManager.UploadAssetFileAsync(asset.Project, assetFile, contentStream, progress, cancellationTokenSrc.Token);
                 if (!didUpload)
                 {
                     throw new Exception();

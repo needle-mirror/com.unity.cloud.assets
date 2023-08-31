@@ -11,6 +11,8 @@ namespace Unity.Cloud.Assets.Samples
 {
     public abstract class ListUi<T, U> where T : ListController<U>, new()
     {
+        public event Action ListUpdated;
+
         protected delegate Task OnEntryRetrieved(U entry);
 
         VisualElement m_Container;
@@ -30,12 +32,10 @@ namespace Unity.Cloud.Assets.Samples
             m_Container = uiDocumentRoot.Q<VisualElement>(VisualElementName);
             m_DisplayMessageContainer = m_Container.Q<VisualElement>("DisplayMessageContainer");
             m_DisplayMessage = m_Container.Q<Label>("DisplayMessage");
-            var listView = m_Container.Q<ListView>("List");
+            var listView = m_Container.Q<ListView>();
 
             m_ListController.Initialize(listView, listItemTemplate, OnSelectionChange);
         }
-
-        public virtual void AddAllItem() { }
 
         public void Show()
         {
@@ -47,11 +47,24 @@ namespace Unity.Cloud.Assets.Samples
             m_Container.style.display = DisplayStyle.None;
         }
 
-        protected async Task UpdateList(IAsyncEnumerable<U> asyncEntries, CancellationToken token, OnEntryRetrieved onEntryRetrieved = null)
+        public void ClearSelection()
+        {
+            m_ListController.ClearSelection();
+        }
+
+        protected async Task UpdateList(IEnumerable<U> existingEntries, IAsyncEnumerable<U> asyncEntries, CancellationToken token, OnEntryRetrieved onEntryRetrieved = null)
         {
             var startTime = DateTime.UtcNow;
 
+            m_ListController.ClearList();
+
             var entries = new List<U>();
+            if (existingEntries != null)
+            {
+                entries.AddRange(existingEntries);
+                UpdateList(entries);
+            }
+
             await foreach (var entry in asyncEntries.WithCancellation(token))
             {
                 entries.Add(entry);
@@ -70,8 +83,13 @@ namespace Unity.Cloud.Assets.Samples
             }
         }
 
-        protected void UpdateList(IEnumerable<U> entries)
+        protected void UpdateList(IEnumerable<U> entries, bool clearList = false)
         {
+            if (clearList)
+            {
+                m_ListController.ClearList();
+            }
+
             var entryArray = entries as U[] ?? entries.ToArray();
             if (entryArray.Any())
             {
@@ -84,6 +102,8 @@ namespace Unity.Cloud.Assets.Samples
             {
                 SetDisplayMessage(EmptyListMessage);
             }
+
+            ListUpdated?.Invoke();
         }
 
         protected void SetDisplayMessage(string message)

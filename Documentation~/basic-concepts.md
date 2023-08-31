@@ -1,27 +1,23 @@
 # Basic concepts
 
-This section describes basic concepts about the Unity Cloud Assets package.
+This section describes concepts that the Unity Asset Manager SDK relies on or introduces.
 
 ## Assets
 
-Assets are collections of files and metadata uploaded to the Asset Manager.
+Assets are collections of files and metadata that you (or another user) uploads to the Unity Asset Manager.
 
-Assets can be created, viewed, edited and downloaded.
-
-- For information about finding and downloading published assets in your projects, see the [Asset Discovery Sample](./asset-discovery-sample.md).
-- For information about creating, viewing and editing assets, see the [Asset Management Sample](./asset-management-sample.md).
+You can create, view, edit, and downloaded any asset.
 
 ## Projects
 
-Projects are where organizations can add assets and users, as well as assign roles to users.
+Asset Manager Projects are where organizations can add assets and users, as well as assign roles to users.
 
 ## Collections
 
-Within a project, assets can be organized into collections.
+Use collections to organize assets into different groups within an Asset Manager project.
 
 ## Additional resources
 
-For information about related packages, see the following:
-
-- [Identity package for user login](https://docs.unity3d.com/digital-twins/manual/iam/index.html)
-
+- For information about finding and downloading published assets in your projects, see the [Asset Discovery Sample](./asset-discovery-sample.md)
+- For more information about creating, viewing, and editing assets, see the [Asset Management Sample](./asset-management-sample.md).
+- Unity Asset Manager SDK samples rely on functionality in the Unity Identity and Access Management SDK. For more information, see [Identity package for user login](https://docs.unity3d.com/Packages/com.unity.cloud.identity@latest).

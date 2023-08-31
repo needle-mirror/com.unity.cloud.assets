@@ -55,7 +55,6 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
             m_AssetsGridController.Init(m_AssetDiscoveryLayout, m_AssetsGridItemTemplate, this);
             m_AssetInformationPanelController.Init(m_AssetDiscoveryLayout, m_AssetInformationPanelItemTemplate, m_AssetInformationTagsTemplate, this);
 
-            m_UserController.AddProjectAllEntry();
             m_UserController.ShowContent += ShowAssetDiscoveryLayout;
             m_UserController.HideContent += HideAssetDiscoveryLayout;
             m_UserController.OrganizationSelected += OnOrganizationSelected;
@@ -127,10 +126,9 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
             // On project selected, clear the content
             HideAssetInformationPanel();
 
-            bool isProjectAll = m_UserController.SelectedProject == m_UserController.ProjectAll;
-            if (isProjectAll)
+            if (m_UserController.IsAllProjectSelected)
             {
-                m_SearchBarUi.DisplaySearchBar(m_UserController.SelectedProject, m_UserController.SelectedOrganization, m_UserController.GetAllProjects());
+                m_SearchBarUi.DisplaySearchBar(m_UserController.SelectedOrganization, m_UserController.GetAllProjects());
             }
             else
             {
@@ -141,34 +139,33 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
             m_NewListCancellationTokenSource.Dispose();
             m_NewListCancellationTokenSource = new CancellationTokenSource();
 
+            var newListToken = m_NewListCancellationTokenSource.Token;
+
             m_ProjectAssetsList.Clear();
             m_AssetsGridController.ClearAssetGrid();
             m_SampleContainer.style.display = DisplayStyle.Flex;
 
-            var token = GetCancellationToken();
+            var updateToken = GetCancellationToken();
 
             IAsyncEnumerable<IAsset> assets = null;
-            if(isProjectAll)
+            if (m_UserController.IsAllProjectSelected)
             {
-                assets = m_UserController.GetAssetsAcrossAllProjectsAsync();
+                assets = m_UserController.GetAssetsAcrossAllProjectsAsync(newListToken);
             }
-            else
+            else if (m_UserController.SelectedProject != null)
             {
-                if (m_UserController.SelectedProject != null)
-                {
-                    assets = m_UserController.GetAssetsAsync();
-                }
+                assets = m_UserController.GetAssetsAsync(newListToken);
             }
 
             if (assets != null)
             {
-                await foreach (var asset in assets.WithCancellation(m_NewListCancellationTokenSource.Token))
+                await foreach (var asset in assets.WithCancellation(newListToken))
                 {
                     m_ProjectAssetsList.Add(asset);
                 }
             }
 
-            if (!token.IsCancellationRequested)
+            if (!updateToken.IsCancellationRequested)
             {
                 OnAssetsListChanged(m_ProjectAssetsList);
             }

@@ -8,27 +8,11 @@ namespace Unity.Cloud.Assets.Samples
 {
     public abstract class ListController<T>
     {
-        T m_AllItem;
-        protected List<T> m_List = new ();
+        protected List<T> m_List = new();
         protected ListView m_ListView;
 
-        public T AllItem
-        {
-            get => m_AllItem;
-            set
-            {
-                if (!Equals(m_AllItem, value))
-                {
-                    m_AllItem = value;
-
-                    if (m_List != null)
-                        UpdateList(m_List);
-                }
-            }
-        }
-
-        public IEnumerable<T> List => m_List;
-        protected virtual SelectionType SelectionType => SelectionType.Single;
+        public IEnumerable<T> AllItems => m_List;
+        public IEnumerable<object> SelectedItems => m_ListView.selectedItems;
 
         public void Initialize(ListView listView, VisualTreeAsset itemTemplate, Action<IEnumerable<object>> onSelectionChange)
         {
@@ -37,8 +21,11 @@ namespace Unity.Cloud.Assets.Samples
             m_ListView.makeItem = itemTemplate.Instantiate;
             m_ListView.bindItem = OnBindItem;
 
-            m_ListView.selectionType = SelectionType;
+#if UNITY_2022_3_OR_NEWER
+            m_ListView.selectionChanged += onSelectionChange;
+#else
             m_ListView.onSelectionChange += onSelectionChange;
+#endif
         }
 
         public void Show()
@@ -53,27 +40,29 @@ namespace Unity.Cloud.Assets.Samples
 
         public void UpdateList(IEnumerable<T> entries)
         {
-            if(m_ListView == null)
-                return;
-
-            if (m_ListView.selectedItem != null)
-                m_ListView.ClearSelection();
-
-            if (AllItem != null)
-            {
-                m_List.Clear();
-                m_List.Add(AllItem);
-                m_List.AddRange(entries.ToList());
-            }
-            else
-            {
-                m_List = entries.ToList();
-            }
-
+            m_List = entries.ToList();
             m_ListView.itemsSource = m_List;
-            m_ListView.RefreshItems();// Ensure UI is updated after itemsSource changed
+            m_ListView.RefreshItems();
 
             Show();
+        }
+
+        public virtual void ClearList()
+        {
+            Hide();
+            ClearSelection();
+
+            m_ListView.Clear();
+        }
+
+        public virtual void ClearSelection()
+        {
+            m_ListView.ClearSelection();
+        }
+
+        public void SetSelectionWithoutNotify(IEnumerable<int> indices)
+        {
+            m_ListView.SetSelectionWithoutNotify(indices);
         }
 
         protected abstract void OnBindItem(VisualElement element, int i);

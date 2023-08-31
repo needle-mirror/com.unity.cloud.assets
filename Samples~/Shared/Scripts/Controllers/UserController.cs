@@ -15,7 +15,10 @@ namespace Unity.Cloud.Assets.Samples
         [SerializeField]
         UIDocument m_SampleUiDocument;
         [SerializeField]
-        protected VisualTreeAsset m_ListItemTemplate;
+        VisualTreeAsset m_ListItemTemplate;
+        [SerializeField]
+        bool m_IncludeAllProject = true;
+
 
         VisualElement m_SampleUiDocumentRoot;
 
@@ -24,7 +27,7 @@ namespace Unity.Cloud.Assets.Samples
 
         public IOrganization SelectedOrganization => m_OrganizationListUi.SelectedOrganization;
         public IProject SelectedProject => m_ProjectListUi.SelectedProject;
-        public IProject ProjectAll => m_ProjectListUi.ProjectAll;
+        public bool IsAllProjectSelected => m_ProjectListUi.IsAllProjectSelected;
 
         public event Action ShowContent;
         public event Action HideContent;
@@ -71,14 +74,13 @@ namespace Unity.Cloud.Assets.Samples
             }
         }
 
-        public IAsyncEnumerable<IAsset> GetAssetsAcrossAllProjectsAsync()
+        public IAsyncEnumerable<IAsset> GetAssetsAcrossAllProjectsAsync(CancellationToken cancellationToken)
         {
             try
             {
                 IEnumerable<IProject> projects = m_ProjectListUi.GetProjects();
 
-                var cancellationTokenSource = new CancellationTokenSource(20000);
-                return PlatformServices.AssetProvider.SearchAsync(SelectedOrganization, projects, new AssetSearchFilter(null), m_DefaultPagination, cancellationTokenSource.Token);
+                return PlatformServices.AssetProvider.SearchAsync(SelectedOrganization, projects, new AssetSearchFilter(null), m_DefaultPagination, cancellationToken);
             }
             catch (OperationCanceledException oe)
             {
@@ -97,12 +99,11 @@ namespace Unity.Cloud.Assets.Samples
             }
         }
 
-        public IAsyncEnumerable<IAsset> GetAssetsAsync()
+        public IAsyncEnumerable<IAsset> GetAssetsAsync(CancellationToken cancellationToken)
         {
             try
             {
-                var cancellationTokenSource = new CancellationTokenSource();
-                return PlatformServices.AssetProvider.SearchAsync(new AssetSearchFilter(SelectedProject), m_DefaultPagination, cancellationTokenSource.Token);
+                return PlatformServices.AssetProvider.SearchAsync(new AssetSearchFilter(SelectedProject), m_DefaultPagination, cancellationToken);
             }
             catch (OperationCanceledException oe)
             {
@@ -119,11 +120,6 @@ namespace Unity.Cloud.Assets.Samples
                 Debug.LogException(e);
                 throw;
             }
-        }
-
-        public void AddProjectAllEntry()
-        {
-            m_ProjectListUi.AddAllItem();
         }
 
         public IEnumerable<IProject> GetAllProjects()
@@ -151,7 +147,7 @@ namespace Unity.Cloud.Assets.Samples
         {
             OrganizationSelected?.Invoke();
 
-            await m_ProjectListUi.Populate(SelectedOrganization);
+            await m_ProjectListUi.Populate(SelectedOrganization, m_IncludeAllProject);
         }
 
         void OnProjectSelected()

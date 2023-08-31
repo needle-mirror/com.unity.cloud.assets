@@ -1,6 +1,5 @@
 #if !UC_EXCLUDE_SAMPLES
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -14,11 +13,53 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
     {
         public class AssetListController : ListController<IAsset>
         {
-            public event Action<IAsset> AssetAddedToCollection;
+            class ToggleController
+            {
+                readonly Toggle m_Toggle;
+                readonly ListView m_ListView;
 
-            CollectionPath m_CollectionPath;
+                int m_Target = -1;
 
-            protected override SelectionType SelectionType => SelectionType.None;
+                public ToggleController(ListView listView, Toggle toggle)
+                {
+                    m_ListView = listView;
+                    m_Toggle = toggle;
+                    m_Toggle.UnregisterCallback<ChangeEvent<bool>>(OnToggleChanged);
+                    m_Toggle.RegisterCallback<ChangeEvent<bool>>(OnToggleChanged);
+                }
+
+                ~ToggleController()
+                {
+                    m_Toggle.UnregisterCallback<ChangeEvent<bool>>(OnToggleChanged);
+                }
+
+                public void SetTarget(int target, bool isSelected)
+                {
+                    m_Target = target;
+                    m_Toggle.SetValueWithoutNotify(isSelected);
+                }
+
+                public void Unselect()
+                {
+                    m_Toggle.SetValueWithoutNotify(false);
+                }
+
+                void OnToggleChanged(ChangeEvent<bool> evt)
+                {
+                    if (m_Target < 0) return;
+
+                    if (evt.newValue)
+                    {
+                        m_ListView.AddToSelection(m_Target);
+                    }
+                    else
+                    {
+                        m_ListView.RemoveFromSelection(m_Target);
+                    }
+                }
+            }
+
+            readonly Dictionary<Toggle, ToggleController> m_ToggleControllers = new();
 
             protected override void OnBindItem(VisualElement element, int i)
             {
@@ -26,22 +67,31 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
 
                 element.Q<Label>("ItemNameLabel").text = asset.Name;
 
-                var button = element.Q<Button>("ItemButton");
-                button.style.display = string.IsNullOrEmpty(m_CollectionPath) || asset.Collections.Contains(m_CollectionPath)
-                    ? DisplayStyle.None
-                    : DisplayStyle.Flex;
-                button.text = "Add to Collection";
-                button.clicked += () =>
+                var toggle = element.Q<Toggle>();
+                if (!m_ToggleControllers.TryGetValue(toggle, out var toggleController))
                 {
-                    button.style.display = DisplayStyle.None;
-                    AssetAddedToCollection?.Invoke(asset);
-                };
+                    toggleController = new ToggleController(m_ListView, toggle);
+                    m_ToggleControllers.Add(toggle, toggleController);
+                }
+
+                toggleController.SetTarget(i, m_ListView.selectedItems.Contains(asset));
             }
 
-            public void SetSelectedCollection(IAssetCollection assetCollection)
+            public override void ClearList()
             {
-                m_CollectionPath = assetCollection?.GetFullCollectionPath();
-                m_ListView?.RefreshItems();
+                base.ClearList();
+
+                m_ToggleControllers.Clear();
+            }
+
+            public override void ClearSelection()
+            {
+                base.ClearSelection();
+
+                foreach (var kvp in m_ToggleControllers)
+                {
+                    kvp.Value.Unselect();
+                }
             }
         }
 
@@ -49,35 +99,23 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
 
         CancellationTokenSource m_ListAssetsCancellationTokenSource = new();
 
-        public IEnumerable<IAsset> Assets => m_ListController.List;
+        public IEnumerable<IAsset> Assets => m_ListController.AllItems;
+        public IEnumerable<IAsset> SelectedAssets => m_ListController.SelectedItems.Cast<IAsset>();
 
-        public event Action<IAsset> AssetAddedToCollection
-        {
-            add => m_ListController.AssetAddedToCollection += value;
-            remove => m_ListController.AssetAddedToCollection -= value;
-        }
-
-        protected override string VisualElementName => "AssetsPanel";
+        protected override string VisualElementName => "AssetsListContainer";
         protected override string EmptyListMessage => "No assets available.";
-
-        public void OnCollectionSelected(IAssetCollection collection)
-        {
-            m_ListController.SetSelectedCollection(collection);
-        }
 
         public async Task Populate(IProject project)
         {
-            m_ListAssetsCancellationTokenSource.Cancel();
-            m_ListAssetsCancellationTokenSource.Dispose();
-            m_ListAssetsCancellationTokenSource = new CancellationTokenSource();
+            var token = GetCancellationToken();
 
-            var assets = GetAssetsAsync(project, m_ListAssetsCancellationTokenSource.Token);
+            var assets = GetAssetsAsync(project, token);
 
             async Task OnEntryRetrieved(IAsset entry)
             {
                 try
                 {
-                    await PlatformServices.AssetManager.GetAssetCollectionsAsync(entry, m_ListAssetsCancellationTokenSource.Token);
+                    await PlatformServices.AssetManager.GetAssetCollectionsAsync(entry, token);
                 }
                 catch (Exception e)
                 {
@@ -85,7 +123,7 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
                 }
             }
 
-            await UpdateList(assets, m_ListAssetsCancellationTokenSource.Token, OnEntryRetrieved);
+            await UpdateList(null, assets, token, OnEntryRetrieved);
         }
 
         static IAsyncEnumerable<IAsset> GetAssetsAsync(IProject project, CancellationToken token)
@@ -113,8 +151,15 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
 
         protected override void OnSelectionChange(IEnumerable<object> selectedItems)
         {
-            // This should never be called since selection type is `None`.
-            throw new NotImplementedException();
+            // DO NOTHING
+        }
+
+        CancellationToken GetCancellationToken()
+        {
+            m_ListAssetsCancellationTokenSource.Cancel();
+            m_ListAssetsCancellationTokenSource.Dispose();
+            m_ListAssetsCancellationTokenSource = new CancellationTokenSource();
+            return m_ListAssetsCancellationTokenSource.Token;
         }
     }
 }
