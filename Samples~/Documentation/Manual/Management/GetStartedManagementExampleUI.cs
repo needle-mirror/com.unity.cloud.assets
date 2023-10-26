@@ -32,7 +32,7 @@ namespace Unity.Cloud.Assets.Documentation.Management
 
         void OnGUI()
         {
-            GUILayout.BeginHorizontal();
+            GUILayout.BeginHorizontal(GUILayout.Width(Screen.width));
 
             UpdateAuthenticationUI(m_AuthenticationStateProvider.AuthenticationState);
 
@@ -108,6 +108,8 @@ namespace Unity.Cloud.Assets.Documentation.Management
 
                 AssetActions();
             }
+
+            GUILayout.FlexibleSpace();
 
             GUILayout.EndHorizontal();
         }
@@ -201,7 +203,7 @@ namespace Unity.Cloud.Assets.Documentation.Management
                     if (GUILayout.Button(assets[i].Name))
                     {
                         m_Behaviour.CurrentAsset = assets[i];
-                        Debug.Log($"Selected: {assets[i].Name}");
+                        Debug.Log($"Selected: {assets[i].Descriptor.AssetId}");
                     }
                 }
 
@@ -300,20 +302,22 @@ namespace Unity.Cloud.Assets.Documentation.Management
 
         protected virtual void DisplayAsset(IAsset asset)
         {
+            var assetUpdate = new AssetUpdate(asset);
+
             GUILayout.BeginHorizontal();
 
             var nameValue = GUILayout.TextField(asset.Name, GUILayout.Width(100f));
             if (nameValue != asset.Name)
             {
-                asset.Name = nameValue;
+                assetUpdate.Name = nameValue;
             }
 
             GUILayout.Space(5f);
 
-            var versionNameValue = GUILayout.TextField(asset.VersionName, GUILayout.Width(50f));
-            if (versionNameValue != asset.VersionName)
+            var type = GUILayout.TextField(asset.Type.GetValueAsString(), GUILayout.Width(50f));
+            if (type != asset.Type.GetValueAsString())
             {
-                asset.VersionName = versionNameValue;
+                assetUpdate.Type = type.GetAssetTypeFromString();
             }
 
             GUILayout.Space(5f);
@@ -323,14 +327,7 @@ namespace Unity.Cloud.Assets.Documentation.Management
 
             if (GUILayout.Button("Update"))
             {
-                _ = m_Behaviour.UpdateAssetAsync(asset);
-            }
-
-            GUILayout.Space(5f);
-
-            if (GUILayout.Button("Delete"))
-            {
-                _ = m_Behaviour.DeleteAssetAsync(asset);
+                _ = m_Behaviour.UpdateAssetAsync(asset, assetUpdate);
             }
 
             GUILayout.Space(5f);

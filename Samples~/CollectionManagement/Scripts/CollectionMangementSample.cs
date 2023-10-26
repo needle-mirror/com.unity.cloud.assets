@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Unity.Cloud.Common;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -26,9 +27,10 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
         AssetPanelUi m_AssetPanelUi = new();
 
         CollectionsContextMenuController m_ContextMenu;
+        MessagePopupController m_MessagePopupController;
 
-        IOrganization SelectedOrganization => m_UserController.SelectedOrganization;
-        IProject SelectedProject => m_UserController.SelectedProject;
+        IAssetProject SelectedProject => m_UserController.SelectedProject;
+        IAssetCollection SelectedCollection => m_CollectionListUi.SelectedCollection;
 
         void Start()
         {
@@ -36,9 +38,11 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
 
             var sampleContainer = uiDocumentRoot.Q("ContentPanel");
             var layout = m_LayoutTemplate.Instantiate();
+            layout.style.height = Length.Percent(100);
+            layout.style.width = Length.Percent(100);
             sampleContainer.Add(layout);
 
-            m_ContextMenu = new CollectionsContextMenuController(uiDocumentRoot);
+            m_ContextMenu = new CollectionsContextMenuController(uiDocumentRoot, ValidateCollectionName);
             m_ContextMenu.CollectionCreated += OnCollectionCreated;
             m_ContextMenu.CollectionUpdated += OnCollectionUpdated;
             m_ContextMenu.CollectionDeleted += OnCollectionDeleted;
@@ -51,8 +55,10 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
             m_AssetPanelUi.RemoveAssetFromCollection += OnRemoveAssetFromCollection;
 
             m_UserController.HideContent += HideContent;
-            m_UserController.OrganizationSelected += HideContent;
+            m_UserController.OrganizationSelected += OnOrganizationSelected;
             m_UserController.ProjectSelected += OnProjectSelected;
+
+            m_MessagePopupController = new MessagePopupController(uiDocumentRoot);
 
             HideContent();
         }
@@ -60,7 +66,7 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
         void OnDestroy()
         {
             m_UserController.HideContent -= HideContent;
-            m_UserController.OrganizationSelected -= HideContent;
+            m_UserController.OrganizationSelected -= OnOrganizationSelected;
             m_UserController.ProjectSelected -= OnProjectSelected;
 
             if (m_ContextMenu != null)
@@ -87,6 +93,11 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
             }
         }
 
+        void OnOrganizationSelected(OrganizationId orgId)
+        {
+            HideContent();
+        }
+
         void HideContent()
         {
             m_ContextMenu.Hide();
@@ -94,9 +105,23 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
             m_AssetPanelUi.Hide();
         }
 
-        async void OnCollectionCreated(IAssetCollection collection)
+        (bool, string) ValidateCollectionName(string s)
         {
-            await PlatformServices.AssetCollectionManager.CreateCollectionAsync(SelectedProject, collection, CancellationToken.None);
+            return m_CollectionListUi.Collections.Any(x => x.Name == s)
+                ? (false, "Collection name already exists.")
+                : (!string.IsNullOrWhiteSpace(s), string.Empty);
+        }
+
+        async void OnCollectionCreated(IAssetCollectionCreation collectionCreation)
+        {
+            try
+            {
+                await SelectedProject.CreateCollectionAsync(collectionCreation, CancellationToken.None);
+            }
+            catch (Exception e)
+            {
+                m_MessagePopupController.ShowMessage("Failed to create collection", $"{e.Message}");
+            }
 
             // Force refresh the list of collections
             OnProjectSelected();
@@ -104,13 +129,13 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
 
         void OnCollectionSelected()
         {
-            m_ContextMenu.OnCollectionSelected(m_CollectionListUi.SelectedCollection);
-            m_AssetPanelUi.OnCollectionSelected(m_CollectionListUi.SelectedCollection);
+            m_ContextMenu.OnCollectionSelected(SelectedCollection);
+            m_AssetPanelUi.OnCollectionSelected(SelectedCollection);
         }
 
         async void OnCollectionUpdated(IAssetCollection assetCollection)
         {
-            await PlatformServices.AssetCollectionManager.UpdateCollectionAsync(assetCollection, CancellationToken.None);
+            await assetCollection.UpdateAsync(CancellationToken.None);
 
             // Force refresh the list of collections
             OnProjectSelected();
@@ -118,7 +143,7 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
 
         async void OnCollectionDeleted(IAssetCollection assetCollection)
         {
-            await PlatformServices.AssetCollectionManager.DeleteCollectionAsync(assetCollection, CancellationToken.None);
+            await SelectedProject.DeleteCollectionAsync(assetCollection.GetFullCollectionPath(), CancellationToken.None);
 
             // Force refresh the list of collections
             OnProjectSelected();
@@ -126,13 +151,13 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
 
         async void OnRemoveAssetFromCollection(IAsset asset)
         {
-            await PlatformServices.AssetCollectionManager.RemoveAssetsFromCollectionAsync(m_CollectionListUi.SelectedCollection,
-                new[] {asset},
+            await SelectedCollection.RemoveAssetsAsync(new[] {asset},
                 CancellationToken.None);
 
             // Refresh the list of collections for the asset
-            await PlatformServices.AssetManager.GetAssetCollectionsAsync(asset, CancellationToken.None);
+            await asset.RefreshAssetCollectionsAsync(CancellationToken.None);
 
+            await Task.Delay(1000);
             // Refresh the list of assets in the collection
             OnCollectionSelected();
         }
@@ -140,21 +165,10 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
         async void OnAssetAddedToCollection(IEnumerable<IAsset> assets)
         {
             var enumerable = assets as IAsset[] ?? assets.ToArray();
-            await PlatformServices.AssetCollectionManager.InsertAssetsToCollectionAsync(m_CollectionListUi.SelectedCollection,
-                enumerable,
+            await SelectedCollection.AddAssetsAsync(enumerable,
                 CancellationToken.None);
 
-            var taskList = new List<Task>();
-
-            // Refresh the list of collections for each modified asset
-            foreach (var asset in enumerable)
-            {
-                var task = PlatformServices.AssetManager.GetAssetCollectionsAsync(asset, CancellationToken.None);
-                taskList.Add(task);
-            }
-
-            await Task.WhenAll(taskList);
-
+            await Task.Delay(1000);
             // Refresh the list of assets in the collection
             OnCollectionSelected();
         }

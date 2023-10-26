@@ -1,0 +1,16 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="../StyleSheets/AssetCreationPanelListStyleSheet.uss?fileID=7433441132597879392&amp;guid=5f5ecbfedbf794110a29acf9218a7be4&amp;type=3#AssetCreationPanelListStyleSheet" />
+    <ui:VisualElement name="ListContainer" style="height: 100%; width: 100%; display: flex; flex-direction: row; flex-grow: 1;">
+        <ui:VisualElement name="ListSubContainer" style="display: flex; flex-direction: row; justify-content: space-between; margin: 0 10px; width: 100%;">
+            <ui:VisualElement name="FileNameContainer" class="LabelContainer" style="align-items: flex-start; justify-content: center;">
+                <ui:Label text="Label" display-tooltip-when-elided="true" name="FileNameLabel" style="flex-wrap: wrap; white-space: normal;" />
+            </ui:VisualElement>
+            <ui:VisualElement name="FileSizeContainer" class="LabelContainer" style="align-items: flex-end; justify-content: center;">
+                <ui:Label text="Label" display-tooltip-when-elided="true" name="FileSizeLabel" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement name="FileDeleteIconContainer" style="align-items: center; justify-content: center;">
+            <ui:VisualElement name="DeleteIcon" style="display: none; height: 20px;" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

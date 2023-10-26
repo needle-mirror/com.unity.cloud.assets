@@ -1,45 +1,36 @@
 using System;
 using System.Collections.Generic;
-using System.Runtime.Serialization;
-using Newtonsoft.Json;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Unity.Cloud.Common;
 
 namespace Unity.Cloud.Assets
 {
     /// <summary>
     /// This object contains the information pertaining to an asset collection stored on the cloud.
     /// </summary>
-    [DataContract]
-    public class AssetCollection : IAssetCollection
+    sealed class AssetCollection : IAssetCollection
     {
-        string m_OriginalPath;
+        readonly IAssetDataSource m_DataSource;
 
-        /// <inheritdoc/>
-        public IProject Project { get; set; }
+        /// <inheritdoc />
+        public CollectionDescriptor Descriptor { get; }
 
-        /// <inheritdoc/>
-        [DataMember(Name = "name")]
-        public string Name { get; internal set; }
+        /// <inheritdoc />
+        public string Name { get; private set; }
 
-        /// <inheritdoc/>
-        [DataMember(Name = "description")]
-        public string Description { get; internal set; }
+        /// <inheritdoc />
+        public string Description { get; private set; }
 
-        /// <inheritdoc/>
-        [DataMember(Name = "parentPath")]
-        public CollectionPath ParentPath { get; internal set; }
+        /// <inheritdoc />
+        public CollectionPath ParentPath { get; private set; }
 
-        /// <inheritdoc/>
-        [DataMember(Name = "catalogId")]
-        public string CatalogId { get; internal set; }
-
-        /// <inheritdoc/>
-        [DataMember(Name = "metadata")]
-        public Dictionary<string, IDeserializable> Metadata { get; set; }
-
-        [JsonConstructor]
-        internal AssetCollection()
+        internal AssetCollection(IAssetDataSource dataSource, CollectionDescriptor descriptor, string name, string description, string parentPath = null)
+            : this(name, description, parentPath)
         {
-            Metadata = new Dictionary<string, IDeserializable>();
+            m_DataSource = dataSource;
+            Descriptor = descriptor;
         }
 
         /// <summary>
@@ -48,23 +39,15 @@ namespace Unity.Cloud.Assets
         /// <param name="name">The name of the collection. </param>
         /// <param name="description">The description of the collection. </param>
         /// <param name="parentPath">(Optional) The path to the parent collection. </param>
-        /// <param name="metadata">(Optional) The metadata of the collection. </param>
         /// <exception cref="ArgumentNullException">This exception is thrown if the <paramref name="name"/> or <paramref name="description"/> are null or empty. </exception>
-        public AssetCollection(string name, string description, string parentPath = null, Dictionary<string, IDeserializable> metadata = null)
+        internal AssetCollection(string name, string description, string parentPath = null)
         {
-            VerifyArguments(name, description);
-
             Name = name;
             Description = description;
             ParentPath = new CollectionPath(parentPath);
-            Metadata = metadata ?? new Dictionary<string, IDeserializable>();
         }
 
-        /// <summary>
-        /// Sets the <see cref="Name"/> of the collection.
-        /// </summary>
-        /// <param name="name">The name of the collection. </param>
-        /// <exception cref="ArgumentNullException">This exception is thrown if the <paramref name="name"/> is null or empty. </exception>
+        /// <inheritdoc />
         public void SetName(string name)
         {
             if (string.IsNullOrWhiteSpace(name))
@@ -72,19 +55,10 @@ namespace Unity.Cloud.Assets
                 throw new ArgumentNullException(nameof(name));
             }
 
-            if (string.IsNullOrEmpty(m_OriginalPath))
-            {
-                m_OriginalPath = Name;
-            }
-
             Name = name;
         }
 
-        /// <summary>
-        /// Sets the <see cref="Description"/> of the collection.
-        /// </summary>
-        /// <param name="description">The description of the collection. </param>
-        /// <exception cref="ArgumentNullException">This exception is thrown if the <paramref name="description"/> is null or empty. </exception>
+        /// <inheritdoc />
         public void SetDescription(string description)
         {
             if (string.IsNullOrWhiteSpace(description))
@@ -95,28 +69,40 @@ namespace Unity.Cloud.Assets
             Description = description;
         }
 
+        /// <inheritdoc />
         public string GetFullCollectionPath()
         {
-            return CollectionPath.CombinePaths(ParentPath, string.IsNullOrEmpty(m_OriginalPath) ? Name : m_OriginalPath);
+            return Descriptor.CollectionPath;
         }
 
-        /// <summary>
-        /// Verifies whether the input strings are valid.
-        /// </summary>
-        /// <param name="name">A string to verify. </param>
-        /// <param name="description">A string to verify. </param>
-        /// <exception cref="ArgumentNullException">This exception is thrown if the <paramref name="name"/> or <paramref name="description"/> are null or empty. </exception>
-        internal static void VerifyArguments(string name, string description)
+        /// <inheritdoc />
+        public Task UpdateAsync(CancellationToken cancellationToken)
         {
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                throw new ArgumentNullException(nameof(name));
-            }
+            return m_DataSource.UpdateCollectionAsync(Descriptor, this.From(), cancellationToken);
+        }
 
-            if (string.IsNullOrWhiteSpace(description))
-            {
-                throw new ArgumentNullException(nameof(description));
-            }
+        /// <inheritdoc />
+        public Task AddAssetsAsync(IEnumerable<IAsset> assets, CancellationToken cancellationToken)
+        {
+            return m_DataSource.AddAssetsToCollectionAsync(Descriptor, assets.Select(SelectAssetId), cancellationToken);
+        }
+
+        /// <inheritdoc />
+        public Task RemoveAssetsAsync(IEnumerable<IAsset> assets, CancellationToken cancellationToken)
+        {
+            return m_DataSource.RemoveAssetsFromCollectionAsync(Descriptor, assets.Select(SelectAssetId), cancellationToken);
+        }
+
+        /// <inheritdoc />
+        public async Task MoveToNewPathAsync(CollectionPath newCollectionPath, CancellationToken cancellationToken)
+        {
+            await m_DataSource.MoveCollectionToNewPathAsync(Descriptor, newCollectionPath, cancellationToken);
+            ParentPath = newCollectionPath;
+        }
+
+        static AssetId SelectAssetId(IAsset asset)
+        {
+            return asset.Descriptor.AssetId;
         }
     }
 }

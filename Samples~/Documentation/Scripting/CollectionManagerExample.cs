@@ -1,43 +1,17 @@
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Unity.Cloud.Common;
-using Unity.Cloud.Common.Runtime;
-using Unity.Cloud.Identity;
-using Unity.Cloud.Identity.Runtime;
 
 namespace Unity.Cloud.Assets.Documentation.Scripting
 {
+#pragma warning disable S1144 // Remove unused private method
     public class CollectionManagerExample
     {
-        IAssetCollectionManager m_AssetCollectionManager;
-
-        void ConstructAssetCollectionManager()
-        {
-            #region ConstructAssetCollectionManager
-
-            var httpClient = new UnityHttpClient();
-            var serviceHostResolver = UnityRuntimeServiceHostResolverFactory.Create();
-            var playerSettings = UnityCloudPlayerSettings.Instance;
-            var platformSupport = PlatformSupportFactory.GetAuthenticationPlatformSupport();
-
-            var compositeAuthenticatorSettings = new CompositeAuthenticatorSettingsBuilder(httpClient, platformSupport, serviceHostResolver)
-                .AddDefaultPkceAuthenticator(playerSettings)
-                .Build();
-
-            var authenticator = new CompositeAuthenticator(compositeAuthenticatorSettings);
-
-            var serviceHttpClient = new ServiceHttpClient(httpClient, authenticator, playerSettings);
-
-            m_AssetCollectionManager = new CloudAssetCollectionManager(serviceHttpClient, serviceHostResolver);
-
-            #endregion
-        }
-
         #region GetCollection
 
-        async Task<IAssetCollection> GetCollection(IProject project, CollectionPath collectionPath, CancellationToken cancellationToken)
+        async Task<IAssetCollection> GetCollection(IAssetProject project, CollectionPath collectionPath, CancellationToken cancellationToken)
         {
-            var collection = await m_AssetCollectionManager.GetCollectionAsync(project, collectionPath, cancellationToken);
+            var collection = await project.GetCollectionAsync(collectionPath, cancellationToken);
             return collection;
         }
 
@@ -45,9 +19,9 @@ namespace Unity.Cloud.Assets.Documentation.Scripting
 
         #region ListCollections
 
-        async Task<IAssetCollection[]> ListCollections(IProject project, CancellationToken cancellationToken)
+        async Task<IEnumerable<IAssetCollection>> ListCollections(IAssetProject project, CancellationToken cancellationToken)
         {
-            var collections = await m_AssetCollectionManager.ListCollectionsAsync(project, cancellationToken);
+            var collections = await project.ListCollectionsAsync(cancellationToken);
             return collections;
         }
 
@@ -55,12 +29,12 @@ namespace Unity.Cloud.Assets.Documentation.Scripting
 
         #region CreateCollection
 
-        async Task<string> CreateCollection(IProject project, CancellationToken cancellationToken)
+        async Task<IAssetCollection> CreateCollection(IAssetProject project, CancellationToken cancellationToken)
         {
-            var assetCollection = new AssetCollection("My Collection", "A description of my collection.");
-            var collectionPath = await m_AssetCollectionManager.CreateCollectionAsync(project, assetCollection, cancellationToken);
+            var collectionData = new AssetCollectionCreation("My Collection", "A description of my collection.");
+            var newCollection = await project.CreateCollectionAsync(collectionData, cancellationToken);
 
-            return collectionPath;
+            return newCollection;
         }
 
         #endregion
@@ -72,16 +46,16 @@ namespace Unity.Cloud.Assets.Documentation.Scripting
             assetCollection.SetName("A new name");
             assetCollection.SetDescription("A new description");
 
-            await m_AssetCollectionManager.UpdateCollectionAsync(assetCollection, cancellationToken);
+            await assetCollection.UpdateAsync(cancellationToken);
         }
 
         #endregion
 
         #region DeleteCollection
 
-        async Task DeleteCollection(IAssetCollection assetCollection, CancellationToken cancellationToken)
+        async Task DeleteCollection(IAssetProject project, IAssetCollection assetCollection, CancellationToken cancellationToken)
         {
-            await m_AssetCollectionManager.DeleteCollectionAsync(assetCollection, cancellationToken);
+            await project.DeleteCollectionAsync(assetCollection.GetFullCollectionPath(), cancellationToken);
         }
 
         #endregion
@@ -90,7 +64,7 @@ namespace Unity.Cloud.Assets.Documentation.Scripting
 
         async Task MoveCollection(IAssetCollection assetCollection, CollectionPath newCollectionPath, CancellationToken cancellationToken)
         {
-            await m_AssetCollectionManager.MoveCollectionToNewPathAsync(assetCollection, newCollectionPath, cancellationToken);
+            await assetCollection.MoveToNewPathAsync(newCollectionPath, cancellationToken);
         }
 
         #endregion
@@ -99,7 +73,7 @@ namespace Unity.Cloud.Assets.Documentation.Scripting
 
         async Task CollectionInsert(IAssetCollection assetCollection, CancellationToken cancellationToken, params IAsset[] assets)
         {
-            await m_AssetCollectionManager.InsertAssetsToCollectionAsync(assetCollection, assets, cancellationToken);
+            await assetCollection.AddAssetsAsync(assets, cancellationToken);
         }
 
         #endregion
@@ -108,9 +82,10 @@ namespace Unity.Cloud.Assets.Documentation.Scripting
 
         async Task CollectionRemove(IAssetCollection assetCollection, CancellationToken cancellationToken, params IAsset[] assets)
         {
-            await m_AssetCollectionManager.RemoveAssetsFromCollectionAsync(assetCollection, assets, cancellationToken);
+            await assetCollection.RemoveAssetsAsync(assets, cancellationToken);
         }
 
         #endregion
     }
+#pragma warning restore S1144
 }

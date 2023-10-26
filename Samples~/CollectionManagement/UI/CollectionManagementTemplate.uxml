@@ -35,12 +35,18 @@
                     <ui:Label text="New Collection" style="font-size: 18px; -unity-font-style: bold; margin-bottom: 9px; color: rgb(210, 210, 210); margin-top: 7px; margin-left: 7px; margin-right: 2px; padding-left: 0; padding-right: 0; padding-top: 0; padding-bottom: 0;" />
                     <ui:Button display-tooltip-when-elided="true" name="Close" class="PopupClose" />
                 </ui:VisualElement>
-                <ui:TextField password="false" name="Name" picking-mode="Ignore" style="margin-left: 7px; margin-right: 7px; align-items: center; flex-direction: row-reverse;">
-                    <ui:Label text="Name*" style="color: rgb(210, 210, 210); justify-content: flex-start; margin-right: 9px;" />
-                </ui:TextField>
-                <ui:TextField password="false" name="Description" picking-mode="Ignore" style="margin-left: 7px; margin-right: 7px; align-items: center; flex-direction: row-reverse;">
-                    <ui:Label text="Description*" style="color: rgb(210, 210, 210); justify-content: flex-start; margin-right: 9px;" />
-                </ui:TextField>
+                <ui:VisualElement style="min-width: auto; min-height: auto;">
+                    <ui:TextField password="false" name="Name" style="margin-left: 7px; margin-right: 7px; align-items: center; flex-direction: row-reverse;">
+                        <ui:Label text="Name*" style="color: rgb(210, 210, 210); justify-content: flex-start; margin-right: 9px;" />
+                    </ui:TextField>
+                    <ui:TextField password="false" name="Description" style="margin-left: 7px; margin-right: 7px; align-items: center; flex-direction: row-reverse;">
+                        <ui:Label text="Description*" style="color: rgb(210, 210, 210); justify-content: flex-start; margin-right: 9px;" />
+                    </ui:TextField>
+                    <ui:TextField password="false" name="ParentPath" style="margin-left: 7px; margin-right: 7px; align-items: center; flex-direction: row-reverse;">
+                        <ui:Label text="Parent Path" style="color: rgb(210, 210, 210); justify-content: flex-start; margin-right: 9px;" />
+                    </ui:TextField>
+                    <ui:Label display-tooltip-when-elided="true" name="ErrorLabel" text="Error:" class="PopupError" />
+                </ui:VisualElement>
                 <ui:VisualElement style="align-items: center; margin-top: 7px; margin-bottom: 7px;">
                     <ui:Button text="Create" name="Action" style="margin-left: 7px; margin-right: 2px; min-width: 120px;" />
                 </ui:VisualElement>
@@ -51,10 +57,10 @@
                     <ui:Button display-tooltip-when-elided="true" name="Close" class="PopupClose" />
                 </ui:VisualElement>
                 <ui:VisualElement style="min-width: auto; min-height: auto;">
-                    <ui:TextField text="My New Collection" password="false" name="Name" picking-mode="Ignore" style="margin-left: 7px; margin-right: 7px; align-items: center; flex-direction: row-reverse;">
+                    <ui:TextField password="false" name="Name" style="margin-left: 7px; margin-right: 7px; align-items: center; flex-direction: row-reverse;">
                         <ui:Label text="Name*" style="color: rgb(210, 210, 210); justify-content: flex-start; margin-right: 9px;" />
                     </ui:TextField>
-                    <ui:TextField password="false" name="Description" picking-mode="Ignore" style="margin-left: 7px; margin-right: 7px; align-items: center; flex-direction: row-reverse;">
+                    <ui:TextField password="false" name="Description" style="margin-left: 7px; margin-right: 7px; align-items: center; flex-direction: row-reverse;">
                         <ui:Label text="Description*" style="color: rgb(210, 210, 210); justify-content: flex-start; margin-right: 9px;" />
                     </ui:TextField>
                     <ui:Label display-tooltip-when-elided="true" name="ErrorLabel" text="Error:" class="PopupError" />
@@ -69,13 +75,25 @@
                     <ui:Button display-tooltip-when-elided="true" name="Close" class="PopupClose" />
                 </ui:VisualElement>
                 <ui:VisualElement name="AssetsListContainer">
-                    <ui:ListView focusable="true" name="AssetList" fixed-item-height="32" selection-type="None" style="min-height: auto; max-height: none; flex-grow: 1;" />
+                    <ui:ListView focusable="true" name="AssetList" fixed-item-height="32" selection-type="Multiple" style="min-height: auto; max-height: none; flex-grow: 1;" />
                     <ui:VisualElement name="DisplayMessageContainer" style="align-items: center; justify-content: center; display: none; flex-shrink: 0;">
                         <ui:Label text="Empty" display-tooltip-when-elided="true" name="DisplayMessage" style="-unity-font-style: italic; font-size: 16px; color: rgb(210, 210, 210);" />
                     </ui:VisualElement>
                 </ui:VisualElement>
                 <ui:VisualElement style="align-items: center; margin-top: 7px; margin-bottom: 7px; flex-shrink: 0;">
                     <ui:Button text="Add" name="Action" style="margin-left: 7px; margin-right: 2px; min-width: 120px;" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:VisualElement name="MessagePopup" class="Popup" style="min-width: 400px;">
+                <ui:VisualElement style="flex-direction: row; justify-content: space-between; flex-shrink: 0;">
+                    <ui:Label text="Add Assets to Collection" name="Title" style="font-size: 18px; -unity-font-style: bold; margin-bottom: 9px; color: rgb(210, 210, 210); margin-top: 7px; margin-left: 7px; margin-right: 2px; padding-left: 0; padding-right: 0; padding-top: 0; padding-bottom: 0; flex-grow: 1;" />
+                    <ui:Button display-tooltip-when-elided="true" name="Close" class="PopupClose" />
+                </ui:VisualElement>
+                <ui:VisualElement style="flex-direction: column;">
+                    <ui:Label display-tooltip-when-elided="true" name="Message" text="Message" style="display: flex; color: rgb(197, 197, 197); padding-top: 8px; padding-left: 8px; padding-right: 8px; padding-bottom: 8px;" />
+                </ui:VisualElement>
+                <ui:VisualElement style="align-items: center; margin-top: 7px; margin-bottom: 7px;">
+                    <ui:Button text="Ok" name="Action" style="margin-left: 7px; margin-right: 2px; min-width: 120px;" />
                 </ui:VisualElement>
             </ui:VisualElement>
         </ui:VisualElement>

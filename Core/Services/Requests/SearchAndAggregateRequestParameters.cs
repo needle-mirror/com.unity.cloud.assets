@@ -7,7 +7,7 @@ namespace Unity.Cloud.Assets
     /// The request for searching for aggregations.
     /// </summary>
     [DataContract]
-    internal class SearchAndAggregateRequestParameters
+    class SearchAndAggregateRequestParameters
     {
         /// <summary>
         /// The request for searching for aggregations.

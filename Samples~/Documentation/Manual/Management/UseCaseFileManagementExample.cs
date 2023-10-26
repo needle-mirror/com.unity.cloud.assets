@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,9 +12,9 @@ namespace Unity.Cloud.Assets.Documentation.Management
     {
         readonly UseCaseFileManagementExampleBehaviour m_Behaviour = new();
 
-        public void DisplayExample(IProject project, IAsset asset)
+        public void DisplayExample(IAsset asset)
         {
-            m_Behaviour.Initialize(project, asset);
+            m_Behaviour.Initialize(asset);
             AssetActions();
         }
 
@@ -19,47 +22,42 @@ namespace Unity.Cloud.Assets.Documentation.Management
 
         protected virtual void AssetActions()
         {
-            if (GUILayout.Button("Refresh file list"))
+            if (m_Behaviour.CurrentAsset == null)
             {
-                _ = m_Behaviour.RefreshAssetFiles();
+                GUILayout.Label(" ! No asset selected !");
+                return;
+            }
+
+            if (GUILayout.Button("Refresh Files") || m_Behaviour.AssetFiles == null)
+            {
+                _ = m_Behaviour.GetAssetFiles();
             }
 
             GUILayout.Label("Asset files:");
-            if (m_Behaviour.CurrentAsset != null)
+
+            // Get a local copy of the list of asset files to avoid concurrent modification exceptions.
+            var assetFiles = m_Behaviour.AssetFiles?.ToArray() ?? Array.Empty<IFile>();
+            foreach (var assetFile in assetFiles)
             {
-                // Get a local copy of the list of asset files to avoid concurrent modification exceptions.
-                var assetFiles = m_Behaviour.CurrentAsset.Files.ToArray();
-                foreach (var assetFile in assetFiles)
-                {
-                    DisplayAssetFile(assetFile);
-                }
-            }
-            else
-            {
-                GUILayout.Label(" ! No asset selected !");
+                DisplayAssetFile(assetFile);
             }
         }
 
-        void DisplayAssetFile(IAssetFile assetFile)
+        void DisplayAssetFile(IFile assetFile)
         {
             GUILayout.BeginHorizontal();
 
-            GUILayout.Label($"{assetFile.Name}");
+            GUILayout.Label($"{assetFile.Descriptor.Path}");
             GUILayout.Space(5f);
 
             if (GUILayout.Button("Get download URL"))
             {
-                _ = m_Behaviour.GetDownloadUrlAsync(assetFile);
+                _ = UseCaseFileManagementExampleBehaviour.DownloadAsync(assetFile);
             }
 
             if (GUILayout.Button("Update"))
             {
-                _ = m_Behaviour.UpdateAssetFile(assetFile);
-            }
-
-            if (GUILayout.Button("Delete"))
-            {
-                _ = m_Behaviour.DeleteAssetFile(assetFile);
+                _ = UseCaseFileManagementExampleBehaviour.UpdateAssetFile(assetFile);
             }
 
             GUILayout.EndHorizontal();
@@ -71,59 +69,64 @@ namespace Unity.Cloud.Assets.Documentation.Management
     class UseCaseFileManagementExampleBehaviour
     {
         // Member names should match with the names of the get-started behaviour snippets.
-        IProject m_CurrentProject;
         public IAsset CurrentAsset;
 
-        public void Initialize(IProject project, IAsset asset)
+        public void Initialize(IAsset asset)
         {
-            m_CurrentProject = project;
-            CurrentAsset = asset;
+            if (CurrentAsset != asset)
+            {
+                CurrentAsset = asset;
+                AssetFiles = null;
+            }
         }
 
         #region Example_Behaviour_RefreshAssetFiles
 
-        public async Task RefreshAssetFiles()
+        public List<IFile> AssetFiles;
+
+        public async Task GetAssetFiles()
         {
-            var cancellationTokenSrc = new CancellationTokenSource();
-            await PlatformServices.AssetManager.GetAssetDownloadUrlsAsync(CurrentAsset, cancellationTokenSrc.Token);
+            AssetFiles = new List<IFile>();
+
+            var fileList = CurrentAsset.ListFilesAsync(Range.All, CancellationToken.None);
+            await foreach (var file in fileList)
+            {
+                AssetFiles.Add(file);
+            }
         }
 
         #endregion
 
         #region Example_Behaviour_UpdateAssetFile
 
-        public async Task UpdateAssetFile(IAssetFile assetFile)
+        public static async Task UpdateAssetFile(IFile assetFile)
         {
-            var name = assetFile.Name.Split('_');
-            var index = int.Parse(name[1]) + 1;
-            assetFile.Name = $"{name[0]}_{index}";
+            var fileUpdate = new FileUpdate(assetFile)
+            {
+                Description = Guid.NewGuid().ToString()[..3]
+            };
 
             var cancellationTokenSrc = new CancellationTokenSource();
-            await PlatformServices.AssetFileManager.UpdateAssetFileAsync(m_CurrentProject, assetFile, cancellationTokenSrc.Token);
+            await assetFile.UpdateAsync(fileUpdate, cancellationTokenSrc.Token);
             Debug.Log("File updated.");
-        }
-
-        #endregion
-
-        #region Example_Behaviour_DeleteAssetFile
-
-        public async Task DeleteAssetFile(IAssetFile assetFile)
-        {
-            var cancellationTokenSrc = new CancellationTokenSource();
-            await PlatformServices.AssetFileManager.DeleteAssetFileAsync(m_CurrentProject, assetFile, cancellationTokenSrc.Token);
-            await RefreshAssetFiles();
-            Debug.Log("File deleted.");
         }
 
         #endregion
 
         #region Example_Behaviour_DownloadUrls
 
-        public async Task GetDownloadUrlAsync(IAssetFile assetFile)
+        public static async Task DownloadAsync(IFile file)
         {
-            var cancellationTokenSrc = new CancellationTokenSource();
-            var downloadUrl = await PlatformServices.AssetFileManager.GetAssetFileUrlAsync(m_CurrentProject, assetFile, AssetFileUrlType.Download, cancellationTokenSrc.Token);
-            Debug.Log($"Download URL: {downloadUrl}");
+            var path = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+            try
+            {
+                await using var destination = File.OpenWrite(Path.Combine(path, file.Descriptor.Path));
+                await file.DownloadAsync(destination, null, CancellationToken.None);
+            }
+            catch (Exception e)
+            {
+                Debug.LogError(e);
+            }
         }
 
         #endregion

@@ -24,9 +24,6 @@
             <ui:VisualElement name="StatusContainer" class="AssetListItem">
                 <ui:Label text="Status" display-tooltip-when-elided="true" name="StatusLabel" class="AssetListItemLabel" style="white-space: normal;" />
             </ui:VisualElement>
-            <ui:VisualElement name="FilesContainer" class="AssetListItem">
-                <ui:Label text="Files" display-tooltip-when-elided="true" name="FilesLabel" class="AssetListItemLabel" style="white-space: normal;" />
-            </ui:VisualElement>
         </ui:VisualElement>
         <ui:VisualElement name="RightPanel" class="AssetListRightBar AssetListItemRightBar" style="border-bottom-right-radius: 0; align-items: center; justify-content: center; border-top-left-radius: 0; border-bottom-left-radius: 0; border-top-right-radius: 0; border-top-color: rgba(81, 81, 81, 0);">
             <ui:Button display-tooltip-when-elided="true" name="ExpandButton" />

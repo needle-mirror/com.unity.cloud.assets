@@ -1,6 +1,7 @@
 using System;
 using System.Net.Http;
 using System.Text;
+using Unity.Cloud.Common;
 
 namespace Unity.Cloud.Assets
 {
@@ -8,7 +9,7 @@ namespace Unity.Cloud.Assets
     /// SearchRequest
     /// Search assets based on criteria.
     /// </summary>
-    internal class SearchRequest : AssetRequest
+    class SearchRequest : ProjectRequest
     {
         /// <summary>Accessor for searchRequestParameter </summary>
         public SearchRequestParameters SearchRequestParameter { get; }
@@ -17,18 +18,13 @@ namespace Unity.Cloud.Assets
         /// Search Request Object.
         /// Search assets based on criteria.
         /// </summary>
-        /// <param name="organizationId">Genesis ID of the organization</param>
         /// <param name="projectId">ID of the project</param>
         /// <param name="xCorrelationId">Correlation id of the request.</param>
         /// <param name="searchRequestParameter">The search asset request criteria.</param>
-        public SearchRequest(ulong organizationId,
-            string projectId,
-            string assetPath,
-            string xCorrelationId = default(string),
-            SearchRequestParameters searchRequestParameter = default(SearchRequestParameters))
-            : base(organizationId, projectId, xCorrelationId)
+        public SearchRequest(ProjectId projectId, SearchRequestParameters searchRequestParameter = default, string xCorrelationId = default)
+            : base(projectId, xCorrelationId)
         {
-            m_PathAndQueryParams += $"{assetPath}/search";
+            m_PathAndQueryParams += $"/assets/search";
 
             SearchRequestParameter = searchRequestParameter;
         }
@@ -39,7 +35,7 @@ namespace Unity.Cloud.Assets
         /// <returns>A </returns>
         public override HttpContent ConstructBody()
         {
-            var body = IsolatedJsonConvert.SerializeObject(SearchRequestParameter);
+            var body = IsolatedJsonConvert.SerializeObject(SearchRequestParameter, SerializationUtilities.Converters);
             return new StringContent(body, Encoding.UTF8, "application/json");
         }
     }

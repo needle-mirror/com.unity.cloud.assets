@@ -16,7 +16,6 @@ namespace Unity.Cloud.Assets
         /// <param name="serviceEnvironment">The service environment to target for requests.</param>
         internal AssetHostConfiguration(ServiceEnvironment serviceEnvironment = ServiceEnvironment.Production)
         {
-            ValidateServiceEnvironment(serviceEnvironment);
             ServiceEnvironment = serviceEnvironment;
         }
 
@@ -41,18 +40,6 @@ namespace Unity.Cloud.Assets
                 ServiceEnvironment.Test => $"https://staging.{domain}",
                 _ => throw new ArgumentOutOfRangeException(nameof(serviceEnvironment), serviceEnvironment, $"Invalid environment for {nameof(GetServiceAddress)}")
             };
-        }
-
-        static void ValidateServiceEnvironment(ServiceEnvironment serviceEnvironment)
-        {
-            switch (serviceEnvironment)
-            {
-#pragma warning disable CS0618 // Type or member is obsolete
-                case ServiceEnvironment.Local:
-                case ServiceEnvironment.Url:
-#pragma warning restore CS0618
-                    throw new ArgumentOutOfRangeException(nameof(serviceEnvironment), serviceEnvironment, "Invalid environment - only production and staging are supported.");
-            }
         }
     }
 }

@@ -1,27 +1,27 @@
 {
   "name": "com.unity.cloud.assets",
-  "version": "0.5.0",
-  "displayName": "Unity Asset Manager SDK",
-  "description": "Client-side SDK to interface with the Asset Manager service.",
-  "unity": "2021.3",
+  "version": "1.0.0-exp.1",
+  "displayName": "Unity Cloud Assets",
+  "description": "Unity Cloud Assets makes it easy to discover, create, update, delete, and manage Unity assets through the Assets service interface.",
+  "unity": "2022.3",
   "dependencies": {
-    "com.unity.cloud.common": "0.14.4",
+    "com.unity.cloud.common": "1.0.0-exp.1",
     "com.unity.editorcoroutines": "1.0.0"
   },
   "relatedPackages": {
-    "com.unity.cloud.assets.tests": "0.5.0"
+    "com.unity.cloud.assets.tests": "1.0.0-exp.1"
   },
   "_upm": {
-    "changelog": "### Added\n- [Breaking] Added the `DownloadAssetFileAsync` to `IAssetFileManager`.\n- Added UseCaseDownloadFileExample documentation page.\n- [Breaking] Added two new methods SendAsync to `IAssetHttpClient` to provide ways to do requests passing HttpCompletionOption argument.\n- Added `InvalidDownloadUrlException` to `AssetExceptions`.\n- Added official support for the latest LTS Editor 2022.3 while maintaining support for 2021.3.\n\n### Changed\n- [Breaking] Changed the `UploadAssetFileAsync` from `IAssetFileManager` to add the progress tracking.\n- Changed the DiscoverySample download action to use the new `DownloadAssetFileAsync` method.\n- Put `InternalsVisibleTo` attributes under conditional compilation in `Core\\AssemblyInfo.cs`\n\n### Fixed\n- Fixed issue where search wasn't returning all results."
+    "changelog": "### Added\n- `RefreshAsync` method added to `IAsset` to refresh the asset data. This is useful for fetching additional data that is not populated by default.\n- `PreviewUrl` property added to `IFile` to expose the preview url of the file.\n- `ListAssetCollectionsAsync` and `GetAssetCollectionAsync` methods added to `IAssetRepository`.\n- Added error popup to Asset Collection sample when creation fails.\n- Added error message to Asset Collection sample during creation and edit when a collection with the same name already exists.\n\n### Changed\n- [Breaking] `GetDatasetAsync` and `GetFileAsync` methods of `IAssetRepository` now require a `DatasetFields` and `FileFields` parameter respectively.\n- [Breaking] `Id` in `IAssetProject` replaced by `Descriptor` of type `ProjectDescriptor`.\n- Refactored `AssetDataSource` to match other packages.\n- Change minimal Unity version to 2022.3\n\n### Fixes\n- Asset Collection sample list selection now allows de-selection of item.\n- Remove usage of system.web for encoding urls.\n- Remove Cancellation tokens timeout from Asset Management sample to allow big file to be uploaded.\n- Fix file size display to correspond correctly on the unit.\n- Add checks on UI buttons in the Asset Management sample to prevent multiple clicks\n- Add UI message to give feedback after an action like (publish asset, save asset)\n- Added filtering of already included assets for the 'Add to Collection' asset list in Asset Collection sample.\n- `IDataset` refreshes its data when `UpdateAsync` and `RemoveFileAsync` are called.\n- Fix `IAsset.UnlinkFromProjectAsync` unlinking context project instead of the one passed in parameter. \n\n### Removed\n- Removing empty and unused directories and scripts.\n- Removed `IAssetHttpClient`, its implementations and its tests."
   },
   "upmCi": {
-    "footprint": "b5ff08adc8e4322bd080faa3a436248fb3a57d38"
+    "footprint": "21c64f1ac0c58926a70236ec911f707daf967c9c"
   },
-  "documentationUrl": "https://docs.unity3d.com/Packages/com.unity.cloud.assets@0.5/manual/index.html",
+  "documentationUrl": "https://docs.unity3d.com/Packages/com.unity.cloud.assets@1.0/manual/index.html",
   "repository": {
     "url": "https://github.cds.internal.unity3d.com/unity/digital-twins-sdk.git",
     "type": "git",
-    "revision": "79b157f6b3eb32e2a5884c36fde102fd115e85d5"
+    "revision": "400f78287aeb53a6435b1936d0686b069fa3c02f"
   },
   "samples": [
     {
@@ -33,6 +33,11 @@
       "displayName": "Asset Discovery",
       "description": "Search for published assets.",
       "path": "Samples~/AssetDiscovery"
+    },
+    {
+      "displayName": "Asset Management",
+      "description": "Sample project demonstrating how to use the Asset Manager service.",
+      "path": "Samples~/AssetManager"
     },
     {
       "displayName": "Asset Collection Management",

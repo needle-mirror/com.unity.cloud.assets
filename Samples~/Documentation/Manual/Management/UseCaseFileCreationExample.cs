@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Unity.Cloud.Common;
@@ -12,9 +13,9 @@ namespace Unity.Cloud.Assets.Documentation.Management
     {
         readonly UseCaseFileCreationExampleBehaviour m_Behaviour = new();
 
-        public void DisplayExample(IProject project, IAsset asset)
+        public void DisplayExample(IAsset asset)
         {
-            m_Behaviour.Initialize(project, asset);
+            m_Behaviour.Initialize(asset);
             AssetActions();
         }
 
@@ -28,34 +29,67 @@ namespace Unity.Cloud.Assets.Documentation.Management
                 return;
             }
 
-            if (GUILayout.Button("Create new asset file"))
+            if (GUILayout.Button("Refresh All") || m_Behaviour.Datasets == null || m_Behaviour.Files == null)
             {
-                _ = m_Behaviour.CreateAssetFile();
+                _ = m_Behaviour.GetDatasets();
+                _ = m_Behaviour.GetFiles();
             }
 
-            GUILayout.Space(10);
+            GUILayout.Label("Asset datasets:");
+            DisplayDatasets(m_Behaviour.Datasets?.ToArray() ?? Array.Empty<IDataset>());
+        }
 
-            GUILayout.Label("Asset files:");
-            var assetFiles = m_Behaviour.NewAssetFiles;
-            for (var i = 0; i < assetFiles.Count; ++i)
+        void DisplayDatasets(IReadOnlyList<IDataset> datasets)
+        {
+            if (datasets.Count == 0)
             {
-                DisplayAssetFile(assetFiles[i]);
+                GUILayout.Label(" ! No datasets !");
+            }
+            else
+            {
+                var files = m_Behaviour.Files?.ToArray() ?? Array.Empty<IFile>();
+
+                for (var i = 0; i < datasets.Count; ++i)
+                {
+                    var dataset = datasets[i];
+                    DisplayDataset(dataset, files.Where(file => file.LinkedDatasets.Contains(dataset.Descriptor)).ToArray());
+
+                    GUILayout.Space(10);
+                }
             }
         }
 
-        void DisplayAssetFile((IAsset asset, IAssetFile assetFile) tuple)
+        void DisplayDataset(IDataset dataset, IReadOnlyCollection<IFile> files)
         {
             GUILayout.BeginHorizontal();
 
-            GUILayout.Label($"{tuple.assetFile.Name}");
+            GUILayout.Label(dataset.Name);
+
             GUILayout.Space(5f);
 
-            if (GUILayout.Button("Upload"))
+            if (GUILayout.Button("Create new asset file"))
             {
-                _ = m_Behaviour.UploadAssetFile(tuple.asset, tuple.assetFile);
+                _ = m_Behaviour.UploadAssetFile(dataset);
             }
 
             GUILayout.EndHorizontal();
+
+            if (files.Count == 0)
+            {
+                GUILayout.Label(" ! No files !");
+            }
+            else
+            {
+                foreach (var file in files)
+                {
+                    DisplayAssetFile(file);
+                }
+            }
+        }
+
+        static void DisplayAssetFile(IFile file)
+        {
+            GUILayout.Label($"  > {file.Descriptor.Path}");
         }
 
         #endregion
@@ -64,49 +98,48 @@ namespace Unity.Cloud.Assets.Documentation.Management
     class UseCaseFileCreationExampleBehaviour
     {
         // Member names should match with the names of the get-started behaviour snippets.
-        IProject m_CurrentProject;
         public IAsset CurrentAsset;
 
-        public void Initialize(IProject project, IAsset asset)
+        public void Initialize(IAsset asset)
         {
-            m_CurrentProject = project;
+            if (asset != CurrentAsset)
+            {
+                Datasets = null;
+                Files = null;
+            }
+
             CurrentAsset = asset;
         }
 
-        #region Example_Behaviour_CreateAssetFile
+        #region Example_Behaviour_RefreshDatasets
 
-        static readonly byte[] s_Bytes = new byte[]
+        public List<IDataset> Datasets { get; private set; }
+
+        public async Task GetDatasets()
         {
-            100, 100, 100, 100, 100, 100, 100, 100, 100, 100
-        };
+            Datasets = new List<IDataset>();
 
-        public List<(IAsset, IAssetFile)> NewAssetFiles { get; } = new();
-
-        public async Task CreateAssetFile()
-        {
-            var fileCreation = new AssetFileCreation
+            var asyncList = CurrentAsset.ListDatasetsAsync(Range.All, CancellationToken.None);
+            await foreach (var dataset in asyncList)
             {
-                Name = CurrentAsset.Name + "_file",
-                Description = "Documentation example asset file creation.",
-                Type = nameof(Texture2D),
-                FileSize = s_Bytes.LongLength,
-                Tags = new List<string> {"Texture", "Gray"}
-            };
-
-            var cancellationTokenSrc = new CancellationTokenSource();
-
-            try
-            {
-                var assetFile = await PlatformServices.AssetFileManager.CreateAssetFileAsync(m_CurrentProject, CurrentAsset, fileCreation, cancellationTokenSrc.Token);
-                if (assetFile != null)
-                {
-                    NewAssetFiles.Add((CurrentAsset, assetFile));
-                }
+                Datasets.Add(dataset);
             }
-            catch (Exception e)
+        }
+
+        #endregion
+
+        #region Example_Behaviour_RefreshFiles
+
+        public List<IFile> Files { get; private set; }
+
+        public async Task GetFiles()
+        {
+            Files = new List<IFile>();
+
+            var asyncList = CurrentAsset.ListFilesAsync(Range.All, CancellationToken.None);
+            await foreach (var file in asyncList)
             {
-                Debug.LogError($"Failed to create asset file. {e.Message}");
-                throw;
+                Files.Add(file);
             }
         }
 
@@ -114,37 +147,45 @@ namespace Unity.Cloud.Assets.Documentation.Management
 
         #region Example_Behaviour_UploadAssetFile
 
+        static readonly byte[] s_Bytes = new byte[]
+        {
+            100, 100, 100, 100, 100, 100, 100, 100, 100, 100
+        };
+
         class LogProgress : IProgress<HttpProgress>
         {
             public void Report(HttpProgress value)
             {
                 if (!value.UploadProgress.HasValue) return;
 
-                Debug.Log($"Upload progress: {value.UploadProgress*100} %");
+                Debug.Log($"Upload progress: {value.UploadProgress * 100} %");
             }
         }
 
-        public async Task UploadAssetFile(IAsset asset, IAssetFile assetFile)
+        public async Task UploadAssetFile(IDataset dataset)
         {
-            // Uses the same texture as the file creation.
+            var fileCreation = new FileCreation
+            {
+                Path = CurrentAsset.Name + $"_file_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}",
+                Description = "Documentation example asset file creation.",
+                Tags = new List<string> {"Texture", "Gray"}
+            };
+
             var contentStream = new MemoryStream(s_Bytes);
 
             var cancellationTokenSrc = new CancellationTokenSource();
             try
             {
                 var progress = new LogProgress();
-                var didUpload = await PlatformServices.AssetFileManager.UploadAssetFileAsync(asset.Project, assetFile, contentStream, progress, cancellationTokenSrc.Token);
-                if (!didUpload)
-                {
-                    throw new Exception();
-                }
 
-                await PlatformServices.AssetFileManager.FinalizeAssetFileUploadAsync(asset.Project, assetFile, cancellationTokenSrc.Token);
-                Debug.Log($"Asset file upload: {assetFile.Name} finalized.");
+                var file = await dataset.UploadFileAsync(fileCreation, contentStream, progress, cancellationTokenSrc.Token);
+                Files.Add(file);
+
+                Debug.Log($"Asset file upload: {file.Descriptor.Path} added and uploaded.");
             }
             catch (Exception e)
             {
-                Debug.LogError($"Failed to upload asset file: {assetFile.Name}. {e.Message}");
+                Debug.LogError($"Failed to upload asset file: {fileCreation.Path}. {e}");
             }
         }
 

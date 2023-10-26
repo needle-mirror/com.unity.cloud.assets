@@ -1,6 +1,7 @@
 using System;
 using System.Net.Http;
 using System.Text;
+using Unity.Cloud.Common;
 
 namespace Unity.Cloud.Assets
 {
@@ -8,29 +9,24 @@ namespace Unity.Cloud.Assets
     /// SearchAndAggregateRequest
     /// Aggregations of assets that match a criteria by a defined field.
     /// </summary>
-    internal class SearchAndAggregateRequest : AssetRequest
+    class SearchAndAggregateRequest : ProjectRequest
     {
         /// <summary>Accessor for searchAndAggregateRequestParameter </summary>
-        public SearchAndAggregateRequestParameters SearchAndAggregateRequestParameter { get; }
+        SearchAndAggregateRequestParameters Parameters { get; }
 
         /// <summary>
         /// SearchAndAggregate Request Object.
         /// Aggregations of assets that match a criteria by a defined field.
         /// </summary>
-        /// <param name="organizationId">Genesis ID of the organization</param>
         /// <param name="projectId">ID of the project</param>
         /// <param name="xCorrelationId">Correlation id of the request.</param>
-        /// <param name="searchAndAggregateRequestParameter">The request containing the read filter and the field to be used in the aggregation..</param>
-        public SearchAndAggregateRequest(ulong organizationId,
-            string projectId,
-            string assetPath,
-            string xCorrelationId = default(string),
-            SearchAndAggregateRequestParameters searchAndAggregateRequestParameter = default(SearchAndAggregateRequestParameters))
-            : base(organizationId, projectId, xCorrelationId)
+        /// <param name="parameters">The request containing the read filter and the field to be used in the aggregation..</param>
+        public SearchAndAggregateRequest(ProjectId projectId, SearchAndAggregateRequestParameters parameters = default, string xCorrelationId = default)
+            : base(projectId, xCorrelationId)
         {
-            m_PathAndQueryParams += $"{assetPath}/aggregations/search";
+            m_PathAndQueryParams += "/assets/aggregations/search";
 
-            SearchAndAggregateRequestParameter = searchAndAggregateRequestParameter;
+            Parameters = parameters;
         }
 
         /// <summary>
@@ -39,7 +35,7 @@ namespace Unity.Cloud.Assets
         /// <returns>A list of IMultipartFormSection representing the request body.</returns>
         public override HttpContent ConstructBody()
         {
-            var body = IsolatedJsonConvert.SerializeObject(SearchAndAggregateRequestParameter);
+            var body = IsolatedJsonConvert.SerializeObject(Parameters, SerializationUtilities.Converters);
             return new StringContent(body, Encoding.UTF8, "application/json");
         }
     }

@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -12,15 +11,17 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 {
     public class AssetCreationController
     {
-        static readonly List<string> k_AssetTypes = new() {"Model", "Material", "Other"};
+        static readonly List<string> k_AssetTypes = AssetTypeExtensions.AssetTypeList();
+        const string k_PublishedStatus = "Published";
 
-        VisualTreeAsset m_FileListItemTemplate;
+        VisualTreeAsset m_DatasetListItemTemplate;
         VisualTreeAsset m_AssetTagsTemplate;
+        VisualElement m_RightPanel;
         VisualElement m_AssetTagsContainer;
-        VisualElement m_AssetFileList;
         VisualElement m_AssetStatusCircle;
         VisualElement m_AssetLastEdit;
-        ScrollView m_AssetFileScrollView;
+        VisualElement m_AssetCreationPanel;
+
         DropdownField m_AssetTypeDropdown;
         Label m_AssetStatusNameLabel;
         Label m_AssetStatusLastEditLabel;
@@ -28,87 +29,133 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
         TextField m_AssetNameField;
         TextField m_AssetTagsField;
         TextField m_AssetDescriptionField;
-        Toggle m_AssetPublishToggle;
+        Button m_AssetPublishButton;
         Button m_AssetSaveButton;
+        Button m_CreateDatasetButton;
+        Button m_BackButton;
 
+        IAssetProject m_AssetProject;
         IAsset m_CurrentAsset;
+        ScrollView m_DatasetScrollView;
 
-        internal void Init(VisualElement root, VisualTreeAsset listItemTemplate, VisualTreeAsset tagsTemplate)
+        MessageDialogController m_MessageDialogController;
+        IAssetUpdate m_AssetUpdate;
+
+        public delegate Task<IAsset> GetRefreshedAsset(IAsset asset);
+
+        GetRefreshedAsset m_GetRefreshedAsset;
+
+        DatasetCreationController m_DatasetCreationController;
+
+        internal void Init(VisualElement assetCreationPanel, DatasetCreationController datasetCreationController, VisualTreeAsset datasetListItemTemplate, VisualTreeAsset tagsTemplate, GetRefreshedAsset getRefreshedAsset, IDialogController dialogController)
         {
-            m_FileListItemTemplate = listItemTemplate;
+            m_GetRefreshedAsset = getRefreshedAsset;
+            m_DatasetCreationController = datasetCreationController;
+            m_DatasetCreationController.OnClosePanel += OnDatasetPanelClose;
+            m_AssetCreationPanel = assetCreationPanel;
+            m_DatasetListItemTemplate = datasetListItemTemplate;
             m_AssetTagsTemplate = tagsTemplate;
+            m_MessageDialogController = (MessageDialogController) dialogController;
 
-            m_AssetFileList = root.Q<VisualElement>("AssetFileList");
-            m_AssetTagsContainer = root.Q<VisualElement>("AssetTagsChipContainer");
-            m_AssetFileScrollView = root.Q<ScrollView>("AssetFileScrollView");
-            m_AssetStatusCircle = root.Q<VisualElement>("StatusCircle");
-            m_AssetLastEdit = root.Q<VisualElement>("AssetLastEdit");
-            m_AssetTypeDropdown = root.Q<DropdownField>("AssetTypeDropdown");
-            m_AssetStatusNameLabel = root.Q<Label>("StatusNameLabel");
-            m_AssetStatusLastEditLabel = root.Q<Label>("AssetLastEditDateLabel");
-            m_AssetTitleLabel = root.Q<Label>("AssetTitleLabel");
-            m_AssetNameField = root.Q<TextField>("AssetNameField");
-            m_AssetTagsField = root.Q<TextField>("AssetTagsField");
-            m_AssetDescriptionField = root.Q<TextField>("AssetDescriptionField");
-            m_AssetPublishToggle = root.Q<Toggle>("AssetPublishToggle");
-            m_AssetSaveButton = root.Q<Button>("AssetSaveButton");
+            m_DatasetScrollView = assetCreationPanel.Q<ScrollView>("DatasetScrollView");
+            m_RightPanel = assetCreationPanel.Q<VisualElement>("RightPanel");
+            m_AssetTagsContainer = assetCreationPanel.Q<VisualElement>("AssetTagsChipContainer");
+            m_AssetStatusCircle = assetCreationPanel.Q<VisualElement>("StatusCircle");
+            m_AssetLastEdit = assetCreationPanel.Q<VisualElement>("AssetLastEdit");
+            m_AssetTypeDropdown = assetCreationPanel.Q<DropdownField>("AssetTypeDropdown");
+            m_AssetStatusNameLabel = assetCreationPanel.Q<Label>("StatusNameLabel");
+            m_AssetStatusLastEditLabel = assetCreationPanel.Q<Label>("AssetLastEditDateLabel");
+            m_AssetTitleLabel = assetCreationPanel.Q<Label>("AssetTitleLabel");
 
-            m_AssetTypeDropdown.label = "Asset Type";
+            m_AssetNameField = assetCreationPanel.Q<TextField>("AssetNameField");
+            m_AssetTagsField = assetCreationPanel.Q<TextField>("AssetTagsField");
+            m_AssetDescriptionField = assetCreationPanel.Q<TextField>("AssetDescriptionField");
+            m_AssetPublishButton = assetCreationPanel.Q<Button>("AssetPublishButton");
+            m_AssetPublishButton.visible = false;
+            m_AssetSaveButton = assetCreationPanel.Q<Button>("AssetSaveButton");
+            m_AssetSaveButton.visible = false;
+            m_CreateDatasetButton = assetCreationPanel.Q<Button>("CreateDatasetButton");
+            m_CreateDatasetButton.visible = false;
+
+            m_BackButton = assetCreationPanel.Q<Button>("BackBtn");
+
             m_AssetTypeDropdown.choices = k_AssetTypes;
-            m_AssetNameField.label = "Asset Name";
-            m_AssetTagsField.label = "Tags";
-            m_AssetDescriptionField.label = "Description";
 
-            m_AssetPublishToggle.value = true;
-            m_AssetPublishToggle.RegisterValueChangedCallback(evt =>
+            // Call backs------------------------------------------------------------
+            m_AssetTypeDropdown.RegisterValueChangedCallback(evt =>
             {
-                m_AssetSaveButton.text = GetSaveButtonText();
+                var assetTypeNewValue = evt.newValue.GetAssetTypeFromString();
+                if (m_AssetUpdate != null && m_AssetUpdate.Type != assetTypeNewValue)
+                    m_AssetUpdate.Type = assetTypeNewValue;
             });
 
-            m_AssetSaveButton.text = GetSaveButtonText();
+            m_AssetNameField.RegisterValueChangedCallback(evt =>
+            {
+                if (m_AssetUpdate != null && m_AssetUpdate.Name != evt.newValue)
+                    m_AssetUpdate.Name = evt.newValue;
+            });
+
+            m_AssetDescriptionField.RegisterValueChangedCallback(evt =>
+            {
+                if (m_AssetUpdate != null && m_AssetUpdate.Description != evt.newValue)
+                    m_AssetUpdate.Description = evt.newValue;
+            });
+
+            m_AssetPublishButton.RegisterCallback<ClickEvent>(_ => PublishAsset());
             m_AssetSaveButton.RegisterCallback<ClickEvent>(_ => UpdateAssetInformation());
+            m_CreateDatasetButton.RegisterCallback<ClickEvent>(_ => CreateNewDataset());
 
             // if on asset tags text field and press enter, call "add new tag" (if not empty)
-            m_AssetTagsField.RegisterCallback<FocusInEvent>(evt =>
+            m_AssetTagsField.RegisterCallback<FocusInEvent>(_ =>
             {
                 if (Input.GetKey(KeyCode.Return) && m_AssetTagsField.value != "")
                 {
-                    m_CurrentAsset.Tags.Add(m_AssetTagsField.value);
+                    m_AssetUpdate.Tags.Add(m_AssetTagsField.value);
                     AddTag(m_AssetTagsField.value);
+
+                    // clear the text field
+                    m_AssetTagsField.value = "";
                 }
             });
         }
 
-        string GetSaveButtonText()
+        internal void OpenAsset(IAsset asset)
         {
-            return m_AssetPublishToggle.value && !string.Equals(m_CurrentAsset?.Status, "Published") ? "Publish asset" : "Save asset";
-        }
+            DisplayElement(m_RightPanel);
 
-        internal void OpenExistingAsset(IAsset asset)
-        {
             ClearAssetInformation();
 
-            m_AssetLastEdit.style.display = DisplayStyle.Flex;
+            m_CurrentAsset = asset;
+            m_AssetUpdate = new AssetUpdate(asset);
+
+            DisplayElement(m_AssetLastEdit);
 
             m_AssetTitleLabel.text = asset.Name;
-            m_AssetStatusLastEditLabel.text = asset.Updated.ToString("MMM dd, yyyy h:mm tt GMT");
-            m_AssetTypeDropdown.value = asset.Type;
+            m_AssetStatusLastEditLabel.text = asset.AuthoringInfo.Updated.ToString("MMM dd, yyyy h:mm tt GMT");
+            m_AssetTypeDropdown.value = asset.Type.GetValueAsString();
             m_AssetNameField.value = asset.Name;
             m_AssetDescriptionField.value = asset.Description;
 
-            AddExistingTags(asset.Tags);
-            AddExistingFiles(asset.Files);
+            DrawTags(m_AssetUpdate.Tags);
+            _ = ListDatasets(asset);
 
-            UpdateStatus(asset.Status);
-
-            m_AssetSaveButton.text = GetSaveButtonText();
-
-            m_CurrentAsset = asset;
+            UpdateStatus();
         }
 
-        void AddExistingTags(List<string> tagsList)
+        internal void CreateNewAsset(IAssetProject project)
         {
-            if (tagsList.Count == 0) return;
+            HideElement(m_RightPanel);
+
+            ClearAssetInformation();
+
+            m_AssetProject = project;
+
+            m_DatasetCreationController.CreateNewAssetAndDataset(m_AssetProject);
+        }
+
+        void DrawTags(List<string> tagsList)
+        {
+            if (tagsList == null || tagsList.Count == 0) return;
 
             foreach (var tag in tagsList)
             {
@@ -123,94 +170,160 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             m_AssetTagsContainer.Add(chip);
             chip.Q<Button>().clicked += () =>
             {
-                m_CurrentAsset.Tags.Remove(tag);
+                m_AssetUpdate.Tags.Remove(tag);
                 chip.RemoveFromHierarchy();
             };
         }
 
-        void AddExistingFiles(IEnumerable<IAssetFile> fileList)
+        CancellationTokenSource m_GetDatasetsCancellationTokenSource;
+
+        async Task ListDatasets(IAsset asset)
         {
-            m_AssetFileScrollView.style.display = DisplayStyle.Flex;
-
-            if (!fileList.Any()) return;
-
-            foreach (var file in fileList)
+            if (m_GetDatasetsCancellationTokenSource != null)
             {
-                var fileItem = m_FileListItemTemplate.Instantiate();
-                fileItem.Q<Label>("AssetNameLabel").text = file.Name;
-                fileItem.Q<Label>("AssetSizeLabel").text = file.FileSize + " Kb";
-                m_AssetFileScrollView.Add(fileItem);
+                m_GetDatasetsCancellationTokenSource.Cancel();
+                m_GetDatasetsCancellationTokenSource.Dispose();
             }
 
+            m_GetDatasetsCancellationTokenSource = new CancellationTokenSource();
+
+            await foreach (var dataset in asset.ListDatasetsAsync(Range.All, m_GetDatasetsCancellationTokenSource.Token))
+            {
+                AddDatasetRow(dataset);
+            }
         }
 
-        internal void CreateNewAsset()
+        void AddDatasetRow(IDataset dataset)
         {
-            ClearAssetInformation();
+            var datasetItem = m_DatasetListItemTemplate.Instantiate();
+            datasetItem.Q<Label>("DatasetNameLabel").text = dataset.Name;
+            datasetItem.Q<Label>("DatasetDescriptionLabel").text = dataset.Description;
+            datasetItem.RegisterCallback<ClickEvent>(_ =>
+            {
+                OpenDatasetView(dataset);
+            });
+            m_DatasetScrollView.Add(datasetItem);
+        }
 
-            m_AssetPublishToggle.value = false;
+        void OpenDatasetView(IDataset dataset)
+        {
+            HideElement(m_AssetCreationPanel);
+            m_DatasetCreationController.OpenDataset(m_CurrentAsset, dataset);
+        }
 
-            UpdateStatus("Draft");
+        void OnDatasetPanelClose(IAsset asset)
+        {
+            DisplayElement(m_AssetCreationPanel);
+
+            if (asset != null)
+            {
+                _ = RefreshedAsset(asset);
+            }
+        }
+
+        async Task RefreshedAsset(IAsset asset)
+        {
+            var refreshedAsset = await m_GetRefreshedAsset(asset);
+            if (refreshedAsset != null)
+            {
+                OpenAsset(refreshedAsset);
+            }
         }
 
         void ClearAssetInformation()
         {
+            m_AssetProject = null;
             m_CurrentAsset = null;
             m_AssetTitleLabel.text = "AssetName";
             m_AssetStatusLastEditLabel.text = "";
             m_AssetTypeDropdown.value = "";
             m_AssetNameField.value = "";
             m_AssetDescriptionField.value = "";
+            m_AssetTagsField.value = "";
             m_AssetTagsContainer.Clear();
+            m_DatasetScrollView.Clear();
         }
 
         void UpdateAssetInformation()
         {
+            ChangeButtonEnabledState(false);
+
             _ = UpdateAssetInformationAsync();
         }
 
         async Task UpdateAssetInformationAsync()
         {
             if (m_CurrentAsset == null)
-                return;
-
-            if (m_AssetPublishToggle.value && !string.Equals(m_CurrentAsset.Status, "Published"))
             {
-                await PublishAsset();
+                ChangeButtonEnabledState(true);
                 return;
             }
 
-            await PlatformServices.AssetManager.UpdateAssetAsync(m_CurrentAsset, CancellationToken.None);
+            await m_DatasetCreationController.UpdateDatasetAsync();
+
+            var cancellationTokenSource = new CancellationTokenSource();
+            var updateTask = m_CurrentAsset.UpdateAsync(m_AssetUpdate, cancellationTokenSource.Token);
+
+            await updateTask;
+
+            ChangeButtonEnabledState(true);
+
+            if (updateTask.Status == TaskStatus.RanToCompletion)
+            {
+                m_MessageDialogController.OpenDialog("The asset has been saved successfully.");
+            }
+            else
+            {
+                m_MessageDialogController.OpenDialog("An error occurs during the asset saving.");
+            }
         }
 
-        async Task PublishAsset()
+        void PublishAsset()
+        {
+            ChangeButtonEnabledState(false);
+
+            _ = PublishAssetAsync();
+        }
+
+        async Task PublishAssetAsync()
         {
             if (m_CurrentAsset == null)
+            {
+                ChangeButtonEnabledState(true);
                 return;
+            }
 
             try
             {
+                var cancellationTokenSource = new CancellationTokenSource();
+
+                // Successful publishing workflow
+                //Draft -> Review -> Approved -> Published
                 switch (m_CurrentAsset.Status)
                 {
                     case "Draft":
-                        await PlatformServices.AssetManager.SendAssetToReviewAsync(m_CurrentAsset, CancellationToken.None);
-                        await PlatformServices.AssetManager.ApproveAssetAsync(m_CurrentAsset, CancellationToken.None);
-                        await PlatformServices.AssetManager.PublishApprovedAssetAsync(m_CurrentAsset, CancellationToken.None);
+                        await m_CurrentAsset.SendToReviewAsync(cancellationTokenSource.Token);
+                        await m_CurrentAsset.ApproveAsync(cancellationTokenSource.Token);
+                        await m_CurrentAsset.PublishAsync(cancellationTokenSource.Token);
                         break;
-                    case "Ingestion":
-                        await PlatformServices.AssetManager.ApproveAssetAsync(m_CurrentAsset, CancellationToken.None);
-                        await PlatformServices.AssetManager.PublishApprovedAssetAsync(m_CurrentAsset, CancellationToken.None);
+                    case "Ingestion": // Status when asset is in review
+                        await m_CurrentAsset.ApproveAsync(cancellationTokenSource.Token);
+                        await m_CurrentAsset.PublishAsync(cancellationTokenSource.Token);
                         break;
                     case "Approved":
-                        await PlatformServices.AssetManager.PublishApprovedAssetAsync(m_CurrentAsset, CancellationToken.None);
+                        await m_CurrentAsset.PublishAsync(cancellationTokenSource.Token);
                         break;
                 }
 
-                var updatedAsset = await PlatformServices.AssetManager.GetAssetAsync(m_CurrentAsset.Project, m_CurrentAsset.Id, m_CurrentAsset.Version, CancellationToken.None);
+                var updatedAsset = await m_GetRefreshedAsset(m_CurrentAsset);
                 if (updatedAsset != null)
                 {
-                    UpdateStatus(updatedAsset.Status);
+                    m_CurrentAsset = updatedAsset;
+
+                    UpdateStatus();
                 }
+
+                ChangeButtonEnabledState(true);
             }
             catch (Exception)
             {
@@ -219,23 +332,81 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             }
         }
 
-        void UpdateStatus(string status)
+        void CreateNewDataset()
         {
-            m_AssetStatusNameLabel.text = status;
+            _ = CreateNewDatasetAsync();
+        }
 
-            switch (status)
+        async Task CreateNewDatasetAsync()
+        {
+            if (m_CurrentAsset == null)
+                return;
+
+            var cancellationTokenSource = new CancellationTokenSource();
+            var dataset = await m_CurrentAsset.CreateDatasetAsync(new DatasetCreation($"Dataset_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}"), cancellationTokenSource.Token);
+            if (dataset != null)
+                AddDatasetRow(dataset);
+        }
+
+        void UpdateStatus()
+        {
+            m_AssetPublishButton.visible = false;
+            m_AssetSaveButton.visible = false;
+            m_CreateDatasetButton.visible = false;
+
+            if (m_CurrentAsset == null)
+                return;
+
+            m_AssetStatusNameLabel.text = m_CurrentAsset.Status;
+
+            // Successful publishing workflow
+            //Draft -> Review -> Approved -> Published
+            switch (m_CurrentAsset.Status)
             {
-                case "Published":
+                case k_PublishedStatus:
+                    m_AssetStatusCircle.style.unityBackgroundImageTintColor = new Color(0.74f, 0.94f, 0.71f, 1f);
+                    break;
                 case "Approved":
                     m_AssetStatusCircle.style.unityBackgroundImageTintColor = new Color(0.74f, 0.94f, 0.71f, 1f);
+                    m_AssetPublishButton.visible = true;
+                    break;
+                case "Ingestion": // Status when asset is in review
+                    m_AssetPublishButton.visible = true;
                     break;
                 case "Withdrawn":
                     m_AssetStatusCircle.style.unityBackgroundImageTintColor = new Color(0.93f, 0.42f, 0.37f, 1f);
                     break;
                 case "Draft":
                     m_AssetStatusCircle.style.unityBackgroundImageTintColor = new Color(0.86f, 0.60f, 0.27f, 1f);
+                    m_AssetPublishButton.visible = true;
+                    m_AssetSaveButton.visible = true;
+                    m_CreateDatasetButton.visible = true;
                     break;
             }
+        }
+
+        void ChangeButtonEnabledState(bool state)
+        {
+            m_CreateDatasetButton.SetEnabled(state);
+            m_AssetPublishButton.SetEnabled(state);
+            m_AssetSaveButton.SetEnabled(state);
+            m_BackButton.SetEnabled(state);
+        }
+
+        static void DisplayElement(VisualElement element)
+        {
+            if (element == null)
+                return;
+
+            element.style.display = DisplayStyle.Flex;
+        }
+
+        static void HideElement(VisualElement element)
+        {
+            if (element == null)
+                return;
+
+            element.style.display = DisplayStyle.None;
         }
     }
 }

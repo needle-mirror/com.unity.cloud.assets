@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Unity.Cloud.Assets
 {
@@ -10,9 +9,19 @@ namespace Unity.Cloud.Assets
     public interface IAssetSearchFilter
     {
         /// <summary>
+        /// Returns the collections in which to search for assets.
+        /// </summary>
+        List<CollectionPath> Collections { get; }
+
+        /// <summary>
         /// Returns the number of matches required for a search to be considered a match.
         /// </summary>
         int AnyQueryMinimumMatch { get; }
+
+        /// <summary>
+        /// Returns which fields of the results will be populated.
+        /// </summary>
+        FieldsFilter IncludedFields { get; }
 
         /// <summary>
         /// Returns whether the current filter matches the asset being queried.
@@ -56,11 +65,5 @@ namespace Unity.Cloud.Assets
         /// </summary>
         /// <returns>A dictionary containing the optional search criteria. </returns>
         Dictionary<string, object> AccumulateAnyCriteria();
-
-        /// <summary>
-        /// Returns the default project for the search.
-        /// </summary>
-        /// <returns>A project to be used in the search. </returns>
-        IProject GetProjectToSearch();
     }
 }

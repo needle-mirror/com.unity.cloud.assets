@@ -4,7 +4,6 @@
     background-color: rgb(46, 46, 46);
     color: rgb(210, 210, 210);
     border-color: rgba(0, 0, 0, 0.33);
-    -unity-background-scale-mode: scale-to-fit;
 }
 
 .AssetInfoItem {
@@ -24,12 +23,27 @@
     border-right-width: 2px;
     border-top-width: 2px;
     border-bottom-width: 2px;
-    border-left-color: rgba(41, 161, 255, 255);
-    border-right-color: rgba(41, 161, 255, 255);
-    border-top-color: rgba(41, 161, 255, 255);
-    border-bottom-color: rgba(41, 161, 255, 255);
+    border-left-color: rgb(41, 161, 255);
+    border-right-color: rgb(41, 161, 255);
+    border-top-color: rgb(41, 161, 255);
+    border-bottom-color: rgb(41, 161, 255);
 }
 
 .AssetInfoItem:hover {
     background-color: rgb(29, 29, 29);
+}
+
+.unity-foldout__text {
+    font-size: 14px;
+    color: rgb(255, 255, 255);
+}
+
+.unity-foldout__toggle > .unity-toggle__input > #unity-checkmark {
+    background-image: url('../../../Shared/UI/Sprites/chevron.png?fileID=21300000&guid=3ae2a8344a33c47c280866345a3020b0&type=3#chevron');
+    -unity-background-image-tint-color: white;
+}
+
+.unity-foldout__toggle > .unity-toggle__input:checked > #unity-checkmark {
+    -unity-background-image-tint-color: white;
+    background-image: url('../../../Shared/UI/Sprites/chevron_down.png?fileID=21300000&guid=452573b98430c674f945317a0d93b88b&type=3#chevron_down');
 }

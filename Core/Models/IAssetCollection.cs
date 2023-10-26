@@ -1,4 +1,8 @@
+using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using Unity.Cloud.Common;
 
 namespace Unity.Cloud.Assets
 {
@@ -8,9 +12,9 @@ namespace Unity.Cloud.Assets
     public interface IAssetCollection
     {
         /// <summary>
-        /// The project in which the collection resides.
+        /// The descriptor of the collection.
         /// </summary>
-        IProject Project { get; }
+        CollectionDescriptor Descriptor { get; }
 
         /// <summary>
         /// The name of the collection.
@@ -28,31 +32,54 @@ namespace Unity.Cloud.Assets
         CollectionPath ParentPath { get; }
 
         /// <summary>
-        /// The id of an associated catalog.
-        /// </summary>
-        string CatalogId { get; }
-
-        /// <summary>
-        /// Additional serialized information about the collection.
-        /// </summary>
-        Dictionary<string, IDeserializable> Metadata { get; set; }
-
-        /// <summary>
-        /// Implement this method to set the <see cref="Name"/> of the collection.
+        /// Sets the <see cref="Name"/> of the collection.
         /// </summary>
         /// <param name="name">The name of the collection. </param>
+        /// <exception cref="ArgumentNullException">This exception is thrown if the <paramref name="name"/> is null or empty. </exception>
         void SetName(string name);
 
         /// <summary>
-        /// Implement this method to set the <see cref="Description"/> of the collection.
+        /// Sets the <see cref="Description"/> of the collection.
         /// </summary>
         /// <param name="description">The description of the collection. </param>
+        /// <exception cref="ArgumentNullException">This exception is thrown if the <paramref name="description"/> is null or empty. </exception>
         void SetDescription(string description);
 
         /// <summary>
         /// Returns the full path to the collection.
         /// </summary>
-        /// <returns>A path. </returns>
+        /// <returns>The path of the collection. </returns>
         string GetFullCollectionPath();
+
+        /// <summary>
+        /// Synchronizes the local changes to the collection with the data source.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token. </param>
+        /// <returns>A task with no result. </returns>
+        Task UpdateAsync(CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Adds a set of asset references to the collection.
+        /// </summary>
+        /// <param name="assets">The assets to link to the collection. </param>
+        /// <param name="cancellationToken">The cancellation token. </param>
+        /// <returns>A task with no result. </returns>
+        Task AddAssetsAsync(IEnumerable<IAsset> assets, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Removes a set of asset references from the collection.
+        /// </summary>
+        /// <param name="assets">The assets to unlink from the collection. </param>
+        /// <param name="cancellationToken">The cancellation token. </param>
+        /// <returns>A task with no result. </returns>
+        Task RemoveAssetsAsync(IEnumerable<IAsset> assets, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Reparents the collection to a new path.
+        /// </summary>
+        /// <param name="newCollectionPath">The new parent path. </param>
+        /// <param name="cancellationToken">The cancellation token. </param>
+        /// <returns>A task with no result. </returns>
+        Task MoveToNewPathAsync(CollectionPath newCollectionPath, CancellationToken cancellationToken);
     }
 }

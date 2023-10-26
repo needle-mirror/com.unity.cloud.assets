@@ -1,16 +1,12 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
     <ui:Template name="LoginBar" src="./Templates/LoginBar.uxml?fileID=9197481963319205126&amp;guid=9fa56a2abec2c41e39ce0436d53028a5&amp;type=3#LoginBar" />
-    <ui:Template name="ProjectsListContainer" src="./Templates/ListContainer.uxml?fileID=9197481963319205126&amp;guid=bc40760b2b12c4af4a3fe093fd2c100a&amp;type=3#ListContainer" />
+    <ui:Template name="AssetBrowserTemplate" src="./Templates/AssetBrowserTemplate.uxml?fileID=9197481963319205126&amp;guid=fd3907f00ee0cd64e8bc4e96c180c751&amp;type=3#AssetBrowserTemplate" />
     <Style src="./StyleSheets/SampleSheet.uss?fileID=7433441132597879392&amp;guid=7376c3d25e9f04a989663c45cc94f5c7&amp;type=3#SampleSheet" />
-    <ui:VisualElement name="MainContainer" style="background-color: rgb(19, 19, 19); width: 100%; height: 100%;">
-        <ui:Instance template="LoginBar" name="LoginBar" />
-        <ui:VisualElement name="ContentContainer" style="flex-direction: row; height: 100%; background-color: rgb(0, 0, 0);">
-            <ui:VisualElement name="ProjectsPanel" class="ContentContainer" style="width: 20%; height: auto; overflow: hidden; padding-left: 8px; padding-right: 0; padding-top: 0; padding-bottom: 8px; margin-left: 0; margin-right: 0; margin-top: 0; margin-bottom: 0;">
-                <ui:Instance template="ProjectsListContainer" name="ProjectsListContainer">
-                    <AttributeOverrides element-name="ListLabel" text="Projects" />
-                </ui:Instance>
-            </ui:VisualElement>
-            <ui:VisualElement name="ContentPanel" style="width: 80%; flex-direction: column; margin-left: 8px; margin-right: 8px; margin-top: 8px; margin-bottom: 8px;" />
+    <ui:VisualElement name="MainContainer" style="background-color: rgb(19, 19, 19); width: 100%; height: 100%; flex-wrap: nowrap; align-items: stretch; flex-grow: 1;">
+        <ui:VisualElement name="EditingContainer" style="width: 100%; height: 100%; overflow: visible; display: flex;">
+            <ui:Instance template="LoginBar" name="LoginBar" />
+            <ui:Instance template="AssetBrowserTemplate" name="AssetBrowserTemplate" style="flex-grow: 1;" />
         </ui:VisualElement>
+        <ui:VisualElement name="DialogContainer" style="width: 100%; height: 100%; display: none;" />
     </ui:VisualElement>
 </ui:UXML>

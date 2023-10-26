@@ -12,7 +12,7 @@ namespace Unity.Cloud.Assets.Samples.AssetDatabaseUploader.Editor
 {
     public class AssetDatabaseUploaderSampleEditorUI : VisualElement
     {
-        AssetDatabaseUploaderSample m_AssetDatabaseUploaderSample;
+        readonly AssetDatabaseUploaderSample m_AssetDatabaseUploaderSample;
 
         public bool CanBeRefreshed { get; private set; } = true;
 

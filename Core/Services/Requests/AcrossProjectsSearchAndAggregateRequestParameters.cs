@@ -8,7 +8,7 @@ namespace Unity.Cloud.Assets
     ///  The across projects search and aggregate request parameters.
     /// </summary>
     [DataContract]
-    internal class AcrossProjectsSearchAndAggregateRequestParameters : SearchAndAggregateRequestParameters
+    class AcrossProjectsSearchAndAggregateRequestParameters : SearchAndAggregateRequestParameters
     {
         /// <summary>
         /// The across projects search and aggregate request parameters.

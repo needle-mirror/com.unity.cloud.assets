@@ -11,58 +11,56 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
     {
         public class AssetListController : ListController<IAsset>
         {
+            public override void Initialize(ListView listView, VisualTreeAsset itemTemplate, Action<IEnumerable<object>> onSelectionChange)
+            {
+                base.Initialize(listView, itemTemplate, onSelectionChange);
+
+                m_ListView.selectionType = SelectionType.None;
+            }
+
             protected override void OnBindItem(VisualElement element, int i)
             {
                 element.Q<Label>("ItemNameLabel").text = m_List[i].Name;
+
+                RegisterSelectionCallback(element, i);
+            }
+
+            protected override void OnUnbindItem(VisualElement element, int i)
+            {
+                UnregisterSelectionCallback(element, i);
             }
         }
 
         const string k_NoCollectionMessage = "No collection selected.";
+        const string k_FetchingMessage = "Fetching assets list...";
 
         IAssetCollection m_CurrentCollection;
 
         public event Action<IAsset> AssetSelected;
         public IAsset SelectedAsset { get; private set; }
+        public IEnumerable<IAsset> Assets => m_Entries;
 
         protected override string VisualElementName => "AssetsPanel";
         protected override string EmptyListMessage => "No assets in collection.";
 
-        public void Populate(IAssetCollection collection, IEnumerable<IAsset> assets)
+        public void Show(IAssetCollection collection)
         {
             Show();
 
             m_CurrentCollection = collection;
 
-            if (m_CurrentCollection == null)
-            {
-                SetDisplayMessage(k_NoCollectionMessage);
-                return;
-            }
-
-            Populate(assets);
+            SetDisplayMessage(m_CurrentCollection == null ? k_NoCollectionMessage : k_FetchingMessage);
         }
 
         public void Populate(IEnumerable<IAsset> assets)
         {
-            if (m_CurrentCollection == null) return;
-
-            var filteredAssets = assets.Where(a => a.Collections.Contains(m_CurrentCollection.GetFullCollectionPath()));
-            UpdateList(filteredAssets, true);
+            UpdateList(assets, true);
         }
 
         protected override void OnSelectionChange(IEnumerable<object> selectedItems)
         {
             var selection = selectedItems.FirstOrDefault();
-            if (selection == SelectedAsset)
-            {
-                m_ListController.SetSelectionWithoutNotify(Array.Empty<int>());
-                SelectedAsset = null;
-            }
-            else
-            {
-                SelectedAsset = selection as IAsset;
-            }
-
+            SelectedAsset = selection as IAsset;
             AssetSelected?.Invoke(SelectedAsset);
         }
     }

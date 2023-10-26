@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using UnityEditor;
 using UnityEngine;
+using Range = System.Range;
 
 namespace Unity.Cloud.Assets.Samples.AssetDatabaseUploader
 {
@@ -16,8 +17,6 @@ namespace Unity.Cloud.Assets.Samples.AssetDatabaseUploader
     [RequireComponent(typeof(OrgAndProjectSelector))]
     public class AssetsUploader : MonoBehaviour
     {
-        IAssetManager m_AssetManager;
-        IAssetFileManager m_AssetFileManager;
         OrgAndProjectSelector m_OrgAndProjectSelector;
         AssetDatabaseUploaderSample m_AssetDatabaseUploaderSample;
 
@@ -28,10 +27,9 @@ namespace Unity.Cloud.Assets.Samples.AssetDatabaseUploader
         string m_AssetsSourcePath;
 
         [SerializeField]
-        bool m_StepByStep = false;
+        bool m_StepByStep;
 
-        Dictionary<string, IAsset> m_AssetsByPath;
-        Dictionary<string, string> m_UploadUrlByPath;
+        readonly Dictionary<string, IAsset> m_AssetsByPath = new();
 
         public int UploadTimeout
         {
@@ -51,7 +49,7 @@ namespace Unity.Cloud.Assets.Samples.AssetDatabaseUploader
             set => m_StepByStep = value;
         }
 
-        public List<IAsset> Assets => m_AssetsByPath?.Values.ToList();
+        public List<IAsset> Assets => ToAssetList();
 
         public event Action AssetsUpdated;
 
@@ -63,9 +61,6 @@ namespace Unity.Cloud.Assets.Samples.AssetDatabaseUploader
             {
                 m_OrgAndProjectSelector.OnOrgOrProjectChanged += Clear;
             }
-
-            m_AssetsByPath ??= new Dictionary<string, IAsset>();
-            m_UploadUrlByPath ??= new Dictionary<string, string>();
         }
 
         void OnDestroy()
@@ -80,23 +75,9 @@ namespace Unity.Cloud.Assets.Samples.AssetDatabaseUploader
         /// Initialize the <see cref="OrgAndProjectSelector"/> with the given providers.
         /// </summary>
         /// <param name="assetDatabaseUploaderSample"></param>
-        /// <param name="assetManager"></param>
-        /// <param name="assetFileManager"></param>
-        public void Initialize(AssetDatabaseUploaderSample assetDatabaseUploaderSample, IAssetManager assetManager, IAssetFileManager assetFileManager)
+        public void Initialize(AssetDatabaseUploaderSample assetDatabaseUploaderSample)
         {
             m_AssetDatabaseUploaderSample = assetDatabaseUploaderSample;
-
-            m_AssetManager = assetManager;
-            if (m_AssetManager == null)
-            {
-                Debug.LogError($"An {nameof(IAssetManager)} is required to initialize {nameof(AssetsUploader)}");
-            }
-
-            m_AssetFileManager = assetFileManager;
-            if (m_AssetFileManager == null)
-            {
-                Debug.LogError($"An {nameof(IAssetFileManager)} is required to initialize {nameof(AssetsUploader)}");
-            }
         }
 
         /// <summary>
@@ -104,7 +85,7 @@ namespace Unity.Cloud.Assets.Samples.AssetDatabaseUploader
         /// </summary>
         public async Task CreateAndUploadAssetsAsync()
         {
-            if(m_AssetsByPath.Count == 0)
+            if (m_AssetsByPath.Count == 0)
                 await SearchAssetsAsync();
 
             var assetUploadIndex = 0;
@@ -126,7 +107,7 @@ namespace Unity.Cloud.Assets.Samples.AssetDatabaseUploader
                 await CreateAssetAndFileEntriesAndUploadAsync(assetPath, uploadingAssetName);
             }
 
-            if(assetUploadIndex > 0) AssetsUpdated?.Invoke();
+            if (assetUploadIndex > 0) AssetsUpdated?.Invoke();
         }
 
         /// <summary>
@@ -154,7 +135,7 @@ namespace Unity.Cloud.Assets.Samples.AssetDatabaseUploader
                 }
             }
 
-            if(isUpdated) AssetsUpdated?.Invoke();
+            if (isUpdated) AssetsUpdated?.Invoke();
         }
 
         /// <summary>
@@ -165,15 +146,15 @@ namespace Unity.Cloud.Assets.Samples.AssetDatabaseUploader
             if (!GetAssetPathsFromSource(out var assetPaths))
                 return;
 
-            bool isUpdated = false;
+            var assetCreated = false;
             foreach (var assetPath in assetPaths)
             {
-                if(!m_AssetsByPath.TryGetValue(assetPath, out var asset))
+                if (!m_AssetsByPath.TryGetValue(assetPath, out var asset))
                 {
                     asset = await CreateAssetAsync(assetPath, Path.GetFileNameWithoutExtension(assetPath));
                     if (asset != null)
                     {
-                        isUpdated = true;
+                        assetCreated = true;
 
                         m_AssetsByPath[assetPath] = asset;
 
@@ -182,7 +163,8 @@ namespace Unity.Cloud.Assets.Samples.AssetDatabaseUploader
                 }
             }
 
-            if(isUpdated) AssetsUpdated?.Invoke();
+            if (assetCreated) AssetsUpdated?.Invoke();
+            else Debug.Log("No new assets found.");
         }
 
         /// <summary>
@@ -193,60 +175,67 @@ namespace Unity.Cloud.Assets.Samples.AssetDatabaseUploader
             if (!GetAssetPathsFromSource(out var assetPaths))
                 return;
 
-            bool fileCreated = false;
-            m_UploadUrlByPath ??= new Dictionary<string, string>();
-
+            var fileCreated = false;
             foreach (var assetPath in assetPaths)
             {
-                if(!m_AssetsByPath.TryGetValue(assetPath, out var asset))
-                {
-                    var assetName = Path.GetFileNameWithoutExtension(assetPath);
-                    asset = await SearchAssetFromName(assetName);
-                    if(asset == null)
-                        continue;
+                var asset = await GetAsset(assetPath);
 
-                    m_AssetsByPath[assetPath] = asset;
-                    Debug.Log($"Asset added: {asset.Name}");
-                }
-
-                if(asset.Files.FirstOrDefault(f => f.Name == asset.Name) != null)
+                if (asset == null)
                     continue;
 
-                var assetFile = await CreateAssetFileAsync(assetPath, asset);
-                if (assetFile != null)
-                {
-                    fileCreated = true;
-                    m_UploadUrlByPath[assetPath] = assetFile.UploadUrl;
+                m_AssetsByPath[assetPath] = asset;
+                Debug.Log($"Asset added: {asset.Name}");
 
+                if (await FileExists(assetPath, asset))
+                    continue;
+
+                var datasets = new List<IDataset>();
+                await foreach (var dataset in asset.ListDatasetsAsync(Range.All, CancellationToken.None))
+                {
+                    datasets.Add(dataset);
+                }
+
+                var sourceDataset = datasets.FirstOrDefault();
+                if (sourceDataset == null)
+                {
+                    Debug.LogError($"No datasets found for asset {asset.Name}.");
+                }
+
+                if (sourceDataset != null)
+                {
+                    await UploadFileAsync(assetPath, sourceDataset);
+                    fileCreated = true;
                     Debug.Log($"Asset file created: {assetPath}");
                 }
             }
 
-            if (fileCreated)
-                await SearchAssetsAsync();
+            if (fileCreated) await SearchAssetsAsync();
+            else Debug.Log("No new asset files found.");
         }
 
-        /// <summary>
-        /// Upload last created assets and files in the given path to the selected cloud project.
-        /// </summary>
-        public async Task UploadAssetsAsync()
+        async Task<IAsset> GetAsset(string assetPath)
         {
-            var assetUploadIndex = 0;
-            var assetUploadCount = m_AssetsByPath.Count;
-
-            foreach (var assetWithPath in m_AssetsByPath)
+            if (m_AssetsByPath.TryGetValue(assetPath, out var asset))
             {
-                var assetFile = assetWithPath.Value.Files.FirstOrDefault(f => f.Name == assetWithPath.Value.Name);
-                if(assetFile == null)
-                    continue;
-
-                var uploadingAssetName = assetWithPath.Value.Name;
-                assetUploadIndex++;
-
-                Debug.Log($"Uploading asset : {uploadingAssetName} ({assetUploadIndex}/{assetUploadCount})");
-
-                await UploadAssetAsync(assetWithPath.Key, assetFile);
+                return asset;
             }
+
+            var assetName = Path.GetFileNameWithoutExtension(assetPath);
+            return await SearchAssetFromName(assetName);
+        }
+
+        async Task<bool> FileExists(string assetPath, IAsset asset)
+        {
+            var fileName = Path.GetFileName(assetPath);
+            await foreach (var file in asset.ListFilesAsync(Range.All, CancellationToken.None))
+            {
+                if (file.Descriptor.Path == fileName)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         bool GetAssetPathsFromSource(out List<string> assetPaths)
@@ -259,7 +248,7 @@ namespace Unity.Cloud.Assets.Samples.AssetDatabaseUploader
                 return false;
             }
 
-            var assetGuids = AssetDatabase.FindAssets("", new[] { m_AssetsSourcePath });
+            var assetGuids = AssetDatabase.FindAssets("", new[] {m_AssetsSourcePath});
             if (assetGuids.Length == 0)
             {
                 Debug.Log("No assets found to create and upload.");
@@ -289,19 +278,26 @@ namespace Unity.Cloud.Assets.Samples.AssetDatabaseUploader
         async Task CreateAssetAndFileEntriesAndUploadAsync(string assetPath, string assetName)
         {
             var createdAsset = await CreateAssetAsync(assetPath, assetName);
-            if(createdAsset == null)
+            if (createdAsset == null)
                 return;
 
             m_AssetsByPath[assetPath] = createdAsset;
             Debug.Log($"Asset created: {assetPath}");
 
-            var createdAssetFile = await CreateAssetFileAsync(assetPath, createdAsset);
-            if(createdAssetFile == null)
-                return;
 
-            Debug.Log($"Asset file created: {assetPath}");
+            var datasets = new List<IDataset>();
+            await foreach (var dataset in createdAsset.ListDatasetsAsync(Range.All, CancellationToken.None))
+            {
+                datasets.Add(dataset);
+            }
 
-            await UploadAssetAsync(assetPath, createdAssetFile);
+            var sourceDataset = datasets.FirstOrDefault();
+            if (sourceDataset == null)
+            {
+                Debug.LogError($"No datasets found for created asset {createdAsset.Name}.");
+            }
+
+            await UploadFileAsync(assetPath, sourceDataset);
         }
 
         async Task<IAsset> CreateAssetAsync(string assetPath, string assetName)
@@ -312,17 +308,13 @@ namespace Unity.Cloud.Assets.Samples.AssetDatabaseUploader
 
             try
             {
-                var assetCreation = new AssetCreation
+                var assetCreation = new AssetCreation(assetName)
                 {
-                    Project = m_OrgAndProjectSelector.SelectedProject,
-                    Name = assetName,
                     Description = $"Uploaded using {nameof(AssetDatabaseUploaderSample)}",
                     Type = GetAssetType(assetPath),
-                    Version = 1,
-                    VersionName = "1.0.0",
                 };
 
-                createdAsset = await m_AssetManager.CreateAssetAsync(assetCreation, cancellationTokenSource.Token);
+                createdAsset = await m_OrgAndProjectSelector.SelectedProject.CreateAssetAsync(assetCreation, cancellationTokenSource.Token);
                 if (createdAsset == null)
                 {
                     Debug.LogError($"Failed to create asset: {assetName} from path: {assetPath}");
@@ -340,88 +332,44 @@ namespace Unity.Cloud.Assets.Samples.AssetDatabaseUploader
             return createdAsset;
         }
 
-        async Task<IAssetFile> CreateAssetFileAsync(string assetPath, IAsset createdAsset)
+        async Task<IFile> UploadFileAsync(string assetPath, IDataset dataset)
         {
-            var cancellationTokenSource = new CancellationTokenSource(m_AssetDatabaseUploaderSample.CancellationTokenTimeout);
+            var cancellationTokenSource = new CancellationTokenSource();
 
-            IAssetFile assetFile = null;
+            var filePath = Path.GetFileName(assetPath);
+
+            IFile file = null;
             try
             {
-                var fileInfo = new FileInfo(assetPath);
                 var assetFileType = GetAssetType(assetPath);
 
-                var fileCreation = new AssetFileCreation
+                var fileCreation = new FileCreation
                 {
-                    Name = Path.GetFileName(assetPath),
+                    Path = filePath,
                     Description = $"Uploaded using {nameof(AssetDatabaseUploaderSample)}",
-                    Type = assetFileType,
-                    FileSize = fileInfo.Length,
                     Tags = GetAssetFileTags(assetFileType)
                 };
 
-                assetFile = await m_AssetFileManager.CreateAssetFileAsync(m_OrgAndProjectSelector.SelectedProject, createdAsset, fileCreation, cancellationTokenSource.Token);
+                var fileStream = File.OpenRead(Application.dataPath + assetPath.Replace("Assets/", "/"));
+
+                file = await dataset.UploadFileAsync(fileCreation, fileStream, null, cancellationTokenSource.Token);
+            }
+            catch (UploadFailedException)
+            {
+                Debug.LogError($"Failed to upload asset file: {filePath} from path: {assetPath}");
             }
             catch (OperationCanceledException oe)
             {
                 Debug.LogException(oe);
-                Debug.LogError($"Failed to create asset file: {createdAsset.Name} from path: {assetPath}");
-            }
-            catch (Exception e)
-            {
-                Debug.LogException(e);
-                Debug.LogError($"Failed to create asset file: {createdAsset.Name} from path: {assetPath}");
-            }
-
-            return assetFile;
-        }
-
-        async Task UploadAssetAsync(string assetPath, IAssetFile assetFile)
-        {
-            var cancellationTokenSource = new CancellationTokenSource(m_UploadTimeout);
-
-            try
-            {
-                if (string.IsNullOrEmpty(assetFile.UploadUrl))
-                {
-                    if(!m_UploadUrlByPath.TryGetValue(assetPath, out string uploadUrl))
-                        return;
-
-                    assetFile.UploadUrl = uploadUrl;//Restore AssetFile upload url
-                }
-
-                var fileStream = File.OpenRead(Application.dataPath + assetPath.Replace("Assets/","/"));
-
-                var didUpload = await m_AssetFileManager.UploadAssetFileAsync(
-                    m_OrgAndProjectSelector.SelectedProject,
-                    assetFile,
-                    fileStream,
-                    null,// will be done in another PR
-                    cancellationTokenSource.Token);
-
-                if (didUpload)
-                {
-                    await m_AssetFileManager.FinalizeAssetFileUploadAsync(
-                        m_OrgAndProjectSelector.SelectedProject,
-                        assetFile,
-                        cancellationTokenSource.Token);
-
-                    Debug.Log($"Asset file upload: {assetPath} finalized.");
-                }
-                else
-                {
-                    Debug.LogError($"Failed to upload asset file: {assetFile.Name} from path: {assetPath}");
-                }
-            }
-            catch (OperationCanceledException oe)
-            {
-                Debug.LogException(oe);
-                Debug.LogError($"Failed to upload asset file: {assetFile.Name} from path: {assetPath}");
+                Debug.LogError($"Failed to upload asset file: {filePath} from path: {assetPath}");
             }
             catch (Exception e)
             {
                 Debug.LogException(e);
                 Debug.LogError($"The specified file {assetPath} raised an error. For more details, see InnerExceptions");
             }
+
+            return file;
         }
 
         async Task<IAsset> SearchAssetFromName(string assetName)
@@ -430,16 +378,20 @@ namespace Unity.Cloud.Assets.Samples.AssetDatabaseUploader
 
             try
             {
-                var assetSearchFilter = new AssetSearchFilter(m_OrgAndProjectSelector.SelectedProject);
-                assetSearchFilter.Name.ForAny(assetName);
+                var assetSearchFilter = new AssetSearchFilter();
+                assetSearchFilter.Name.Include(assetName);
 
-                var pagination = new Pagination(nameof(IAsset.Name), new Range(0, 1));
+                var pagination = new Pagination(nameof(IAsset.Name), Range.All);
 
-                var assetsEnumerator = m_AssetManager.SearchAsync(assetSearchFilter, pagination, cancellationTokenSource.Token).GetAsyncEnumerator(cancellationTokenSource.Token);
+                var assetsEnumerator = m_OrgAndProjectSelector.SelectedProject.SearchAssetsAsync(assetSearchFilter, pagination, cancellationTokenSource.Token).GetAsyncEnumerator(cancellationTokenSource.Token);
                 try
                 {
-                    await assetsEnumerator.MoveNextAsync();
-                    return assetsEnumerator.Current;
+                    while (await assetsEnumerator.MoveNextAsync())
+                    {
+                        var asset = assetsEnumerator.Current;
+                        if (asset.Name == assetName)
+                            return asset;
+                    }
                 }
                 catch (Exception)
                 {
@@ -458,55 +410,39 @@ namespace Unity.Cloud.Assets.Samples.AssetDatabaseUploader
             return null;
         }
 
-        string GetAssetType(string assetPath)
+        AssetType GetAssetType(string assetPath)
         {
             var assetExtension = Path.GetExtension(assetPath).ToLower();
             switch (assetExtension)
             {
                 case ".mat":
-                    return "Material";
+                    return AssetType.Material;
                 case ".prefab":
                 case ".fbx":
-                    return "Model";
+                    return AssetType.Model_3D;
                 case ".unity":
-                    return "Unity_Scene";
+                    return AssetType.Other;
                 case ".shader":
-                    return "Shader";
+                    return AssetType.Other;
             }
 
-            return "Other";
+            return AssetType.Other;
         }
 
-        List<string> GetAssetFileTags(string assetFileType)
+        List<string> GetAssetFileTags(AssetType assetFileType)
         {
-            switch (assetFileType)
-            {
-                case "Material":
-                    return new List<string> { "Material" };
-                case "Model":
-                    return new List<string> { "Model" };
-                case "Unity_Scene":
-                    return new List<string> { "Unity_Scene" };
-                case "Shader":
-                    return new List<string> { "Shader" };
-            }
-
-            return new List<string>();
+            return new List<string> {assetFileType.GetValueAsString()};
         }
 
         void Clear()
         {
-            if (m_AssetsByPath != null)
-            {
-                m_AssetsByPath.Clear();
-            }
-            else
-            {
-                m_AssetsByPath ??= new Dictionary<string, IAsset>();
-                m_UploadUrlByPath ??= new Dictionary<string, string>();
-            }
-
+            m_AssetsByPath.Clear();
             AssetsUpdated?.Invoke();
+        }
+
+        List<IAsset> ToAssetList()
+        {
+            return m_AssetsByPath.Values.ToList();
         }
     }
 }

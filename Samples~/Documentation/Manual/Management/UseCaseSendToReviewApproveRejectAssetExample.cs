@@ -25,26 +25,29 @@ namespace Unity.Cloud.Assets.Documentation.Management
                 return;
             }
 
-            if(string.Equals(m_Behaviour.CurrentAsset.Status, "Draft", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(m_Behaviour.CurrentAsset.Status, "Draft", StringComparison.OrdinalIgnoreCase))
             {
                 if (GUILayout.Button("Send to Review"))
                 {
                     _ = m_Behaviour.SendAssetToReview();
                 }
+
                 GUILayout.Space(5f);
             }
-            else if(string.Equals(m_Behaviour.CurrentAsset.Status, "Ingestion", StringComparison.OrdinalIgnoreCase))
+            else if (string.Equals(m_Behaviour.CurrentAsset.Status, "InReview", StringComparison.OrdinalIgnoreCase))
             {
                 if (GUILayout.Button("Approve in-review asset"))
                 {
                     _ = m_Behaviour.ApproveInReviewAsset();
                 }
+
                 GUILayout.Space(5f);
 
                 if (GUILayout.Button("Reject in-review asset"))
                 {
                     _ = m_Behaviour.RejectInReviewAsset();
                 }
+
                 GUILayout.Space(5f);
             }
         }
@@ -71,13 +74,11 @@ namespace Unity.Cloud.Assets.Documentation.Management
             var cancellationTokenSrc = new CancellationTokenSource(k_DefaultCancellationTimeout);
             try
             {
-                await PlatformServices.AssetManager.SendAssetToReviewAsync(CurrentAsset, cancellationTokenSrc.Token);
-
-                await UpdateCurrentAsset();
+                await CurrentAsset.SendToReviewAsync(cancellationTokenSrc.Token);
             }
             catch (Exception e)
             {
-                Debug.LogError($"Failed to send asset to review: {CurrentAsset.Name}. {e.Message}");
+                Debug.LogError($"Failed to send asset to review: {CurrentAsset.Name}. {e}");
             }
         }
 
@@ -90,13 +91,11 @@ namespace Unity.Cloud.Assets.Documentation.Management
             var cancellationTokenSrc = new CancellationTokenSource(k_DefaultCancellationTimeout);
             try
             {
-                await PlatformServices.AssetManager.ApproveAssetAsync(CurrentAsset, cancellationTokenSrc.Token);
-
-                await UpdateCurrentAsset();
+                await CurrentAsset.ApproveAsync(cancellationTokenSrc.Token);
             }
             catch (Exception e)
             {
-                Debug.LogError($"Failed to approve in-review asset: {CurrentAsset.Name}. {e.Message}");
+                Debug.LogError($"Failed to approve in-review asset: {CurrentAsset.Name}. {e}");
             }
         }
 
@@ -109,38 +108,14 @@ namespace Unity.Cloud.Assets.Documentation.Management
             var cancellationTokenSrc = new CancellationTokenSource(k_DefaultCancellationTimeout);
             try
             {
-                await PlatformServices.AssetManager.RejectAssetAsync(CurrentAsset, cancellationTokenSrc.Token);
-
-                await UpdateCurrentAsset();
+                await CurrentAsset.RejectAsync(cancellationTokenSrc.Token);
             }
             catch (Exception e)
             {
-                Debug.LogError($"Failed to reject in-review asset: {CurrentAsset.Name}. {e.Message}");
+                Debug.LogError($"Failed to reject in-review asset: {CurrentAsset.Name}. {e}");
             }
         }
 
         #endregion
-
-        async Task UpdateCurrentAsset()
-        {
-            try
-            {
-                var cancellationTokenSrc = new CancellationTokenSource(k_DefaultCancellationTimeout);
-
-
-                var upToDateAsset = await PlatformServices.AssetManager.GetAssetAsync(CurrentAsset.Project, CurrentAsset.Id, CurrentAsset.Version, cancellationTokenSrc.Token);
-
-                // Update the asset status and status details
-                if (upToDateAsset != null)
-                {
-                    CurrentAsset.Status = upToDateAsset.Status;
-                    CurrentAsset.StatusDetails = upToDateAsset.StatusDetails;
-                }
-            }
-            catch (Exception e)
-            {
-                Debug.LogError($"Failed to update asset: {CurrentAsset.Name}. {e.Message}");
-            }
-        }
     }
 }

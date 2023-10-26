@@ -13,9 +13,23 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
     {
         public class CollectionListController : ListController<IAssetCollection>
         {
+            public override void Initialize(ListView listView, VisualTreeAsset itemTemplate, Action<IEnumerable<object>> onSelectionChange)
+            {
+                base.Initialize(listView, itemTemplate, onSelectionChange);
+
+                m_ListView.selectionType = SelectionType.None;
+            }
+
             protected override void OnBindItem(VisualElement element, int i)
             {
                 element.Q<Label>("ItemNameLabel").text = m_List[i].Name;
+
+                RegisterSelectionCallback(element, i);
+            }
+
+            protected override void OnUnbindItem(VisualElement element, int i)
+            {
+                UnregisterSelectionCallback(element, i);
             }
         }
 
@@ -34,10 +48,12 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
             }
         }
 
+        public IEnumerable<IAssetCollection> Collections => m_Entries;
+
         protected override string VisualElementName => "CollectionsPanel";
         protected override string EmptyListMessage => "No collections available.";
 
-        public async Task Populate(IProject project)
+        public async Task Populate(IAssetProject project)
         {
             Show();
 
@@ -54,12 +70,12 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
             }
         }
 
-        static async Task<IAssetCollection[]> GetCollectionsAsync(IProject project)
+        static async Task<IEnumerable<IAssetCollection>> GetCollectionsAsync(IAssetProject project)
         {
             try
             {
                 var cancellationTokenSource = new CancellationTokenSource();
-                return await PlatformServices.AssetCollectionManager.ListCollectionsAsync(project, cancellationTokenSource.Token);
+                return await project.ListCollectionsAsync(cancellationTokenSource.Token);
             }
             catch (OperationCanceledException oe)
             {
@@ -81,15 +97,7 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
         protected override void OnSelectionChange(IEnumerable<object> selectedItems)
         {
             var selection = selectedItems.FirstOrDefault();
-            if (selection == m_SelectedCollection)
-            {
-                m_ListController.SetSelectionWithoutNotify(Array.Empty<int>());
-                SelectedCollection = null;
-            }
-            else
-            {
-                SelectedCollection = selection as IAssetCollection;
-            }
+            SelectedCollection = selection as IAssetCollection;
         }
     }
 }

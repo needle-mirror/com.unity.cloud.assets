@@ -13,29 +13,14 @@ namespace Unity.Cloud.Assets.Samples.AssetDatabaseUploader
         static IAuthenticator s_Authenticator;
 
         /// <summary>
-        /// Returns an <see cref="IOrganizationProvider"/>.
+        /// Returns an <see cref="IOrganizationRepository"/>.
         /// </summary>
-        public static IOrganizationProvider OrganizationProvider { get; private set; }
+        public static IOrganizationRepository OrganizationRepository { get; private set; }
 
         /// <summary>
-        /// Returns an <see cref="IProjectProvider"/>.
+        /// Returns an <see cref="IAssetRepository"/>.
         /// </summary>
-        public static IProjectProvider ProjectProvider { get; private set; }
-
-        /// <summary>
-        /// Returns an <see cref="IAssetProvider"/>
-        /// </summary>
-        public static IAssetProvider AssetProvider { get; private set; }
-
-        /// <summary>
-        /// Returns an <see cref="IAssetManager"/>
-        /// </summary>
-        public static IAssetManager AssetManager { get; private set; }
-
-        /// <summary>
-        /// Returns an <see cref="IAssetFileManager"/>
-        /// </summary>
-        public static IAssetFileManager AssetFileManager { get; private set; }
+        public static IAssetRepository AssetRepository { get; private set; }
 
         public static bool IsInitialized { get; private set; }
 
@@ -48,14 +33,9 @@ namespace Unity.Cloud.Assets.Samples.AssetDatabaseUploader
             s_Authenticator = new UnityEditorAuthenticator(new TargetClientIdTokenToUnityServicesTokenExchanger(httpClient, serviceHostResolver));
             var serviceHttpClient = new ServiceHttpClient(httpClient, s_Authenticator, playerSettings);
 
-            OrganizationProvider = new CloudOrganizationProvider(serviceHttpClient, serviceHostResolver);
-            ProjectProvider = new CloudProjectProvider(serviceHttpClient, serviceHostResolver);
+            OrganizationRepository = new AuthenticatorOrganizationRepository(serviceHttpClient, serviceHostResolver);
 
-            var assetServiceConfiguration = new AssetServiceConfiguration(isDiscovery);
-
-            AssetProvider = new CloudAssetProvider(serviceHttpClient, serviceHostResolver, assetServiceConfiguration);
-            AssetManager = new CloudAssetManager(serviceHttpClient, serviceHostResolver, assetServiceConfiguration);
-            AssetFileManager = new CloudAssetFileManager(serviceHttpClient, serviceHostResolver);
+            AssetRepository = AssetRepositoryFactory.Create(serviceHttpClient, serviceHostResolver);
 
             IsInitialized = true;
 

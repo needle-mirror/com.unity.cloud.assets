@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Cloud.Common;
 
 namespace Unity.Cloud.Assets
 {
@@ -9,111 +10,74 @@ namespace Unity.Cloud.Assets
     /// </summary>
     public class AssetSearchFilter : IAssetSearchFilter
     {
-        readonly List<ISearchCriteria> m_AllCriterias;
-        readonly List<ISearchCriteria> m_UserCriterias;
+        /// <inheritdoc cref="AssetId"/>
+        public IdSearchCriteria<AssetId> Id { get; } = new(nameof(AssetDescriptor.AssetId), "assetId");
+
+        /// <inheritdoc cref="AssetVersion"/>
+        public IdSearchCriteria<AssetVersion> Version { get; } = new(nameof(AssetDescriptor.AssetVersion), "assetVersion");
 
         /// <inheritdoc cref="IAsset.Name"/>
-        public StringSearchCriteria Name { get; } = new(nameof(IAsset.Name));
+        public StringSearchCriteria Name { get; } = new(nameof(IAsset.Name), "name");
 
         /// <inheritdoc cref="IAsset.Description"/>
-        public StringSearchCriteria Description { get; } = new(nameof(IAsset.Description));
+        public StringSearchCriteria Description { get; } = new(nameof(IAsset.Description), "description");
 
         /// <inheritdoc cref="IAsset.Type"/>
-        public SearchCriteria<string> Type { get; } = new(nameof(IAsset.Type));
-
-        /// <inheritdoc cref="IAsset.Id"/>
-        public SearchCriteria<string> Id { get; } = new(nameof(IAsset.Id));
-
-        /// <inheritdoc cref="IAsset.ShortId"/>
-        public SearchCriteria<string> ShortId { get; } = new(nameof(IAsset.ShortId));
-
-        /// <inheritdoc cref="IAsset.ExternalId"/>
-        public SearchCriteria<string> ExternalId { get; } = new(nameof(IAsset.ExternalId));
-
-        /// <inheritdoc cref="IAsset.StorageId"/>
-        public SearchCriteria<string> StorageId { get; } = new(nameof(IAsset.StorageId));
-
-        /// <inheritdoc cref="IAsset.Version"/>
-        public NullableSearchCriteria<int> Version { get; } = new(nameof(IAsset.Version));
-
-        /// <inheritdoc cref="IAsset.VersionName"/>
-        public SearchCriteria<string> VersionName { get; } = new(nameof(IAsset.VersionName));
+        public AssetTypeSearchCriteria Type { get; } = new(nameof(IAsset.Type), AssetTypeSearchCriteria.SearchKey);
 
         /// <inheritdoc cref="IAsset.Status"/>
-        public SearchCriteria<string> Status { get; } = new(nameof(IAsset.Status));
-
-        /// <inheritdoc cref="IAsset.StatusDetails"/>
-        public SearchCriteria<string> StatusDetails { get; } = new(nameof(IAsset.StatusDetails));
-
-        /// <inheritdoc cref="IAsset.Origin"/>
-        public SearchCriteria<string> Origin { get; } = new(nameof(IAsset.Origin));
-
-        /// <inheritdoc cref="IAsset.Location"/>
-        public LocationSearchFilter Location { get; } = new();
-
-        /// <inheritdoc cref="IAsset.Taxonomy"/>
-        public TaxonomySearchFilter Taxonomy { get; } = new();
+        public SearchCriteria<string> Status { get; } = new(nameof(IAsset.Status), "status");
 
         /// <inheritdoc cref="IAsset.Tags"/>
-        public HashsetSearchCriteria<string> Tags { get; } = new(nameof(IAsset.Tags));
+        public HashsetSearchCriteria<string> Tags { get; } = new(nameof(IAsset.Tags), "tags");
 
-        /// <inheritdoc cref="IAsset.Categories"/>
-        public HashsetSearchCriteria<string> Categories { get; } = new(nameof(IAsset.Categories));
+        /// <inheritdoc cref="IAsset.SystemTags"/>
+        public HashsetSearchCriteria<string> SystemTags { get; } = new(nameof(IAsset.SystemTags), "systemTags");
 
-        /// <inheritdoc cref="IAsset.PreviewFileId"/>
-        public SearchCriteria<string> PreviewFileId { get; } = new(nameof(IAsset.PreviewFileId));
+        /// <inheritdoc cref="IAsset.PortalMetadata"/>
+        public DeserializableSearchCriteria PortalMetadata { get; } = new(nameof(IAsset.PortalMetadata), "portalMetadata");
 
-        /// <inheritdoc cref="IAsset.Collections"/>
-        public HashsetSearchCriteria<CollectionPath> Collections { get; } = new(nameof(IAsset.Collections));
+        /// <inheritdoc cref="IAsset.Metadata"/>
+        public MetadataSearchFilter Metadata { get; } = new(nameof(IAsset.Metadata), "metadata");
 
-        /// <inheritdoc cref="IAsset.Author"/>
-        public AuthorSearchFilter Author { get; } = new();
+        /// <inheritdoc cref="IAsset.SystemMetadata"/>
+        public MetadataSearchFilter SystemMetadata { get; } = new(nameof(IAsset.SystemMetadata), "systemMetadata");
 
-        /// <inheritdoc cref="IAsset.Created"/>
-        public NullableSearchCriteria<DateTime> Created { get; } = new(nameof(IAsset.Created));
+        /// <inheritdoc cref="IAsset.PreviewFile"/>
+        public SearchCriteria<string> PreviewFile { get; } = new(nameof(IAsset.PreviewFile), "previewFileId");
 
-        /// <inheritdoc cref="IAsset.CreatedBy"/>
-        public SearchCriteria<string> CreatedBy { get; } = new(nameof(IAsset.CreatedBy));
+        /// <inheritdoc cref="IAsset.SourceProject"/>
+        public IdSearchCriteria<ProjectId> SourceProjectId { get; } = new(nameof(IAsset.SourceProject), "sourceProjectId");
 
-        /// <inheritdoc cref="IAsset.Updated"/>
-        public NullableSearchCriteria<DateTime> Updated { get; } = new(nameof(IAsset.Updated));
+        /// <inheritdoc cref="IAsset.AuthoringInfo"/>
+        public AuthoringInfoSearchFilter AuthoringInfo { get; } = new(nameof(IAsset.AuthoringInfo), string.Empty);
 
-        /// <inheritdoc cref="IAsset.UpdatedBy"/>
-        public SearchCriteria<string> UpdatedBy { get; } = new(nameof(IAsset.UpdatedBy));
+        /// <inheritdoc cref="IAsset.StorageId"/>
+        public SearchCriteria<string> StorageId { get; } = new(nameof(IAsset.StorageId), "storageId");
 
-        /// <inheritdoc cref="IAsset.Files"/>
-        public FileSearchFilter Files { get; } = new();
+        /// <inheritdoc cref="IFile"/>
+        public FileSearchFilter Files { get; } = new(nameof(Asset.Files), "files");
 
-        /// <inheritdoc cref="IAsset.Attachments"/>
-        public AttachmentSearchFilter Attachments { get; } = new();
+        /// <inheritdoc cref="IDataset"/>
+        public DatasetSearchFilter Datasets { get; } = new(nameof(Asset.Datasets), "datasets");
 
-        /// <inheritdoc cref="IAsset.Project"/>
-        public ProjectSearchFilter Project { get; } = new();
+        /// <inheritdoc />
+        public List<CollectionPath> Collections { get; } = new();
 
-        /// <inheritdoc cref="IAsset.ProjectIds"/>
-        public HashsetSearchCriteria<string> ProjectIds { get; } = new(nameof(IAsset.ProjectIds));
-
-        /// <inheritdoc cref="IAsset.SourceProjectId"/>
-        public SearchCriteria<string> SourceProjectId { get; } = new(nameof(IAsset.SourceProjectId));
-
+        /// <inheritdoc />
         public int AnyQueryMinimumMatch { get; set; } = 1;
 
-        public IEnumerable<ISearchCriteria> AllCriteria => m_AllCriterias.Concat(m_UserCriterias);
+        /// <inheritdoc />
+        public FieldsFilter IncludedFields { get; set; }
 
-        public AssetSearchFilter(IProject project)
-            : this()
-        {
-            Project.Include(project);
-        }
+        public IEnumerable<ISearchCriteria> AllCriteria { get; }
 
         /// <summary>
         /// Initializes and returns an instance of <see cref="AssetSearchFilter"/>
         /// </summary>
-        internal AssetSearchFilter()
+        public AssetSearchFilter()
         {
-            m_UserCriterias = new List<ISearchCriteria>();
-
-            m_AllCriterias = GetType()
+            AllCriteria = GetType()
                 .GetProperties()
                 .Where(x => typeof(ISearchCriteria).IsAssignableFrom(x.PropertyType))
                 .Select(x => x.GetValue(this) as ISearchCriteria)
@@ -134,21 +98,21 @@ namespace Unity.Cloud.Assets
 
             var isAny = 0;
 
-            bool Match(ISearchCriteria criteria, object input)
-            {
-                isAny += criteria.IsAny(input) ? 1 : 0;
-                return criteria.IsMatch(input);
-            }
-
             foreach (var criterion in AllCriteria)
             {
-                var value = asset.GetPropertyValue(criterion.SearchKey);
+                var value = asset.GetPropertyValue(criterion.PropertyName);
                 if (!Match(criterion, value)) return false;
             }
 
             var hasAnyRequirements = AccumulateAnyCriteria()?.Count > 0;
 
             return !hasAnyRequirements || isAny >= AnyQueryMinimumMatch;
+
+            bool Match(ISearchCriteria criteria, object input)
+            {
+                isAny += criteria.IsAny(input) ? 1 : 0;
+                return criteria.IsMatch(input);
+            }
         }
 
         /// <summary>
@@ -159,7 +123,7 @@ namespace Unity.Cloud.Assets
         {
             foreach (var criterion in AllCriteria)
             {
-                if (asset.TryGetPropertyValue(criterion.SearchKey, out var value))
+                if (asset.TryGetPropertyValue(criterion.PropertyName, out var value))
                 {
                     criterion.Include(value);
                 }
@@ -174,7 +138,7 @@ namespace Unity.Cloud.Assets
         {
             foreach (var criterion in AllCriteria)
             {
-                if (asset.TryGetPropertyValue(criterion.SearchKey, out var value))
+                if (asset.TryGetPropertyValue(criterion.PropertyName, out var value))
                 {
                     criterion.Exclude(value);
                 }
@@ -189,44 +153,11 @@ namespace Unity.Cloud.Assets
         {
             foreach (var criterion in AllCriteria)
             {
-                if (asset.TryGetPropertyValue(criterion.SearchKey, out var value))
+                if (asset.TryGetPropertyValue(criterion.PropertyName, out var value))
                 {
                     criterion.ForAny(value);
                 }
             }
-        }
-
-
-        /// <summary>
-        /// Adds a <see cref="ISearchCriteria"/> to the search.
-        /// </summary>
-        /// <param name="criteria"></param>
-        /// <returns></returns>
-        /// <exception cref="ArgumentNullException"></exception>
-        public bool AddUserCriteria(ISearchCriteria criteria)
-        {
-            if (criteria == null)
-                throw new ArgumentNullException(nameof(criteria));
-
-            if (m_UserCriterias.Contains(criteria))
-                return false;
-
-            m_UserCriterias.Add(criteria);
-            return true;
-        }
-
-        /// <summary>
-        /// Removes a <see cref="ISearchCriteria"/> from the search.
-        /// </summary>
-        /// <param name="criteria"></param>
-        /// <returns></returns>
-        /// <exception cref="ArgumentNullException"></exception>
-        public bool RemoveUserCriteria(ISearchCriteria criteria)
-        {
-            if (criteria == null)
-                throw new ArgumentNullException(nameof(criteria));
-
-            return m_UserCriterias.Remove(criteria);
         }
 
         /// <inheritdoc/>
@@ -267,8 +198,5 @@ namespace Unity.Cloud.Assets
 
             return criteria.Count > 0 ? criteria : null;
         }
-
-        /// <inheritdoc/>
-        public IProject GetProjectToSearch() => Project.GetProject();
     }
 }

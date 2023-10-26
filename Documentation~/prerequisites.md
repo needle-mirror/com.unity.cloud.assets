@@ -1,17 +1,15 @@
 # Prerequisites
 
-Before you start using the Unity Asset Manager SDK package, you must have the following installed in your system.
+Before you start using the Unity Cloud Assets package, make sure you meet the following prerequisites.
 
 ## System requirements
 
-* Beta access to Unity Asset Manager features. See instructions for requesting access [here](https://docs.unity3d.com/docs-asset-manager/manual/request-access.html).
-* A valid [Unity ID Account](https://dashboard.unity3d.com/)
-* A Unity account (required to generate an identifier for your application)
-* A new or existing Unity project
+* A valid [Unity ID Account](https://id.unity.com/) required to generate an identifier for your application
+* A new or existing Unity Project
 
 ## Compatibility
 
-The Unity Asset Manager SDK package is compatible with Unity version of 2021.3 or later. This package is also compatible with the following Unity Cloud packages:
+The Unity Cloud Assets package is compatible with Unity version of 2022.3 or later. This package is also compatible with the following Unity Cloud packages:
 
-* Unity Common package
-* [Unity Identity package](https://docs.unity3d.com/Packages/com.unity.cloud.identity@latest)
+* Unity Cloud Common
+* [Unity Cloud Identity](https://docs.unity3d.com/Packages/com.unity.cloud.identity@latest)

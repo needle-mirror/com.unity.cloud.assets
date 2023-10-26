@@ -1,0 +1,21 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <ui:Template name="OrganizationsContainer" src="OrganizationsContainer.uxml?fileID=9197481963319205126&amp;guid=7774487f886b24ea28232786a6edeb40&amp;type=3#OrganizationsContainer" />
+    <ui:Template name="ProjectsListContainer" src="ListContainer.uxml?fileID=9197481963319205126&amp;guid=bc40760b2b12c4af4a3fe093fd2c100a&amp;type=3#ListContainer" />
+    <Style src="../StyleSheets/SampleSheet.uss?fileID=7433441132597879392&amp;guid=7376c3d25e9f04a989663c45cc94f5c7&amp;type=3#SampleSheet" />
+    <ui:VisualElement name="MainContainer" style="background-color: rgb(19, 19, 19); width: 100%; height: 100%; flex-wrap: nowrap; align-items: stretch; flex-grow: 1;">
+        <ui:VisualElement name="TopBar" style="flex-grow: 1;">
+            <ui:Instance template="OrganizationsContainer" name="OrganizationsContainer" style="min-width: 25%; align-items: flex-end;" />
+        </ui:VisualElement>
+        <ui:VisualElement name="ContentContainer" style="flex-direction: row; height: 100%; background-color: rgb(0, 0, 0);">
+            <ui:VisualElement name="ProjectsPanel" class="ContentContainer" style="width: 20%; height: auto; overflow: hidden; padding-left: 8px; padding-right: 0; padding-top: 0; padding-bottom: 8px; margin-left: 0; margin-right: 0; margin-top: 0; margin-bottom: 0;">
+                <ui:Instance template="ProjectsListContainer" name="ProjectsListContainer">
+                    <AttributeOverrides element-name="ListLabel" text="Projects" />
+                </ui:Instance>
+            </ui:VisualElement>
+            <ui:VisualElement name="Content" style="width: 80%; margin-left: 8px; margin-right: 8px; margin-top: 8px; margin-bottom: 8px;">
+                <ui:VisualElement name="SearchBarContainer" style="flex-grow: 1;" />
+                <ui:VisualElement name="ContentPanel" style="margin-left: 8px; margin-right: 8px; margin-top: 8px; margin-bottom: 8px; flex-grow: 1; height: 100%; flex-direction: row;" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

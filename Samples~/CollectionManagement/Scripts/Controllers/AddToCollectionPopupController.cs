@@ -11,21 +11,18 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
 
         public event Action<IEnumerable<IAsset>> AssetsAddedToCollection;
 
-        public event Action AssetListUpdated
-        {
-            add => m_AssetListUi.ListUpdated += value;
-            remove => m_AssetListUi.ListUpdated -= value;
-        }
-
-        public IEnumerable<IAsset> Assets => m_AssetListUi.Assets;
-
         public AddToCollectionPopupController(VisualElement root, VisualTreeAsset listItemTemplate)
             : base(root, "AddToCollectionPopup", null)
         {
             m_AssetListUi.Initialize(m_PopupWindow, listItemTemplate);
         }
 
-        public void Populate(IProject project)
+        public void ApplyFilter(IEnumerable<IAsset> itemToFilter)
+        {
+            m_AssetListUi.ApplyFilter(itemToFilter);
+        }
+
+        public void Populate(IAssetProject project)
         {
             _ = m_AssetListUi.Populate(project);
         }

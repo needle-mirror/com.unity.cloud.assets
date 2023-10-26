@@ -21,48 +21,27 @@ namespace Unity.Cloud.Assets.Samples
         /// Returns a <see cref="IAuthenticationStateProvider"/>.
         /// </summary>
         public static IAuthenticationStateProvider AuthenticationStateProvider => s_CompositeAuthenticator;
-
         /// <summary>
-        /// Returns a <see cref="UserInfoProvider"/>.
+        /// Returns a <see cref="IAuthenticatedUserInfoProvider"/>.
         /// </summary>
-        public static IUserInfoProvider UserInfoProvider { get; private set; }
+        public static IAuthenticatedUserInfoProvider AuthenticatedUserInfoProvider => s_CompositeAuthenticator;
 
         /// <summary>
         /// Returns an <see cref="IOrganizationProvider"/>.
         /// </summary>
-        public static IOrganizationProvider OrganizationProvider { get; private set; }
+        public static IOrganizationRepository OrganizationRepository { get; private set; }
 
         /// <summary>
-        /// Returns an <see cref="IProjectProvider"/>.
+        /// Returns an <see cref="IAssetRepository"/>.
         /// </summary>
-        public static IProjectProvider ProjectProvider { get; private set; }
-
-        /// <summary>
-        /// Returns an <see cref="IAssetProvider"/>
-        /// </summary>
-        public static IAssetProvider AssetProvider { get; private set; }
-
-        /// <summary>
-        /// Returns an <see cref="IAssetManager"/>
-        /// </summary>
-        public static IAssetManager AssetManager { get; private set; }
-
-        /// <summary>
-        /// Returns an <see cref="IAssetFileManager"/>
-        /// </summary>
-        public static IAssetFileManager AssetFileManager { get; private set; }
-
-        /// <summary>
-        /// Returns an <see cref="IAssetCollectionManager"/>
-        /// </summary>
-        public static IAssetCollectionManager AssetCollectionManager { get; private set; }
+        public static IAssetRepository AssetRepository { get; private set; }
 
         /// <summary>
         /// Returns a <see cref="UnityHttpClient"/>
         /// </summary>
         public static IHttpClient HttpClient { get; private set; }
 
-        public static void Create(bool isDiscovery)
+        public static void Create()
         {
             HttpClient = new UnityHttpClient();
             var serviceHostResolver = UnityRuntimeServiceHostResolverFactory.Create();
@@ -70,25 +49,17 @@ namespace Unity.Cloud.Assets.Samples
 
             var platformSupport = PlatformSupportFactory.GetAuthenticationPlatformSupport();
 
-            var compositeAuthenticatorSettings = new CompositeAuthenticatorSettingsBuilder(HttpClient, platformSupport, serviceHostResolver)
-                .AddDefaultPkceAuthenticator(playerSettings)
+            var compositeAuthenticatorSettings = new CompositeAuthenticatorSettingsBuilder(HttpClient, platformSupport, serviceHostResolver, playerSettings)
+                .AddDefaultPkceAuthenticator(playerSettings, playerSettings)
                 .Build();
 
             s_CompositeAuthenticator = new CompositeAuthenticator(compositeAuthenticatorSettings);
 
             var serviceHttpClient = new ServiceHttpClient(HttpClient, s_CompositeAuthenticator, playerSettings);
 
-            UserInfoProvider = new UserInfoProvider(serviceHttpClient, serviceHostResolver);
+            OrganizationRepository = new AuthenticatorOrganizationRepository(serviceHttpClient, serviceHostResolver);
 
-            OrganizationProvider = new CloudOrganizationProvider(serviceHttpClient, serviceHostResolver);
-            ProjectProvider = new CloudProjectProvider(serviceHttpClient, serviceHostResolver);
-
-            var assetServiceConfiguration = new AssetServiceConfiguration(isDiscovery);
-
-            AssetProvider = new CloudAssetProvider(serviceHttpClient, serviceHostResolver, assetServiceConfiguration);
-            AssetManager = new CloudAssetManager(serviceHttpClient, serviceHostResolver, assetServiceConfiguration);
-            AssetFileManager = new CloudAssetFileManager(serviceHttpClient, serviceHostResolver);
-            AssetCollectionManager = new CloudAssetCollectionManager(serviceHttpClient, serviceHostResolver);
+            AssetRepository = AssetRepositoryFactory.Create(serviceHttpClient, serviceHostResolver);
         }
 
         /// <summary>

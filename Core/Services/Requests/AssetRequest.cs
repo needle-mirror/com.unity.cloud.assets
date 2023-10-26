@@ -1,43 +1,23 @@
-using System.Collections.Generic;
+﻿using Unity.Cloud.Common;
 
 namespace Unity.Cloud.Assets
 {
     /// <summary>
-    /// Base class for api requests on assets.
+    /// Represents a change asset's status request.
     /// </summary>
-    abstract class AssetRequest : ApiRequest
+    class AssetRequest : ProjectRequest
     {
-        /// <summary>Accessor for organizationId </summary>
-        public ulong OrganizationId { get; }
-
-        /// <summary>Accessor for projectId </summary>
-        public string ProjectId { get; }
-
-        /// <summary>Accessor for X-Correlation-Id </summary>
-        public string XCorrelationId { get; }
-
         /// <summary>
-        /// AssetRequest Request Object.
+        /// Change the Asset's status Request Object.
         /// </summary>
-        /// <param name="organizationId">Genesis ID of the organization</param>
-        /// <param name="projectId">ID of the project</param>
+        /// <param name="projectId">ID of the project.</param>
+        /// <param name="assetId">The id of the asset the file is linked to.</param>
+        /// <param name="assetVersion">The version of the asset the file is linked to.</param>
         /// <param name="xCorrelationId">Correlation id of the request.</param>
-        protected AssetRequest(ulong organizationId, string projectId, string xCorrelationId = default(string))
+        public AssetRequest(ProjectId projectId, AssetId assetId, AssetVersion assetVersion, string xCorrelationId = default)
+            : base(projectId, xCorrelationId)
         {
-            OrganizationId = organizationId;
-            ProjectId = projectId;
-
-            m_PathAndQueryParams = $"/organizations/{OrganizationId}/projects/{ProjectId}";
-
-            XCorrelationId = xCorrelationId;
-        }
-
-        public override IEnumerable<(string, string)> GetHeaders()
-        {
-            if (!string.IsNullOrEmpty(XCorrelationId))
-            {
-                yield return ("X-Correlation-Id", XCorrelationId);
-            }
+            m_PathAndQueryParams += $"/assets/{assetId}/versions/{assetVersion}";
         }
     }
 }

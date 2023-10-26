@@ -25,21 +25,23 @@ namespace Unity.Cloud.Assets.Documentation.Management
                 return;
             }
 
-            if(string.Equals(m_Behaviour.CurrentAsset.Status, "Approved", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(m_Behaviour.CurrentAsset.Status, "Approved", StringComparison.OrdinalIgnoreCase))
             {
                 if (GUILayout.Button("Publish"))
                 {
                     _ = m_Behaviour.PublishAsset();
                 }
+
                 GUILayout.Space(5f);
             }
 
-            if(string.Equals(m_Behaviour.CurrentAsset.Status, "Published", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(m_Behaviour.CurrentAsset.Status, "Published", StringComparison.OrdinalIgnoreCase))
             {
                 if (GUILayout.Button("Withdraw"))
                 {
                     _ = m_Behaviour.WithdrawAsset();
                 }
+
                 GUILayout.Space(5f);
             }
         }
@@ -66,11 +68,11 @@ namespace Unity.Cloud.Assets.Documentation.Management
             var cancellationTokenSrc = new CancellationTokenSource(k_DefaultCancellationTimeout);
             try
             {
-                await PlatformServices.AssetManager.PublishApprovedAssetAsync(CurrentAsset, cancellationTokenSrc.Token);
+                await CurrentAsset.PublishAsync(cancellationTokenSrc.Token);
             }
             catch (Exception e)
             {
-                Debug.LogError($"Failed to publish asset: {CurrentAsset.Name}. {e.Message}");
+                Debug.LogError($"Failed to publish asset: {CurrentAsset.Name}. {e}");
             }
         }
 
@@ -83,11 +85,11 @@ namespace Unity.Cloud.Assets.Documentation.Management
             var cancellationTokenSrc = new CancellationTokenSource(k_DefaultCancellationTimeout);
             try
             {
-                await PlatformServices.AssetManager.WithdrawPublishedAssetAsync(CurrentAsset, cancellationTokenSrc.Token);
+                await CurrentAsset.WithdrawAsync(cancellationTokenSrc.Token);
             }
             catch (Exception e)
             {
-                Debug.LogError($"Failed to withdraw published asset: {CurrentAsset.Name}. {e.Message}");
+                Debug.LogError($"Failed to withdraw published asset: {CurrentAsset.Name}. {e}");
             }
         }
 

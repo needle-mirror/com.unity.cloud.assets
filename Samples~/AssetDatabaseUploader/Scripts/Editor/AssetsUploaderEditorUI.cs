@@ -152,7 +152,6 @@ namespace Unity.Cloud.Assets.Samples.AssetDatabaseUploader.Editor
             {
                 DrawCreateAssetsButton();
                 DrawCreateAssetFileButton();
-                DrawUploadCreatedAssetsButton();
             }
             else
             {
@@ -213,24 +212,6 @@ namespace Unity.Cloud.Assets.Samples.AssetDatabaseUploader.Editor
         async void CreateAssetFilesAction()
         {
             await m_AssetsUploader.CreateAssetFilesAsync();
-        }
-
-        void DrawUploadCreatedAssetsButton()
-        {
-            m_UploaderSubSection.Add(EditorUIUtils.CreateSpaceBox());
-
-            var btn = new Button(UploadCreatedAssetsAction)
-            {
-                text = "Upload Created Assets",
-                tooltip = "Upload the last created assets into the cloud"
-            };
-
-            m_UploaderSubSection.Add(btn);
-        }
-
-        async void UploadCreatedAssetsAction()
-        {
-            await m_AssetsUploader.UploadAssetsAsync();
         }
 
         void DrawCreateAndUploadAssetsAllInOneButton()

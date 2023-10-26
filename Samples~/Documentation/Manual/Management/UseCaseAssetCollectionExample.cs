@@ -8,9 +8,9 @@ namespace Unity.Cloud.Assets.Documentation.Management
     {
         readonly UseCaseAssetCollectionExampleBehaviour m_Behaviour = new();
 
-        public void DisplayExample(IProject project, IAsset asset)
+        public void DisplayExample(IAsset asset)
         {
-            m_Behaviour.Initialize(project, asset);
+            m_Behaviour.Initialize(asset);
             AssetActions();
         }
 
@@ -57,12 +57,10 @@ namespace Unity.Cloud.Assets.Documentation.Management
     class UseCaseAssetCollectionExampleBehaviour
     {
         // Member names should match with the names of the get-started behaviour snippets.
-        IProject m_CurrentProject;
         public IAsset CurrentAsset;
 
-        public void Initialize(IProject project, IAsset asset)
+        public void Initialize(IAsset asset)
         {
-            m_CurrentProject = project;
             CurrentAsset = asset;
         }
 
@@ -71,17 +69,25 @@ namespace Unity.Cloud.Assets.Documentation.Management
         public async Task RefreshAssetCollections()
         {
             var cancellationTokenSrc = new CancellationTokenSource();
-            await PlatformServices.AssetManager.GetAssetCollectionsAsync(CurrentAsset, cancellationTokenSrc.Token);
+            await CurrentAsset.RefreshAssetCollectionsAsync(cancellationTokenSrc.Token);
         }
 
         #endregion
 
         #region Example_Behaviour_RemoveFromCollection
 
-        public async Task RemoveAssetFromCollectionAsync(string collectionPath)
+        public async Task RemoveAssetFromCollectionAsync(CollectionPath collectionPath)
         {
             var cancellationTokenSrc = new CancellationTokenSource();
-            await PlatformServices.AssetCollectionManager.RemoveAssetsFromCollectionAsync(m_CurrentProject, collectionPath, new[] {CurrentAsset}, cancellationTokenSrc.Token);
+
+            var collection = await CurrentAsset.GetCollectionAsync(collectionPath, cancellationTokenSrc.Token);
+            if (collection == null)
+            {
+                Debug.LogError($"Collection {collectionPath} not found.");
+                return;
+            }
+
+            await collection.RemoveAssetsAsync(new[] {CurrentAsset}, cancellationTokenSrc.Token);
             await RefreshAssetCollections();
             Debug.Log("Asset removed from collection.");
         }

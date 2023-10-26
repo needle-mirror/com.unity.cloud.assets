@@ -21,9 +21,9 @@
 
 .unity-base-popup-field__arrow {
     -unity-background-image-tint-color: rgb(155, 155, 155);
-    background-image: url('../../../Shared/UI/Sprites/expand-more.png?fileID=21300000&guid=4061895147129422f9f8ec4dad3b1087&type=3#expand-more');
     height: 100%;
     width: 3%;
+    background-image: url('../Sprites/expand-more.png?fileID=21300000&guid=4061895147129422f9f8ec4dad3b1087&type=3#expand-more');
 }
 
 #AssetDescriptionField > #unity-text-input {
@@ -35,7 +35,7 @@
     border-color: rgb(28, 28, 28);
     border-radius: 0.5px;
     border-width: 2px;
-    width: 95%;
+    /*width: 95%;*/
 }
 
 #AssetFileScrollView {
@@ -43,7 +43,7 @@
     min-height: 80%;
 }
 
-#AssetFileUpload {
+#FileUpload {
     background-color: rgb(28, 28, 28);
     border-radius: 0.5px;
     align-items: center;
@@ -53,19 +53,19 @@
     height: 100%;
 }
 
-#AssetFileUpload:hover {
+#FileUpload:hover {
     background-color: rgb(19, 19, 19);
     border-top-width: 0;
 }
 
-#AssetFileUploadButton {
+#FileUploadButton {
     background-color: rgb(28, 28, 28);
     border-color: rgb(59, 59, 59);
     border-radius: 6px;
     color: rgb(210, 210, 210);
 }
 
-#AssetFileUploadButton:hover {
+#FileUploadButton:hover {
     background-color: rgba(255, 255, 255, 0.12);
     border-color: rgb(155, 155, 155);
     border-radius: 6px;
@@ -130,6 +130,36 @@ Label {
 }
 
 #AssetSaveButton:hover {
+    background-color: rgb(76, 176, 255);
+    border-color: rgb(76, 176, 255);
+}
+
+#AssetPublishButton {
+    color: rgba(255, 255, 255, 0.82);
+    background-color: rgb(41, 161, 255);
+    border-color: rgb(41, 161, 255);
+    transition-duration: 0.25s;
+    transition-timing-function: ease-out-back;
+    padding: 4px 8px;
+}
+
+#AssetPublishButton:hover {
+    background-color: rgb(76, 176, 255);
+    border-color: rgb(76, 176, 255);
+}
+
+#CreateAssetButton {
+    color: rgba(255, 255, 255, 0.82);
+    background-color: rgb(41, 161, 255);
+    border-color: rgb(41, 161, 255);
+    transition-duration: 0.25s;
+    transition-timing-function: ease-out-back;
+    margin: 2px;
+    padding: 4px 8px;
+    min-width: 97px;
+}
+
+#CreateAssetButton:hover {
     background-color: rgb(76, 176, 255);
     border-color: rgb(76, 176, 255);
 }

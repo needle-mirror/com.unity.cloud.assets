@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Unity.Cloud.Common;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -45,7 +46,7 @@ namespace Unity.Cloud.Assets.Samples
             m_SearchBarController.Init(root, m_SearchBarChipTemplate);
         }
 
-        public void DisplaySearchBar(IProject project)
+        public void DisplaySearchBar(IAssetProject project)
         {
             m_SearchBarController.DisplaySearchBar();
             m_SearchBarController.UpdateSearchBarProjectsLabel(project);
@@ -58,24 +59,26 @@ namespace Unity.Cloud.Assets.Samples
             }
         }
 
-        public void DisplaySearchBar(IOrganization organization, IEnumerable<IProject> projects)
+        public void DisplaySearchBar(IAssetRepository assetRepository, OrganizationId organizationId, IEnumerable<IAssetProject> projects)
         {
+            var projectIds = projects.Select(p => p.Descriptor.ProjectId).ToArray();
+
             m_SearchBarController.DisplaySearchBar();
-            m_SearchBarController.UpdateSearchBarProjectsLabel(organization, projects);
+            m_SearchBarController.UpdateSearchBarProjectsLabel(assetRepository, organizationId, projectIds);
 
-            _ = UpdateSearchBarValuesAsync(SearchBarController.SearchCriterion.Type, organization, projects);
-            _ = UpdateSearchBarValuesAsync(SearchBarController.SearchCriterion.Name, organization, projects);
-            _ = UpdateSearchBarValuesAsync(SearchBarController.SearchCriterion.Tags, organization, projects);
+            _ = UpdateSearchBarValuesAsync(SearchBarController.SearchCriterion.Type, assetRepository, organizationId, projectIds);
+            _ = UpdateSearchBarValuesAsync(SearchBarController.SearchCriterion.Name, assetRepository, organizationId, projectIds);
+            _ = UpdateSearchBarValuesAsync(SearchBarController.SearchCriterion.Tags, assetRepository, organizationId, projectIds);
         }
 
-        async Task UpdateSearchBarValuesAsync(SearchBarController.SearchCriterion criterion, IProject project)
+        async Task UpdateSearchBarValuesAsync(SearchBarController.SearchCriterion criterion, IAssetProject project)
         {
             try
             {
-                var parameters = new AggregationParameters(criterion.ToString());
-                var  aggregation = await PlatformServices.AssetProvider.AggregateAsync(new AssetSearchFilter(project), parameters, CancellationToken.None);
+                var parameters = new AggregationParameters(GetCriterionSearchKey(criterion));
+                var  aggregation = await project.CountAssetsAsync(new AssetSearchFilter(), parameters, CancellationToken.None);
 
-                m_SearchBarController.UpdateSearchValues(criterion, aggregation.Values.Keys.ToArray());
+                m_SearchBarController.UpdateSearchValues(criterion, aggregation.Values.ToArray());
             }
             catch (OperationCanceledException oe)
             {
@@ -94,14 +97,14 @@ namespace Unity.Cloud.Assets.Samples
             }
         }
 
-        async Task UpdateSearchBarValuesAsync(SearchBarController.SearchCriterion criterion, IOrganization organization, IEnumerable<IProject> projects)
+        async Task UpdateSearchBarValuesAsync(SearchBarController.SearchCriterion criterion, IAssetRepository assetRepository, OrganizationId organizationId, IEnumerable<ProjectId> projects)
         {
             try
             {
-                var parameters = new AggregationParameters(criterion.ToString());
-                var aggregation = await PlatformServices.AssetProvider.AggregateAsync(organization, projects, new AssetSearchFilter(null), parameters, CancellationToken.None);
+                var parameters = new AggregationParameters(GetCriterionSearchKey(criterion));
+                var aggregation = await assetRepository.CountAssetsAsync(organizationId, projects, new AssetSearchFilter(), parameters, CancellationToken.None);
 
-                m_SearchBarController.UpdateSearchValues(criterion, aggregation.Values.Keys.ToArray());
+                m_SearchBarController.UpdateSearchValues(criterion, aggregation.Values.ToArray());
             }
             catch (OperationCanceledException oe)
             {
@@ -118,6 +121,17 @@ namespace Unity.Cloud.Assets.Samples
                 Debug.LogException(e);
                 throw;
             }
+        }
+
+        static string GetCriterionSearchKey(SearchBarController.SearchCriterion criterion)
+        {
+            return criterion switch
+            {
+                SearchBarController.SearchCriterion.Type => AssetTypeSearchCriteria.SearchKey,
+                SearchBarController.SearchCriterion.Name => "name",
+                SearchBarController.SearchCriterion.Tags => "tags",
+                _ => throw new ArgumentOutOfRangeException(nameof(criterion), criterion, null)
+            };
         }
     }
 }

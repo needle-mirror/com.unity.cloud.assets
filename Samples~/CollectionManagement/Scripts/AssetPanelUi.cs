@@ -1,6 +1,8 @@
 #if !UC_EXCLUDE_SAMPLES
 using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -9,6 +11,8 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
     [Serializable]
     public class AssetPanelUi
     {
+        static readonly Pagination m_DefaultPagination = new(nameof(IAsset.Name), Range.All);
+
         readonly CollectionAssetListUi m_CollectionAssetListUi = new();
         ContextMenuController m_ContextMenu;
         AddToCollectionPopupController m_AddToCollectionPopup;
@@ -18,6 +22,9 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
 
         [SerializeField]
         VisualTreeAsset m_PopupListItemTemplate;
+
+        IAssetProject m_CurrentProject;
+        CancellationTokenSource m_CancellationTokenSource = new();
 
         public event Action<IEnumerable<IAsset>> AssetAddedToCollection
         {
@@ -31,8 +38,8 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
         {
             m_CollectionAssetListUi.Initialize(uiDocumentRoot, m_ListItemTemplate);
             m_CollectionAssetListUi.AssetSelected += OnAssetSelected;
+            m_CollectionAssetListUi.ListUpdated += OnCollectionAssetListUiUpdated;
             m_AddToCollectionPopup = new AddToCollectionPopupController(uiDocumentRoot, m_PopupListItemTemplate);
-            m_AddToCollectionPopup.AssetListUpdated += OnAssetListUpdated;
 
             m_ContextMenu = new ContextMenuController(uiDocumentRoot.Q("AssetsContextMenu"));
             m_ContextMenu.RegisterButtonAction("Add", m_AddToCollectionPopup.Show);
@@ -46,7 +53,6 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
         public void Cleanup()
         {
             m_CollectionAssetListUi.AssetSelected -= OnAssetSelected;
-            m_AddToCollectionPopup.AssetListUpdated -= OnAssetListUpdated;
             m_ContextMenu.UnregisterButtonAction("Add", m_AddToCollectionPopup.Show);
             m_ContextMenu.UnregisterButtonAction("Remove", RemoveAsset);
         }
@@ -57,9 +63,9 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
             m_AddToCollectionPopup.Hide();
         }
 
-        public void Populate(IProject project)
+        public void Populate(IAssetProject project)
         {
-            m_CollectionAssetListUi.Populate(null, null);
+            m_CurrentProject = project;
             m_AddToCollectionPopup.Populate(project);
         }
 
@@ -67,12 +73,43 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
         {
             m_ContextMenu.SetEnabled(collection != null);
 
-            m_CollectionAssetListUi.Populate(collection, m_AddToCollectionPopup.Assets);
+            if (m_CancellationTokenSource != null)
+            {
+                m_CancellationTokenSource.Cancel();
+                m_CancellationTokenSource.Dispose();
+            }
+
+            m_CancellationTokenSource = new CancellationTokenSource();
+
+            m_CollectionAssetListUi.Show(collection);
+
+            if (collection != null)
+            {
+                _ = Populate(m_CurrentProject, collection, m_CancellationTokenSource.Token);
+            }
         }
 
-        void OnAssetListUpdated()
+        async Task Populate(IAssetProject project, IAssetCollection collection, CancellationToken token)
         {
-            m_CollectionAssetListUi.Populate(m_AddToCollectionPopup.Assets);
+            var filter = new AssetSearchFilter();
+            filter.Collections.Add(collection.GetFullCollectionPath());
+
+            try
+            {
+                var assets = project.SearchAssetsAsync(filter, m_DefaultPagination, token);
+                var assetList = new List<IAsset>();
+                await foreach (var asset in assets.WithCancellation(token))
+                {
+                    assetList.Add(asset);
+                }
+
+                if (!token.IsCancellationRequested)
+                    m_CollectionAssetListUi.Populate(assetList);
+            }
+            catch (Exception e)
+            {
+                Debug.LogError(e.ToString());
+            }
         }
 
         void OnAssetSelected(IAsset asset)
@@ -87,6 +124,11 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
                 m_ContextMenu.SetButtonVisibility("Add", false);
                 m_ContextMenu.SetButtonVisibility("Remove", true);
             }
+        }
+
+        void OnCollectionAssetListUiUpdated()
+        {
+            m_AddToCollectionPopup.ApplyFilter(m_CollectionAssetListUi.Assets);
         }
 
         void RemoveAsset()

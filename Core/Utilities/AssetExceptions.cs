@@ -4,22 +4,35 @@ using System.Runtime.Serialization;
 namespace Unity.Cloud.Assets
 {
     [Serializable]
-    public sealed class InvalidUploadUrlException : Exception
+    public sealed class InvalidUrlException : Exception
     {
-        public InvalidUploadUrlException(string message)
+        public InvalidUrlException(string message)
             : base(message) { }
 
-        InvalidUploadUrlException(SerializationInfo info, StreamingContext context)
+        InvalidUrlException(SerializationInfo info, StreamingContext context)
             : base(info, context) { }
     }
 
     [Serializable]
-    public sealed class InvalidDownloadUrlException : Exception
+    public sealed class UploadFailedException : Exception
     {
-        public InvalidDownloadUrlException(string message)
+        public UploadFailedException(string message)
             : base(message) { }
 
-        InvalidDownloadUrlException(SerializationInfo info, StreamingContext context)
+        UploadFailedException(SerializationInfo info, StreamingContext context)
+            : base(info, context) { }
+    }
+
+    [Serializable]
+    public sealed class CreateCollectionFailedException : Exception
+    {
+        public CreateCollectionFailedException(string message)
+            : base(message) { }
+
+        public CreateCollectionFailedException(string message, Exception innerException)
+            : base(message, innerException) { }
+
+        CreateCollectionFailedException(SerializationInfo info, StreamingContext context)
             : base(info, context) { }
     }
 }

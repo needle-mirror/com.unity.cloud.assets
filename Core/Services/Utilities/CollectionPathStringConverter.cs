@@ -3,39 +3,16 @@ using Newtonsoft.Json;
 
 namespace Unity.Cloud.Assets
 {
-    class CollectionPathStringConverter : JsonConverter
+    class CollectionPathStringConverter : JsonConverter<CollectionPath>
     {
-        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        public override void WriteJson(JsonWriter writer, CollectionPath value, JsonSerializer serializer)
         {
-            switch (value)
-            {
-                case null:
-                    writer.WriteValue("");
-                    break;
-                case CollectionPath path:
-                    writer.WriteValue(path.ToString());
-                    break;
-                default:
-                    writer.WriteValue(value);
-                    break;
-            }
+            writer.WriteValue(value.ToString());
         }
 
-        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        public override CollectionPath ReadJson(JsonReader reader, Type objectType, CollectionPath existingValue, bool hasExistingValue, JsonSerializer serializer)
         {
-            var path = "";
-
-            if (reader.TokenType == JsonToken.String)
-            {
-                path = reader.Value?.ToString();
-            }
-
-            return objectType == typeof(CollectionPath) ? new CollectionPath(path) : path;
-        }
-
-        public override bool CanConvert(Type objectType)
-        {
-            return objectType == typeof(string) || objectType == typeof(CollectionPath);
+            return reader.TokenType == JsonToken.String ? new CollectionPath(reader.Value?.ToString()) : existingValue;
         }
     }
 }

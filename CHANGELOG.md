@@ -4,6 +4,115 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [1.0.0-exp.1] - 2023-10-26
+
+### Added
+- `RefreshAsync` method added to `IAsset` to refresh the asset data. This is useful for fetching additional data that is not populated by default.
+- `PreviewUrl` property added to `IFile` to expose the preview url of the file.
+- `ListAssetCollectionsAsync` and `GetAssetCollectionAsync` methods added to `IAssetRepository`.
+- Added error popup to Asset Collection sample when creation fails.
+- Added error message to Asset Collection sample during creation and edit when a collection with the same name already exists.
+
+### Changed
+- [Breaking] `GetDatasetAsync` and `GetFileAsync` methods of `IAssetRepository` now require a `DatasetFields` and `FileFields` parameter respectively.
+- [Breaking] `Id` in `IAssetProject` replaced by `Descriptor` of type `ProjectDescriptor`.
+- Refactored `AssetDataSource` to match other packages.
+- Change minimal Unity version to 2022.3
+
+### Fixes
+- Asset Collection sample list selection now allows de-selection of item.
+- Remove usage of system.web for encoding urls.
+- Remove Cancellation tokens timeout from Asset Management sample to allow big file to be uploaded.
+- Fix file size display to correspond correctly on the unit.
+- Add checks on UI buttons in the Asset Management sample to prevent multiple clicks
+- Add UI message to give feedback after an action like (publish asset, save asset)
+- Added filtering of already included assets for the 'Add to Collection' asset list in Asset Collection sample.
+- `IDataset` refreshes its data when `UpdateAsync` and `RemoveFileAsync` are called.
+- Fix `IAsset.UnlinkFromProjectAsync` unlinking context project instead of the one passed in parameter. 
+
+### Removed
+- Removing empty and unused directories and scripts.
+- Removed `IAssetHttpClient`, its implementations and its tests.
+
+## [0.7.0] - 2023-10-18
+
+### Added
+- `IDataset` to expose dataset operations.
+- Default thumbnails in asset discovery sample
+- `SerializeIdentifiers` method added to `IAsset` to allow for serialization.
+  - `DeserializeAssetIdentifiers` added to `IAssetRepository` to deserialize identifiers into a usable `AssetDescriptor`.
+- `Serialize` method added to `IAsset` to allow for serialization.
+  - `DeserializeAsset` added to `IAssetRepository` to deserialize an asset from a JSON string.
+- [Breaking] `FieldsFilter` added to `GetAssetAsync` operations and to the `IAssetSearchFilter` to define which `IAsset` fields are populated.
+- `MockDataSource` class added. `UC_MOCK_ASSETS` symbol must be defined to use the `MockDataSource` instead of `AssetDataSource`.
+- `GetFileUrl` added to `IDataset` to get the a file download url.
+- `ConditionalSearchCriteria`, `DatasetSearchFilter`, `MetadataSearchFilter`
+- `AssetType` enum to get predefined Asset's type supported values.
+- `IsVisible` property added to `IDataset`, `IDatasetUpdate`, `IDatasetUpdateData`, `Dataset`, `DatasetUpdate`, `DatasetUpdateData` and `DatasetSearchFilter`.
+- `WorkflowName` property added to `DatasetEntity`, `IDatasetData` and `DatasetData`.
+- `IFile.Userchecksum` property
+- `InvalidateUrls` method added to `IFile` to clean up the cached download and upload urls of the file.
+- `LinkedDatasetIds` property added to `IFile`.
+- `Descriptor` in `IAsset`.
+- `LinkedProjects` property added to `IAsset`.
+- `Descriptor` in `IDataset`.
+- `Descriptor` in `IFile`.
+- `WithProject` method to `IAsset` to switch between projects.
+- `WithDataset` method to `IFile` to switch between datasets.
+
+### Changed
+- Changed the discovery sample to show smaller thumbnails by using an image resizer service.
+- [Breaking] Migration to v1 of the Assets API.
+  - [Breaking] `IFile` replaces `IAssetFile` for file operations.
+  - `IAsset` exposes `IDataset` and `IFile`.
+- [Breaking] New `AuthoringInfo` struct encapsulates `Created`, `CreatedBy`, `Updated`, and `UpdatedBy` properties.
+- Changed `MockDataSource` to return 2 files in mocked `DatasetData.FileOrder`.
+- [Breaking] Updated `AssetSearchCriteria` properties for parity with searchable fields of `IAsset`.
+- [Breaking] Renamed `IProject` to `IAssetProject` to avoid conflicts with Identity's `IProject`.
+- [Breaking] Remove the AssetVersionId and AssetVersionDescriptor structs and replace by AssetVersion in the AssetDescriptor.
+- [Breaking] Changed `IAsset.Type` property type from `string` to `AssetType` enum.
+- Updated `Asset Discovery`, `Asset Manager`, `Asset database uploader` samples to use the dataset.
+- [Breaking] `ListFiles` in `IDataset` renamed to `ListFilesAsync`.
+- [Breaking] `GetAssetDownloadUrlsAsync` of `IAsset` returns a mapping of file paths to Uris.
+- [Breaking] Renamed `LinkedDatasetIds` in `IFile` to `LinkedDatasets` and enumerable type changed to `DatasetDescriptor`.
+
+### Removed
+- [Breaking] Removed `AssetServiceConfiguration`.
+- [Breaking] `AssetTaxonomy`, `AssetAuthor`, `AssetLocation` removed.
+- [Breaking] `Metadata` property of `IProject` removed.
+- [Breaking] `CatalogId` and `Metadata` properties removed from `IAssetCollection`
+- [Breaking] `VersionName`, `Origin`, `ShortId`, `Categories`, `StatusDetails` properties removed from `IAsset`
+- Removed mocking code from `AssetDataSource`.
+- [Breaking] Removed `IOrganizationProvider` and `IOrganization`. Use Identity's `IOrganizationRepository` and `IOrganization` instead.
+- [Breaking] Removed `Id` and `Version` properties from `IAsset`; use `Descriptor.AssetId` and `Descriptor.Version` instead.
+- [Breaking] Removed `Id` property from `IDataset`; use `Descriptor.DatasetId`.
+- [Breaking] Removed `Path` property from `IFile`; use `Descriptor.FilePath`.
+- [Breaking] Remove `UserCriteria` from `AssetSearchFilter`. For custom fields, extend `AssetSearchFilter` or implement `IAssetSearchFilter`.
+
+### Fixed
+- Fixed CryptographicUnexpectedOperationException during Md5 checksum calculation.
+- Fixed `AssetSearchFilter.Type` criteria in search and aggregate requests.
+- Fixed Shared Samples Search bar to allow search by type.
+- Fixed Get collections json parsing.
+- Fixed Pagination in assets search
+- Fixed GetFileUrl in `Dataset` to start with ServiceUrl.
+- Fixed Pagination in project list
+- Cross project search with included collections.
+- Aggregation search with included collections.
+
+## [0.6.0] - 2023-09-15
+
+### Added
+- Added single entry point for API calls: `IAssetRepository`.
+
+### Changed
+- Turned AssetManager sample visible
+- [Breaking] Changed how `AssetSearchFilter` searches collections. Instead of a `SearchCriteria`, populate the `Collections` list with the collection paths to search.
+
+### Removed
+- [Breaking] Removed all manager scripts: `IAssetProvider`, `IAssetManager`, `IFileManager`, `ICollectionManager`.
+  - All previous actions are now available in entities: `IProject`, `IAsset`, `IAssetFile`, `IAssetCollection`.
+
 ## [0.5.0] - 2023-08-31
 
 ### Added
@@ -33,6 +142,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Changed
 - Updated the UI of the Collection Management sample
+- Updated Assets Runtime sample to allow create, upload actions.
 
 ### Removed
 - [Breaking] Removed `IOrganization` parameter from all API methods that also have an `IProject` parameter.

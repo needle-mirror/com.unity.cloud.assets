@@ -1,33 +1,34 @@
 # Sample: Manage assets
 
-The sample available as part of the Unity Asset Manager SDK demonstrates how to update and publish assets.
+The sample available as part of the Unity Cloud Assets demonstrates how to update and publish assets.
 A typical example of audience for this guide is the developers who want to integrate asset management features in their app.
 
-The sample use the management endpoints that requires a minimum role of: 
+The sample use the management endpoints that requires a minimum role of:
 
-* [**Manager**](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html) in the Unity Cloud Organization you belong to. <br/> 
+* [`Asset Management Contributor`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html). <br/> 
 OR 
-* [**Asset Manager Contributor**](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html) in the Unity Cloud Project you belong to.
+* [`Asset Management Owner`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html).
 
 ## Before you start
 
 To use the Asset Management sample, you need the following:
 
-* An installed [Assets](installation.md) package
-* An installed [Identity](https://docs.unity3d.com/Packages/com.unity.cloud.identity@latest) package
-* A valid [Unity ID Account](https://dashboard.unity3d.com/)
+* Installed [Assets](installation.md) package
+* Installed [Identity](https://docs.unity3d.com/Packages/com.unity.cloud.identity@latest) package
+* A valid [Unity ID Account](https://id.unity.com/)
+* Access to your [Unity Gaming Services account](https://dashboard.unity3d.com/)
 * An access to the [Asset Manager service](https://docs.unity3d.com/docs-asset-manager/manual/get-started.html)
-* A Unity project with the Asset Manager service enabled (see [Asset Manager documentation](https://docs.unity3d.com/docs-asset-manager/manual/modify-project.html))
+* A Unity Project with the Asset Manager service enabled, see: [Asset Manager documentation](https://docs.unity3d.com/docs-asset-manager/manual/modify-project.html)
 
-> **Note**: While the Assets package doesn't depend on the Identity service, It is used in the sample to control the authentication flow.
+> **Note**: While the Assets package doesn't depend on the Identity service, it is used in the sample to control the authentication process.
 
 ## Install the sample
 
 To install the sample, follow these steps:
 
-1. Inside your Unity project window, go to **Package Manager** > **Unity Cloud Assets**.
-
-2. Expand the **Samples** section and select **Import** next to the Asset Management sample.
+1. Inside your Unity Project window, go to **Package Manager** > **Unity Cloud Assets**.
+2. Expand the **Samples** section.
+3. On the right of the Asset Management sample, select **Import**.
    </br>
    ![Screenshot of the samples import section of the package manager window](images/import-manager-sample.png)
 
@@ -39,11 +40,11 @@ After the import process completes, you can view the imported assets in the `Uni
 
 To run the sample, follow these steps:
 
-1. Go to `Assets/Samples/Unity Cloud Assets/<package-version>/Asset Management/Scenes/AssetManagerSample.unity` and run the scene. If this is your first time launching the sample, make sure to sign in with your Unity Gaming Services account.
-2. Select an Organization. The list of projects from that organization appears on the left column.
+1. Go to `Assets/Samples/Unity Cloud Assets/<package-version>/Asset Management/Scenes/AssetManagerSample.unity` and run the scene.
+2. Select an Organization. The list of Projects from that Organization appears on the left column.
    </br>
    ![Screenshot of the organization selection](images/organizations.png)
-3. Select a project. The list of published assets from that project appears on the right column.
+3. Select a Project. The list of assets from that Project appears on the right column.
    </br>
    ![Screenshot of the project list](images/project-list.png)
    </br>
@@ -53,12 +54,12 @@ To run the sample, follow these steps:
 
 To search for specific assets by tag or name in this sample, follow these steps:
 
-1. Select a project.
+1. Select a Project.
 2. In the search bar, type the keywords by which you want to search your assets and select **Search**.
    </br>
    ![Screenshot of the created topic](images/search-in-manager.png)
 
-> **Note**: While using the SDK, you will be able to build different and more complex queries. For more information on asset search, see the [Search Assets manual](use-case-search-assets.md).
+> **Note**: While using the SDK, you will be able to build different and more complex queries. For more information on asset search, see the [Search Assets](use-case-search-assets.md) use case.
 
 #### Search prompts
 
@@ -69,22 +70,45 @@ To select a keyword, click on it. The search bar will add it as a parameter and 
 
 To update an asset in this sample, follow these steps:
 
-1. Select a project.
+1. Select a Project.
 2. On the right side of the screen, select **...** button of the asset you want to update and select **Open**.
    </br>
    ![Screenshot of the open button](images/open-selected-asset.png)
 3. In the asset details page, edit the asset's information and select the **Save asset** button.
    </br>
-   ![Screenshot of the save button](images/asset-edit-panel.png)
-4. To go back to the list of assets of the project, select the desired project in the project list.
+   ![Screenshot of the asset edit panel](images/asset-edit-panel.png)
+4. To add a new dataset to the asset, click on the **Create dataset** button.
+   </br>
+   ![Screenshot of the add dataset button](images/asset-edit-create-dataset-button.png)
+5. A new dataset with an automatic name is added to the asset.
+    </br>
+   ![Screenshot of the new created dataset in list](images/asset-edit-new-created-dataset.png)
+6. To update a dataset or manage the files of an asset, you can click on the desired dataset.
+   </br>
+   ![Screenshot of the dataset in list](images/asset-edit-dataset-list.png)
+5. In the dataset details page, edit the dataset's information and select the **Save dataset** button.
+   </br>
+   ![Screenshot of the dataset panel](images/dataset-edit-panel.png)
+6. To add a new file to the dataset, click on the **Browse** button, select the desired file.
+   </br>
+   ![Screenshot of the browse button](images/dataset-edit-panel-browse-button.png)
+7. To remove a file from the dataset, click on the **Trash icon** button.
+   </br>
+   ![Screenshot of the remove button](images/trash-icon-button.png)
+8. To go back to the detail of the asset, click on the button Back on the top left corner.
+9. To go back to the list of assets of the Project, click on the button Back on the top left corner.
 
 > **Note**: When an asset is not published, you can do the two following actions :
-> 1. you can save the asset by selecting the **Save asset** button.
-  <br/>
-  ![Screenshot of the save button](images/save-asset-button.png)
-> 2. you can publish it by checking the Publish checkbox and selecting the **Publish asset** button.
-  <br/>
-  ![Screenshot of the publish button](images/publish-asset-button.png)
+> 1. You can save the asset by selecting the **Save asset** button.
+> 
+> ![Screenshot of the save asset button](images/save-asset-button.png)
+> 
+> 2. You can publish it by checking the Publish checkbox and selecting the **Publish asset** button.
+>
+>  ![Screenshot of the publish asset button](images/publish-asset-button.png)
+>  
+> 3. **Sources** dataset is the default dataset of an asset used to list the asset data files.
+> 4. **Previews** dataset is default dataset of an asset to list the asset preview files.
 
 ## Main components
 
@@ -92,7 +116,7 @@ This section describes the scripts that make up the main components of the Asset
 
 ### Platform services script
 
-The `PlatformServices` class initializes and disposes of dependencies required by the `AssetManager`. You can use this class to manage the Unity Cloud services and dependencies you use in your application.
+The `PlatformServices` class initializes and disposes of dependencies required by the `IAssetRepository`. You can use this class to manage the Unity Cloud services and dependencies you use in your application.
 
 To open the platform services script, go to your `Assets/Samples/Unity Cloud Assets/<package-version>/Shared/Scripts/Services/PlatformServices.cs` file.
 
@@ -100,7 +124,7 @@ The `PlatformServices` class has two accompanying classes called `PlatformServic
 
 ### User Controller script
 
-The `UserController` class lets you sign in and provides the Asset Management sample with your Unity Gaming Services ID. For more information on authentication, see the **Get user information** page of the [Identity package documentation](https://docs.unity3d.com/Packages/com.unity.cloud.identity@latest).
+The `UserController` class makes it so you can sign into your application and uses your ID to grant access to the Asset Management sample. For more information on authentication, see the **Get user information** use case in the [Identity package documentation](https://docs.unity3d.com/Packages/com.unity.cloud.identity@latest).
 
 To open the UserController script, go to your `Assets/Samples/Unity Cloud Assets/<package-version>/Shared/Scripts/Controllers/UserController.cs` file.
 
@@ -109,7 +133,7 @@ To open the UserController script, go to your `Assets/Samples/Unity Cloud Assets
 The `AssetManagerSample` shows you how to do the following:
 
 * Integrate the login flow with the `UserController` class
-* Retrieve organizations and projects from the Asset Manager service
+* Retrieve Organizations and Projects from the Asset Manager service
 * Retrieve assets from the Asset Manager service and manage them
 * Search for assets by tag or name
 
@@ -117,7 +141,7 @@ To open the Asset Management sample script, go to your `Assets/Samples/Unity Clo
 
 ### Shared UI scripts
 
-The `UI` sample includes a set of UI scripts and prefabs used by Unity Asset Manager SDK samples. To open shared UI scripts, go to `Assets/Samples/Unity Cloud Assets/<package-version>/Shared/Scripts/Controllers`.
+The `UI` sample includes a set of UI scripts and prefabs used by Unity Cloud Assets samples. To open shared UI scripts, go to `Assets/Samples/Unity Cloud Assets/<package-version>/Shared/Scripts/Controllers`.
 
 ## Troubleshooting
 

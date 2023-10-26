@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Unity.Cloud.Common;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -12,25 +13,39 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
     {
         [SerializeField]
         UIDocument m_UiDocument;
+
         [SerializeField]
         UserController m_UserController;
+
         [SerializeField]
         SearchBarUi m_SearchBarUi;
+
         [SerializeField]
-        VisualTreeAsset m_AssetDiscoveryLayoutTemplate;
+        VisualTreeAsset m_AssetGridLayoutTemplate;
+
+        [SerializeField]
+        VisualTreeAsset m_AssetInformationLayoutTemplate;
+
         [SerializeField]
         VisualTreeAsset m_AssetsGridItemTemplate;
+
         [SerializeField]
-        VisualTreeAsset m_AssetInformationPanelItemTemplate;
+        VisualTreeAsset m_InformationItemTemplate;
+
         [SerializeField]
-        VisualTreeAsset m_AssetInformationTagsTemplate;
+        VisualTreeAsset m_InformationTagsTemplate;
+
+        [SerializeField]
+        VisualTreeAsset m_DataSetInformationPanelItemTemplate;
+
+        [SerializeField]
+        DefaultThumbnail[] m_DefaultThumbnails;
 
         VisualElement m_UiDocumentRoot;
-        VisualElement m_SampleContainer;
-        VisualElement m_AssetDiscoveryLayout;
+        VisualElement m_ContentPanel;
 
-        AssetsGridController m_AssetsGridController;
-        AssetInformationPanelController m_AssetInformationPanelController;
+        IAssetsGridController m_AssetsGridController;
+        IAssetInformationPanelController m_AssetInformationPanelController;
 
         readonly List<IAsset> m_ProjectAssetsList = new();
 
@@ -38,6 +53,16 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
 
         CancellationTokenSource m_NewListCancellationTokenSource = new();
         CancellationTokenSource m_UpdateListCancellationTokenSource = new();
+
+        [Serializable]
+        public struct DefaultThumbnail
+        {
+            [field: SerializeField]
+            public AssetType AssetType { get; set; }
+
+            [field: SerializeField]
+            public Texture2D Thumbnail { get; set; }
+        }
 
         void Start()
         {
@@ -47,13 +72,34 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
             m_AssetsGridController = new AssetsGridController();
             m_AssetInformationPanelController = new AssetInformationPanelController();
 
-            m_SampleContainer = m_UiDocumentRoot.Q<VisualElement>("ContentPanel");
+            m_ContentPanel = m_UiDocumentRoot.Q<VisualElement>("Content");
 
-            InstantiateDiscoveryLayout();
+            m_SearchBarUi.Initialize(m_UiDocumentRoot, m_UiDocumentRoot.Q<VisualElement>("SearchBarContainer"));
+            m_SearchBarUi.DeleteSearchQuery += OnSearchQueryChanged;
+            m_SearchBarUi.AddSearchQuery += OnSearchQueryChanged;
+            m_SearchBarUi.ClearSearchQuery += OnClearSearchQuery;
+
+            var assetGridLayout = m_AssetGridLayoutTemplate.Instantiate();
+            assetGridLayout.style.height = Length.Percent(100);
+
+            var assetInformationLayout = m_AssetInformationLayoutTemplate.Instantiate();
+            assetInformationLayout.style.height = Length.Percent(100);
+
+            HideAssetDiscoveryLayout();
+
+            var assetGridContainer =  m_UiDocumentRoot.Q<VisualElement>("ContentPanel");
+            assetGridContainer.Add(assetGridLayout);
+            assetGridContainer.Add(assetInformationLayout);
 
             // Init controllers
-            m_AssetsGridController.Init(m_AssetDiscoveryLayout, m_AssetsGridItemTemplate, this);
-            m_AssetInformationPanelController.Init(m_AssetDiscoveryLayout, m_AssetInformationPanelItemTemplate, m_AssetInformationTagsTemplate, this);
+            var thumbnails = new Dictionary<AssetType, Texture2D>();
+            foreach(var defaultThumbnail in m_DefaultThumbnails)
+            {
+                thumbnails.Add(defaultThumbnail.AssetType, defaultThumbnail.Thumbnail);
+            }
+
+            m_AssetsGridController.Init(assetGridLayout, m_AssetsGridItemTemplate, thumbnails);
+            m_AssetInformationPanelController.Init(assetInformationLayout, m_InformationItemTemplate, m_InformationTagsTemplate, m_DataSetInformationPanelItemTemplate, this);
 
             m_UserController.ShowContent += ShowAssetDiscoveryLayout;
             m_UserController.HideContent += HideAssetDiscoveryLayout;
@@ -76,28 +122,17 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
             m_AssetsGridController.AssetSelected -= OnAssetSelected;
         }
 
-        void InstantiateDiscoveryLayout()
-        {
-            m_SearchBarUi.Initialize(m_UiDocumentRoot, m_SampleContainer);
-            m_SearchBarUi.DeleteSearchQuery += OnSearchQueryChanged;
-            m_SearchBarUi.AddSearchQuery += OnSearchQueryChanged;
-            m_SearchBarUi.ClearSearchQuery += OnClearSearchQuery;
-
-            m_AssetDiscoveryLayout = m_AssetDiscoveryLayoutTemplate.Instantiate();
-            m_AssetDiscoveryLayout.style.height = Length.Percent(100);
-            HideAssetDiscoveryLayout();
-
-            m_SampleContainer.Add(m_AssetDiscoveryLayout);
-        }
-
         void ShowAssetDiscoveryLayout()
         {
-            m_AssetDiscoveryLayout.style.display = DisplayStyle.Flex;
+            m_AssetsGridController.DisplayAssetGrid();
+            m_AssetInformationPanelController.DisplayInformationPanel();
         }
 
         void HideAssetDiscoveryLayout()
         {
-            m_AssetDiscoveryLayout.style.display = DisplayStyle.None;
+            m_AssetsGridController.HideAssetGrid();
+            m_AssetInformationPanelController.HideInformationPanel();
+
             ClearContent();
         }
 
@@ -106,7 +141,6 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
             if (m_SelectedAsset == selectedAsset) return;
 
             m_SelectedAsset = selectedAsset;
-            Debug.Log($"Asset Selected: {m_SelectedAsset.Name}");
             DisplayAssetInformationPanel();
         }
 
@@ -116,7 +150,7 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
             m_AssetsGridController.DisplayAssetGrid();
         }
 
-        void OnOrganizationSelected()
+        void OnOrganizationSelected(OrganizationId orgId)
         {
             ClearContent();
         }
@@ -124,11 +158,11 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
         async void OnProjectSelected()
         {
             // On project selected, clear the content
-            HideAssetInformationPanel();
+            HideInformationRightPanel();
 
             if (m_UserController.IsAllProjectSelected)
             {
-                m_SearchBarUi.DisplaySearchBar(m_UserController.SelectedOrganization, m_UserController.GetAllProjects());
+                m_SearchBarUi.DisplaySearchBar(m_UserController.AssetRepository, m_UserController.SelectedOrganization.Id, m_UserController.GetAllProjects());
             }
             else
             {
@@ -143,7 +177,7 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
 
             m_ProjectAssetsList.Clear();
             m_AssetsGridController.ClearAssetGrid();
-            m_SampleContainer.style.display = DisplayStyle.Flex;
+            m_ContentPanel.style.display = DisplayStyle.Flex;
 
             var updateToken = GetCancellationToken();
 
@@ -173,27 +207,26 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
 
         void DisplayAssetInformationPanel()
         {
-            m_AssetInformationPanelController.DisplayAssetInformationPanel();
-            m_AssetInformationPanelController.SetAssetPanelName(m_SelectedAsset);
-
+            m_AssetInformationPanelController.DisplayInformationPanel();
             m_AssetInformationPanelController.PopulateAssetPanel(m_SelectedAsset);
+            _ = m_AssetInformationPanelController.PopulateDatasetsPanel(m_SelectedAsset.ListDatasetsAsync(Range.All, CancellationToken.None));
         }
 
-        void HideAssetInformationPanel()
+        void HideInformationRightPanel()
         {
-            m_AssetInformationPanelController.HideAssetInformationPanel();
+            m_AssetInformationPanelController.HideInformationPanel();
         }
 
         void ClearContent()
         {
-            m_SampleContainer.style.display = DisplayStyle.None;
+            m_ContentPanel.style.display = DisplayStyle.None;
             m_AssetsGridController.HideAssetGrid();
-            m_AssetInformationPanelController.HideAssetInformationPanel();
+            m_AssetInformationPanelController.HideInformationPanel();
         }
 
         async void OnSearchQueryChanged(IAsyncEnumerable<IAsset> assets)
         {
-            m_AssetInformationPanelController.HideAssetInformationPanel();
+            m_AssetInformationPanelController.HideInformationPanel();
 
             var token = GetCancellationToken();
 

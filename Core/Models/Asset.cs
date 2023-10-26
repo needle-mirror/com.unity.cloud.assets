@@ -1,192 +1,457 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Serialization;
-using Newtonsoft.Json;
+using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
+using Unity.Cloud.Common;
 
 namespace Unity.Cloud.Assets
 {
     /// <summary>
     /// This is a base class containing the information pertaining to an asset.
     /// </summary>
-    [DataContract(Name = "asset")]
-    public class Asset : IAsset
+    sealed class Asset : IAsset
     {
-        [DataMember(Name = "name")]
-        string m_Name;
-        [DataMember(Name = "description")]
-        string m_Description;
-        [DataMember(Name = "type")]
-        string m_Type;
-        [DataMember(Name = "details")]
-        Dictionary<string, IDeserializable> m_Details;
-        [DataMember(Name = "metadata")]
-        Dictionary<string, IDeserializable> m_Metadata;
-        [DataMember(Name = "files")]
-        protected internal List<AssetFile> m_Files;
-        [DataMember(Name = "attachments")]
-        protected internal List<AssetFile> m_Attachments;
-        [DataMember(Name = "collections")]
-        protected internal List<CollectionPath> m_Collections;
-
-        /// <inheritdoc />
-        public IProject Project { get; set; }
-
-        /// <inheritdoc />
-        public string Name
+        static readonly FieldsFilter k_BasicFields = new()
         {
-            get => m_Name;
-            set => m_Name = value ?? throw new ArgumentException(nameof(Name));
-        }
+            AssetFields = AssetFields.none,
+            DatasetFields = DatasetFields.none,
+            FileFields = FileFields.none
+        };
+
+        readonly IAssetDataSource m_DataSource;
+
+        IEnumerable<IAssetCollection> m_Collections = Array.Empty<IAssetCollection>();
+        internal ProjectDescriptor[] m_LinkedProjects = Array.Empty<ProjectDescriptor>();
+        internal Uri m_PreviewFileDownloadUrl;
 
         /// <inheritdoc />
-        public string Description
-        {
-            get => m_Description;
-            set => m_Description = value ?? throw new ArgumentException(nameof(Description));
-        }
+        public AssetDescriptor Descriptor { get; }
 
         /// <inheritdoc />
-        [DataMember(Name = "version")]
-        public int Version { get; set; }
+        public ProjectDescriptor SourceProject { get; private set; }
 
         /// <inheritdoc />
-        [DataMember(Name = "taxonomy")]
-        public AssetTaxonomy Taxonomy { get; set; }
+        public IEnumerable<ProjectDescriptor> LinkedProjects => m_LinkedProjects;
 
         /// <inheritdoc />
-        [DataMember(Name = "tags")]
-        public List<string> Tags { get; set; }
+        public string Name { get; set; }
 
         /// <inheritdoc />
-        [DataMember(Name = "origin")]
-        public string Origin { get; set; }
+        public string Description { get; set; }
 
         /// <inheritdoc />
-        [DataMember(Name = "shortId")]
-        public string ShortId { get; set; }
+        public IEnumerable<string> Tags { get; set; }
 
         /// <inheritdoc />
-        [DataMember(Name = "versionName")]
-        public string VersionName { get; set; }
+        public IEnumerable<string> SystemTags { get; set; }
 
         /// <inheritdoc />
-        public string Type
-        {
-            get => m_Type;
-            set => m_Type = value ?? throw new ArgumentException(nameof(Type));
-        }
+        public IEnumerable<string> Labels { get; set; }
 
         /// <inheritdoc />
-        [DataMember(Name = "location")]
-        public AssetLocation Location { get; set; }
+        public AssetType Type { get; set; }
 
         /// <inheritdoc />
-        [DataMember(Name = "categories")]
-        public List<string> Categories { get; set; }
+        public IDeserializable PortalMetadata { get; set; }
 
         /// <inheritdoc />
-        [DataMember(Name = "externalId")]
-        public string ExternalId { get; set; }
+        public IDeserializable Metadata { get; set; }
 
         /// <inheritdoc />
-        [DataMember(Name = "author")]
-        public AssetAuthor Author { get; set; }
+        public IDeserializable SystemMetadata { get; set; }
 
         /// <inheritdoc />
-        [DataMember(Name = "previewFileId")]
-        public string PreviewFileId { get; set; }
+        public string PreviewFile { get; set; }
 
         /// <inheritdoc />
-        public IEnumerable<CollectionPath> Collections => m_Collections;
+        public IEnumerable<CollectionPath> Collections { get; private set; } = Array.Empty<CollectionPath>();
 
         /// <inheritdoc />
-        public IEnumerable<IAssetFile> Files => m_Files;
-
-        /// <inheritdoc />
-        public IEnumerable<IAssetAttachment> Attachments => m_Attachments;
-
-        /// <inheritdoc />
-        [DataMember(Name = "id")]
-        public string Id { get; set; }
-
-        /// <inheritdoc />
-        [DataMember(Name = "status")]
         public string Status { get; set; }
 
         /// <inheritdoc />
-        [DataMember(Name = "statusDetails")]
-        public string StatusDetails { get; set; }
+        public bool IsFrozen { get; set; }
 
         /// <inheritdoc />
-        [DataMember(Name = "created")]
-        public DateTime Created { get; set; }
+        public AuthoringInfo AuthoringInfo { get; set; }
 
         /// <inheritdoc />
-        [DataMember(Name = "createdBy")]
-        public string CreatedBy { get; set; }
-
-        /// <inheritdoc />
-        [DataMember(Name = "updated")]
-        public DateTime Updated { get; set; }
-
-        /// <inheritdoc />
-        [DataMember(Name = "updatedBy")]
-        public string UpdatedBy { get; set; }
-
-        /// <inheritdoc />
-        [DataMember(Name = "storageId")]
         public string StorageId { get; set; }
 
-        /// <inheritdoc />
-        [DataMember(Name = "projectIds")]
-        public List<string> ProjectIds { get; }
+        internal DatasetEntity[] Datasets { get; set; }
+        internal FileEntity[] Files { get; set; }
 
-        /// <inheritdoc />
-        [DataMember(Name = "sourceProjectId")]
-        public string SourceProjectId { get; set; }
-
-        [JsonConstructor]
-        public Asset()
+        internal Asset(IAssetDataSource dataSource, AssetDescriptor assetDescriptor, ProjectId sourceProjectId, IEnumerable<ProjectId> linkedProjectIds)
         {
-            m_Attachments = new List<AssetFile>();
-            m_Files = new List<AssetFile>();
-
-            m_Details = new Dictionary<string, IDeserializable>();
-            Tags = new List<string>();
-            m_Collections = new List<CollectionPath>();
-            Categories = new List<string>();
-            m_Metadata = new Dictionary<string, IDeserializable>();
-            ProjectIds = new List<string>();
-        }
-
-        /// <summary>
-        /// Updates the files and attachments.
-        /// </summary>
-        /// <param name="assetFiles">An updated list of files. </param>
-        /// <param name="assetAttachments">An updated list of attachments. </param>
-        public void OnFilesUpdated(IEnumerable<AssetFile> assetFiles, IEnumerable<AssetFile> assetAttachments)
-        {
-            m_Files = assetFiles.ToList();
-            m_Attachments = assetAttachments.ToList();
-        }
-
-        /// <summary>
-        /// Updates the collection list.
-        /// </summary>
-        /// <param name="assetCollections">An updated list of collections. </param>
-        public void OnCollectionsUpdated(IEnumerable<AssetCollection> assetCollections)
-        {
-            m_Collections = new List<CollectionPath>();
-
-            foreach (var assetCollection in assetCollections)
+            m_DataSource = dataSource;
+            Descriptor = assetDescriptor;
+            if (linkedProjectIds != null)
             {
-                if (assetCollection == null)
-                {
-                    continue;
-                }
-                m_Collections.Add(assetCollection.Name);
+                m_LinkedProjects = linkedProjectIds.Select(projectId => new ProjectDescriptor(assetDescriptor.OrganizationGenesisId, projectId)).ToArray();
             }
+            SourceProject = new ProjectDescriptor(assetDescriptor.OrganizationGenesisId, sourceProjectId);
+        }
+
+        internal Asset(string id, int version = 1)
+        {
+            var projectDescriptor = new ProjectDescriptor(OrganizationId.None, ProjectId.None);
+            Descriptor = new AssetDescriptor(projectDescriptor, new AssetId(id), new AssetVersion(version));
+        }
+
+        public IAsset WithProject(ProjectDescriptor projectDescriptor)
+        {
+            if (projectDescriptor == Descriptor.ProjectDescriptor) return this;
+
+            if (!m_LinkedProjects.Contains(projectDescriptor))
+                throw new InvalidArgumentException("The asset does not belong to the specified project.");
+
+            var linkedProjectIds = m_LinkedProjects.Select(x => x.ProjectId);
+            return new Asset(m_DataSource, new AssetDescriptor(projectDescriptor, Descriptor.AssetId, Descriptor.AssetVersion), SourceProject.ProjectId, linkedProjectIds)
+            {
+                Name = Name,
+                Description = Description,
+                Tags = Tags?.ToArray(),
+                SystemTags = SystemTags?.ToArray(),
+                Labels = Labels?.ToArray(),
+                Type = Type,
+                PortalMetadata = PortalMetadata, // Find a better way of copying IDeserializable
+                Metadata = Metadata, // Find a better way of copying IDeserializable
+                SystemMetadata = SystemMetadata, // Find a better way of copying IDeserializable
+                PreviewFile = PreviewFile,
+                Collections = Collections?.ToArray(),
+                Status = Status,
+                IsFrozen = IsFrozen,
+                AuthoringInfo = AuthoringInfo,
+                StorageId = StorageId,
+                Datasets = Datasets?.ToArray(),
+                Files = Files?.ToArray(),
+            };
+        }
+
+        /// <inheritdoc />
+        public async Task RefreshAsync(FieldsFilter includeFields, CancellationToken cancellationToken)
+        {
+            var assetData = await m_DataSource.GetAssetAsync(Descriptor, includeFields, cancellationToken);
+            this.MapFrom(m_DataSource, assetData, includeFields);
+        }
+
+        /// <inheritdoc />
+        public Task UpdateAsync(IAssetUpdate assetUpdate, CancellationToken cancellationToken)
+        {
+            var data = new AssetUpdateData
+            {
+                Name = assetUpdate.Name,
+                Description = assetUpdate.Description,
+                Tags = assetUpdate.Tags,
+                Type = assetUpdate.Type,
+                PreviewFile = assetUpdate.PreviewFile,
+                PortalMetadata = assetUpdate.PortalMetadata,
+                Metadata = assetUpdate.Metadata,
+                SystemMetadata = assetUpdate.SystemMetadata
+            };
+            return m_DataSource.UpdateAssetAsync(Descriptor, data, cancellationToken);
+        }
+
+        /// <inheritdoc />
+        public async Task LinkToProjectAsync(ProjectDescriptor projectDescriptor, CancellationToken cancellationToken)
+        {
+            if (m_LinkedProjects.Contains(projectDescriptor)) return;
+
+            await m_DataSource.LinkAssetToProjectAsync(Descriptor, projectDescriptor, cancellationToken);
+
+            var filter = new FieldsFilter
+            {
+                AssetFields = AssetFields.none,
+                DatasetFields = DatasetFields.none,
+                FileFields = FileFields.none
+            };
+            var data = await m_DataSource.GetAssetAsync(Descriptor, filter, cancellationToken);
+            SourceProject = new ProjectDescriptor(Descriptor.OrganizationGenesisId, data.SourceProjectId);
+            m_LinkedProjects = data.LinkedProjectIds?
+                .Select(projectId => new ProjectDescriptor(Descriptor.OrganizationGenesisId, projectId))
+                .ToArray() ?? Array.Empty<ProjectDescriptor>();
+        }
+
+        /// <inheritdoc />
+        public async Task UnlinkFromProjectAsync(ProjectDescriptor projectDescriptor, CancellationToken cancellationToken)
+        {
+            if (!m_LinkedProjects.Contains(projectDescriptor)) return;
+
+            await m_DataSource.UnlinkAssetFromProjectAsync(Descriptor, projectDescriptor, cancellationToken);
+
+            if (Descriptor.ProjectId != projectDescriptor.ProjectId)
+            {
+                var filter = new FieldsFilter
+                {
+                    AssetFields = AssetFields.none,
+                    DatasetFields = DatasetFields.none,
+                    FileFields = FileFields.none
+                };
+                var data = await m_DataSource.GetAssetAsync(Descriptor, filter, cancellationToken);
+                SourceProject = new ProjectDescriptor(Descriptor.OrganizationGenesisId, data.SourceProjectId);
+                m_LinkedProjects = data.LinkedProjectIds?
+                    .Select(projectId => new ProjectDescriptor(Descriptor.OrganizationGenesisId, projectId))
+                    .ToArray() ?? Array.Empty<ProjectDescriptor>();
+            }
+            else
+            {
+                m_LinkedProjects = m_LinkedProjects.Where(descriptor => descriptor.ProjectId != projectDescriptor.ProjectId).ToArray();
+            }
+        }
+
+        /// <inheritdoc />
+        public async IAsyncEnumerable<IAssetProject> GetLinkedProjectsAsync([EnumeratorCancellation] CancellationToken cancellationToken)
+        {
+            foreach (var projectDescriptor in m_LinkedProjects)
+            {
+                var data = await m_DataSource.GetProjectAsync(projectDescriptor, cancellationToken);
+                yield return data.From(m_DataSource, Descriptor.ProjectDescriptor);
+            }
+        }
+
+        /// <inheritdoc />
+        public async Task<IDictionary<string, Uri>> GetAssetDownloadUrlsAsync(CancellationToken cancellationToken)
+        {
+            var fileUrls = await m_DataSource.GetAssetDownloadUrlsAsync(Descriptor, cancellationToken);
+
+            var urls = new Dictionary<string, Uri>();
+            foreach (var url in fileUrls)
+            {
+                urls.Add(url.FilePath, url.DownloadUrl);
+
+                var file = Files?.FirstOrDefault(f => f.Descriptor.Path == url.FilePath);
+                if (file != null)
+                {
+                    file.DownloadUrl = url.DownloadUrl;
+                }
+            }
+
+            return urls;
+        }
+
+        /// <inheritdoc />
+        public async Task<Uri> GetPreviewFileDownloadUrlAsync(CancellationToken cancellationToken)
+        {
+            if (m_PreviewFileDownloadUrl == null && !string.IsNullOrEmpty(PreviewFile))
+            {
+                if (Files == null) await RefreshFiles(cancellationToken);
+
+                var previewFile = Files?.FirstOrDefault(x => x.Descriptor.Path == PreviewFile);
+                if (previewFile != null)
+                {
+                    m_PreviewFileDownloadUrl = await previewFile.GetDownloadUrlAsync(cancellationToken);
+                }
+            }
+
+            return m_PreviewFileDownloadUrl;
+        }
+
+        /// <inheritdoc />
+        public async Task RefreshAssetCollectionsAsync(CancellationToken cancellationToken)
+        {
+            var collectionDatas = await m_DataSource.GetAssetCollectionsAsync(Descriptor, cancellationToken);
+            m_Collections = collectionDatas.Select(data => data.From(m_DataSource, Descriptor.ProjectDescriptor));
+            Collections = m_Collections.Select(c => (CollectionPath) c.GetFullCollectionPath());
+        }
+
+        /// <inheritdoc />
+        public async Task<IAssetCollection> GetCollectionAsync(CollectionPath collectionPath, CancellationToken cancellationToken)
+        {
+            var collection = m_Collections.FirstOrDefault(x => x.GetFullCollectionPath() == collectionPath);
+
+            // Try to refresh if not found before returning null.
+            if (collection == null)
+            {
+                await RefreshAssetCollectionsAsync(cancellationToken);
+                collection = m_Collections.FirstOrDefault(x => x.GetFullCollectionPath() == collectionPath);
+            }
+
+            return collection;
+        }
+
+        /// <inheritdoc />
+        public async Task<IDataset> CreateDatasetAsync(DatasetCreation datasetCreation, CancellationToken cancellationToken)
+        {
+            var datasetData = await m_DataSource.CreateDatasetAsync(Descriptor, datasetCreation.From(), cancellationToken);
+            var dataset = datasetData.From(m_DataSource, Descriptor, DatasetFields.all);
+
+            // Clear datasets to force a refresh the next time they are accessed.
+            Datasets = null;
+
+            return dataset;
+        }
+
+        /// <inheritdoc />
+        public async Task<IDataset> GetDatasetAsync(DatasetId datasetId, CancellationToken cancellationToken)
+        {
+            if (Datasets == null) await RefreshDatasets(cancellationToken);
+
+            return Datasets?.FirstOrDefault(x => x.Descriptor.DatasetId == datasetId);
+        }
+
+        /// <inheritdoc />
+        public async IAsyncEnumerable<IDataset> ListDatasetsAsync(Range range, [EnumeratorCancellation] CancellationToken cancellationToken)
+        {
+            if (Datasets == null) await RefreshDatasets(cancellationToken);
+
+            if (Datasets != null)
+            {
+                var (start, length) = range.GetValidatedOffsetAndLength(Datasets.ToArray().Length);
+                for (var i = start; i < start + length; ++i)
+                {
+                    yield return await Task.FromResult(Datasets[i]);
+                }
+            }
+        }
+
+        /// <inheritdoc />
+        public async Task<IFile> GetFileAsync(string filePath, CancellationToken cancellationToken)
+        {
+            if (Files == null) await RefreshFiles(cancellationToken);
+
+            return Files?.FirstOrDefault(x => x.Descriptor.Path == filePath);
+        }
+
+        /// <inheritdoc />
+        public async IAsyncEnumerable<IFile> ListFilesAsync(Range range, [EnumeratorCancellation] CancellationToken cancellationToken)
+        {
+            if (Files == null) await RefreshFiles(cancellationToken);
+
+            if (Files != null)
+            {
+                var (start, length) = range.GetValidatedOffsetAndLength(Files.Length);
+                for (var i = start; i < start + length; ++i)
+                {
+                    yield return await Task.FromResult(Files[i]);
+                }
+            }
+        }
+
+        /// <inheritdoc />
+        public async Task RemoveUserMetadataAsync(IEnumerable<string> keys, CancellationToken cancellationToken)
+        {
+            await m_DataSource.RemoveAssetMetadataAsync(Descriptor, "metadata", keys, cancellationToken);
+
+            var filter = new FieldsFilter
+            {
+                AssetFields = AssetFields.metadata,
+                DatasetFields = DatasetFields.none,
+                FileFields = FileFields.none
+            };
+            await RefreshAsync(filter, cancellationToken);
+        }
+
+        /// <inheritdoc />
+        public async Task RemoveSystemMetadataAsync(IEnumerable<string> keys, CancellationToken cancellationToken)
+        {
+            await m_DataSource.RemoveAssetMetadataAsync(Descriptor, "systemMetadata", keys, cancellationToken);
+
+            var filter = new FieldsFilter
+            {
+                AssetFields = AssetFields.systemMetadata,
+                DatasetFields = DatasetFields.none,
+                FileFields = FileFields.none
+            };
+            await RefreshAsync(filter, cancellationToken);
+        }
+
+        /// <inheritdoc />
+        public async Task PublishAsync(CancellationToken cancellationToken)
+        {
+            await m_DataSource.PublishApprovedAssetAsync(Descriptor, cancellationToken);
+            await RefreshAsync(k_BasicFields, cancellationToken);
+        }
+
+        /// <inheritdoc />
+        public async Task WithdrawAsync(CancellationToken cancellationToken)
+        {
+            await m_DataSource.WithdrawPublishedAssetAsync(Descriptor, cancellationToken);
+            await RefreshAsync(k_BasicFields, cancellationToken);
+        }
+
+        /// <inheritdoc />
+        public async Task SendToReviewAsync(CancellationToken cancellationToken)
+        {
+            await m_DataSource.SendAssetToReviewAsync(Descriptor, cancellationToken);
+            await RefreshAsync(k_BasicFields, cancellationToken);
+        }
+
+        /// <inheritdoc />
+        public async Task ApproveAsync(CancellationToken cancellationToken)
+        {
+            await m_DataSource.ApproveAssetAsync(Descriptor, cancellationToken);
+            await RefreshAsync(k_BasicFields, cancellationToken);
+        }
+
+        /// <inheritdoc />
+        public async Task RejectAsync(CancellationToken cancellationToken)
+        {
+            await m_DataSource.RejectAssetAsync(Descriptor, cancellationToken);
+            await RefreshAsync(k_BasicFields, cancellationToken);
+        }
+
+        /// <inheritdoc />
+        public string SerializeIdentifiers()
+        {
+            return IsolatedJsonConvert.SerializeObject(GetIdentifier(), SerializationUtilities.Converters);
+        }
+
+        /// <inheritdoc />
+        public string Serialize()
+        {
+            var data = new AssetDataWithIdentifiers
+            {
+                Identifier = GetIdentifier(),
+                Data = this.From()
+            };
+            return IsolatedJsonConvert.SerializeObject(data, SerializationUtilities.Converters);
+        }
+
+        AssetIdentifier GetIdentifier()
+        {
+            return new AssetIdentifier
+            {
+                OrganizationId = Descriptor.OrganizationGenesisId,
+                ProjectId = Descriptor.ProjectId,
+                Id = Descriptor.AssetId,
+                Version = Descriptor.AssetVersion
+            };
+        }
+
+        async Task RefreshDatasets(CancellationToken cancellationToken)
+        {
+            var filter = new FieldsFilter
+            {
+                AssetFields = AssetFields.datasets,
+                DatasetFields = DatasetFields.all,
+                FileFields = FileFields.none
+            };
+
+            var data = await m_DataSource.GetAssetAsync(Descriptor, filter, cancellationToken);
+
+            if (cancellationToken.IsCancellationRequested) return;
+
+            this.MapFrom(m_DataSource, data, filter);
+        }
+
+        async Task RefreshFiles(CancellationToken cancellationToken)
+        {
+            if (cancellationToken.IsCancellationRequested) return;
+
+            var filter = new FieldsFilter
+            {
+                AssetFields = AssetFields.files,
+                DatasetFields = DatasetFields.none,
+                FileFields = FileFields.all
+            };
+
+            var data = await m_DataSource.GetAssetAsync(Descriptor, filter, cancellationToken);
+
+            if (cancellationToken.IsCancellationRequested) return;
+
+            this.MapFrom(m_DataSource, data, filter);
         }
     }
 }

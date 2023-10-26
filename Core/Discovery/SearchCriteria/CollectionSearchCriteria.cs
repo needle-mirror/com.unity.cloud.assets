@@ -5,7 +5,7 @@ namespace Unity.Cloud.Assets
 {
     public sealed class HashsetSearchCriteria<U> : CollectionSearchCriteria<U, HashSet<U>>
     {
-        internal HashsetSearchCriteria(string key) : base(key)
+        internal HashsetSearchCriteria(string propertyName, string searchKey) : base(propertyName, searchKey)
         {
         }
 
@@ -27,7 +27,7 @@ namespace Unity.Cloud.Assets
 
     public abstract class CollectionSearchCriteria<U, T> : SearchCriteria<T> where T : ICollection<U>
     {
-        private protected CollectionSearchCriteria(string key) : base(key)
+        private protected CollectionSearchCriteria(string propertyName, string searchKey) : base(propertyName, searchKey)
         {
         }
 

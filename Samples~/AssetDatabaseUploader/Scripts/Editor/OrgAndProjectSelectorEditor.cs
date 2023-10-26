@@ -15,8 +15,6 @@ namespace Unity.Cloud.Assets.Samples.AssetDatabaseUploader.Editor
     public class OrgAndProjectSelectorEditor : UnityEditor.Editor
     {
         VisualElement m_VisualElementRoot;
-        OrgAndProjectSelectorEditorUI m_ComponentEditorUI;
-
 
         /// <inheritdoc />
         public override VisualElement CreateInspectorGUI()
@@ -29,11 +27,9 @@ namespace Unity.Cloud.Assets.Samples.AssetDatabaseUploader.Editor
         void CreateUI()
         {
             m_VisualElementRoot = new VisualElement();
-            //m_VisualElementRoot.styleSheets.Add(UIResources.EditorStyleSheet);
 
-            m_ComponentEditorUI = new OrgAndProjectSelectorEditorUI(serializedObject);
-
-            m_VisualElementRoot.Add(m_ComponentEditorUI);
+            var editorUI = new OrgAndProjectSelectorEditorUI(serializedObject);
+            m_VisualElementRoot.Add(editorUI);
         }
     }
 }

@@ -4,6 +4,8 @@ using UnityEngine.UIElements;
 
 namespace Unity.Cloud.Assets.Samples.CollectionManagement
 {
+    public delegate (bool, string) ValidateCollectionName(string name);
+
     public class CollectionsContextMenuController : ContextMenuController
     {
         readonly CreateCollectionPopupController m_CreatePopup;
@@ -11,7 +13,7 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
 
         IAssetCollection m_AssetCollection;
 
-        public event Action<IAssetCollection> CollectionCreated
+        public event Action<IAssetCollectionCreation> CollectionCreated
         {
             add => m_CreatePopup.CollectionCreated += value;
             remove => m_CreatePopup.CollectionCreated -= value;
@@ -20,11 +22,11 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
         public event Action<IAssetCollection> CollectionUpdated;
         public event Action<IAssetCollection> CollectionDeleted;
 
-        public CollectionsContextMenuController(VisualElement root)
+        public CollectionsContextMenuController(VisualElement root, ValidateCollectionName validateCollectionName)
             : base(root.Q("CollectionsContextMenu"))
         {
-            m_CreatePopup = new CreateCollectionPopupController(root);
-            m_EditPopup = new EditCollectionPopupController(root, OnCollectionUpdated);
+            m_CreatePopup = new CreateCollectionPopupController(root, validateCollectionName);
+            m_EditPopup = new EditCollectionPopupController(root, OnCollectionUpdated, validateCollectionName);
 
             RegisterButtonAction("Create", m_CreatePopup.Show);
             RegisterButtonAction("Edit", () => m_EditPopup.Show());
@@ -60,7 +62,7 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
 
         void UpdateButtonVisibility()
         {
-            SetButtonVisibility("Create", m_AssetCollection == null);
+            SetButtonVisibility("Create", true);
             SetButtonVisibility("Edit", m_AssetCollection != null);
             SetButtonVisibility("Delete", m_AssetCollection != null);
         }

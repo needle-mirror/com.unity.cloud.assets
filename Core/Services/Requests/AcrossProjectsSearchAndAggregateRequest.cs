@@ -1,5 +1,6 @@
 ﻿using System.Net.Http;
 using System.Text;
+using Unity.Cloud.Common;
 
 namespace Unity.Cloud.Assets
 {
@@ -7,7 +8,7 @@ namespace Unity.Cloud.Assets
     /// AcrossProjectsSearchAndAggregateRequest
     /// Aggregations of assets across projects that match a criteria by a defined field.
     /// </summary>
-    internal class AcrossProjectsSearchAndAggregateRequest : AssetRequest
+    class AcrossProjectsSearchAndAggregateRequest : OrganizationRequest
     {
         /// <summary>Accessor for CrossProjectsSearchAndAggregateRequestParameters </summary>
         public AcrossProjectsSearchAndAggregateRequestParameters AcrossProjectsSearchAndAggregateRequestParameters { get; }
@@ -19,13 +20,12 @@ namespace Unity.Cloud.Assets
         /// <param name="organizationId">Genesis ID of the organization</param>
         /// <param name="xCorrelationId">Correlation id of the request.</param>
         /// <param name="acrossProjectsSearchAndAggregateRequestParameters">The search asset request criteria.</param>
-        public AcrossProjectsSearchAndAggregateRequest(ulong organizationId,
-            string assetPath,
-            string xCorrelationId = default(string),
-            AcrossProjectsSearchAndAggregateRequestParameters acrossProjectsSearchAndAggregateRequestParameters = default(AcrossProjectsSearchAndAggregateRequestParameters))
-            : base(organizationId, null, xCorrelationId)
+        public AcrossProjectsSearchAndAggregateRequest(OrganizationId organizationId,
+            AcrossProjectsSearchAndAggregateRequestParameters acrossProjectsSearchAndAggregateRequestParameters = default,
+            string xCorrelationId = default)
+            : base(organizationId, xCorrelationId)
         {
-            m_PathAndQueryParams = $"/organizations/{OrganizationId}{assetPath}/aggregations/search";
+            m_PathAndQueryParams += $"/assets/aggregations/search";
 
             AcrossProjectsSearchAndAggregateRequestParameters = acrossProjectsSearchAndAggregateRequestParameters;
         }
@@ -36,7 +36,7 @@ namespace Unity.Cloud.Assets
         /// <returns>A </returns>
         public override HttpContent ConstructBody()
         {
-            var body = IsolatedJsonConvert.SerializeObject(AcrossProjectsSearchAndAggregateRequestParameters);
+            var body = IsolatedJsonConvert.SerializeObject(AcrossProjectsSearchAndAggregateRequestParameters, SerializationUtilities.Converters);
             return new StringContent(body, Encoding.UTF8, "application/json");
         }
     }

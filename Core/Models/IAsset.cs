@@ -1,139 +1,290 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using Unity.Cloud.Common;
 
 namespace Unity.Cloud.Assets
 {
     /// <summary>
-    /// This interface contains all the information pertaining to a cloud asset.
+    /// This is a base class containing the information pertaining to an asset.
     /// </summary>
     public interface IAsset
     {
         /// <summary>
+        /// The descriptor of the asset.
+        /// </summary>
+        AssetDescriptor Descriptor { get; }
+
+        /// <summary>
+        /// The source project of the asset.
+        /// </summary>
+        ProjectDescriptor SourceProject { get; }
+
+        /// <summary>
+        /// The list of projects the asset is linked to.
+        /// </summary>
+        IEnumerable<ProjectDescriptor> LinkedProjects { get; }
+
+        /// <summary>
         /// The name of the asset.
         /// </summary>
-        string Name { get; set; }
+        string Name { get; }
+
         /// <summary>
         /// The description of the asset.
         /// </summary>
-        string Description { get; set; }
-        /// <summary>
-        /// The version of the asset.
-        /// </summary>
-        int Version { get; set; }
+        string Description { get; }
 
-        /// <summary>
-        /// The project of the asset.
-        /// </summary>
-        IProject Project { get; set; }
-
-        /// <summary>
-        /// The taxonomy of the asset.
-        /// </summary>
-        AssetTaxonomy Taxonomy { get; set; }
         /// <summary>
         /// The tags of the asset.
         /// </summary>
-        List<string> Tags { get; set; }
+        IEnumerable<string> Tags { get; }
+
         /// <summary>
-        /// The origin of the asset.
+        /// The tags of the asset.
         /// </summary>
-        string Origin { get; set; }
+        IEnumerable<string> SystemTags { get; }
+
         /// <summary>
-        /// The short ID of the asset.
+        /// The tags of the asset.
         /// </summary>
-        string ShortId { get; set; }
-        /// <summary>
-        /// The version name of the asset.
-        /// </summary>
-        string VersionName { get; set; }
+        /// Disabled until we have versioning support.
+        // IEnumerable<string> Labels { get; }
+
         /// <summary>
         /// The type of the asset.
         /// </summary>
-        string Type { get; set; }
+        AssetType Type { get; }
+
         /// <summary>
-        /// The location of the asset.
+        /// The portal metadata of the asset.
         /// </summary>
-        AssetLocation Location { get; set; }
+        IDeserializable PortalMetadata { get; }
+
         /// <summary>
-        /// The categories of the asset.
+        /// The user metadata of the asset.
         /// </summary>
-        List<string> Categories { get; set; }
+        IDeserializable Metadata { get; }
+
         /// <summary>
-        /// The external ID of the asset.
+        /// The system metadata of the asset.
         /// </summary>
-        string ExternalId { get; set; }
-        /// <summary>
-        /// The author of the asset.
-        /// </summary>
-        AssetAuthor Author { get; set; }
+        IDeserializable SystemMetadata { get; }
+
         /// <summary>
         /// The preview file ID of the asset.
         /// </summary>
-        string PreviewFileId { get; set; }
-        /// <summary>
-        /// The collections of the asset.
-        /// </summary>
-        IEnumerable<CollectionPath> Collections { get;}
-        /// <summary>
-        /// The files of the asset.
-        /// </summary>
-        IEnumerable<IAssetFile> Files { get; }
-        /// <summary>
-        /// The attachments of the asset.
-        /// </summary>
-        IEnumerable<IAssetAttachment> Attachments { get; }
-        /// <summary>
-        /// The id of the asset.
-        /// </summary>
-        string Id { get; set; }
+        string PreviewFile { get; }
+
         /// <summary>
         /// The status of the asset.
         /// </summary>
-        string Status { get; set; }
+        string Status { get; }
+
         /// <summary>
-        /// The status details of the asset.
+        /// Whether the asset is frozen.
         /// </summary>
-        string StatusDetails { get; set; }
+        /// Disabled until we have versioning support.
+        // bool IsFrozen { get; }
+
         /// <summary>
-        /// The created date of the asset.
+        /// The creation and update information of the asset.
         /// </summary>
-        DateTime Created { get; set; }
-        /// <summary>
-        /// The created by of the asset.
-        /// </summary>
-        string CreatedBy { get; set; }
-        /// <summary>
-        /// The updated date of the asset.
-        /// </summary>
-        DateTime Updated { get; set; }
-        /// <summary>
-        /// The updated by of the asset.
-        /// </summary>
-        string UpdatedBy { get; set; }
+        AuthoringInfo AuthoringInfo { get; }
+
         /// <summary>
         /// The storage id of the asset.
         /// </summary>
         string StorageId { get; }
-        /// <summary>
-        /// The project id's to which the asset is linked.
-        /// </summary>
-        List<string> ProjectIds { get; }
-        /// <summary>
-        /// The source project id of the asset.
-        /// </summary>
-        string SourceProjectId { get; set; }
 
         /// <summary>
-        /// Implement this method to handle the addition of new files and attachments.
+        /// The collections of the asset.
         /// </summary>
-        /// <param name="assetFiles">An updated list of files. </param>
-        /// <param name="assetAttachments">An updated list of attachements. </param>
-        void OnFilesUpdated(IEnumerable<AssetFile> assetFiles, IEnumerable<AssetFile> assetAttachments);
+        IEnumerable<CollectionPath> Collections { get; }
 
         /// <summary>
-        /// Implement this method to handle the addition of new collections.
+        /// Returns an asset in the context of the specified project.
         /// </summary>
-        /// <param name="assetCollections">An updated list of collections. </param>
-        void OnCollectionsUpdated(IEnumerable<AssetCollection> assetCollections);
+        /// <param name="projectDescriptor">The descriptor of the project. </param>
+        /// <returns></returns>
+        IAsset WithProject(ProjectDescriptor projectDescriptor);
+
+        /// <summary>
+        /// Refreshes the asset with the specified fields.
+        /// </summary>
+        /// <param name="includeFields">The fields to refresh. </param>
+        /// <param name="cancellationToken">The cancellation token. </param>
+        /// <returns>A task with no result. </returns>
+        Task RefreshAsync(FieldsFilter includeFields, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Synchronizes local changes to the asset to the data source.
+        /// </summary>
+        /// <param name="assetUpdate"></param>
+        /// <param name="cancellationToken">The cancellation token. </param>
+        /// <returns>A task with no result. </returns>
+        Task UpdateAsync(IAssetUpdate assetUpdate, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Returns an enumeration of the asset's linked <see cref="IAssetProject"/>.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token. </param>
+        /// <returns>A task whose result is an async enumeration of <see cref="IAssetProject"/>. </returns>
+        IAsyncEnumerable<IAssetProject> GetLinkedProjectsAsync(CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Creates a reference between an asset and the project.
+        /// </summary>
+        /// <param name="projectDescriptor">The descriptor of the project to link to. </param>
+        /// <param name="cancellationToken">The cancellation token. </param>
+        /// <returns>A task with no result. </returns>
+        /// <example>
+        /// <code source="../../Samples/Documentation/Scripting/AssetManagementExample.cs" region="LinkAssetToProject" title="Link Asset to Project"/>
+        /// </example>
+        Task LinkToProjectAsync(ProjectDescriptor projectDescriptor, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Removes the reference between an asset and the project.
+        /// </summary>
+        /// <param name="projectDescriptor">The descriptor of the project to unlink from. </param>
+        /// <param name="cancellationToken">The cancellation token. </param>
+        /// <returns>A task with no result. </returns>
+        /// <example>
+        /// <code source="../../Samples/Documentation/Scripting/AssetManagementExample.cs" region="UnlinkAssetFromProject" title="Unlink Asset from Project"/>
+        /// </example>
+        Task UnlinkFromProjectAsync(ProjectDescriptor projectDescriptor, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Returns the download urls for the asset's files and attachements.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token. </param>
+        /// <returns>A task whose result is the download urls for all the asset's files and attachements. </returns>
+        Task<IDictionary<string, Uri>> GetAssetDownloadUrlsAsync(CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Returns the download url for the asset's preview file.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token. </param>
+        /// <returns>A task whose result is the download url of the preview file. </returns>
+        Task<Uri> GetPreviewFileDownloadUrlAsync(CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Refreshes the
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token. </param>
+        /// <returns>A task with no result. </returns>
+        Task RefreshAssetCollectionsAsync(CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Returns the <see cref="IAssetCollection"/> with the specified path.
+        /// </summary>
+        /// <param name="collectionPath">The path to the collection. </param>
+        /// <param name="cancellationToken">The cancellation token. </param>
+        /// <returns>A task whose result is the <see cref="IAssetCollection"/> at path <paramref name="collectionPath"/>. </returns>
+        Task<IAssetCollection> GetCollectionAsync(CollectionPath collectionPath, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Returns a <see cref="IDataset"/> with the specified creation info.
+        /// </summary>
+        /// <param name="datasetCreation">The object containing the necessary information to create a dataset. </param>
+        /// <param name="cancellationToken">The cancellation token. </param>
+        /// <returns>A task whose result is the newly created dataset. </returns>
+        Task<IDataset> CreateDatasetAsync(DatasetCreation datasetCreation, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Get the specified <see cref="IDataset"/>.
+        /// </summary>
+        /// <param name="datasetId">The id of the dataset. </param>
+        /// <param name="cancellationToken">The cancellation token. </param>
+        /// <returns>A task whose result is the requested dataset. </returns>
+        Task<IDataset> GetDatasetAsync(DatasetId datasetId, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Gets all the <see cref="IDataset"/>.
+        /// </summary>
+        /// <param name="range"></param>
+        /// <param name="cancellationToken">The cancellation token. </param>
+        /// <returns>A task whose result is an async enumeration of datasets. </returns>
+        IAsyncEnumerable<IDataset> ListDatasetsAsync(Range range, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Gets the specified <see cref="IFile"/>.
+        /// </summary>
+        /// <param name="filePath">The id of the file</param>
+        /// <param name="cancellationToken">The cancellation token. </param>
+        /// <returns>A task whose result is an <see cref="IFile"/>. </returns>
+        Task<IFile> GetFileAsync(string filePath, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Gets all the <see cref="IFile"/>s for the asset.
+        /// </summary>
+        /// <param name="range"></param>
+        /// <param name="cancellationToken">The cancellation token. </param>
+        /// <returns>A task whose result is an async enumeration of <see cref="IFile"/> referenced by the asset. </returns>
+        IAsyncEnumerable<IFile> ListFilesAsync(Range range, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Removes the specified user metadata fields from the dataset.
+        /// </summary>
+        /// <param name="keys">The metadata files to remove. </param>
+        /// <param name="cancellationToken">The cancellation token. </param>
+        /// <returns>A task with no result. </returns>
+        Task RemoveUserMetadataAsync(IEnumerable<string> keys, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Removes the specified system metadata fields from the dataset.
+        /// </summary>
+        /// <param name="keys">The metadata files to remove. </param>
+        /// <param name="cancellationToken">The cancellation token. </param>
+        /// <returns>A task with no result. </returns>
+        Task RemoveSystemMetadataAsync(IEnumerable<string> keys, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Updates the asset status to published.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token. </param>
+        /// <returns>A task with no result. </returns>
+        Task PublishAsync(CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Updates the asset status to draft.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token. </param>
+        /// <returns>A task with no result. </returns>
+        Task WithdrawAsync(CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Updates the asset status to ingestion.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token. </param>
+        /// <returns>A task with no result. </returns>
+        Task SendToReviewAsync(CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Updates the asset status to approved.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token. </param>
+        /// <returns>A task with no result. </returns>
+        Task ApproveAsync(CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Updates the asset status to draft.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token. </param>
+        /// <returns>A task with no result. </returns>
+        Task RejectAsync(CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Returns a JSON serialized string of the asset's identifiers.
+        /// </summary>
+        /// <returns>The serialized identifiers of the asset. </returns>
+        string SerializeIdentifiers();
+
+        /// <summary>
+        /// Returns a JSON serialized string of the asset.
+        /// </summary>
+        /// <returns>The serialized asset. </returns>
+        string Serialize();
     }
 }

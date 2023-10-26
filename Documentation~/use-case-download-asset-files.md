@@ -1,16 +1,19 @@
-# Download asset files
+# Use case: Download asset files
 
-You can use the Unity Asset Manager SDK package to manage the files linked to an asset.
+You can use the Unity Cloud Assets package to download the files of an asset.
 
-File management is only available through the Asset Management pathway.
-
-> **Note**: File management requires users have the role of [`Asset Management Contributor`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html) OR a minimum role of [`Manager`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html) in the organization.
+| Asset Manager Project role                                                                             | Download files |
+|:-------------------------------------------------------------------------------------------------------|:---------------|
+| [`Asset Management Viewer`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html)      | no             |
+| [`Asset Management Consumer`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html)    | yes            |
+| [`Asset Management Contributor`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html) | yes            |
+| [`Asset Management Owner`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html)     | yes            |
 
 ## Before you start
 
 Before you start, you must:
 
-1. Set up a Unity scene in the Unity Editor with an organization and project browser. See either [Get started with Asset Discovery](get-started-discovery.md) or [Get started with Asset Management](get-started-management.md) for more information.
+1. Set up a Unity scene in the Unity Editor with an Organization and Project browser. See [Get started with Asset Management](get-started-management.md) for more information.
 2. Have some assets in the cloud. There are several ways to do so:
 
    * You can create assets through the [Get started with Asset Management](get-started-management.md).

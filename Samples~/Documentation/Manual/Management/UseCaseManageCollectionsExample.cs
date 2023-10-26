@@ -12,9 +12,9 @@ namespace Unity.Cloud.Assets.Documentation.Management
     {
         readonly UseCaseManageCollectionsExampleBehaviour m_Behaviour = new();
 
-        public void DisplayExample(IOrganization organization, IProject project)
+        public void DisplayExample(IAssetProject project)
         {
-            m_Behaviour.Initialize(organization, project);
+            m_Behaviour.Initialize(project);
             ProjectActions();
         }
 
@@ -27,7 +27,6 @@ namespace Unity.Cloud.Assets.Documentation.Management
         #region Example_UIProject
 
         string m_NewCollectionName = "My Asset Collection";
-        string m_ParentCollectionPath = "";
 
         protected virtual void ProjectActions()
         {
@@ -59,13 +58,12 @@ namespace Unity.Cloud.Assets.Documentation.Management
             GUILayout.Label("Create New Collection");
 
             m_NewCollectionName = TextField(m_NewCollectionName, "Collection Name:");
-            m_ParentCollectionPath = TextField(m_ParentCollectionPath, "Parent Collection Path:");
 
             if (GUILayout.Button("Create Collection"))
             {
                 try
                 {
-                    _ = m_Behaviour.CreateAssetCollectionAsync(m_NewCollectionName, m_ParentCollectionPath);
+                    _ = m_Behaviour.CreateAssetCollectionAsync(m_NewCollectionName);
                 }
                 catch (Exception e)
                 {
@@ -95,6 +93,8 @@ namespace Unity.Cloud.Assets.Documentation.Management
 
         protected virtual void AssetActions()
         {
+            GUILayout.BeginHorizontal();
+
             var collection = m_Behaviour.CurrentCollection;
             if (collection == null)
             {
@@ -102,38 +102,88 @@ namespace Unity.Cloud.Assets.Documentation.Management
             }
             else
             {
-                GUILayout.Label($"{collection.ParentPath}::{collection.Name}");
-                GUILayout.Space(5f);
-                GUILayout.Label($"{collection.Description}");
-                GUILayout.Space(5f);
-
-                if (GUILayout.Button("Update"))
-                {
-                    _ = m_Behaviour.UpdateProjectAssetCollectionAsync();
-                }
-
-                if (GUILayout.Button("Delete"))
-                {
-                    _ = m_Behaviour.DeleteProjectAssetCollectionAsync();
-                }
-
+                DrawCollection(collection);
                 GUILayout.Space(10f);
+                DrawAssets();
+            }
 
-                m_NewParentPath = TextField(m_NewParentPath, "New Parent Path:");
+            GUILayout.EndHorizontal();
+        }
 
-                if (GUILayout.Button("Reparent Collection"))
+        void DrawCollection(IAssetCollection collection)
+        {
+            GUILayout.BeginVertical();
+
+            GUILayout.Label($"{collection.ParentPath}::{collection.Name}");
+            GUILayout.Space(5f);
+            GUILayout.Label($"{collection.Description}");
+            GUILayout.Space(5f);
+
+            if (GUILayout.Button("Update"))
+            {
+                _ = m_Behaviour.UpdateProjectAssetCollectionAsync();
+            }
+
+            if (GUILayout.Button("Delete"))
+            {
+                _ = m_Behaviour.DeleteProjectAssetCollectionAsync();
+            }
+
+            GUILayout.Space(10f);
+
+            m_NewParentPath = TextField(m_NewParentPath, "New Parent Path:");
+
+            if (GUILayout.Button("Reparent Collection"))
+            {
+                _ = m_Behaviour.MoveProjectAssetCollectionAsync(m_NewParentPath);
+            }
+
+            GUILayout.EndVertical();
+        }
+
+        void DrawAssets()
+        {
+            GUILayout.BeginVertical();
+
+            var assets = m_Behaviour.CurrentCollectionAssets;
+            var currentAsset = m_Behaviour.CurrentAsset;
+
+            GUILayout.Label($"Selected Asset: {currentAsset?.Name ?? "! No asset selected !"}");
+            if (currentAsset != null && assets != null)
+            {
+                if (assets.Any(x => x.Descriptor.AssetId == currentAsset.Descriptor.AssetId))
                 {
-                    _ = m_Behaviour.MoveProjectAssetCollectionAsync(m_NewParentPath);
+                    GUILayout.Label("Asset is in collection.");
                 }
-
-                GUILayout.Space(10f);
-
-                GUILayout.Label($"Selected Asset: {m_Behaviour.CurrentAsset?.Name ?? "! No asset selected !"}");
-                if (GUILayout.Button("Add asset to collection"))
+                else if (GUILayout.Button("Add asset to collection"))
                 {
-                    _ = m_Behaviour.AddAssetToCollectionAsync();
+                    _ = m_Behaviour.AddAssetToCollectionAsync(m_Behaviour.CurrentAsset);
                 }
             }
+
+            GUILayout.Space(10f);
+
+            GUILayout.Label("Assets in collection:");
+            if (assets != null)
+            {
+                foreach (var asset in assets)
+                {
+                    DrawAsset(asset);
+                }
+            }
+
+            GUILayout.EndVertical();
+        }
+
+        void DrawAsset(IAsset asset)
+        {
+            GUILayout.BeginHorizontal();
+            GUILayout.Label($"{asset.Name}");
+            if (GUILayout.Button($"Remove from collection"))
+            {
+                _ = m_Behaviour.RemoveAssetFromCollectionAsync(asset);
+            }
+            GUILayout.EndHorizontal();
         }
 
         #endregion
@@ -142,17 +192,15 @@ namespace Unity.Cloud.Assets.Documentation.Management
     class UseCaseManageCollectionsExampleBehaviour
     {
         // Member names should match with the names of the get-started behaviour snippets.
-        IOrganization m_CurrentOrganization;
-        IProject m_CurrentProject;
+        IAssetProject m_CurrentProject;
         public IAsset CurrentAsset;
 
-        public void Initialize(IOrganization organization, IProject project)
+        public void Initialize(IAssetProject project)
         {
-            m_CurrentOrganization = organization;
-            m_CurrentProject = project;
-
-            if (m_CurrentOrganization != organization || m_CurrentProject != project || AssetCollections == null)
+            if (m_CurrentProject != project || AssetCollections == null)
             {
+                m_CurrentProject = project;
+
                 if (m_CurrentProject == null)
                 {
                     AssetCollections = Array.Empty<IAssetCollection>();
@@ -168,34 +216,63 @@ namespace Unity.Cloud.Assets.Documentation.Management
 
         public IEnumerable<IAssetCollection> AssetCollections { get; private set; }
         public IAssetCollection CurrentCollection { get; private set; }
+        public List<IAsset> CurrentCollectionAssets { get; private set; } = new();
 
         public async Task ListProjectAssetCollectionsAsync()
         {
             CurrentCollection = null;
 
             var cancellationTokenSrc = new CancellationTokenSource();
-            AssetCollections = await PlatformServices.AssetCollectionManager.ListCollectionsAsync(m_CurrentProject, cancellationTokenSrc.Token);
+            AssetCollections = await m_CurrentProject.ListCollectionsAsync(cancellationTokenSrc.Token);
         }
 
         public void SetCurrentCollection(IAssetCollection collection)
         {
-            CurrentCollection = collection;
+            if (collection != CurrentCollection)
+            {
+                CurrentCollection = collection;
+                if (CurrentCollection != null)
+                {
+                    _ = RefreshCollectionAssets();
+                }
+            }
+        }
+
+        public async Task RefreshCollectionAssets()
+        {
+            CurrentCollectionAssets.Clear();
+
+            var searchFilter = new AssetSearchFilter();
+            searchFilter.Collections.Add(CurrentCollection.GetFullCollectionPath());
+
+            var pagination = new Pagination(Range.All);
+
+            var cancellationTokenSrc = new CancellationTokenSource();
+            var assetList = m_CurrentProject.SearchAssetsAsync(searchFilter, pagination, cancellationTokenSrc.Token);
+            await foreach(var asset in assetList)
+            {
+                CurrentCollectionAssets.Add(asset);
+            }
         }
 
         #endregion
 
         #region Example_Behaviour_CreateCollection
 
-        public async Task CreateAssetCollectionAsync(string name, string parentCollectionPath)
+        public async Task CreateAssetCollectionAsync(CollectionPath newPath)
         {
-            var newCollection = new AssetCollection(name, "A collection generated by the use-case example.\nUpdate count: 0", parentCollectionPath);
+            var name = newPath.GetLastComponentOfPath();
+            var newCollection = new AssetCollectionCreation(name, "A collection generated by the use-case example.\nUpdate count: 0")
+            {
+                ParentPath = newPath.GetParentPath()
+            };
 
             var cancellationTokenSrc = new CancellationTokenSource();
-            var path = await PlatformServices.AssetCollectionManager.CreateCollectionAsync(m_CurrentProject, newCollection, cancellationTokenSrc.Token);
+            await m_CurrentProject.CreateCollectionAsync(newCollection, cancellationTokenSrc.Token);
 
             // Refresh the list of collections.
             await ListProjectAssetCollectionsAsync();
-            Debug.Log("Collection created at path: " + path);
+            Debug.Log("Collection created at path: " + newPath);
         }
 
         #endregion
@@ -219,7 +296,7 @@ namespace Unity.Cloud.Assets.Documentation.Management
             CurrentCollection.SetDescription(strBuilder.ToString());
 
             var cancellationTokenSrc = new CancellationTokenSource();
-            await PlatformServices.AssetCollectionManager.UpdateCollectionAsync(CurrentCollection, cancellationTokenSrc.Token);
+            await CurrentCollection.UpdateAsync(cancellationTokenSrc.Token);
             Debug.Log("Collection updated.");
         }
 
@@ -230,7 +307,7 @@ namespace Unity.Cloud.Assets.Documentation.Management
         public async Task DeleteProjectAssetCollectionAsync()
         {
             var cancellationTokenSrc = new CancellationTokenSource();
-            await PlatformServices.AssetCollectionManager.DeleteCollectionAsync(CurrentCollection, cancellationTokenSrc.Token);
+            await m_CurrentProject.DeleteCollectionAsync(CurrentCollection.GetFullCollectionPath(), cancellationTokenSrc.Token);
 
             // Refresh the list of collections.
             await ListProjectAssetCollectionsAsync();
@@ -241,25 +318,38 @@ namespace Unity.Cloud.Assets.Documentation.Management
 
         #region Example_Behaviour_MoveCollection
 
-        public async Task MoveProjectAssetCollectionAsync(string newPath)
+        public async Task MoveProjectAssetCollectionAsync(CollectionPath newPath)
         {
             var cancellationTokenSrc = new CancellationTokenSource();
-            var result = await PlatformServices.AssetCollectionManager.MoveCollectionToNewPathAsync(CurrentCollection, newPath, cancellationTokenSrc.Token);
+            await CurrentCollection.MoveToNewPathAsync(newPath, cancellationTokenSrc.Token);
             await ListProjectAssetCollectionsAsync();
-            Debug.Log("Collection successfully moved to new path: " + result);
+            Debug.Log("Collection successfully moved to new path: " + newPath);
         }
 
         #endregion
 
         #region Example_Behaviour_CollectionInsert
 
-        public async Task AddAssetToCollectionAsync()
+        public async Task AddAssetToCollectionAsync(IAsset asset)
         {
-            if (CurrentAsset == null) return;
-
             var cancellationTokenSrc = new CancellationTokenSource();
-            await PlatformServices.AssetCollectionManager.InsertAssetsToCollectionAsync(CurrentCollection, new[] {CurrentAsset}, cancellationTokenSrc.Token);
+            await CurrentCollection.AddAssetsAsync(new[] {asset}, cancellationTokenSrc.Token);
             Debug.Log("Asset added to collection.");
+
+            await RefreshCollectionAssets();
+        }
+
+        #endregion
+
+        #region Example_Behaviour_CollectionRemove
+
+        public async Task RemoveAssetFromCollectionAsync(IAsset asset)
+        {
+            var cancellationTokenSrc = new CancellationTokenSource();
+            await CurrentCollection.RemoveAssetsAsync(new[] {asset}, cancellationTokenSrc.Token);
+            Debug.Log("Asset added to collection.");
+
+            await RefreshCollectionAssets();
         }
 
         #endregion

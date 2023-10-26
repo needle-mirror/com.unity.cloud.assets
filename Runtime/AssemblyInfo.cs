@@ -1,4 +1,4 @@
 using Unity.Cloud.Common;
 
-[assembly: ApiSourceVersion("com.unity.cloud.assets", "0.5.0")]
+[assembly: ApiSourceVersion("com.unity.cloud.assets", "1.0.0-exp.1")]
 

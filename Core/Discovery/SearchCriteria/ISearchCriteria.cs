@@ -11,7 +11,7 @@ namespace Unity.Cloud.Assets
         /// <summary>
         /// Implement this property to return the key of the search element.
         /// </summary>
-        string SearchKey { get; }
+        string PropertyName { get; }
 
         /// <summary>
         /// Implement this property to return the type of the search element.
@@ -49,7 +49,7 @@ namespace Unity.Cloud.Assets
         /// Implement this method to add the included value to the collection of <paramref name="includedValues"/>.
         /// </summary>
         /// <param name="includedValues">The collection in which to add a value to include in the search. </param>
-        /// <param name="prefix">A prefix for the <see cref="SearchKey"/>; may be empty. </param>
+        /// <param name="prefix">A prefix for the <see cref="PropertyName"/>; may be empty. </param>
         void Include(Dictionary<string, object> includedValues, string prefix = "");
 
         /// <summary>
@@ -62,7 +62,7 @@ namespace Unity.Cloud.Assets
         /// Implement this method to add the included value to the collection of <paramref name="excludedValues"/>.
         /// </summary>
         /// <param name="excludedValues">The collection in which to add a value to exclude from the search. </param>
-        /// <param name="prefix">A prefix for the <see cref="SearchKey"/>; may be empty. </param>
+        /// <param name="prefix">A prefix for the <see cref="PropertyName"/>; may be empty. </param>
         void Exclude(Dictionary<string, object> excludedValues, string prefix = "");
 
         /// <summary>
@@ -75,7 +75,7 @@ namespace Unity.Cloud.Assets
         /// Implement this method to add the included value to the collection of <paramref name="forAnyValues"/>.
         /// </summary>
         /// <param name="forAnyValues">The collection in which to add an optional value for the search. </param>
-        /// <param name="prefix">A prefix for the <see cref="SearchKey"/>; may be empty. </param>
+        /// <param name="prefix">A prefix for the <see cref="PropertyName"/>; may be empty. </param>
         void ForAny(Dictionary<string, object> forAnyValues, string prefix = "");
 
         /// <summary>
@@ -86,7 +86,7 @@ namespace Unity.Cloud.Assets
         bool IsMatch(object input);
 
         /// <summary>
-        /// Implement this method to verify whether the input satisfies the optional search critiera.
+        /// Implement this method to verify whether the input satisfies the optional search criteria.
         /// </summary>
         /// <param name="input">The element to compare to the criteria. </param>
         /// <returns>True if the <paramref name="input"/> satisfies the criteria, false otherwise. </returns>

@@ -15,7 +15,6 @@ namespace Unity.Cloud.Assets.Samples.AssetDatabaseUploader.Editor
     public class AssetsUploaderEditor : UnityEditor.Editor
     {
         VisualElement m_VisualElementRoot;
-        AssetsUploaderEditorUI m_ComponentEditorUI;
 
         /// <inheritdoc />
         public override VisualElement CreateInspectorGUI()
@@ -29,9 +28,8 @@ namespace Unity.Cloud.Assets.Samples.AssetDatabaseUploader.Editor
         {
             m_VisualElementRoot = new VisualElement();
 
-            m_ComponentEditorUI = new AssetsUploaderEditorUI(serializedObject);
-
-            m_VisualElementRoot.Add(m_ComponentEditorUI);
+            var editorUI = new AssetsUploaderEditorUI(serializedObject);
+            m_VisualElementRoot.Add(editorUI);
         }
     }
 }

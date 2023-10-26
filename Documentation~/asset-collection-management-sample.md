@@ -1,62 +1,75 @@
 # Sample: Manage asset collections
 
-You can use the Asset discovery sample to list and manage the collections of asset in your projects.
+You can use the Collection Management sample to list and manage the collections of asset in your Projects.
 
-The sample uses the collection endpoints that require a minimum role of:
+The SDK supports different workflows for users with different roles.
 
-* [**Manager**](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html) in the Unity Cloud Organization you belong to. <br/>
-  OR
-* [**Asset Manager Contributor**](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html) in the Unity Cloud Project you belong to.
+| Asset Manager Project role                                                                             | List an asset's collections | Add/remove assets in collections |
+|:-------------------------------------------------------------------------------------------------------|:-------------------------------|:---------------------------------|
+| [`Asset Management Viewer`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html)      | yes                            | no                               |
+| [`Asset Management Consumer`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html)    | yes                            | no                               |
+| [`Asset Management Contributor`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html) | yes                            | yes                              |
+| [`Asset Management Owner`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html)     | yes                            | yes                              |
 
 ## Before you start
 
-Before you use the Collection management sample, you must have the following:
+Before you can use the Collection Management sample, you must have the following:
 
-* An installed [Assets](installation.md), and [Identity](https://docs.unity3d.com/Packages/com.unity.cloud.identity@0.16/manual/installation.html) packages
-> **Note**: While the Assets package itself doesn't depend on the Identity service, it is necessary in the sample to control the authentication flow.
-* A valid [Unity ID Account](https://dashboard.unity3d.com/) and [access to the asset manager service](https://docs.unity3d.com/docs-asset-manager/manual/get-started.html)
-* At least 1 published asset in an Asset Management Project (see [Asset Manager documentation](https://docs.unity3d.com/docs-asset-manager/manual/add-asset.html))
+* Installed [Assets](installation.md) package
+* Installed [Identity](https://docs.unity3d.com/Packages/com.unity.cloud.identity@latest) package
+* A valid [Unity ID Account](https://id.unity.com/)
+* Access to your [Unity Gaming Services account](https://dashboard.unity3d.com/)
+* A Unity Project with the Asset Manager service enabled, see: [Assets documentation](https://docs.unity3d.com/docs-asset-manager/manual/modify-project.html)
+* Access to the [Asset Manager service](https://docs.unity3d.com/docs-asset-manager/manual/get-started.html)
+* At least one published asset in an Asset Manager Project, see: [Asset Manager documentation](https://docs.unity3d.com/docs-asset-manager/manual/add-asset.html)
 
-## Installation
+> **Note**: While the Assets package itself doesn't depend on the Identity service, it is necessary in the sample to control the authentication process.
+
+## Install the sample
 
 To install the sample, follow these steps:
 
-1. Inside your Unity project window, go to **Package Manager** > **Unity Cloud Assets**.
-2. Expand the **Samples** section and select **Import** next to the Asset Discovery sample.
-   </br>
+1. Inside your Unity Project window, go to **Package Manager** > **Unity Cloud Assets**.
+2. Expand the **Samples** section.
+3. On the right of the Collection Management sample, select **Import**.
+
    <img alt="Screenshot of the samples import section of the package manager window" height="64" src="images/sample-import-collection-management.png"/>
 
 After the import process is complete, you can view your imported assets under the `Assets/Samples/Unity Cloud Assets` folder.
-</br>
-<img alt="Screenshot of the imported sample" height="256" src="images/tac-sample-collections-scene.png"/>
+
+  <img alt="Screenshot of the imported sample" height="256" src="images/tac-sample-collections-scene.png"/>
 
 ## Run the sample
 
 To run the sample, follow these steps:
 
-1. Go to `Assets/Samples/Unity Cloud Assets/<package-version>/Asset Collection Management/Scenes/CollectionManagementSample.unity` and run the scene. If this is your first time launching the sample, make sure to sign in with your Unity Gaming Services account. For more information on creating a Unity project, see the [Asset Manager documentation](https://docs.unity3d.com/docs-asset-manager/manual/index.html).
-2. Select an Organization. The list of projects from that organization will be displayed on the left column.
-   </br>
-   <img alt="Screenshot of the organization selection" width="260" src="images/organizations.png"/>
-3. Select a project. The list of collections for that project will be displayed in the middle column. The right column displays the list of assets for a selected collection.
-   </br>
+1. Go to `Assets/Samples/Unity Cloud Assets/<package-version>/Asset Collection Management/Scenes/CollectionManagementSample.unity` and run the scene.
+2. Select an Organization. The left column displays the list of Projects from that Organization.
+
+   <img alt="Screenshot of the Organization selection" width="260" src="images/organizations.png"/>
+   
+3. Select a Project. The list of collections for that Project will be displayed in the middle column. The right column displays the list of assets for a selected collection.
+
    <img alt="Screenshot of the project list" width="300" src="images/project-list.png"/>
-   </br>
+
    <img alt="Screenshot of the collection list" width="800" src="images/collection-list.png"/>
 
 ### Create a new collection
 
 To create a new collection, follow these steps:
 
-1. Ensure no collection is selected in the list.
-2. Open the context menu by clicking the **...** button next to the `Collections` label.
-   </br>
+1. Next to the `Collections` label, select the **...** button  to open the context menu.
+
    <img alt="Screenshot of the context menu" width="460" src="images/collections-context-menu-noselection.png"/>
-3. Click **Create**.
-   </br>
+   
+2. Select **Create**.
+
    <img alt="Screenshot of creating collection popup" width="380" src="images/create-collection-popup.png"/>
-4. Enter a name and a description for the collection and click **Create**.
-   </br>
+
+3. Enter a name and a description for the collection.
+4. (Optional) enter a parent path.
+5. Select **Create**.
+
    <img alt="Screenshot of the created collection" width="460" src="images/collection-created.png"/>
 
 ### Edit an existing collection
@@ -65,11 +78,13 @@ To edit an existing collection, follow these steps:
 
 1. Select one of the collections in the list.
 2. Open the context menu by clicking the **...** button next to the `Collections` label.
-   </br>
+
    <img alt="Screenshot of the context menu" width="460" src="images/collections-context-menu.png"/>
-3. Click **Edit**.
-   </br>
+   
+3. Select **Edit**.
+
    <img alt="Screenshot of editing collection popup" width="380" src="images/edit-collection-popup.png"/>
+   
 4. Enter a new name and a new description for the collection and click **Apply**.
 
 #### Delete an existing collection
@@ -77,24 +92,29 @@ To edit an existing collection, follow these steps:
 To delete an existing collection, follow these steps:
 
 1. Select one of the collections in the list.
+
 2. Open the context menu by clicking the **...** button next to the `Collections` label.
-   </br>
+
    <img alt="Screenshot of the context menu" width="460" src="images/collections-context-menu.png"/>
-3. Click **Delete**.
+
+3. Select **Delete**.
 
 ### Add assets to a collection
 
 To add an asset to a collection, follow these steps:
 
 1. Select one of the collections in the list.
+
 2. Open the context menu by clicking the **...** button next to the `Assets in Collection` label.
-   </br>
+
    <img alt="Screenshot of the context menu" width="460" src="images/collection-assets-context-menu-no-selection.png"/>
-3. Click **Add**.
-   </br>
+   
+3. Select **Add**.
+
    <img alt="Screenshot of adding assets to collection popup" width="380" src="images/add-to-collection-popup.png"/>
+
 4. Select all the assets you want to add to the collection and click **Add**.
-   </br>
+
    <img alt="Screenshot of selected assets" width="460" src="images/collection-assets-added.png"/>
 
 ### Remove assets from a collection
@@ -103,7 +123,7 @@ To remove an asset from a collection, follow these steps:
 
 1. Select one of the assets in the list.
 2. Open the context menu by clicking the **...** button next to the `Assets in Collection` label.
-   </br>
+
    <img alt="Screenshot of the context menu" width="460" src="images/collection-assets-context-menu.png"/>
 3. Click **Remove**.
 
@@ -113,7 +133,7 @@ This section describes the scripts that make up the main components of the Asset
 
 ### Platform services script
 
-The `PlatformServices` class initializes and disposes of dependencies required by the `IAssetCollectionManager`. You can use this class to manage the Unity Cloud services and dependencies you use in your application.
+The `PlatformServices` class initializes and disposes of dependencies required by the `IAssetRepository`. You can use this class to retrieve the `IAssetProject` you want to modify.
 
 To open the platform services script, go to your `Assets/Samples/Unity Cloud Assets/<package-version>/Shared/Scripts/Services/PlatformServices.cs` file.
 
@@ -121,7 +141,7 @@ The `PlatformServices` class has two accompanying classes called `PlatformServic
 
 ### User Controller script
 
-The `UserController` class lets you sign in and provides the Asset Discovery sample with your Unity Gaming Services ID. For more information on authentication, see the [Identity package documentation](https://docs.unity3d.com/Packages/com.unity.cloud.identity@0.16/manual/use-case-getting-user-information.html).
+The `UserController` class makes it so you can sign into your application and uses your ID to grant access to the Collection Management sample. For more information on authentication, see the **Get user information** use case in the  [Identity package documentation](https://docs.unity3d.com/Packages/com.unity.cloud.identity@latest).
 
 To open the UserController script, go to your `Assets/Samples/Unity Cloud Assets/<package-version>/Shared/Scripts/Controllers/UserController.cs` file.
 
@@ -130,37 +150,21 @@ To open the UserController script, go to your `Assets/Samples/Unity Cloud Assets
 The `CollectionManagementSample` shows you how to do the following:
 
 * Integrate the login flow with the `UserController` class
-* Retrieve organizations and projects from the Asset Manager service
+* Retrieve Organizations and Projects from the Asset Manager service
 * Retrieve published assets from the Asset Manager service
 * Search for assets by tag or name
 
-To open the Asset Discovery sample script, go to your `Assets/Samples/Unity Cloud Assets/<package-version>/Asset Collection Management/Scripts/CollectionManagementSample.cs` file.
+To open the Collection Management sample script, go to your `Assets/Samples/Unity Cloud Assets/<package-version>/Asset Collection Management/Scripts/CollectionManagementSample.cs` file.
 
 ### Collection list, asset list, and collection asset list UI scripts
 
-The `CollectionListUi`, `AssetListUi`, and `CollectionAssetListUi` classes are used to display the list of assets, collections, and assets belonging to a collection in the sample.
-While the `AssetPanelUi` class is used to bridge data between the `AssetListUi` and `CollectionAssetListUi`.
+* The `CollectionListUi`, `AssetListUi`, and `CollectionAssetListUi` classes list the assets, collections, and assets belonging to a collection in the sample.
+* The `AssetPanelUi` class bridges data between `AssetListUi` and `CollectionAssetListUi`.
 
 ### Shared UI scripts
 
-The sample includes a set of UI scripts and prefabs used by our samples. To open shared UI scripts, go to `Assets/Samples/Unity Cloud Assets/<package-version>/Shared/Scripts/Controllers`.
+The sample includes a set of UI scripts and prefabs. To open shared UI scripts, go to `Assets/Samples/Unity Cloud Assets/<package-version>/Shared/Scripts/Controllers`.
 
-## Troubleshoot
+## Troubleshooting
 
-This section describes issues you might have while using the Asset Collection management sample.
-
-### Missing dependency
-
-If you get a missing dependency error about a specific package, ensure you have installed all the packages listed in the [Prerequisites](#prerequisites).
-
-### The automatic browser redirection doesn't work
-
-If you run the sample in the Unity Editor, you should see the following page after you successfully login through your browser.
-
-![Login Successful](images/login-redirect.png)
-
-If you aren't automatically redirected to the Editor and nothing happens when you select **Launch Application**, return to the Editor. This should continue the authentication process.
-
-### I can't see my assets
-
-If you can't see any assets, it might be that your organization doesn't have the asset management feature flag enabled. You'll need to [request access to the beta](https://docs.unity3d.com/docs-asset-manager/manual/request-access.html).
+Refer to the [troubleshooting](troubleshooting.md#sample-issues) section for help with sample issues.

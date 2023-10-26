@@ -1,13 +1,13 @@
-# Search Assets across projects
+# Use case: Search Assets across projects
 
 You can use the Unity Cloud Assets package to filter assets across projects based on a set of search criteria.
 
-There are two workflows when searching for assets which can be controlled from the `AssetServiceConfiguration` class.
-Setting the `IsDiscovery` to `true` in the `AssetServiceConfiguration` will fetch and search among published assets only.
-While setting the value to `false` will fetch and search among all assets regardless of status.
-
-The flag you choose will depend on the project roles of your users.
-> Note: The Asset Discovery pathway requires users have the minimum role of `Asset Management Viewer`, while the Asset Management requires higher permissions with a minimum role of `Asset Management Contributor`.
+| Asset Manager Project role                                                                             | Cross-project search |
+|:-------------------------------------------------------------------------------------------------------|:---------------------|
+| [`Asset Management Viewer`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html)      | yes                  |
+| [`Asset Management Consumer`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html)    | yes                  |
+| [`Asset Management Contributor`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html) | yes                  |
+| [`Asset Management Owner`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html)       | yes                  |
 
 ## Methodology
 
@@ -30,7 +30,7 @@ Each searchable property provides 3 avenues for searching:
 - `Exclude` - The property must not match the value.
 - `Any` - The property may contain the value. This represents an `OR` operation to be applied on all properties that include the `Any` value.
 
-To compute the search results, you can use the `SearchAsync` method of an `IAssetProvider`, like so:
+To compute the search results, you can use the `SearchAssetsAsync` method of an `IAssetProject`, like so:
 
 [!code-cs [behaviour-script](../Samples/Documentation/Manual/UseCaseSearchAcrossProjectsAssetsExample.cs#Example_Search)]
 
@@ -50,27 +50,30 @@ Alternatively, the results can be iterated over and compiled into a list, so tha
 
 You can search for assets by name using the `Name` property of the `AssetSearchFilter` class, like so:
 
-[!code-cs [behaviour-script](../Samples/Documentation/Manual/UseCaseSearchAcrossProjectsAssetsExample.cs#Example_NameInclude)]
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/UseCaseSearchAssetsExample.cs#Example_NameInclude)]
 > [Note] This type of search checks for assets whose entire name exactly matches the parameter.
 
 You can also exclude assets by name, like so:
 
-[!code-cs [behaviour-script](../Samples/Documentation/Manual/UseCaseSearchAcrossProjectsAssetsExample.cs#Example_NameExclude)]
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/UseCaseSearchAssetsExample.cs#Example_NameExclude)]
 
 You can also search for assets whose name contains a specific string, like so:
 
-[!code-cs [behaviour-script](../Samples/Documentation/Manual/UseCaseSearchAcrossProjectsAssetsExample.cs#Example_NameAny)]
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/UseCaseSearchAssetsExample.cs#Example_NameAny)]
 
 #### Search by Tags
 
 You can search for assets by tag using the `Tags` property of the `AssetSearchFilter` class, like so:
 
-[!code-cs [behaviour-script](../Samples/Documentation/Manual/UseCaseSearchAcrossProjectsAssetsExample.cs#Example_TagsInclude)]
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/UseCaseSearchAssetsExample.cs#Example_TagsInclude)]
 > [Note] This type of search checks for assets whose tag list contains all the included parameters.
+
+#### Filter by Collections
+
+You can search for assets in specific collections by adding them to the search filter's list of collections, like so:
+
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/UseCaseSearchAssetsExample.cs#Example_Collections)]
 
 ### Custom Search Filter
 
-You can also create a custom search filter by implementing the `IAssetSearchFilter` interface.
-
-
-
+To create a custom search filter, you can implement the `IAssetSearchFilter` interface.

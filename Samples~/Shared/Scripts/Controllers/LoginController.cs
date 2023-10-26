@@ -14,7 +14,7 @@ namespace Unity.Cloud.Assets.Samples
         const string k_AwaitingLoginText = "Logging in...";
 
         ICompositeAuthenticator m_Authenticator;
-        IUserInfoProvider m_UserInfoProvider;
+        IAuthenticatedUserInfoProvider m_UserInfoProvider;
 
         [SerializeField] UIDocument m_LoginUiDocument;
 
@@ -39,7 +39,7 @@ namespace Unity.Cloud.Assets.Samples
             RegisterButtons();
 
             m_Authenticator = PlatformServices.Authenticator;
-            m_UserInfoProvider = PlatformServices.UserInfoProvider;
+            m_UserInfoProvider = PlatformServices.AuthenticatedUserInfoProvider;
 
             if (m_Authenticator.RequiresGUI)
             {
@@ -97,10 +97,10 @@ namespace Unity.Cloud.Assets.Samples
 
         void OnAuthenticationChanged(AuthenticationState newAuthenticationState)
         {
-            _ = ApplyAuthenticationState(newAuthenticationState);
+            ApplyAuthenticationState(newAuthenticationState);
         }
 
-        async Task ApplyAuthenticationState(AuthenticationState state)
+        void ApplyAuthenticationState(AuthenticationState state)
         {
             switch (state)
             {
@@ -112,7 +112,7 @@ namespace Unity.Cloud.Assets.Samples
                     UpdateLogout();
                     break;
                 case AuthenticationState.LoggedIn:
-                    m_LoginUiDocumentRoot.Q<Label>("UserName").text = await GetUserInfo();
+                    m_LoginUiDocumentRoot.Q<Label>("UserName").text = GetUserName();
                     UpdateLogin();
                     break;
                 case AuthenticationState.LoggedOut:
@@ -146,27 +146,9 @@ namespace Unity.Cloud.Assets.Samples
             m_LoginBarContainer.style.justifyContent = Justify.FlexEnd;
         }
 
-        async Task<string> GetUserInfo()
+        string GetUserName()
         {
-            try
-            {
-                var userInfo = await m_UserInfoProvider.GetUserInfoAsync();
-                var userName = userInfo != null ? userInfo.Name : "No User";
-                return userName;
-            }
-
-            catch (Exception ex)
-            {
-                if (ex is HttpRequestException
-                    or UnauthorizedAccessException
-                    or ConnectionException
-                    or ForbiddenException)
-                {
-                    Debug.LogError(ex.Message);
-                }
-
-                throw;
-            }
+            return m_UserInfoProvider.GetUserInfo(AuthenticatedUserInfoClaims.Name);
         }
 
         void RegisterButtons()

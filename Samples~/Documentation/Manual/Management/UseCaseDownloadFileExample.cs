@@ -1,6 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Unity.Cloud.Common;
@@ -28,24 +28,30 @@ namespace Unity.Cloud.Assets.Documentation.Management
                 return;
             }
 
-            GUILayout.Label("Asset files:");
-            var assetFiles = m_Behaviour.CurrentAsset.Files.ToList();
-            for (var i = 0; i < assetFiles.Count; ++i)
+            if (GUILayout.Button("Refresh Files") || m_Behaviour.AssetFiles == null)
             {
-                DisplayAssetFile((m_Behaviour.CurrentAsset,assetFiles.ElementAt(i)));
+                _ = m_Behaviour.GetAssetFiles();
+            }
+
+            GUILayout.Label("Asset files:");
+            // Get a local copy of the list of asset files to avoid concurrent modification exceptions.
+            var assetFiles = m_Behaviour.AssetFiles?.ToArray() ?? Array.Empty<IFile>();
+            foreach (var assetFile in assetFiles)
+            {
+                DisplayAssetFile(assetFile);
             }
         }
 
-        void DisplayAssetFile((IAsset asset, IAssetFile assetFile) tuple)
+        void DisplayAssetFile(IFile assetFile)
         {
             GUILayout.BeginHorizontal();
 
-            GUILayout.Label($"{tuple.assetFile.Name}");
+            GUILayout.Label($"{assetFile.Descriptor.Path}");
             GUILayout.Space(5f);
 
             if (GUILayout.Button("Download"))
             {
-                _ = m_Behaviour.DownloadAssetFile(tuple.asset, tuple.assetFile);
+                _ = m_Behaviour.DownloadAssetFile(assetFile);
             }
 
             GUILayout.EndHorizontal();
@@ -72,27 +78,40 @@ namespace Unity.Cloud.Assets.Documentation.Management
             {
                 if (!value.DownloadProgress.HasValue) return;
 
-                Debug.Log($"Download progress: {value.DownloadProgress*100} %");
+                Debug.Log($"Download progress: {value.DownloadProgress * 100} %");
             }
         }
 
-        public async Task DownloadAssetFile(IAsset asset, IAssetFile assetFile)
+        public List<IFile> AssetFiles;
+
+        public async Task GetAssetFiles()
+        {
+            AssetFiles = new List<IFile>();
+
+            var fileList = CurrentAsset.ListFilesAsync(Range.All, CancellationToken.None);
+            await foreach (var file in fileList)
+            {
+                AssetFiles.Add(file);
+            }
+        }
+
+        public async Task DownloadAssetFile(IFile assetFile)
         {
             var path = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
 
             var cancellationTokenSrc = new CancellationTokenSource();
             try
             {
-                await using var destination = File.OpenWrite(Path.Combine(path, assetFile.Name));
+                await using var destination = File.OpenWrite(Path.Combine(path, assetFile.Descriptor.Path));
 
                 var progress = new LogProgress();
-                await PlatformServices.AssetFileManager.DownloadAssetFileAsync(asset.Project, assetFile, destination, progress, cancellationTokenSrc.Token);
+                await assetFile.DownloadAsync(destination, progress, cancellationTokenSrc.Token);
 
-                Debug.Log($"Asset file downloaded: {assetFile.Name}.");
+                Debug.Log($"Asset file downloaded: {assetFile.Descriptor.Path}.");
             }
             catch (Exception e)
             {
-                Debug.LogError($"Failed to download asset file: {assetFile.Name}. {e.Message}");
+                Debug.LogError($"Failed to download asset file: {assetFile.Descriptor.Path}. {e}");
             }
         }
 

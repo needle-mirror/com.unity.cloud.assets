@@ -5,26 +5,21 @@ using System.Threading.Tasks;
 
 namespace Unity.Cloud.Assets.Documentation.Manual
 {
+#pragma warning disable S1144 // Remove unused private method
     public class UseCaseSearchAssetsExample
     {
-        readonly IProject project;
+        readonly IAssetProject project;
 
-        public UseCaseSearchAssetsExample(IProject project)
+        public UseCaseSearchAssetsExample(IAssetProject project)
         {
             this.project = project;
         }
 
-        public void Example(IProject newProject)
+        public void Example()
         {
 #region Example_Constructor
 
-var assetSearchFilter = new AssetSearchFilter(project);
-
-#endregion
-
-#region Example_Project
-
-assetSearchFilter.Project.Include(newProject);
+var assetSearchFilter = new AssetSearchFilter();
 
 #endregion
 
@@ -52,25 +47,32 @@ assetSearchFilter.Tags.Include("tag1", "tag2", "tag3");
 
 #endregion
 
+#region Example_Collections
+
+assetSearchFilter.Collections.Add("my awesome collection");
+assetSearchFilter.Collections.Add("my other awesome collection");
+
+#endregion
+
         }
 
-        IAsyncEnumerable<IAsset> SearchAsync(IAssetProvider assetProvider, IAssetSearchFilter assetSearchFilter)
+        IAsyncEnumerable<IAsset> SearchAsync(IAssetSearchFilter assetSearchFilter)
         {
 #region Example_Search
 
 Pagination pagination = new Pagination(nameof(IAsset.Name), new Range(0, 10), Pagination.Order.Ascending);
-return assetProvider.SearchAsync(assetSearchFilter, pagination, CancellationToken.None);
+return project.SearchAssetsAsync(assetSearchFilter, pagination, CancellationToken.None);
 
 #endregion
         }
 
-        async Task DisplayResultsIndividually(IAssetProvider assetProvider, IAssetSearchFilter assetSearchFilter)
+        async Task DisplayResultsIndividually(IAssetSearchFilter assetSearchFilter)
         {
             var pagination = new Pagination(nameof(IAsset.Name), Range.All);
 
 #region Example_Foreach
 
-var assets = assetProvider.SearchAsync(assetSearchFilter, pagination, CancellationToken.None);
+var assets = project.SearchAssetsAsync(assetSearchFilter, pagination, CancellationToken.None);
 await foreach (var asset in assets)
 {
     Console.WriteLine(asset.Name + " is available for use.");
@@ -81,13 +83,13 @@ await foreach (var asset in assets)
 #endregion
         }
 
-        async Task DisplayResults(IAssetProvider assetProvider, IAssetSearchFilter assetSearchFilter)
+        async Task DisplayResults(IAssetSearchFilter assetSearchFilter)
         {
             var pagination = new Pagination(nameof(IAsset.Name), Range.All);
 
 #region Example_ToList
 
-var assets = assetProvider.SearchAsync(assetSearchFilter, pagination, CancellationToken.None);
+var assets = project.SearchAssetsAsync(assetSearchFilter, pagination, CancellationToken.None);
 
 var assetList = new List<IAsset>();
 await foreach (var asset in assets)
@@ -100,4 +102,5 @@ await foreach (var asset in assets)
 #endregion
         }
     }
+#pragma warning restore S1144 // Remove unused private method
 }

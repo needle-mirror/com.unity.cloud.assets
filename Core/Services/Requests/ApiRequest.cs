@@ -8,6 +8,7 @@
 //-----------------------------------------------------------------------------
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Text;
 
@@ -19,6 +20,7 @@ namespace Unity.Cloud.Assets
     abstract class ApiRequest
     {
         protected string m_PathAndQueryParams;
+        readonly List<string> m_QueryParams = new List<string>();
 
         /// <summary>
         /// Method for constructing URL from request base path and query params.
@@ -27,7 +29,12 @@ namespace Unity.Cloud.Assets
         /// <returns>The full request url. </returns>
         public virtual string ConstructUrl(string requestBasePath)
         {
-            return requestBasePath + m_PathAndQueryParams;
+            var url = requestBasePath + m_PathAndQueryParams;
+            if (m_QueryParams.Count > 0)
+            {
+                url += $"?{string.Join("&", m_QueryParams)}";
+            }
+            return url;
         }
 
         /// <summary>
@@ -52,96 +59,21 @@ namespace Unity.Cloud.Assets
         /// Helper function to add a provided key and value to the provided
         /// query params and to escape the values correctly if it is a URL.
         /// </summary>
-        /// <param name="queryParams">A `List/<string/>` of the query parameters.</param>
         /// <param name="key">The key to be added.</param>
         /// <param name="value">The value to be added.</param>
-        /// <returns>Returns a `List/<string/>` with the `key` and `value` added to the provided `queryParams`.</returns>
-        protected List<string> AddParamsToQueryParams(List<string> queryParams, string key, string value)
+        protected void AddParamToQueryParams(string key, string value)
         {
-            queryParams.Add($"{key}={value}");
-            return queryParams;
+            if (string.IsNullOrEmpty(value)) return;
+
+            m_QueryParams.Add($"{key}={value}");
         }
 
         /// <summary>
-        /// Helper function to add a provided key and list of values to the
-        /// provided query params and to escape the values correctly if it is a
-        /// URL.
+        /// Constructs a string representing an array path parameter and adds it to the query params.
         /// </summary>
-        /// <param name="queryParams">A `List/<string/>` of the query parameters.</param>
-        /// <param name="key">The key to be added.</param>
-        /// <param name="values">List of values to be added.</param>
-        /// <param name="style">string for defining the style, currently unused.</param>
-        /// <param name="explode">True if query params should be escaped and added separately.</param>
-        /// <returns>Returns a `List/<string/>`</returns>
-        protected List<string> AddParamsToQueryParams(List<string> queryParams, string key, List<string> values, string style, bool explode)
-        {
-            if (explode)
-            {
-                foreach (var value in values)
-                {
-                    queryParams.Add($"{key}={value}");
-                }
-            }
-            else
-            {
-                string paramString = $"{key}=";
-                foreach (var value in values)
-                {
-                    paramString += value + ",";
-                }
-
-                paramString = paramString.Remove(paramString.Length - 1);
-                queryParams.Add(paramString);
-            }
-
-            return queryParams;
-        }
-
-        /// <summary>
-        /// Helper function to add a provided map of keys and values, representing a model, to the
-        /// provided query params.
-        /// </summary>
-        /// <param name="queryParams">A `List/<string/>` of the query parameters.</param>
-        /// <param name="modelVars">A `Dictionary` representing the vars of the model</param>
-        /// <returns>Returns a `List/<string/>`</returns>
-        protected List<string> AddParamsToQueryParams(List<string> queryParams, Dictionary<string, string> modelVars)
-        {
-            foreach (var key in modelVars.Keys)
-            {
-                string escapedValue = modelVars[key];
-                queryParams.Add($"{key}={escapedValue}");
-            }
-
-            return queryParams;
-        }
-
-        /// <summary>
-        /// Helper function to add a provided key and value to the provided
-        /// query params and to escape the values correctly if it is a URL.
-        /// </summary>
-        /// <param name="queryParams">A `List/<string/>` of the query parameters.</param>
-        /// <param name="key">The key to be added.</param>
-        /// <typeparam name="T">The type of the value to be added.</typeparam>
-        /// <param name="value">The value to be added.</param>
-        /// <returns>Returns a `List/<string/>`</returns>
-        protected List<string> AddParamsToQueryParams<T>(List<string> queryParams, string key, T value)
-        {
-            if (queryParams == null)
-            {
-                queryParams = new List<string>();
-            }
-
-            string valueString = value.ToString();
-            queryParams.Add($"{key}={valueString}");
-            return queryParams;
-        }
-
-        /// <summary>
-        /// Constructs a string representing an array path parameter.
-        /// </summary>
+        /// /// &lt;param name="key"&gt;The key to be added.&lt;/param&gt;
         /// <param name="pathParam">The list of values to convert to string.</param>
-        /// <returns>String representing the param.</returns>
-        protected string GetPathParamString(List<string> pathParam)
+        protected void AddParamToQueryParams(string key, IEnumerable<string> pathParam)
         {
             string paramString = "";
             foreach (var value in pathParam)
@@ -150,7 +82,33 @@ namespace Unity.Cloud.Assets
             }
 
             paramString = paramString.Remove(paramString.Length - 1);
-            return paramString;
+
+            if (string.IsNullOrEmpty(paramString)) return;
+
+            m_QueryParams.Add($"{key}={paramString}");
+        }
+
+        internal bool CheckPathAndQueryContent(params object[] contents)
+        {
+            foreach (var value in contents.Select(x => x.ToString()))
+            {
+                if (!m_PathAndQueryParams.Contains(value))
+                {
+                    if (!IsQueryParam(value)) return false;
+                }
+            }
+
+            return true;
+        }
+
+        bool IsQueryParam(string value)
+        {
+            for (var i = 0; i < m_QueryParams.Count; ++i)
+            {
+                if (!value.Contains(m_QueryParams[i])) return false;
+            }
+
+            return true;
         }
     }
 }

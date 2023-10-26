@@ -9,14 +9,12 @@
 
 using System.Collections.Generic;
 using System.Net.Mime;
+using Unity.Cloud.Common;
 
 namespace Unity.Cloud.Assets
 {
-    class GetProjectsByOrganizationAndUserIdsRequest : UsersRequest
+    class GetProjectsByOrganizationAndUserIdsRequest : ApiRequest
     {
-        /// <summary>Accessor for userId </summary>
-        public string UserId { get; }
-
         /// <summary>
         /// ApiAssetsUsersV1UserIdOrganizationOrganizationIdProjectsGet Request Object.
         /// Reads a list of projects in an org that a user has access to.
@@ -27,31 +25,20 @@ namespace Unity.Cloud.Assets
         /// <param name="pageSize">The page size.</param>
         /// <param name="enrichWithUsersCount">A flag indicating whether the projects should have user count.</param>
         /// <param name="xCorrelationId">Correlation id of the request.</param>
-        public GetProjectsByOrganizationAndUserIdsRequest(ulong organizationId,
+        public GetProjectsByOrganizationAndUserIdsRequest(OrganizationId organizationId,
             string userId = null,
             int? page = default(int?),
             int? pageSize = default(int?),
             bool? enrichWithUsersCount = false,
             string xCorrelationId = default(string))
-            : base(organizationId, page, pageSize, enrichWithUsersCount, xCorrelationId)
         {
-            UserId = string.IsNullOrEmpty(userId) ? "me" : userId;
+            userId = string.IsNullOrEmpty(userId) ? "me" : userId;
 
-            m_PathAndQueryParams = $"/users/{UserId}/organizations/{OrganizationId}/projects";
+            m_PathAndQueryParams = $"/users/{userId}/organizations/{organizationId}/projects";
 
-            List<string> queryParams = new List<string>();
-
-            var pageStringValue = Page.ToString();
-            queryParams = AddParamsToQueryParams(queryParams, "Page", pageStringValue);
-            var pageSizeStringValue = PageSize.ToString();
-            queryParams = AddParamsToQueryParams(queryParams, "PageSize", pageSizeStringValue);
-            var enrichWithUsersCountStringValue = EnrichWithUsersCount.ToString();
-            queryParams = AddParamsToQueryParams(queryParams, "enrichWithUsersCount", enrichWithUsersCountStringValue);
-
-            if (queryParams.Count > 0)
-            {
-                m_PathAndQueryParams = $"{m_PathAndQueryParams}?{string.Join("&", queryParams)}";
-            }
+            AddParamToQueryParams("Page", page.ToString());
+            AddParamToQueryParams("Limit", pageSize.ToString());
+            AddParamToQueryParams("enrichWithUsersCount", enrichWithUsersCount.ToString());
         }
     }
 }

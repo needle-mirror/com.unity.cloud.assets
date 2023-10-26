@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Runtime.Serialization;
 
 namespace Unity.Cloud.Assets
@@ -7,45 +8,42 @@ namespace Unity.Cloud.Assets
     /// The request to read the assets.
     /// </summary>
     [DataContract]
-    internal class SearchRequestParameters
+    class SearchRequestParameters
     {
         /// <summary>
         /// The request to read the assets.
         /// </summary>
         /// <param name="filter">filter param</param>
-        /// <param name="resultFields">resultFields param</param>
+        /// <param name="includeFields">The fields to be returned.</param>
         /// <param name="pagination">pagination param</param>
-        /// <param name="includeThumbnailDownloadURLs">A flag indicating whether the response should have download URL&#39;s on files that are marked as thumbnails.</param>
-        public SearchRequestParameters(SearchRequestFilter filter = default, SearchRequestResultFields resultFields = default, SearchRequestPagination pagination = default, bool includeThumbnailDownloadURLs = true)
+        public SearchRequestParameters(SearchRequestFilter filter = default, FieldsFilter includeFields = default, SearchRequestPagination pagination = default)
         {
             Filter = filter;
-            ResultFields = resultFields;
+            includeFields?.Parse(AddIncludeField);
             Pagination = pagination;
-            IncludeThumbnailDownloadURLs = includeThumbnailDownloadURLs;
         }
 
         /// <summary>
         /// Parameter filter of SearchRequest
         /// </summary>
         [DataMember(Name = "filter", EmitDefaultValue = false)]
-        public SearchRequestFilter Filter{ get; }
+        public SearchRequestFilter Filter { get; }
 
         /// <summary>
-        /// Parameter resultFields of SearchRequest
+        /// The fields to be returned.
         /// </summary>
-        [DataMember(Name = "resultFields", EmitDefaultValue = false)]
-        public SearchRequestResultFields ResultFields{ get; }
+        [DataMember(Name = "includeFields", EmitDefaultValue = false)]
+        public List<string> IncludeFields { get; } = new();
 
         /// <summary>
         /// Parameter pagination of SearchRequest
         /// </summary>
         [DataMember(Name = "pagination", EmitDefaultValue = false)]
-        public SearchRequestPagination Pagination{ get; }
+        public SearchRequestPagination Pagination { get; }
 
-        /// <summary>
-        /// A flag indicating whether the response should have download URL&#39;s on files that are marked as thumbnails.
-        /// </summary>
-        [DataMember(Name = "includeThumbnailDownloadURLs", EmitDefaultValue = true)]
-        public bool IncludeThumbnailDownloadURLs{ get; }
+        void AddIncludeField(string field)
+        {
+            IncludeFields.Add(field);
+        }
     }
 }

@@ -23,29 +23,14 @@ namespace Unity.Cloud.Assets.Documentation.Management
         public static IAuthenticationStateProvider AuthenticationStateProvider => Authenticator;
 
         /// <summary>
-        /// Returns an <see cref="IOrganizationProvider"/>.
+        /// Returns an <see cref="IOrganizationRepository"/>.
         /// </summary>
-        public static IOrganizationProvider OrganizationProvider { get; private set; }
+        public static IOrganizationRepository OrganizationRepository { get; private set; }
 
         /// <summary>
-        /// Returns an <see cref="IProjectProvider"/>.
+        /// Returns an <see cref="IAssetRepository"/>.
         /// </summary>
-        public static IProjectProvider ProjectProvider { get; private set; }
-
-        /// <summary>
-        /// Returns an <see cref="IAssetManager"/>
-        /// </summary>
-        public static IAssetManager AssetManager { get; private set; }
-
-        /// <summary>
-        /// Returns an <see cref="IAssetFileManager"/>
-        /// </summary>
-        public static IAssetFileManager AssetFileManager { get; private set; }
-
-        /// <summary>
-        /// Returns an <see cref="IAssetCollectionManager"/>
-        /// </summary>
-        public static IAssetCollectionManager AssetCollectionManager { get; private set; }
+        public static IAssetRepository AssetRepository { get; private set; }
 
         public static void Create()
         {
@@ -54,22 +39,17 @@ namespace Unity.Cloud.Assets.Documentation.Management
             var playerSettings = UnityCloudPlayerSettings.Instance;
             var platformSupport = PlatformSupportFactory.GetAuthenticationPlatformSupport();
 
-            var compositeAuthenticatorSettings = new CompositeAuthenticatorSettingsBuilder(httpClient, platformSupport, serviceHostResolver)
-                .AddDefaultPkceAuthenticator(playerSettings)
+            var compositeAuthenticatorSettings = new CompositeAuthenticatorSettingsBuilder(httpClient, platformSupport, serviceHostResolver, playerSettings)
+                .AddDefaultPkceAuthenticator(playerSettings, playerSettings)
                 .Build();
 
             Authenticator = new CompositeAuthenticator(compositeAuthenticatorSettings);
 
             var serviceHttpClient = new ServiceHttpClient(httpClient, Authenticator, playerSettings);
 
-            OrganizationProvider = new CloudOrganizationProvider(serviceHttpClient, serviceHostResolver);
-            ProjectProvider = new CloudProjectProvider(serviceHttpClient, serviceHostResolver);
+            OrganizationRepository = new AuthenticatorOrganizationRepository(serviceHttpClient, serviceHostResolver);
 
-            var assetServiceConfiguration = new AssetServiceConfiguration();
-
-            AssetManager = new CloudAssetManager(serviceHttpClient, serviceHostResolver, assetServiceConfiguration);
-            AssetFileManager = new CloudAssetFileManager(serviceHttpClient, serviceHostResolver);
-            AssetCollectionManager = new CloudAssetCollectionManager(serviceHttpClient, serviceHostResolver);
+            AssetRepository = AssetRepositoryFactory.Create(serviceHttpClient, serviceHostResolver);
         }
 
         /// <summary>

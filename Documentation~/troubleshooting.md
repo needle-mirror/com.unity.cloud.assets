@@ -1,18 +1,19 @@
 # Troubleshooting
 
-This section describes issues you might have while using the Unity Asset Manager SDK package.
+This section describes errors or problems you can encounter when you use the Assets package.
 
 ## Sample issues
 
 ### General sample issues
 
-**I have dependency issues with the samples.**
+**A missing dependency error appeared when using the samples**
 
-If you have dependency issues with the samples, refer to the **Before you start** section of the impacted sample:
+If you have dependency issues with the samples, refer to the **Before you start** section of the sample you're working with:
 
-* [Asset Database Uploader sample](asset-database-uploader-sample.md#before-you-start)
 * [Asset Discovery sample](asset-discovery-sample.md#before-you-start)
-<!-- * [Asset Management sample](asset-management-sample.md#before-you-start) -->
+* [Asset Management sample](asset-management-sample.md#before-you-start)
+* [Collection Management sample](asset-collection-management-sample.md#before-you-start)
+* [Asset Database Uploader sample](asset-database-uploader-sample.md#before-you-start)
 
 **The automatic browser redirection doesn't work**
 
@@ -20,11 +21,11 @@ If you run the sample in the Unity Editor, you should see the following page aft
 
 ![Login Successful](images/login-redirect.png)
 
-If you aren't automatically redirected to the Editor and nothing happens when you select **Launch Application**, return to the Editor. This should continue the authentication process.
+If the browser fails to redirect you to the Editor, and selecting **Launch Application**  does nothing, return to the Editor. Manually returning to the continues the authentication process.
 
 **I can't see my assets**
 
-If you can't see any assets, your organization might not have the asset management feature flag enabled. You'll need to [request access to the beta](https://docs.unity3d.com/docs-asset-manager/manual/request-access.html).
+If you can't see any assets, verify that your Organization have the asset management feature flag enabled. To enable the feature flag, [request access to the beta](https://docs.unity3d.com/docs-asset-manager/manual/request-access.html).
 
 ### Asset Database Uploader sample
 
@@ -32,5 +33,5 @@ If you can't see any assets, your organization might not have the asset manageme
 
 If you can't create and upload any assets:
 
-* Your organization might not have the asset management feature flag enabled. You'll need to [request access to the beta](https://docs.unity3d.com/docs-asset-manager/manual/request-access.html).
-* You might not have the right permissions to create and upload assets. You'll need to contact your Unity Organization/Project Manager to get the right permissions.
+* Verify that your Organization have the asset management feature flag enabled. To enable the feature flag, [request access to the beta](https://docs.unity3d.com/docs-asset-manager/manual/request-access.html).
+* Based on your user role, verify that you have permission to create and upload assets. To get permission, contact your Unity Organization or Project administrator.

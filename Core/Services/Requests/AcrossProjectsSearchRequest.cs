@@ -1,5 +1,6 @@
 ﻿using System.Net.Http;
 using System.Text;
+using Unity.Cloud.Common;
 
 namespace Unity.Cloud.Assets
 {
@@ -7,7 +8,7 @@ namespace Unity.Cloud.Assets
     /// AcrossProjectsSearchRequest
     /// Across projects search assets based on criteria.
     /// </summary>
-    internal class AcrossProjectsSearchRequest : AssetRequest
+    class AcrossProjectsSearchRequest : OrganizationRequest
     {
         /// <summary>Accessor for AcrossProjectsSearchRequestParameters </summary>
         public AcrossProjectsSearchRequestParameters AcrossProjectsSearchRequestParameters { get; }
@@ -19,13 +20,12 @@ namespace Unity.Cloud.Assets
         /// <param name="organizationId">Genesis ID of the organization</param>
         /// <param name="xCorrelationId">Correlation id of the request.</param>
         /// <param name="acrossProjectsSearchRequestParameters">The search asset request criteria.</param>
-        public AcrossProjectsSearchRequest(ulong organizationId,
-            string assetPath,
-            string xCorrelationId = default(string),
-            AcrossProjectsSearchRequestParameters acrossProjectsSearchRequestParameters = default)
-            : base(organizationId, null, xCorrelationId)
+        public AcrossProjectsSearchRequest(OrganizationId organizationId,
+            AcrossProjectsSearchRequestParameters acrossProjectsSearchRequestParameters = default,
+            string xCorrelationId = default)
+            : base(organizationId, xCorrelationId)
         {
-            m_PathAndQueryParams = $"/organizations/{OrganizationId}{assetPath}/search";
+            m_PathAndQueryParams += $"/assets/search";
 
             AcrossProjectsSearchRequestParameters = acrossProjectsSearchRequestParameters;
         }
@@ -36,7 +36,7 @@ namespace Unity.Cloud.Assets
         /// <returns>A </returns>
         public override HttpContent ConstructBody()
         {
-            var body = IsolatedJsonConvert.SerializeObject(AcrossProjectsSearchRequestParameters);
+            var body = IsolatedJsonConvert.SerializeObject(AcrossProjectsSearchRequestParameters, SerializationUtilities.Converters);
             return new StringContent(body, Encoding.UTF8, "application/json");
         }
     }

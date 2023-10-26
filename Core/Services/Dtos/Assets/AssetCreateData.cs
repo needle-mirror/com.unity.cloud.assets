@@ -1,0 +1,13 @@
+using System;
+using System.Collections.Generic;
+using System.Runtime.Serialization;
+
+namespace Unity.Cloud.Assets
+{
+    [DataContract]
+    class AssetCreateData : AssetBaseData, IAssetCreateData
+    {
+        /// <inheritdoc />
+        public IEnumerable<CollectionPath> Collections { get; set; }
+    }
+}

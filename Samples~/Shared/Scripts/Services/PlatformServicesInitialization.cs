@@ -11,15 +11,6 @@ namespace Unity.Cloud.Assets.Samples
     [AddComponentMenu("Assets/Samples/Platform Services Initialization")]
     public class PlatformServicesInitialization : MonoBehaviour
     {
-        enum ProviderType
-        {
-            AssetManagement,
-            Discovery
-        }
-
-        [SerializeField]
-        ProviderType m_ProviderType = ProviderType.Discovery;
-
         void Awake()
         {
 #if UNITY_EDITOR
@@ -33,7 +24,7 @@ namespace Unity.Cloud.Assets.Samples
 
         public void Initialize()
         {
-            PlatformServices.Create(m_ProviderType == ProviderType.Discovery);
+            PlatformServices.Create();
         }
 
         async Task Start()

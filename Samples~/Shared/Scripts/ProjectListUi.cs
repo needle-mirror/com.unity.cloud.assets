@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Unity.Cloud.Identity;
 using UnityEngine;
 
 namespace Unity.Cloud.Assets.Samples
@@ -12,31 +13,20 @@ namespace Unity.Cloud.Assets.Samples
     {
         const string k_AllProjectId = "All";
 
-        static readonly Pagination k_DefaultPagination = new(nameof(IProject.Name), Range.All);
+        static readonly Pagination k_DefaultPagination = new(nameof(IAssetProject.Name), Range.All);
 
         public event Action ProjectSelected;
 
-        IProject m_SelectedProject;
-
         CancellationTokenSource m_ListProjectsCancellationTokenSource = new();
 
-        public IProject SelectedProject
-        {
-            get => m_SelectedProject;
-            private set
-            {
-                m_SelectedProject = value;
-                Debug.Log($"Project Selected: {m_SelectedProject?.Name}");
-                ProjectSelected?.Invoke();
-            }
-        }
+        public IAssetProject SelectedProject { get; private set; }
 
         public bool IsAllProjectSelected { get; private set; }
 
         protected override string VisualElementName => "ProjectsPanel";
         protected override string EmptyListMessage => "No projects available.";
 
-        public async Task Populate(IOrganization organization, bool includeAllProject)
+        public async Task Populate(IAssetRepository assetRepository, IOrganization organization, bool includeAllProject)
         {
             Show();
 
@@ -47,14 +37,14 @@ namespace Unity.Cloud.Assets.Samples
             var token = m_ListProjectsCancellationTokenSource.Token;
 
             var existingEntries = includeAllProject ? new[] {k_AllProjectId} : null;
-            await UpdateList(existingEntries, GetProjectsAsync(organization, token), token);
+            await UpdateList(existingEntries, GetProjectsAsync(assetRepository, organization, token), token);
         }
 
-        static IAsyncEnumerable<IProject> GetProjectsAsync(IOrganization organization, CancellationToken token)
+        static IAsyncEnumerable<IAssetProject> GetProjectsAsync(IAssetRepository assetRepository, IOrganization organization, CancellationToken token)
         {
             try
             {
-                return PlatformServices.ProjectProvider.ListProjectsAsync(organization, k_DefaultPagination, token);
+                return assetRepository.ListAssetProjectsAsync(organization.Id, k_DefaultPagination, token);
             }
             catch (OperationCanceledException oe)
             {
@@ -76,13 +66,16 @@ namespace Unity.Cloud.Assets.Samples
         protected override void OnSelectionChange(IEnumerable<object> selectedItems)
         {
             var selectedProject = selectedItems.FirstOrDefault();
-            IsAllProjectSelected = selectedProject != null && selectedProject is not IProject;
-            SelectedProject = selectedProject as IProject;
+            IsAllProjectSelected = selectedProject != null && selectedProject is not IAssetProject;
+            SelectedProject = selectedProject as IAssetProject;
+
+            Debug.Log($"Project Selected: {SelectedProject?.Name}");
+            ProjectSelected?.Invoke();
         }
 
-        public IEnumerable<IProject> GetProjects()
+        public IEnumerable<IAssetProject> GetProjects()
         {
-            return m_Entries.OfType<IProject>();
+            return m_Entries.OfType<IAssetProject>();
         }
     }
 }

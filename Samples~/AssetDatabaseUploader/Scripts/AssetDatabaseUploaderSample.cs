@@ -33,14 +33,13 @@ namespace Unity.Cloud.Assets.Samples.AssetDatabaseUploader
 
             if (m_OrgAndProjectSelector)
             {
-                await m_OrgAndProjectSelector.Initialize(this, AssetsEditorServices.OrganizationProvider,
-                    AssetsEditorServices.ProjectProvider);
+                await m_OrgAndProjectSelector.Initialize(this, AssetsEditorServices.OrganizationRepository,
+                    AssetsEditorServices.AssetRepository);
             }
 
             if (m_AssetsUploader)
             {
-                m_AssetsUploader.Initialize(this, AssetsEditorServices.AssetManager,
-                    AssetsEditorServices.AssetFileManager);
+                m_AssetsUploader.Initialize(this);
             }
         }
 

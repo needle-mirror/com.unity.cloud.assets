@@ -1,0 +1,161 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
+using Unity.Cloud.Common;
+
+namespace Unity.Cloud.Assets
+{
+    public interface IFile
+    {
+        /// <summary>
+        /// The descriptor of the file.
+        /// </summary>
+        FileDescriptor Descriptor { get; }
+
+        /// <summary>
+        /// The description of the file.
+        /// </summary>
+        string Description { get; }
+
+        /// <summary>
+        /// The url of the preview of the file.
+        /// </summary>
+        Uri PreviewUrl { get; }
+
+        /// <summary>
+        /// The status of the file.
+        /// </summary>
+        string Status { get; }
+
+        /// <summary>
+        /// The authoring info of the file.
+        /// </summary>
+        AuthoringInfo AuthoringInfo { get; }
+
+        /// <summary>
+        /// The size of the file in bytes.
+        /// </summary>
+        long SizeBytes { get; }
+
+        /// <summary>
+        /// The checksum of the file.
+        /// </summary>
+        string UserChecksum { get; }
+
+        /// <summary>
+        /// The tags of the file.
+        /// </summary>
+        IEnumerable<string> Tags { get; }
+
+        /// <summary>
+        /// The system tags of the file.
+        /// </summary>
+        IEnumerable<string> SystemTags { get; }
+
+        /// <summary>
+        /// The portal metadata of the file.
+        /// </summary>
+        IDeserializable PortalMetadata { get; }
+
+        /// <summary>
+        /// The metadata of the file.
+        /// </summary>
+        IDeserializable Metadata { get; }
+
+        /// <summary>
+        /// The system metadata of the file.
+        /// </summary>
+        IDeserializable SystemMetadata { get; }
+
+        /// <summary>
+        /// The datasets the file is linked to.
+        /// </summary>
+        public IEnumerable<DatasetDescriptor> LinkedDatasets { get; }
+
+        /// <summary>
+        /// Invalidates the download and upload urls of the file.
+        /// </summary>
+        void InvalidateCachedUrls();
+
+        /// <summary>
+        /// Refreshes the file with the specified fields.
+        /// </summary>
+        /// <param name="includeFields">The fields to refresh. </param>
+        /// <param name="cancellationToken">The cancellation token. </param>
+        /// <returns>A task with no result. </returns>
+        // Task RefreshAsync(FileFields includeFields, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Returns a file in the context of the specified dataset.
+        /// </summary>
+        /// <param name="datasetDescriptor">The descriptor of the dataset. </param>
+        /// <returns></returns>
+        IFile WithDataset(DatasetDescriptor datasetDescriptor);
+
+        /// <summary>
+        /// Returns the datasets that are linked to this file.
+        /// </summary>
+        /// <param name="range">The range of datasets to return. </param>
+        /// <param name="cancellationToken">The cancellation token. </param>
+        /// <returns>A task whose result is an async enumeration of datasets. </returns>
+        IAsyncEnumerable<IDataset> GetLinkedDatasetsAsync(Range range, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Returns the download URL for the file.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token. </param>
+        /// <returns>A task whose result is the download url of the file. </returns>
+        Task<Uri> GetDownloadUrlAsync(CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Downloads the file to the specified stream.
+        /// </summary>
+        /// <param name="targetStream">The stream in which to download the file. </param>
+        /// <param name="progress">The progress of the download. </param>
+        /// <param name="cancellationToken">The cancellation token. </param>
+        /// <returns>A task with no result. </returns>
+        Task DownloadAsync(Stream targetStream, IProgress<HttpProgress> progress, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Returns the upload URL for the file.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token. </param>
+        /// <returns>A task whose result is the upload url of the file. </returns>
+        Task<Uri> GetUploadUrlAsync(CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Uploads the file from the specified stream.
+        /// </summary>
+        /// <param name="sourceStream">The stream from which to upload the file. </param>
+        /// <param name="progress">The progress of the upload. </param>
+        /// <param name="cancellationToken">The cancellation token. </param>
+        /// <returns>A task with no result. </returns>
+        Task UploadAsync(Stream sourceStream, IProgress<HttpProgress> progress, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Updates the file.
+        /// </summary>
+        /// <param name="fileUpdate">The object containing the necessary information to update the file. </param>
+        /// <param name="cancellationToken">The cancellation token. </param>
+        /// <returns>A task with no result. </returns>
+        Task UpdateAsync(IFileUpdate fileUpdate, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Removes the specified user metadata fields from the file.
+        /// </summary>
+        /// <param name="keys">The metadata fields to remove. </param>
+        /// <param name="cancellationToken">The cancellation token. </param>
+        /// <returns>A task with no result. </returns>
+        Task RemoveUserMetadataAsync(string[] keys, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Removes the specified system metadata fields from the file.
+        /// </summary>
+        /// <param name="keys">The metadata fields to remove. </param>
+        /// <param name="cancellationToken">The cancellation token. </param>
+        /// <returns>A task with no result. </returns>
+        Task RemoveSystemMetadataAsync(string[] keys, CancellationToken cancellationToken);
+    }
+}

@@ -3,25 +3,26 @@ using System.Collections.Generic;
 
 namespace Unity.Cloud.Assets
 {
-    [Serializable]
     public class SearchCriteria<T> : ISearchCriteria<T>
     {
-        readonly string m_Key;
+        readonly string m_PropertyName;
+        readonly string m_SearchKey;
         private protected T m_Included;
         private protected T m_Excluded;
         private protected T m_Any;
 
-        private protected T m_EmpyValue;
+        readonly T m_EmpyValue;
 
         /// <inheritdoc/>
-        string ISearchCriteria.SearchKey => m_Key;
+        string ISearchCriteria.PropertyName => m_PropertyName;
 
         /// <inheritdoc/>
         Type ISearchCriteria.SearchFieldType => typeof(T);
 
-        internal SearchCriteria(string key, T emptyValue = default)
+        internal SearchCriteria(string propertyName, string searchKey, T emptyValue = default)
         {
-            m_Key = key;
+            m_PropertyName = propertyName;
+            m_SearchKey = searchKey;
             m_EmpyValue = emptyValue;
         }
 
@@ -52,9 +53,9 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc/>
         void ISearchCriteria.Include(Dictionary<string, object> includedValues, string prefix)
         {
-            if (((ISearchCriteria) this).TryGetIncluded(out var value))
+            if (this.TryGetIncluded(out var value))
             {
-                includedValues.Add(prefix + m_Key, value);
+                includedValues.Add(m_SearchKey.BuildSearchKey(prefix), value);
             }
         }
 
@@ -64,9 +65,9 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc/>
         void ISearchCriteria.Exclude(Dictionary<string, object> excludedValues, string prefix)
         {
-            if (((ISearchCriteria) this).TryGetExcluded(out var value))
+            if (this.TryGetExcluded(out var value))
             {
-                excludedValues.Add(prefix + m_Key, value);
+                excludedValues.Add(m_SearchKey.BuildSearchKey(prefix), value);
             }
         }
 
@@ -76,9 +77,9 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc/>
         void ISearchCriteria.ForAny(Dictionary<string, object> forAnyValues, string prefix)
         {
-            if (((ISearchCriteria) this).TryGetAny(out var value))
+            if (this.TryGetAny(out var value))
             {
-                forAnyValues.Add(prefix + m_Key, value);
+                forAnyValues.Add(m_SearchKey.BuildSearchKey(prefix), value);
             }
         }
 

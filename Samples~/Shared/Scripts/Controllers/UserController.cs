@@ -1,7 +1,9 @@
 #if !UC_EXCLUDE_SAMPLES
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
+using Unity.Cloud.Common;
 using Unity.Cloud.Identity;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -10,39 +12,50 @@ namespace Unity.Cloud.Assets.Samples
 {
     public class UserController : MonoBehaviour
     {
-        static readonly Pagination m_DefaultPagination = new(nameof(IAsset.Name), Range.All);
+        static readonly Pagination k_DefaultPagination = new(nameof(IAsset.Name), Range.All);
 
         [SerializeField]
-        UIDocument m_SampleUiDocument;
+        UIDocument m_OrganizationListUiDocument;
+
+        [SerializeField]
+        UIDocument m_ProjectListUiDocument;
+
         [SerializeField]
         VisualTreeAsset m_ListItemTemplate;
+
         [SerializeField]
         bool m_IncludeAllProject = true;
-
-
-        VisualElement m_SampleUiDocumentRoot;
 
         readonly OrganizationListUi m_OrganizationListUi = new();
         readonly ProjectListUi m_ProjectListUi = new();
 
         public IOrganization SelectedOrganization => m_OrganizationListUi.SelectedOrganization;
-        public IProject SelectedProject => m_ProjectListUi.SelectedProject;
+        public IAssetProject SelectedProject => m_ProjectListUi.SelectedProject;
         public bool IsAllProjectSelected => m_ProjectListUi.IsAllProjectSelected;
+        public IAssetRepository AssetRepository => m_AssetRepository;
 
         public event Action ShowContent;
         public event Action HideContent;
-        public event Action OrganizationSelected;
+        public event Action<OrganizationId> OrganizationSelected;
         public event Action ProjectSelected;
+
+        IAssetRepository m_AssetRepository;
+        ICompositeAuthenticator m_Authenticator;
+        IOrganizationRepository m_OrganizationRepository;
+
+        public void SetServices(ICompositeAuthenticator authenticator, IAssetRepository assetRepository, IOrganizationRepository organizationRepository)
+        {
+            m_Authenticator = authenticator;
+            m_AssetRepository = assetRepository;
+            m_OrganizationRepository = organizationRepository;
+        }
 
         void Start()
         {
-            if (m_SampleUiDocument)
-                m_SampleUiDocumentRoot = m_SampleUiDocument.rootVisualElement;
-
-            m_OrganizationListUi.Initialize(m_SampleUiDocumentRoot);
+            m_OrganizationListUi.Initialize(m_OrganizationListUiDocument.rootVisualElement);
             m_OrganizationListUi.OrganizationSelected += OnOrganizationSelected;
 
-            m_ProjectListUi.Initialize(m_SampleUiDocumentRoot, m_ListItemTemplate);
+            m_ProjectListUi.Initialize(m_ProjectListUiDocument.rootVisualElement, m_ListItemTemplate);
             m_ProjectListUi.ProjectSelected += OnProjectSelected;
 
             ProcessAuthenticator();
@@ -53,9 +66,9 @@ namespace Unity.Cloud.Assets.Samples
 
         void OnDestroy()
         {
-            if (PlatformServices.AuthenticationStateProvider != null)
+            if (m_Authenticator != null)
             {
-                PlatformServices.AuthenticationStateProvider.AuthenticationStateChanged -= OnAuthenticationStateChanged;
+                m_Authenticator.AuthenticationStateChanged -= OnAuthenticationStateChanged;
             }
 
             m_OrganizationListUi.OrganizationSelected -= OnOrganizationSelected;
@@ -64,9 +77,9 @@ namespace Unity.Cloud.Assets.Samples
 
         void ProcessAuthenticator()
         {
-            if (PlatformServices.Authenticator.RequiresGUI)
+            if (m_Authenticator.RequiresGUI)
             {
-                PlatformServices.AuthenticationStateProvider.AuthenticationStateChanged += OnAuthenticationStateChanged;
+                m_Authenticator.AuthenticationStateChanged += OnAuthenticationStateChanged;
             }
             else
             {
@@ -78,9 +91,8 @@ namespace Unity.Cloud.Assets.Samples
         {
             try
             {
-                IEnumerable<IProject> projects = m_ProjectListUi.GetProjects();
-
-                return PlatformServices.AssetProvider.SearchAsync(SelectedOrganization, projects, new AssetSearchFilter(null), m_DefaultPagination, cancellationToken);
+                var projects = m_ProjectListUi.GetProjects().Select(p => p.Descriptor.ProjectId);
+                return m_AssetRepository.SearchAssetsAsync(SelectedOrganization.Id, projects, new AssetSearchFilter(), k_DefaultPagination, cancellationToken);
             }
             catch (OperationCanceledException oe)
             {
@@ -103,7 +115,15 @@ namespace Unity.Cloud.Assets.Samples
         {
             try
             {
-                return PlatformServices.AssetProvider.SearchAsync(new AssetSearchFilter(SelectedProject), m_DefaultPagination, cancellationToken);
+                var filter = new AssetSearchFilter
+                {
+                    IncludedFields = new FieldsFilter
+                    {
+                        AssetFields = AssetFields.all,
+                        FileFields = FileFields.downloadUrl
+                    }
+                };
+                return SelectedProject.SearchAssetsAsync(filter, k_DefaultPagination, cancellationToken);
             }
             catch (OperationCanceledException oe)
             {
@@ -122,7 +142,7 @@ namespace Unity.Cloud.Assets.Samples
             }
         }
 
-        public IEnumerable<IProject> GetAllProjects()
+        public IEnumerable<IAssetProject> GetAllProjects()
         {
             return m_ProjectListUi.GetProjects();
         }
@@ -132,7 +152,7 @@ namespace Unity.Cloud.Assets.Samples
             switch (newAuthenticationState)
             {
                 case AuthenticationState.LoggedIn:
-                    await m_OrganizationListUi.PopulateOrganizations();
+                    await m_OrganizationListUi.PopulateOrganizations(m_OrganizationRepository);
                     ShowContent?.Invoke();
                     break;
                 case AuthenticationState.LoggedOut:
@@ -145,9 +165,9 @@ namespace Unity.Cloud.Assets.Samples
 
         async void OnOrganizationSelected()
         {
-            OrganizationSelected?.Invoke();
+            OrganizationSelected?.Invoke(m_OrganizationListUi.SelectedOrganization.Id);
 
-            await m_ProjectListUi.Populate(SelectedOrganization, m_IncludeAllProject);
+            await m_ProjectListUi.Populate(m_AssetRepository, SelectedOrganization, m_IncludeAllProject);
         }
 
         void OnProjectSelected()

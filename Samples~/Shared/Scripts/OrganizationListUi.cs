@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Unity.Cloud.Identity;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -40,10 +41,9 @@ namespace Unity.Cloud.Assets.Samples
             m_OrganizationsContainer.style.display = DisplayStyle.None;
         }
 
-        public async Task PopulateOrganizations()
+        public async Task PopulateOrganizations(IOrganizationRepository organizationRepository)
         {
-            var cancellationTokenSource = new CancellationTokenSource();
-            var organizations = await PlatformServices.OrganizationProvider.GetOrganizationsAsync(cancellationTokenSource.Token);
+            var organizations = await organizationRepository.ListOrganizationsAsync();
 
             m_OrganizationsDropdown.choices = GetOrganizationsList(organizations);
 

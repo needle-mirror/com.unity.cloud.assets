@@ -1,12 +1,12 @@
+using System.Collections.Generic;
+
 namespace Unity.Cloud.Assets
 {
-    public interface IAssetCreation
+    public interface IAssetCreation : IAssetInfo
     {
-        IProject Project { get; set; }
-        string Name { get; set; }
-        string Description { get; set; }
-        int Version { get; set; }
-        string VersionName { get; set; }
-        string Type { get; set; }
+        /// <summary>
+        /// The collections to which the asset should be added.
+        /// </summary>
+        List<CollectionPath> Collections { get; set; }
     }
 }

@@ -6,25 +6,51 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
 {
     public class EditCollectionPopupController : PopupController
     {
-        readonly TextField m_Name;
-        readonly TextField m_Description;
+        readonly TextField m_NameInput;
+        readonly TextField m_DescriptionInput;
         readonly Label m_ErrorLabel;
+
+        readonly ValidateCollectionName m_ValidateCollectionName;
 
         IAssetCollection m_AssetCollection;
 
-        public EditCollectionPopupController(VisualElement root, Action action)
+        public EditCollectionPopupController(VisualElement root, Action action, ValidateCollectionName validateCollectionName)
             : base(root, "EditCollectionPopup", action)
         {
-            m_Name = m_PopupWindow.Q<TextField>("Name");
-            m_Description = m_PopupWindow.Q<TextField>("Description");
+            m_NameInput = m_PopupWindow.Q<TextField>("Name");
+            m_NameInput.RegisterCallback<InputEvent>(OnInputChanged);
+            m_DescriptionInput = m_PopupWindow.Q<TextField>("Description");
             m_ErrorLabel = m_PopupWindow.Q<Label>("ErrorLabel");
+
+            m_ValidateCollectionName = validateCollectionName;
         }
 
         public void SetAssetCollection(IAssetCollection assetCollection)
         {
             m_AssetCollection = assetCollection;
-            m_Name.value = m_AssetCollection.Name;
-            m_Description.value = m_AssetCollection.Description;
+            m_NameInput.value = m_AssetCollection.Name;
+            m_DescriptionInput.value = m_AssetCollection.Description;
+        }
+
+        void OnInputChanged(InputEvent _)
+        {
+            var (isValid, errorMsg) = (true, string.Empty);
+
+            if (m_AssetCollection.Name != m_NameInput.value)
+                (isValid, errorMsg) = m_ValidateCollectionName?.Invoke(m_NameInput.value) ?? (true, string.Empty);
+
+            if (!string.IsNullOrEmpty(errorMsg))
+            {
+                m_ErrorLabel.style.display = DisplayStyle.Flex;
+                m_ErrorLabel.text = errorMsg;
+            }
+            else
+            {
+                m_ErrorLabel.style.display = DisplayStyle.None;
+                m_ErrorLabel.text = "Error: ";
+            }
+
+            m_ActionButton.SetEnabled(isValid);
         }
 
         protected override void OnClicked()
@@ -34,9 +60,9 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
 
             try
             {
-                m_AssetCollection.SetName(m_Name.value);
+                m_AssetCollection.SetName(m_NameInput.value);
             }
-            catch (Exception)
+            catch
             {
                 m_ErrorLabel.text += "\n\tName is required. ";
                 m_ErrorLabel.style.display = DisplayStyle.Flex;
@@ -44,9 +70,9 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
 
             try
             {
-                m_AssetCollection.SetDescription(m_Description.value);
+                m_AssetCollection.SetDescription(m_DescriptionInput.value);
             }
-            catch (Exception)
+            catch
             {
                 m_ErrorLabel.text += "\n\tDescription is required. ";
                 m_ErrorLabel.style.display = DisplayStyle.Flex;

@@ -1,0 +1,27 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="../../../Shared/UI/StyleSheets/SampleSheet.uss?fileID=7433441132597879392&amp;guid=7376c3d25e9f04a989663c45cc94f5c7&amp;type=3#SampleSheet" />
+    <ui:VisualElement name="AssetsPanel" style="flex-direction: row; height: 100%; justify-content: space-between; width: 100%; flex-grow: 1;">
+        <ui:VisualElement name="RightPanel" class="ContentContainer" style="justify-content: flex-end; margin-left: 0; margin-right: 0; margin-top: 0; margin-bottom: 0; padding-left: 4px; flex-direction: column; flex-grow: 1;">
+            <ui:VisualElement name="Tabs" style="flex-grow: initial; flex-direction: row; height: -105px; width: 170px;">
+                <ui:Label tabindex="-1" text="Asset" parse-escape-sequences="true" display-tooltip-when-elided="true" name="AssetInfo" class="tab currentlySelectedTab" />
+                <ui:Label tabindex="-1" text="Datasets" parse-escape-sequences="true" display-tooltip-when-elided="true" name="DatasetsInfo" class="tab" />
+            </ui:VisualElement>
+            <ui:VisualElement name="TabsContent" style="flex-grow: 1;">
+                <ui:VisualElement name="AssetInformationContainer" tooltip="Download" style="width: 100%; height: 100%; display: none; align-items: center;">
+                    <ui:VisualElement name="AssetInformationPanel" style="width: 100%; height: 85%; padding-right: 8px; padding-left: 4px;">
+                        <ui:Label text="Label" display-tooltip-when-elided="true" name="AssetInformationLabel" style="font-size: 18px; color: rgba(255, 255, 255, 0.82); -unity-font-style: bold;" />
+                        <ui:ScrollView name="AssetInformationScrollView" />
+                    </ui:VisualElement>
+                    <ui:Button text="Download" display-tooltip-when-elided="true" name="AssetDownloadButton" style="height: 7%;" />
+                    <ui:VisualElement name="AssetDownloadSuccessful" style="display: none; height: 3%; transition-duration: 1s; transition-timing-function: ease-in;">
+                        <ui:Label text="Download successful to Desktop!" display-tooltip-when-elided="true" name="AssetDownloadSuccessfulLabel" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                <ui:VisualElement name="DatasetInformationContainer" class="unselectedContent" style="height: 100%; width: 100%; display: none;">
+                    <ui:ScrollView name="DatasetsScrollView" style="height: 100%; width: 85%; padding-right: 8px;" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+    <ui:ListView name="SearchValues" show-border="true" selection-type="Single" style="align-items: stretch; white-space: nowrap; background-color: rgb(48, 48, 48); color: rgb(210, 210, 210); -unity-font-style: bold; -unity-background-scale-mode: scale-and-crop; position: absolute; width: 60%; height: 80%; padding-left: 4px; padding-right: 4px; padding-top: 4px; padding-bottom: 4px; display: none;" />
+</ui:UXML>

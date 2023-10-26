@@ -1,6 +1,6 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
     <Style src="../StyleSheets/AssetListStyleSheet.uss?fileID=7433441132597879392&amp;guid=5d7fd9da907ac410c98b37643d5cf632&amp;type=3#AssetListStyleSheet" />
-    <ui:VisualElement name="AssetListContainer">
+    <ui:VisualElement name="ListContainer">
         <ui:VisualElement name="AssetListTopBar" style="height: 10%; flex-direction: row; align-items: center; justify-content: center;">
             <ui:VisualElement name="AssetListTitle" style="flex-direction: row; align-items: center; justify-content: space-between; width: 95%;">
                 <ui:Label text="Manage Assets" display-tooltip-when-elided="true" name="AssetListLabel" />
@@ -31,9 +31,6 @@
                         </ui:VisualElement>
                         <ui:VisualElement name="StatusContainer" class="AssetListItem">
                             <ui:Label text="Status" display-tooltip-when-elided="true" name="StatusLabel" />
-                        </ui:VisualElement>
-                        <ui:VisualElement name="FilesContainer" class="AssetListItem">
-                            <ui:Label text="Files" display-tooltip-when-elided="true" name="FilesLabel" />
                         </ui:VisualElement>
                     </ui:VisualElement>
                     <ui:VisualElement name="RightPanel" class="AssetListRightBar" style="border-bottom-right-radius: 0;" />

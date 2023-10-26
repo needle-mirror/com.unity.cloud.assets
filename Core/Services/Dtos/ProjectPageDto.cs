@@ -6,7 +6,7 @@ namespace Unity.Cloud.Assets
     class ProjectPageDto
     {
         [JsonProperty("projects")]
-        public AssetProject[] Projects { get; set; }
+        public ProjectData[] Projects { get; set; }
 
         [JsonProperty("projectsRole")]
         public Dictionary<string, string[]> ProjectsRole { get; set; }

@@ -42,8 +42,8 @@ namespace Unity.Cloud.Assets
         /// <summary>
         /// The amount of assets per page.
         /// </summary>
-        [DataMember(Name = "pageSize", EmitDefaultValue = false)]
-        public int PageSize { get; set; }
+        [DataMember(Name = "limit", EmitDefaultValue = false)]
+        public int Limit { get; set; }
 
         /// <summary>
         /// The field to sort the assets from the page.

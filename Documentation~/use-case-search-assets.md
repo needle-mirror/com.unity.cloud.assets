@@ -1,20 +1,19 @@
-# Search assets
+# Use case: Search assets
 
-You can use the Unity Asset Manager SDK package to filter assets in a project based on a set of search criteria.
+You can use the Unity Cloud Assets package to filter assets in a Project based on a set of search criteria.
 
-There are two workflows when searching for assets which can be controlled from the `AssetServiceConfiguration` class.
-Setting the `IsDiscovery` to `true` in the `AssetServiceConfiguration` will fetch and search among published assets only.
-While setting the value to `false` will fetch and search among all assets regardless of status.
-
-The implementation you choose will depend on the project roles of your users.
-
-> **Note**: The Asset Discovery pathway requires users have the minimum role of [`Asset Management Viewer`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html), while the Asset Management requires higher permissions with a minimum role of [`Asset Management Contributor`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html).
+| Asset Manager Project role                                                                             | Search |
+|:-------------------------------------------------------------------------------------------------------|:-------|
+| [`Asset Management Viewer`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html)      | yes    |
+| [`Asset Management Consumer`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html)    | yes    |
+| [`Asset Management Contributor`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html) | yes    |
+| [`Asset Management Owner`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html)       | yes    |
 
 ## How do I...?
 
 ### Built-in Search Filter
 
-The Unity Asset Manager SDK package provides a built-in search filter that you can use to search for assets: the `AssetSearchFilter` class.
+The Unity Assets package provides a built-in search filter that you can use to search for assets: the `AssetSearchFilter` class.
 The `AssetSearchFilter` class provides the set of properties that can be used to filter assets.
 
 #### Create a new search filter
@@ -23,13 +22,13 @@ You can create a new search filter by instantiating the `AssetSearchFilter` clas
 
 [!code-cs [behaviour-script](../Samples/Documentation/Manual/UseCaseSearchAssetsExample.cs#Example_Constructor)]
 
-Searches are scoped to a specific organization and project. However, the instance can be reused to search for assets in different projects and organizations by updating the properties.
+Searches are scoped to a specific Organization and Project. However, the instance can be reused to search for assets in different Projects and Organizations by updating the properties.
 
-* To update the search to another organization, you can use the `Organization` property, like so:
+* To update the search to another Organization, you can use the `Organization` property, like so:
 
 [!code-cs [behaviour-script](../Samples/Documentation/Manual/UseCaseSearchAssetsExample.cs#Example_Organization)]
 
-* To update the search to another project, you can use the `Project` property, like so:
+* To update the search to another Project, you can use the `Project` property, like so:
 
 [!code-cs [behaviour-script](../Samples/Documentation/Manual/UseCaseSearchAssetsExample.cs#Example_Project)]
 
@@ -39,7 +38,7 @@ Each searchable property provides 3 avenues for searching:
 - `Exclude` - The property must not match the value.
 - `Any` - The property may contain the value. This represents an `OR` operation to be applied on all properties that include the `Any` value.
 
-To compute the search results, you can use the `SearchAsync` method of an `IAssetProvider`, like so:
+To compute the search results, you can use the `SearchAssetsAsync` method of an `IAssetProject`, like so:
 
 [!code-cs [behaviour-script](../Samples/Documentation/Manual/UseCaseSearchAssetsExample.cs#Example_Search)]
 
@@ -79,6 +78,12 @@ You can search for assets by tag using the `Tags` property of the `AssetSearchFi
 [!code-cs [behaviour-script](../Samples/Documentation/Manual/UseCaseSearchAssetsExample.cs#Example_TagsInclude)]
 
 > **Note**: This type of search checks for assets whose tag list contains all the included parameters.
+
+#### Filter by Collections
+
+You can search for assets in specific collections by adding them to the search filter's list of collections, like so:
+
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/UseCaseSearchAssetsExample.cs#Example_Collections)]
 
 ### Custom Search Filter
 

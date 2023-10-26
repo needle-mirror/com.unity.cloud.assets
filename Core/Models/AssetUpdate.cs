@@ -1,0 +1,29 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace Unity.Cloud.Assets
+{
+    /// <summary>
+    /// This is a base class containing the information necessary to update an asset.
+    /// </summary>
+    public class AssetUpdate : AssetInfo, IAssetUpdate
+    {
+        /// <inheritdoc />
+        public string PreviewFile { get; set; }
+
+        public AssetUpdate() { }
+
+        public AssetUpdate(IAsset asset)
+        {
+            Name = asset.Name;
+            Description = asset.Description;
+            Tags = asset.Tags?.ToList() ?? new List<string>();
+            Type = asset.Type;
+            PortalMetadata = asset.PortalMetadata;
+            Metadata = asset.Metadata;
+            SystemMetadata = asset.SystemMetadata;
+            PreviewFile = asset.PreviewFile;
+        }
+    }
+}

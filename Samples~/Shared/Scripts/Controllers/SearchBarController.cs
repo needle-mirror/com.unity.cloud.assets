@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Unity.Cloud.Common;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -37,16 +38,19 @@ namespace Unity.Cloud.Assets.Samples
         Button m_SearchBarClearButton;
 
         List<string> m_QueryList;
-        IOrganization m_Organization;
-        IEnumerable<IProject> m_Projects;
-        bool AcrossProjectMode => m_Organization != null && m_Projects != null;
+        OrganizationId m_OrganizationId = OrganizationId.None;
+        IEnumerable<ProjectId> m_Projects;
+        IAssetProject m_CurrentProject;
+        bool AcrossProjectMode => m_OrganizationId != OrganizationId.None && m_Projects != null;
 
-        readonly Dictionary<SearchCriterion, string[]> m_SearchValuesByCategory = new();
-        readonly List<string> m_SearchValues = new();
+        readonly Dictionary<SearchCriterion, KeyValuePair<string,int>[]> m_SearchValuesByCategory = new();
+        readonly List<KeyValuePair<string,int>> m_SearchValues = new();
 
         public event Action<IAsyncEnumerable<IAsset>> addSearchQuery;
         public event Action<IAsyncEnumerable<IAsset>> deleteSearchQuery;
         public event Action clearSearchQuery;
+
+        IAssetRepository m_AssetRepository;
 
         ListView SearchValuesContainer
         {
@@ -64,7 +68,7 @@ namespace Unity.Cloud.Assets.Samples
 
         public void Init(VisualElement root, VisualTreeAsset chipsTemplate)
         {
-            m_AssetSearchFilter = new AssetSearchFilter(null);
+            m_AssetSearchFilter = new AssetSearchFilter();
             m_QueryList = new List<string>();
 
             m_Root = root;
@@ -80,6 +84,11 @@ namespace Unity.Cloud.Assets.Samples
 
             searchBarButton.clickable.clicked += AddChipAsync;
             m_SearchBarClearButton.clickable.clicked += HideAndClearSearchBar;
+
+            m_SearchBarField.RegisterCallback<ClickEvent>(_ =>
+            {
+                ShowSearchValuesContainer();
+            });
 
             m_SearchBarField.RegisterCallback<FocusInEvent>(_ =>
             {
@@ -120,6 +129,9 @@ namespace Unity.Cloud.Assets.Samples
             m_SearchBarClearButton.style.display = DisplayStyle.Flex;
 
             addSearchQuery?.Invoke(UpdateAssetsListAsync());
+
+            // Hack
+            HideSearchValuesContainer();
         }
 
         void DeleteChip(EventBase obj)
@@ -143,31 +155,34 @@ namespace Unity.Cloud.Assets.Samples
             }
         }
 
-        public void UpdateSearchBarProjectsLabel(IProject project)
+        public void UpdateSearchBarProjectsLabel(IAssetProject project)
         {
-            m_Organization = null;
+            m_OrganizationId = OrganizationId.None;
             m_Projects = null;
+            m_CurrentProject = project;
+            m_AssetRepository = null;
 
             if (project != null)
             {
-                m_AssetSearchFilter.Project.Include(project);
                 m_SearchBarProjectLabel.text = $"In: {project.Name}";
             }
 
             HideAndClearSearchBar();
         }
 
-        public void UpdateSearchBarProjectsLabel(IOrganization organization, IEnumerable<IProject> projects)
+        public void UpdateSearchBarProjectsLabel(IAssetRepository assetRepository, OrganizationId organizationId, IEnumerable<ProjectId> projects)
         {
-            m_Organization = organization;
+            m_OrganizationId = organizationId;
             m_Projects = projects;
+            m_CurrentProject = null;
+            m_AssetRepository = assetRepository;
 
             m_SearchBarProjectLabel.text = $"In: All Projects";
 
             HideAndClearSearchBar();
         }
 
-        public void UpdateSearchValues(SearchCriterion criterion, string[] names)
+        public void UpdateSearchValues(SearchCriterion criterion, KeyValuePair<string,int>[] names)
         {
             if (SearchValuesContainer != null) m_SearchValuesContainer.style.display = DisplayStyle.None;
             m_SearchValuesByCategory[criterion] = names;
@@ -196,25 +211,54 @@ namespace Unity.Cloud.Assets.Samples
             var values = new HashSet<string>();
             foreach (var kvp in m_SearchValuesByCategory)
             {
-                values.UnionWith(kvp.Value);
+                foreach (var aggregation in kvp.Value)
+                {
+                    values.Add(aggregation.Key);
+                }
             }
 
             UpdateSearchCriterionString(SearchCriterion.Name, values, m_QueryList.ToArray());
-            UpdateSearchCriterionString(SearchCriterion.Type, values, m_QueryList.ToArray());
+            UpdateSearchCriterionString(SearchCriterion.Type, values, FilterTypes(m_QueryList.ToArray()));
             UpdateSearchCriterionList(SearchCriterion.Tags, values, m_QueryList.ToArray());
 
             try
             {
-                if(AcrossProjectMode)
-                    return PlatformServices.AssetProvider.SearchAsync(m_Organization, m_Projects, m_AssetSearchFilter, m_DefaultPagination, CancellationToken.None);
+                if (AcrossProjectMode)
+                {
+                    return m_AssetRepository.SearchAssetsAsync(m_OrganizationId, m_Projects, m_AssetSearchFilter, m_DefaultPagination, CancellationToken.None);
+                }
 
-                return PlatformServices.AssetProvider.SearchAsync(m_AssetSearchFilter, m_DefaultPagination, CancellationToken.None);
+                if (m_CurrentProject != null)
+                {
+                    return m_CurrentProject.SearchAssetsAsync(m_AssetSearchFilter, m_DefaultPagination, CancellationToken.None);
+                }
             }
             catch (Exception e)
             {
                 Debug.LogException(e);
                 throw;
             }
+
+            return Empty();
+
+            static async IAsyncEnumerable<IAsset> Empty()
+            {
+                await Task.CompletedTask;
+                yield break;
+            }
+        }
+
+        static string[] FilterTypes(string[] typeValues)
+        {
+            var validTypes = new List<string>();
+            foreach (var value in typeValues)
+            {
+                if ("Other".Equals(value) || value.GetAssetTypeFromString() != AssetType.Other)
+                {
+                    validTypes.Add(value);
+                }
+            }
+            return validTypes.ToArray();
         }
 
         void UpdateSearchCriterionString(SearchCriterion criterion, ICollection<string> allValues, params string[] queries)
@@ -227,11 +271,15 @@ namespace Unity.Cloud.Assets.Samples
             for (var i = 0; i < queries.Length; ++i)
             {
                 var query = queries[i];
+                if(criterion == SearchCriterion.Type && !"Other".Equals(query) && query.GetAssetTypeFromString() == AssetType.Other)
+                    continue;
 
                 if (filterValues.Contains(query) || allValues == null || !allValues.Contains(query))
                 {
                     stringBuilder.Append(query);
-                    stringBuilder.Append(' ');
+
+                    if(queries.Length > 1)
+                        stringBuilder.Append(' ');
                 }
             }
 
@@ -263,7 +311,7 @@ namespace Unity.Cloud.Assets.Samples
 
         ISearchCriteria GetFilterAndValues(SearchCriterion criterion, out HashSet<string> filterValues)
         {
-            var filter = m_AssetSearchFilter.AllCriteria.FirstOrDefault(x => x.SearchKey == criterion.ToString());
+            var filter = m_AssetSearchFilter.AllCriteria.FirstOrDefault(x => x.PropertyName == criterion.ToString());
             if (filter == null)
             {
                 filterValues = null;
@@ -274,7 +322,10 @@ namespace Unity.Cloud.Assets.Samples
             filterValues = new HashSet<string>();
             if (m_SearchValuesByCategory.TryGetValue(criterion, out var values))
             {
-                filterValues.UnionWith(values);
+                foreach (var aggregationResult in values)
+                {
+                    filterValues.Add(aggregationResult.Key);
+                }
             }
 
             return filter;
@@ -286,27 +337,37 @@ namespace Unity.Cloud.Assets.Samples
             UpdateSearchCriterionString(SearchCriterion.Type, null, query);
             UpdateSearchCriterionList(SearchCriterion.Tags, null, query);
 
-            var parameters = new AggregationParameters(nameof(IAsset.Type));
+            var parameters = new AggregationParameters(AssetTypeSearchCriteria.SearchKey);
 
             try
             {
-                Aggregation aggregation;
+                Aggregation aggregation = default;
                 if (AcrossProjectMode)
                 {
-                    aggregation = await PlatformServices.AssetProvider.AggregateAsync(m_Organization, m_Projects, m_AssetSearchFilter, parameters, CancellationToken.None);
+                    aggregation = await m_AssetRepository.CountAssetsAsync(m_OrganizationId, m_Projects, m_AssetSearchFilter, parameters, CancellationToken.None);
                 }
-                else
+                else if (m_CurrentProject != null)
                 {
-                    aggregation = await PlatformServices.AssetProvider.AggregateAsync(m_AssetSearchFilter, parameters, CancellationToken.None);
+                    aggregation = await m_CurrentProject.CountAssetsAsync(m_AssetSearchFilter, parameters, CancellationToken.None);
                 }
 
-                return aggregation.Total;
+                return aggregation?.Total ?? 0;
             }
             catch (Exception e)
             {
                 Debug.LogException(e);
                 throw;
             }
+        }
+
+        void ShowSearchValuesContainer()
+        {
+            m_SearchValuesContainer.style.display = DisplayStyle.Flex;
+        }
+
+        void HideSearchValuesContainer()
+        {
+            m_SearchValuesContainer.style.display = DisplayStyle.None;
         }
 
         void OnSearchFieldIn()
@@ -321,9 +382,6 @@ namespace Unity.Cloud.Assets.Samples
             m_SearchBarContainer.style.borderRightColor = new Color(0.16f, 0.63f, 1f, 1f);
 
             OnSearchFieldChange("");
-
-            if (SearchValuesContainer != null)
-                m_SearchValuesContainer.style.display = DisplayStyle.Flex;
         }
 
         void OnSearchFieldOut()
@@ -336,9 +394,6 @@ namespace Unity.Cloud.Assets.Samples
             m_SearchBarContainer.style.borderBottomColor = new Color(0f, 0f, 0f, 0f);
             m_SearchBarContainer.style.borderLeftColor = new Color(0f, 0f, 0f, 0f);
             m_SearchBarContainer.style.borderRightColor = new Color(0f, 0f, 0f, 0f);
-
-            if (SearchValuesContainer != null)
-                m_SearchValuesContainer.style.display = DisplayStyle.None;
         }
 
         void OnSearchFieldChange(string searchString)
@@ -347,18 +402,19 @@ namespace Unity.Cloud.Assets.Samples
 
             foreach (var kvp in m_SearchValuesByCategory)
             {
-                var searchValues = new List<string>();
-
+                var searchValues = new List<KeyValuePair<string,int>>();
+                int count = 0;
                 foreach (var value in kvp.Value)
                 {
-                    if (!value.Contains(searchString, StringComparison.InvariantCultureIgnoreCase)) continue;
+                    if (!value.Key.Contains(searchString, StringComparison.InvariantCultureIgnoreCase)) continue;
 
-                    searchValues.Add($"{value}");
+                    searchValues.Add(value);
+                    count += value.Value;
                 }
 
                 if (searchValues.Count > 0)
                 {
-                    m_SearchValues.Add($"<< {kvp.Key.ToString()} >>");
+                    m_SearchValues.Add(new KeyValuePair<string,int>($"<< {kvp.Key.ToString()} >>", count));
                     m_SearchValues.AddRange(searchValues);
                 }
             }
@@ -377,7 +433,7 @@ namespace Unity.Cloud.Assets.Samples
             {
                 var label = element.Q<Label>();
                 label.focusable = true;
-                label.text = m_SearchValues[i];
+                label.text = $"{m_SearchValues[i].Key} ({m_SearchValues[i].Value.ToString()})";
 
                 label.style.unityFontStyleAndWeight =
                     label.text.StartsWith("<<")
@@ -390,21 +446,25 @@ namespace Unity.Cloud.Assets.Samples
 #else
             m_SearchValuesContainer.onSelectionChange += OnSelectionChanged;
 #endif
+            m_SearchValuesContainer.RegisterCallback<FocusOutEvent>(_ =>
+            {
+                HideSearchValuesContainer();
+            });
         }
 
         void OnSelectionChanged(IEnumerable<object> enumerable)
         {
-            var selection = enumerable?.OfType<string>().ToList();
+            var selection = enumerable?.OfType<KeyValuePair<string,int>>().ToList();
             if (selection == null || selection.Count == 0) return;
 
             var value = selection[0];
 
             m_SearchValuesContainer.ClearSelection();
 
-            if (!string.IsNullOrWhiteSpace(value) && !value.StartsWith("<<"))
+            if (!string.IsNullOrWhiteSpace(value.Key) && !value.Key.StartsWith("<<"))
             {
                 m_SearchBarField.Blur();
-                m_SearchBarField.value = value;
+                m_SearchBarField.value = value.Key;
                 AddChipAsync();
             }
         }

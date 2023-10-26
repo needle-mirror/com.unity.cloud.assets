@@ -4,145 +4,253 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net.Http;
 using System.Threading;
 using UnityEngine;
 using System.Threading.Tasks;
+using Unity.Cloud.Common;
 using UnityEngine.UIElements;
 
 namespace Unity.Cloud.Assets.Samples.AssetDiscovery
 {
-    class AssetInformationPanelController
+    public interface IAssetInformationPanelController
     {
-        static readonly HashSet<string> m_PropertiesToHide = new()
-        {
-            nameof(IAsset.Project),
-            nameof(IAsset.Name),
-            nameof(IAsset.Taxonomy),
-            nameof(IAsset.Files),
-            nameof(IAsset.Attachments),
-            nameof(IAsset.CreatedBy),
-            nameof(IAsset.UpdatedBy),
-            nameof(IAsset.SourceProjectId),
-            nameof(IAsset.ProjectIds),
-        };
-        const string k_NoneLabel = "None";
-        const string k_NoCategoriesLabel = "Not Available";
-        const string k_NoCollectionsLabel = "No Collections Found";
+        void Init(VisualElement root, VisualTreeAsset informationItemTemplate, VisualTreeAsset tagsTemplate, VisualTreeAsset dataSetItemTemplate, MonoBehaviour coroutineHandler);
+        void PopulateAssetPanel(IAsset asset);
+        Task PopulateDatasetsPanel(IAsyncEnumerable<IDataset> datasets);
+        void DisplayInformationPanel();
+        void HideInformationPanel();
+    }
 
-        IAssetManager m_AssetManager;
+    class AssetInformationPanelController : IAssetInformationPanelController
+    {
+        static readonly Type k_AssetType = typeof(IAsset);
+        static readonly HashSet<string> k_AssetPropertiesToHide = new()
+        {
+            nameof(IAsset.SourceProject),
+            nameof(IAsset.LinkedProjects),
+            nameof(IAsset.Name),
+            nameof(IAsset.AuthoringInfo),
+            nameof(IAsset.Metadata),
+            nameof(IAsset.PortalMetadata),
+            nameof(IAsset.SystemMetadata),
+        };
+
+        static readonly Type k_DatasetType = typeof(IDataset);
+        static readonly HashSet<string> k_DatasetPropertiesToHide = new()
+        {
+            nameof(IDataset.Name),
+            nameof(IDataset.Metadata),
+            nameof(IDataset.PortalMetadata),
+            nameof(IDataset.SystemMetadata),
+            nameof(IDataset.AuthoringInfo),
+            nameof(IDataset.FileOrder)
+        };
+
+        const string k_NoneLabel = "None";
+        const string k_NoCollectionsLabel = "No Collections Found";
+        const string k_CurrentlySelectedTabClassName = "currentlySelectedTab";
+
         IAsset m_SelectedAsset;
 
         MonoBehaviour m_CoroutineHandler;
 
+        VisualElement m_RootPanel;
         ScrollView m_AssetInformationPanelScrollView;
+        VisualElement m_AssetInfoTab;
+        VisualElement m_DatasetInfoTab;
         VisualElement m_AssetInformationContainer;
         VisualElement m_AssetInformationDownloadSuccessful;
-        VisualTreeAsset m_AssetInformationItemTemplate;
-        VisualTreeAsset m_AssetInformationTagsTemplate;
+        VisualElement m_DatasetInformationContainer;
+        VisualTreeAsset m_InformationItemTemplate;
+        VisualTreeAsset m_InformationTagsTemplate;
+        VisualTreeAsset m_DatasetInformationItemTemplate;
+        ScrollView m_DatasetScrollView;
         Button m_AssetDownloadButton;
 
         readonly HashSet<IAsset> m_InProgressDownloads = new();
 
-        internal void Init(VisualElement root, VisualTreeAsset assetPanelItemTemplate, VisualTreeAsset tagsTemplate, MonoBehaviour coroutineHandler)
+        public void Init(VisualElement root, VisualTreeAsset informationItemTemplate, VisualTreeAsset tagsTemplate, VisualTreeAsset dataSetItemTemplate, MonoBehaviour coroutineHandler)
         {
-            m_AssetInformationItemTemplate = assetPanelItemTemplate;
-            m_AssetInformationTagsTemplate = tagsTemplate;
+            m_InformationItemTemplate = informationItemTemplate;
+            m_InformationTagsTemplate = tagsTemplate;
+            m_DatasetInformationItemTemplate = dataSetItemTemplate;
             m_CoroutineHandler = coroutineHandler;
 
-            m_AssetManager = PlatformServices.AssetManager;
+            root.style.minWidth = new StyleLength { value = new Length(40.0f, LengthUnit.Percent) };
+            m_RootPanel = root.Q<VisualElement>("RightPanel");
 
             m_AssetInformationPanelScrollView = root.Q<ScrollView>("AssetInformationScrollView");
-            m_AssetInformationContainer = root.Q<VisualElement>("AssetInformationContainer");
-            m_AssetDownloadButton = root.Q<Button>("AssetDownloadButton");
-            m_AssetInformationDownloadSuccessful = root.Q<VisualElement>("AssetDownloadSuccessful");
 
+            m_AssetInfoTab = root.Q<Label>("AssetInfo");
+            m_AssetInfoTab.RegisterCallback<ClickEvent>(OnAssetInfoTabClicked);
+            m_AssetInformationContainer = root.Q<VisualElement>("AssetInformationContainer");
+            m_AssetInformationDownloadSuccessful = root.Q<VisualElement>("AssetDownloadSuccessful");
+            m_AssetDownloadButton = root.Q<Button>("AssetDownloadButton");
             m_AssetDownloadButton.clickable.clicked += OnAssetDownloadButtonClicked;
+
+            m_DatasetInfoTab = root.Q<Label>("DatasetsInfo");
+            m_DatasetInfoTab.RegisterCallback<ClickEvent>(OnDatasetInfoTabClicked);
+            m_DatasetInformationContainer = root.Q<VisualElement>("DatasetInformationContainer");
+            m_DatasetScrollView = root.Q<ScrollView>("DatasetsScrollView");
         }
 
-        internal void PopulateAssetPanel(IAsset assetInfo)
+        void OnAssetInfoTabClicked(ClickEvent evt)
         {
+            m_AssetInfoTab.AddToClassList(k_CurrentlySelectedTabClassName);
+            m_DatasetInfoTab.RemoveFromClassList(k_CurrentlySelectedTabClassName);
+            m_DatasetInformationContainer.style.display = DisplayStyle.None;
+            m_AssetInformationContainer.style.display = DisplayStyle.Flex;
+        }
+
+        void OnDatasetInfoTabClicked(ClickEvent evt)
+        {
+            m_DatasetInfoTab.AddToClassList(k_CurrentlySelectedTabClassName);
+            m_AssetInfoTab.RemoveFromClassList(k_CurrentlySelectedTabClassName);
+            m_DatasetInformationContainer.style.display = DisplayStyle.Flex;
+            m_AssetInformationContainer.style.display = DisplayStyle.None;
+        }
+
+        public void PopulateAssetPanel(IAsset asset)
+        {
+            m_AssetInformationContainer.Q<Label>("AssetInformationLabel").text = asset.Name;
+
             m_AssetInformationPanelScrollView.Clear();
 
-            m_SelectedAsset = assetInfo;
+            m_SelectedAsset = asset;
 
             var propertyNames = m_SelectedAsset.GetType().GetProperties().Select(property => property.Name)
-                .Where(name => !m_PropertiesToHide.Contains(name));
+                .Where(name => !k_AssetPropertiesToHide.Contains(name));
 
             foreach (var propertyName in propertyNames)
             {
-                var propertyValue = m_SelectedAsset.GetType().GetProperty(propertyName)?.GetValue(m_SelectedAsset);
+                var propertyValue = k_AssetType.GetProperty(propertyName)?.GetValue(m_SelectedAsset);
 
                 if (string.IsNullOrEmpty(propertyValue?.ToString())) continue;
 
-                var item = m_AssetInformationItemTemplate.Instantiate();
-                item.Q<Label>("AssetInformationPropertyLabel").text = propertyName;
+                var propertyInformation = CreatePropertyInformation
+                (
+                    propertyName,
+                    propertyValue
+                );
 
-                switch (propertyValue)
+                foreach (var property in propertyInformation)
                 {
-                    case DateTime propertyValueTime:
-                        item.Q<Label>("AssetInformationValueLabel").text = propertyValueTime.ToString("MM/dd/yyyy");
-                        break;
-                    case int propertyValueInt:
-                        item.Q<Label>("AssetInformationValueLabel").text = propertyValueInt.ToString();
-                        break;
-                    case AssetLocation propertyAssetLocation when string.IsNullOrEmpty(propertyAssetLocation.Name):
-                        continue;
-                    case AssetLocation propertyAssetLocation:
-                        item.Q<Label>("AssetInformationValueLabel").text = propertyAssetLocation.Name;
-                        break;
-                    case AssetAuthor propertyValueAuthor when string.IsNullOrEmpty(propertyValueAuthor.Name):
-                        continue;
-                    case AssetAuthor propertyValueAuthor:
-                        item.Q<Label>("AssetInformationValueLabel").text = propertyValueAuthor.Name;
-                        break;
-                    case ICollection<string> propertyValueTags when propertyName == nameof(IAsset.Tags):
+                    m_AssetInformationPanelScrollView.Add(property);
+                }
+            }
+
+            m_AssetDownloadButton.tooltip = "";
+
+            UpdateDownloadButton(m_AssetDownloadButton, !m_InProgressDownloads.Contains(m_SelectedAsset));
+        }
+
+        public async Task PopulateDatasetsPanel(IAsyncEnumerable<IDataset> datasets)
+        {
+            m_DatasetScrollView.Clear();
+
+            var dataSetsList = new List<IDataset>();
+            await foreach (var dataset in datasets)
+                dataSetsList.Add(dataset);
+
+            if (dataSetsList.Count == 0)
+                return;
+
+            var dataSetPropertyNames = typeof(IDataset).GetProperties().Select(property => property.Name)
+                .Where(name => !k_DatasetPropertiesToHide.Contains(name));
+
+            foreach (var dataset in dataSetsList)
+            {
+                var item = m_DatasetInformationItemTemplate.Instantiate();
+                item.Q<Foldout>("DataSetFoldout").text = dataset.Name;
+
+                var dataSetInformationScrollView = item.Q<ScrollView>("DataSetInformationScrollView");
+                foreach (var propertyName in dataSetPropertyNames)
+                {
+                    var propertyValue = k_DatasetType.GetProperty(propertyName)?.GetValue(dataset);
+
+                    if (string.IsNullOrEmpty(propertyValue?.ToString())) continue;
+
+                    var propertyInformation = CreatePropertyInformation
+                    (
+                        propertyName,
+                        propertyValue
+                    );
+
+                    foreach (var property in propertyInformation)
                     {
-                        PopulateTags(item, propertyValueTags);
-                        break;
+                        dataSetInformationScrollView.Add(property);
                     }
-                    case ICollection<CollectionPath> when propertyName == nameof(IAsset.Collections):
-                    {
-                        _ = ListCollections(m_SelectedAsset, item);
-                        break;
-                    }
-                    case ICollection<string> propertyValueCategories when propertyName == nameof(IAsset.Categories):
-                    {
-                        PopulateCategories(item, propertyValueCategories);
-                        break;
-                    }
-                    default:
-                        item.Q<Label>("AssetInformationValueLabel").text = propertyValue.ToString();
-                        break;
                 }
 
-                m_AssetInformationPanelScrollView.Add(item);
-            }
+                var datasetDownloadButton = item.Q<Button>("DatasetDownloadButton");
+                datasetDownloadButton.clickable.clicked += () =>
+                {
+                    OnDatasetDownloadButtonClicked(dataset, datasetDownloadButton);
+                };
 
-            // In the case the Project is unknown, the download button will be disabled.
-            if (assetInfo.Project == null)
-            {
-                m_AssetDownloadButton.SetEnabled(false);
-                m_AssetDownloadButton.tooltip = "Without knowing the asset's project, the asset cannot be downloaded.";
-            }
-            else
-            {
-                m_AssetDownloadButton.tooltip = "";
-                UpdateDownloadButton(!m_InProgressDownloads.Contains(m_SelectedAsset));
+                // Disable dataset download button for now
+                datasetDownloadButton.SetEnabled(false);
+
+                m_DatasetScrollView.Add(item);
             }
         }
 
-        void PopulateTags(VisualElement item, ICollection<string> propertyValueTags)
+        IEnumerable<TemplateContainer> CreatePropertyInformation(string propertyName, object propertyValue)
         {
-            var label = item.Q<Label>("AssetInformationValueLabel");
-            if (propertyValueTags.Count != 0)
+            var items = new List<TemplateContainer>();
+
+            switch (propertyValue)
+            {
+                case AssetDescriptor assetDescriptor:
+                    AddItem(items,"Id", assetDescriptor.AssetId.ToString());
+                    break;
+                case DatasetDescriptor datasetDescriptor:
+                    AddItem(items,"Id", datasetDescriptor.DatasetId.ToString());
+                    break;
+                case AuthoringInfo authoringInfo:
+                    AddItem(items,"Created On", authoringInfo.Created.ToString("MM/dd/yyyy"));
+                    AddItem(items,"Updated On", authoringInfo.Updated.ToString("MM/dd/yyyy"));
+                    break;
+                case int propertyValueInt:
+                    AddItem(items, propertyName, propertyValueInt.ToString());
+                    break;
+                case IEnumerable<CollectionPath>:
+                    var collectionEntry = AddItem(items, propertyName, string.Empty);
+                    _ = ListAssetCollections(collectionEntry);
+                    break;
+                case IEnumerable<string> enumerable:
+                    var tagsEntry = AddItem(items, propertyName, string.Empty);
+                    PopulateTags(tagsEntry, enumerable);
+                    break;
+                default:
+                    AddItem(items, propertyName, propertyValue.ToString());
+                    break;
+            }
+
+            return items;
+        }
+
+        TemplateContainer AddItem(ICollection<TemplateContainer> items, string key, string value)
+        {
+            var item = m_InformationItemTemplate.Instantiate();
+            items.Add(item);
+            item.Q<Label>("InformationPropertyLabel").text = key;
+            item.Q<Label>("InformationValueLabel").text = value;
+            return item;
+        }
+
+        void PopulateTags(VisualElement item, IEnumerable<string> propertyValueTags)
+        {
+            var label = item.Q<Label>("InformationValueLabel");
+            var valueTags = propertyValueTags.ToList();
+            if (valueTags.Count != 0)
             {
                 label.style.display = DisplayStyle.None;
-                foreach (var tag in propertyValueTags)
+                foreach (var tag in valueTags)
                 {
-                    var tagItem = m_AssetInformationTagsTemplate.Instantiate();
+                    var tagItem = m_InformationTagsTemplate.Instantiate();
                     tagItem.Q<Button>("TagContainer").text = tag;
-                    item.Q<VisualElement>("AssetInformationValue").Add(tagItem);
+                    item.Q<VisualElement>("InformationValue").Add(tagItem);
                 }
             }
             else
@@ -151,53 +259,23 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
             }
         }
 
-        static void PopulateCategories(VisualElement item, ICollection<string> propertyValueCategories)
+        public void DisplayInformationPanel()
         {
-            var label = item.Q<Label>("AssetInformationValueLabel");
-            if (propertyValueCategories.Count != 0)
-            {
-                label.style.display = DisplayStyle.None;
-                var foldout = new Foldout
-                {
-                    value = false,
-                    text = propertyValueCategories.First()
-                };
+            if (m_RootPanel == null)
+                return;
 
-                foreach (var category in propertyValueCategories)
-                {
-                    var categoryItem = new Label
-                    {
-                        text = category
-                    };
-                    foldout.Add(categoryItem);
-                }
-
-                item.Q<VisualElement>("AssetInformationValue").Add(foldout);
-            }
-            else
-            {
-                label.text = k_NoCategoriesLabel;
-            }
+            m_RootPanel.style.display = DisplayStyle.Flex;
+            OnAssetInfoTabClicked(null);
         }
 
-        internal void DisplayAssetInformationPanel()
+        public void HideInformationPanel()
         {
-            if (m_AssetInformationContainer != null) m_AssetInformationContainer.style.display = DisplayStyle.Flex;
-        }
-
-        internal void HideAssetInformationPanel()
-        {
-            if (m_AssetInformationContainer != null) m_AssetInformationContainer.style.display = DisplayStyle.None;
-        }
-
-        internal void SetAssetPanelName(IAsset selectedAssetName)
-        {
-            m_AssetInformationContainer.Q<Label>("AssetInformationLabel").text = selectedAssetName.Name;
+            if(m_RootPanel != null) m_RootPanel.style.display = DisplayStyle.None;
         }
 
         async void OnAssetDownloadButtonClicked()
         {
-            UpdateDownloadButton(false);
+            UpdateDownloadButton(m_AssetDownloadButton, false);
 
             var path = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
             var assetToDownload = m_SelectedAsset;
@@ -205,14 +283,14 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
 
             try
             {
-                await m_AssetManager.GetAssetDownloadUrlsAsync(assetToDownload, CancellationToken.None);
+                await assetToDownload.GetAssetDownloadUrlsAsync(CancellationToken.None);
 
-                foreach (var file in assetToDownload.Files)
+                await foreach (var file in assetToDownload.ListFilesAsync(Range.All, CancellationToken.None))
                 {
-                    await using var destination = File.OpenWrite(Path.Combine(path, file.Name));
+                    await using var destination = File.OpenWrite(Path.Combine(path, file.Descriptor.Path));
 
                     // Evaluate the need of having a UI progress bar corresponding to the download progress.
-                    await PlatformServices.AssetFileManager.DownloadAssetFileAsync(assetToDownload.Project, file, destination, null, CancellationToken.None);
+                    await file.DownloadAsync(destination, null, CancellationToken.None);
                 }
 
                 m_CoroutineHandler.StartCoroutine(ShowSuccessfulDownload());
@@ -226,15 +304,54 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
                 m_InProgressDownloads.Remove(assetToDownload);
                 if (m_SelectedAsset == assetToDownload)
                 {
-                    UpdateDownloadButton(true);
+                    UpdateDownloadButton(m_AssetDownloadButton, true);
                 }
             }
         }
 
-        void UpdateDownloadButton(bool enable)
+        async void OnDatasetDownloadButtonClicked(IDataset dataset, Button button)
         {
-            m_AssetDownloadButton.SetEnabled(enable);
-            m_AssetDownloadButton.text = enable ? "Download" : "Downloading...";
+            UpdateDownloadButton(button, false);
+
+            await Task.CompletedTask;
+
+            // TODO once the endpoint becomes available
+            // var path = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+            // var assetToDownload = m_SelectedAsset;
+            // m_InProgressDownloads.Add(assetToDownload);
+            //
+            // try
+            // {
+            //     await assetToDownload.GetAssetDownloadUrlsAsync(CancellationToken.None);
+            //
+            //     await foreach (var file in assetToDownload.ListFilesAsync(Range.All, CancellationToken.None))
+            //     {
+            //         await using var destination = File.OpenWrite(Path.Combine(path, file.Path));
+            //
+            //         // Evaluate the need of having a UI progress bar corresponding to the download progress.
+            //         await file.DownloadAsync(destination, null, CancellationToken.None);
+            //     }
+            //
+            //     m_CoroutineHandler.StartCoroutine(ShowSuccessfulDownload());
+            // }
+            // catch (Exception e)
+            // {
+            //     Debug.LogError(e);
+            // }
+            // finally
+            // {
+            //     m_InProgressDownloads.Remove(assetToDownload);
+            //     if (m_SelectedAsset == assetToDownload)
+            //     {
+            //         UpdateDownloadButton(m_DatasetDownloadButton, true);
+            //     }
+            // }
+        }
+
+        void UpdateDownloadButton(Button button, bool enable)
+        {
+            button.SetEnabled(enable);
+            button.text = enable ? "Download" : "Downloading...";
         }
 
         IEnumerator ShowSuccessfulDownload()
@@ -244,33 +361,29 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
             m_AssetInformationDownloadSuccessful.style.display = DisplayStyle.None;
         }
 
-        async Task ListCollections(IAsset asset, TemplateContainer item)
+        async Task ListAssetCollections(TemplateContainer item)
         {
-            var label = item.Q<Label>("AssetInformationValueLabel");
+            var label = item.Q<Label>("InformationValueLabel");
             label.style.display = DisplayStyle.None;
-            var container = item.Q<VisualElement>("AssetInformationValue");
-
-            // Showing asset in project All case
-            if (asset.Project == null)
-            {
-                label.text = k_NoCollectionsLabel;
-                label.style.display = DisplayStyle.Flex;
-                return;
-            }
+            var container = item.Q<VisualElement>("InformationValue");
 
             try
             {
-                await PlatformServices.AssetManager.GetAssetCollectionsAsync(asset, CancellationToken.None);
+                await m_SelectedAsset.RefreshAssetCollectionsAsync(CancellationToken.None);
+            }
+            catch (Exception e)
+            {
+                Debug.LogError(e);
             }
             finally
             {
-                var collections = asset.Collections.ToArray();
+                var collections = m_SelectedAsset.Collections.ToArray();
                 if (collections.Length != 0)
                 {
                     foreach (var collection in collections)
                     {
-                        var collectionItem = m_AssetInformationTagsTemplate.Instantiate();
-                        collectionItem.Q<Button>("TagContainer").text = collection;
+                        var collectionItem = m_InformationTagsTemplate.Instantiate();
+                        collectionItem.Q<Button>("TagContainer").text = collection.GetLastComponentOfPath();
                         container.Add(collectionItem);
                     }
                 }

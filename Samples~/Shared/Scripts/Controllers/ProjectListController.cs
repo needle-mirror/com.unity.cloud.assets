@@ -8,7 +8,7 @@ namespace Unity.Cloud.Assets.Samples
         protected override void OnBindItem(VisualElement element, int i)
         {
             string label;
-            if (m_List[i] is IProject project)
+            if (m_List[i] is IAssetProject project)
             {
                 label = project.Name;
             }

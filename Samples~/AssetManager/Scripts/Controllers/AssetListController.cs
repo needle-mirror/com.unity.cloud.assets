@@ -10,12 +10,8 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 {
     public class AssetListController
     {
-        VisualElement m_Root;
         VisualElement m_AssetList;
         VisualTreeAsset m_AssetListItemTemplate;
-        ScrollView m_AssetScrollView;
-        Button m_AssetExpandButton;
-        Button m_AddAssetButton;
 
         VisualElement m_CurrentMenuPopupOwnerItem;
 
@@ -24,20 +20,18 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
         internal void Init(VisualElement root, VisualTreeAsset itemTemplate)
         {
-            m_Root = root;
-            m_Root.RegisterCallback<ClickEvent>(HandleOutClickEvent);
+            root.RegisterCallback<ClickEvent>(HandleOutClickEvent);
 
             m_AssetListItemTemplate = itemTemplate;
 
             m_AssetList = root.Q<VisualElement>("AssetList");
             m_AssetList.RegisterCallback<ClickEvent>(HandleOutClickEvent);
 
-            m_AssetScrollView = root.Q<ScrollView>("AssetListScrollView");
-            m_AddAssetButton = root.Q<Button>("AddAssetButton");
+            var scrollView = root.Q<ScrollView>("AssetListScrollView");
+            scrollView.verticalScrollerVisibility = ScrollerVisibility.Hidden;
 
-            m_AssetScrollView.verticalScrollerVisibility = ScrollerVisibility.Hidden;
-
-            m_AddAssetButton.RegisterCallback<ClickEvent>(evt =>
+            var addButton = root.Q<Button>("AddAssetButton");
+            addButton.RegisterCallback<ClickEvent>(_ =>
             {
                 AssetCreated?.Invoke();
             });
@@ -50,14 +44,13 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
                 var item = m_AssetListItemTemplate.Instantiate();
 
                 item.Q<Label>("TitleLabel").text = asset.Name;
-                item.Q<Label>("IngestedDateLabel").text = asset.Updated.ToString("MMM dd, yyyy");
-                item.Q<Label>("IngestedTimeLabel").text = asset.Updated.ToString("h:mm tt GMT");
+                item.Q<Label>("IngestedDateLabel").text = asset.AuthoringInfo.Updated.ToString("MMM dd, yyyy");
+                item.Q<Label>("IngestedTimeLabel").text = asset.AuthoringInfo.Updated.ToString("h:mm tt GMT");
                 item.Q<Label>("DescriptionLabel").text = asset.Description;
                 item.Q<Label>("TagsLabel").text = asset.Tags.FirstOrDefault();
-                item.Q<Label>("TypeLabel").text = asset.Type;
-                item.Q<Label>("VersionLabel").text = asset.VersionName;
+                item.Q<Label>("TypeLabel").text = asset.Type.ToString();
+                item.Q<Label>("VersionLabel").text = asset.Descriptor.AssetVersion.ToString();
                 item.Q<Label>("StatusLabel").text = asset.Status;
-                item.Q<Label>("FilesLabel").text = asset.Files.Count().ToString();
 
                 m_AssetList.Add(item);
 
@@ -68,7 +61,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
                     evt.StopImmediatePropagation();
                 });
 
-                item.Q<Button>("OpenButton").RegisterCallback<ClickEvent>(evt =>
+                item.Q<Button>("OpenButton").RegisterCallback<ClickEvent>(_ =>
                 {
                     AssetSelected?.Invoke(asset);
 
@@ -79,15 +72,15 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             }
         }
 
-        void ManageAssetListItemStyling(VisualElement asset)
+        static void ManageAssetListItemStyling(VisualElement asset)
         {
-            asset.Q<VisualElement>("LeftTopPanel").RegisterCallback<MouseOverEvent>(evt =>
+            asset.Q<VisualElement>("LeftTopPanel").RegisterCallback<MouseOverEvent>(_ =>
             {
                 asset.Q<VisualElement>("LeftTopPanel").style.backgroundColor = new Color(1f, 1f, 1f, 0.12f);
                 asset.Q<VisualElement>("RightPanel").style.backgroundColor = new Color(0.25f, 0.25f, 0.25f, 1f);
             });
 
-            asset.Q<VisualElement>("LeftTopPanel").RegisterCallback<MouseOutEvent>(evt =>
+            asset.Q<VisualElement>("LeftTopPanel").RegisterCallback<MouseOutEvent>(_ =>
             {
                 asset.Q<VisualElement>("LeftTopPanel").style.backgroundColor = new Color(0.07f, 0.07f, 0.07f, 1f);
                 asset.Q<VisualElement>("RightPanel").style.backgroundColor = new Color(0.14f, 0.14f, 0.14f, 1f);

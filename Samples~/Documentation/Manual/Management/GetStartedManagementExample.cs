@@ -6,24 +6,26 @@ namespace Unity.Cloud.Assets.Documentation.Management
     using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
+    using System.Linq;
     using UnityEngine;
+    using Unity.Cloud.Identity;
 
     public class AssetManagementBehaviour
     {
-        static readonly Pagination m_DefaultPagination = new(nameof(IAsset.Name), Range.All);
+        static readonly Pagination k_DefaultPagination = new(nameof(IAsset.Name), Range.All);
         const int k_DefaultCancellationTimeout = 5000;
 
         IOrganization[] m_AvailableOrganizations;
         IOrganization m_CurrentOrganization;
 
-        CancellationTokenSource m_ProjectCancellationTokenSrc = new ();
-        CancellationTokenSource m_AssetCancellationTokenSrc = new ();
+        CancellationTokenSource m_ProjectCancellationTokenSrc = new();
+        CancellationTokenSource m_AssetCancellationTokenSrc = new();
 
         public IOrganization[] AvailableOrganizations => m_AvailableOrganizations;
         public IOrganization CurrentOrganization => m_CurrentOrganization;
         public bool IsOrganizationSelected => m_CurrentOrganization != null;
-        public List<IProject> AvailableProjects { get; } = new();
-        public IProject CurrentProject { get; private set; }
+        public List<IAssetProject> AvailableProjects { get; } = new();
+        public IAssetProject CurrentProject { get; private set; }
         public bool IsProjectSelected => CurrentProject != null;
         public List<IAsset> AvailableAssets { get; } = new();
         public IAsset CurrentAsset { get; set; }
@@ -49,7 +51,7 @@ namespace Unity.Cloud.Assets.Documentation.Management
             }
         }
 
-        public void SetSelectedProject(IProject project)
+        public void SetSelectedProject(IAssetProject project)
         {
             CurrentProject = project;
             if (CurrentProject != null)
@@ -64,8 +66,8 @@ namespace Unity.Cloud.Assets.Documentation.Management
 
             try
             {
-                var cancellationTokenSrc = new CancellationTokenSource();
-                m_AvailableOrganizations = await PlatformServices.OrganizationProvider.GetOrganizationsAsync(cancellationTokenSrc.Token);
+                var organizations = await PlatformServices.OrganizationRepository.ListOrganizationsAsync();
+                m_AvailableOrganizations = organizations.ToArray();
             }
             catch (OperationCanceledException oe)
             {
@@ -83,21 +85,17 @@ namespace Unity.Cloud.Assets.Documentation.Management
 
         public async Task CreateAssetAsync()
         {
-            var assetCreation = new AssetCreation
+            var assetCreation = new AssetCreation("GrayTexture_0")
             {
-                Project = CurrentProject,
-                Name = "GrayTexture_0",
-                Description = $"Documentation example asset creation.",
-                Type = nameof(Texture2D),
-                Version = 1,
-                VersionName = "1.0.0"
+                Description = "Documentation example asset creation.",
+                Type = AssetType.Asset_2D
             };
 
             var cancellationTokenSrc = new CancellationTokenSource(k_DefaultCancellationTimeout);
 
             try
             {
-                var asset = await PlatformServices.AssetManager.CreateAssetAsync(assetCreation, cancellationTokenSrc.Token);
+                var asset = await CurrentProject.CreateAssetAsync(assetCreation, cancellationTokenSrc.Token);
                 if (asset != null)
                 {
                     GetAssets();
@@ -105,42 +103,17 @@ namespace Unity.Cloud.Assets.Documentation.Management
             }
             catch (Exception e)
             {
-                Debug.LogError($"Failed to create asset. {e.Message}");
+                Debug.LogError($"Failed to create asset. {e}");
                 throw;
             }
         }
 
-        public async Task UpdateAssetAsync(IAsset asset)
+        public async Task UpdateAssetAsync(IAsset asset, IAssetUpdate assetUpdate)
         {
             try
             {
                 var cancellationTokenSrc = new CancellationTokenSource(k_DefaultCancellationTimeout);
-
-                await PlatformServices.AssetManager.UpdateAssetAsync(asset, cancellationTokenSrc.Token);
-            }
-            catch (OperationCanceledException oe)
-            {
-                Debug.LogError(oe);
-            }
-            catch (AggregateException e)
-            {
-                Debug.LogError(e.InnerException);
-            }
-            catch (Exception e)
-            {
-                Debug.LogError(e);
-            }
-        }
-
-        public async Task DeleteAssetAsync(IAsset asset)
-        {
-            try
-            {
-                var cancellationTokenSrc = new CancellationTokenSource(k_DefaultCancellationTimeout);
-                await PlatformServices.AssetManager.DeleteAssetAsync(asset, cancellationTokenSrc.Token);
-
-                // Refresh available assets
-                GetAssets();
+                await asset.UpdateAsync(assetUpdate, cancellationTokenSrc.Token);
             }
             catch (OperationCanceledException oe)
             {
@@ -164,7 +137,7 @@ namespace Unity.Cloud.Assets.Documentation.Management
 
             try
             {
-                var projects = PlatformServices.ProjectProvider.ListProjectsAsync(m_CurrentOrganization, m_DefaultPagination, m_ProjectCancellationTokenSrc.Token);
+                var projects = PlatformServices.AssetRepository.ListAssetProjectsAsync(m_CurrentOrganization.Id, k_DefaultPagination, m_ProjectCancellationTokenSrc.Token);
                 _ = PopulateProjectsAsync(projects);
             }
             catch (OperationCanceledException oe)
@@ -181,12 +154,12 @@ namespace Unity.Cloud.Assets.Documentation.Management
             }
         }
 
-        async Task PopulateProjectsAsync(IAsyncEnumerable<IProject> projects)
+        async Task PopulateProjectsAsync(IAsyncEnumerable<IAssetProject> projects)
         {
             AvailableProjects.Clear();
             CurrentProject = null;
 
-            await foreach(var project in projects.WithCancellation(m_ProjectCancellationTokenSrc.Token))
+            await foreach (var project in projects.WithCancellation(m_ProjectCancellationTokenSrc.Token))
             {
                 AvailableProjects.Add(project);
             }
@@ -200,8 +173,9 @@ namespace Unity.Cloud.Assets.Documentation.Management
 
             try
             {
-                var assets = PlatformServices.AssetManager.SearchAsync(new AssetSearchFilter(CurrentProject), m_DefaultPagination, m_AssetCancellationTokenSrc.Token);
-                _ = PopulateAssetsAsync(assets);
+                var token = m_AssetCancellationTokenSrc.Token;
+                var assets = CurrentProject.SearchAssetsAsync(new AssetSearchFilter(), k_DefaultPagination, token);
+                _ = PopulateAssetsAsync(assets, token);
             }
             catch (OperationCanceledException oe)
             {
@@ -217,12 +191,12 @@ namespace Unity.Cloud.Assets.Documentation.Management
             }
         }
 
-        async Task PopulateAssetsAsync(IAsyncEnumerable<IAsset> assets)
+        async Task PopulateAssetsAsync(IAsyncEnumerable<IAsset> assets, CancellationToken token)
         {
             AvailableAssets.Clear();
             CurrentAsset = null;
 
-            await foreach(var asset in assets.WithCancellation(m_AssetCancellationTokenSrc.Token))
+            await foreach (var asset in assets.WithCancellation(token))
             {
                 AvailableAssets.Add(asset);
             }

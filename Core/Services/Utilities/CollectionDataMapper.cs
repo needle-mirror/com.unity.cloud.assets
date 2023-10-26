@@ -6,17 +6,17 @@ namespace Unity.Cloud.Assets
     static class CollectionDataMapper
     {
         /// <summary>
-        /// Maps an <see cref="IAsset"/> to an <see cref="AssetInCollectionElementDto"/>.
+        /// Maps an <see cref="IAssetData"/> to an <see cref="AssetInCollectionData"/>.
         /// </summary>
-        /// <param name="model">The <see cref="IAsset"/>.</param>
-        /// <returns>An <see cref="AssetInCollectionElementDto"/>. </returns>
-        internal static AssetInCollectionElementDto AssetToCollectionElementMapFrom(this IAsset model)
+        /// <param name="model">The <see cref="IAssetData"/>.</param>
+        /// <returns>An <see cref="AssetInCollectionData"/>. </returns>
+        internal static AssetInCollectionData AssetToCollectionElementMapFrom(this IAssetData model)
         {
-            return new AssetInCollectionElementDto
+            return new AssetInCollectionData
             {
                 StorageId = model.StorageId,
-                AssetId = model.Id,
-                Version = model.Version,
+                AssetId = model.Id.ToString(),
+                Version = model.Version.ToString(),
             };
         }
     }

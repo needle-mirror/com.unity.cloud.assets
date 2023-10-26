@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Unity.Cloud.Common;
 
 namespace Unity.Cloud.Assets
 {
@@ -13,15 +14,20 @@ namespace Unity.Cloud.Assets
     {
         readonly ISearchCriteria[] m_AllCriteria;
 
-        public abstract string SearchKey { get; }
+        readonly string m_PropertyName;
+        readonly string m_SearchKey;
+
+        string ISearchCriteria.PropertyName => m_PropertyName;
         public virtual Type SearchFieldType => typeof(T);
 
         private protected virtual Type InstantiatedType => typeof(T);
 
         private protected virtual bool IncludeInSearch => true;
 
-        private protected ComplexSearchCriteria()
+        private protected ComplexSearchCriteria(string propertyName, string searchKey)
         {
+            m_PropertyName = propertyName;
+            m_SearchKey = searchKey;
             m_AllCriteria = GetType()
                 .GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
                 .Where(x => typeof(ISearchCriteria).IsAssignableFrom(x.PropertyType))
@@ -40,7 +46,7 @@ namespace Unity.Cloud.Assets
                 if (criterion.TryGetIncluded(out var value))
                 {
                     isValid = true;
-                    SearchFieldType.GetProperty(criterion.SearchKey)?.SetValue(includedValue, value);
+                    SearchFieldType.GetProperty(criterion.PropertyName)?.SetValue(includedValue, value);
                 }
             }
 
@@ -58,7 +64,7 @@ namespace Unity.Cloud.Assets
                 if (criterion.TryGetExcluded(out var value))
                 {
                     isValid = true;
-                    SearchFieldType.GetProperty(criterion.SearchKey)?.SetValue(excludedValue, value);
+                    SearchFieldType.GetProperty(criterion.PropertyName)?.SetValue(excludedValue, value);
                 }
             }
 
@@ -76,7 +82,7 @@ namespace Unity.Cloud.Assets
                 if (criterion.TryGetAny(out var value))
                 {
                     isValid = true;
-                    SearchFieldType.GetProperty(criterion.SearchKey)?.SetValue(anyValue, value);
+                    SearchFieldType.GetProperty(criterion.PropertyName)?.SetValue(anyValue, value);
                 }
             }
 
@@ -91,7 +97,7 @@ namespace Unity.Cloud.Assets
         {
             if (!IncludeInSearch) return;
 
-            var searchKey = BuildSearchKeyPrefix();
+            var searchKey = m_SearchKey.BuildSearchKey(prefix);
             foreach (var criterion in m_AllCriteria)
             {
                 criterion.Include(includedValues, searchKey);
@@ -106,7 +112,7 @@ namespace Unity.Cloud.Assets
         {
             if (!IncludeInSearch) return;
 
-            var searchKey = BuildSearchKeyPrefix();
+            var searchKey = m_SearchKey.BuildSearchKey(prefix);
             foreach (var criterion in m_AllCriteria)
             {
                 criterion.Exclude(excludedValues, searchKey);
@@ -121,16 +127,11 @@ namespace Unity.Cloud.Assets
         {
             if (!IncludeInSearch) return;
 
-            var searchKey = BuildSearchKeyPrefix();
+            var searchKey = m_SearchKey.BuildSearchKey(prefix);
             foreach (var criterion in m_AllCriteria)
             {
                 criterion.ForAny(forAnyValues, searchKey);
             }
-        }
-
-        protected virtual string BuildSearchKeyPrefix()
-        {
-            return string.IsNullOrEmpty(SearchKey) ? "" : SearchKey + ".";
         }
 
         /// <inheritdoc/>
@@ -155,7 +156,7 @@ namespace Unity.Cloud.Assets
         {
             foreach (var criterion in m_AllCriteria)
             {
-                var value = input.GetPropertyValue(criterion.SearchKey);
+                var value = input.GetPropertyValue(criterion.PropertyName);
                 if (!criterion.IsMatch(value)) return false;
             }
 
@@ -172,7 +173,7 @@ namespace Unity.Cloud.Assets
         {
             foreach (var criterion in m_AllCriteria)
             {
-                var value = input.GetPropertyValue(criterion.SearchKey);
+                var value = input.GetPropertyValue(criterion.PropertyName);
                 if (criterion.IsAny(value)) return true;
             }
 
@@ -193,55 +194,46 @@ namespace Unity.Cloud.Assets
 
         private protected virtual void Include(object value)
         {
-            if (value is T tValue)
-            {
-                Include(tValue);
-            }
+            Include((T) value);
         }
 
         private protected virtual void Exclude(object value)
         {
-            if (value is T tValue)
-            {
-                Exclude(tValue);
-            }
+            Exclude((T) value);
         }
 
         private protected virtual void ForAny(object value)
         {
-            if (value is T tValue)
-            {
-                ForAny(tValue);
-            }
+            ForAny((T) value);
         }
 
-        public virtual void Include(T value)
+        public void Include(T value)
         {
             if (value == null) return;
 
             foreach (var criterion in m_AllCriteria)
             {
-                criterion.Include(value.GetPropertyValue(criterion.SearchKey));
+                criterion.Include(value.GetPropertyValue(criterion.PropertyName));
             }
         }
 
-        public virtual void Exclude(T value)
+        public void Exclude(T value)
         {
             if (value == null) return;
 
             foreach (var criterion in m_AllCriteria)
             {
-                criterion.Exclude(value.GetPropertyValue(criterion.SearchKey));
+                criterion.Exclude(value.GetPropertyValue(criterion.PropertyName));
             }
         }
 
-        public virtual void ForAny(T value)
+        public void ForAny(T value)
         {
             if (value == null) return;
 
             foreach (var criterion in m_AllCriteria)
             {
-                criterion.ForAny(value.GetPropertyValue(criterion.SearchKey));
+                criterion.ForAny(value.GetPropertyValue(criterion.PropertyName));
             }
         }
 
