@@ -8,19 +8,19 @@ You can use the Unity Cloud Assets package to:
 The SDK supports different workflows for users with different roles.
 
 | Asset Manager Project role                                                                             | List an asset's collections | Add/remove assets in collections |
-|:-------------------------------------------------------------------------------------------------------|:-------------------------------|:---------------------------------|
-| [`Asset Management Viewer`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html)      | yes                            | no                               |
-| [`Asset Management Consumer`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html)    | yes                            | no                               |
-| [`Asset Management Contributor`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html) | yes                            | yes                              |
-| [`Asset Management Owner`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html)     | yes                            | yes                              |
+|:-------------------------------------------------------------------------------------------------------|:----------------------------|:---------------------------------|
+| [`Asset Management Viewer`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html)      | yes                         | no                               |
+| [`Asset Management Consumer`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html)    | yes                         | no                               |
+| [`Asset Management Contributor`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html) | yes                         | yes                              |
+| [`Asset Management Owner`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html)       | yes                         | yes                              |
 
 ## Before you start
 
-Have some assets in the cloud. There are several ways to do so:
+Before you start, you need some assets in the cloud. There are several ways to do so:
 
-   * You can create assets through the [Get started with Assets](get-started-management.md).
-   * You can upload assets from existing Unity assets; see the [Asset Database Uploader sample](./asset-database-uploader-sample.md).
-   * You can create assets through the dashboard; see the [Managing assets on the dashboard](https://docs.unity3d.com/docs-asset-manager/manual/add-asset.html) documentation.
+* You can create assets through the [Get started with Assets](get-started-management.md).
+* You can upload assets from existing Unity assets, see the [Asset Database Uploader sample](./asset-database-uploader-sample.md).
+* You can create assets through the dashboard, see the [Managing assets on the dashboard](https://docs.unity3d.com/docs-asset-manager/manual/add-asset.html) documentation.
 
 ## How do I...?
 
@@ -46,9 +46,9 @@ To remove an asset from a collection:
 
 The code snippet does the following:
 
-  * Removes the selected asset from the specified collection.
-  * Updates the list of collections of the selected asset.
-  * Prints a message to the console on success.
+* Removes the selected asset from the specified collection.
+* Updates the list of collections of the selected asset.
+v* Prints a message to the console on success.
 
 ### Add the UI for viewing and creating collections
 
@@ -61,5 +61,5 @@ To add UI for the example:
 
 The code snippet displays:
 
-  * A list of the selected asset's collections.
-  * A UI button beside each collection to remove the selected asset from it.
+* A list of the selected asset's collections.
+* A UI button beside each collection to remove the selected asset from it.

@@ -10,7 +10,7 @@ namespace Unity.Cloud.Assets
     class CreateCollectionRequest : ProjectRequest
     {
         /// <summary>
-        /// Returns the collection
+        /// Returns a collection.
         /// </summary>
         IAssetCollectionData AssetCollection { get; }
 

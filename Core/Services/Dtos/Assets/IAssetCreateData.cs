@@ -5,7 +5,7 @@ using System.Runtime.Serialization;
 namespace Unity.Cloud.Assets
 {
     /// <summary>
-    /// This interface contains all the information pertaining to a cloud asset.
+    /// This interface contains all the information about a cloud asset.
     /// </summary>
     interface IAssetCreateData : IAssetBaseData
     {

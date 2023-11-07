@@ -5,7 +5,7 @@ using Unity.Cloud.Common;
 namespace Unity.Cloud.Assets
 {
     /// <summary>
-    /// This object contains the information pertaining to an asset collection.
+    /// This object contains the information about an asset collection.
     /// </summary>
     [JsonObject(ItemNullValueHandling = NullValueHandling.Ignore)]
     interface IAssetCollectionData
@@ -23,7 +23,7 @@ namespace Unity.Cloud.Assets
         string Description { get; set; }
 
         /// <summary>
-        /// The path to the parent collection; can be empty.
+        /// Returns the path to the parent collection. The string can be empty.
         /// </summary>
         [DataMember(Name = "parentPath")]
         CollectionPath ParentPath { get; }

@@ -23,12 +23,11 @@ namespace Unity.Cloud.Assets.Samples
 
         public static async Task GetThumbnail(IAsset asset, Action<Texture2D> thumbnailReadyCallback, int width)
         {
-            var file = await asset.GetFileAsync(asset.PreviewFile, CancellationToken.None);
-            var url = await file.GetDownloadUrlAsync(CancellationToken.None);
+            var url = asset.PreviewFileUrl;
 
             var resizedUrl = $"https://transformation.unity.com/api/images?url={Uri.EscapeDataString(url.ToString())}&width={width}";
 
-            if (!m_ThumbnailCache.TryGetValue(file.Descriptor.Path, out var entry))
+            if (!m_ThumbnailCache.TryGetValue(asset.PreviewFile, out var entry))
             {
                 // Create new download request
                 entry = new ThumbnailDownloadEntry
@@ -41,7 +40,7 @@ namespace Unity.Cloud.Assets.Samples
                     entry.Listeners.Add(thumbnailReadyCallback);
                 }
 
-                m_ThumbnailCache.Add(file.Descriptor.Path, entry);
+                m_ThumbnailCache.Add(asset.PreviewFile, entry);
             }
             else
             {

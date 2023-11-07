@@ -24,44 +24,44 @@ Before you start, you must:
 
 ### Send an asset to review
 
-To send an asset to review:
+To send an asset to review, follow these steps:
 
 1. Open the `AssetManagementBehaviour` script you created.
 2. Add the following code to the end of the class:
 
 [!code-cs [behaviour-script](../Samples/Documentation/Manual/Management/UseCaseSendToReviewApproveRejectAssetExample.cs#Example_Behaviour_SendAssetToReview)]
 
-The script sends an asset in the cloud to review.
+The code snippet sends an asset in the cloud to review.
 
 ### Approve an in-review asset
 
-To approve an in-review asset:
+To approve an in-review asset, follow these steps:
 
 1. Open the `AssetManagementBehaviour` script you created.
 2. Add the following code to the end of the class:
 
 [!code-cs [behaviour-script](../Samples/Documentation/Manual/Management/UseCaseSendToReviewApproveRejectAssetExample.cs#Example_Behaviour_ApproveInReviewAsset)]
 
-The script approves an in-review asset.
+The code snippet approves an in-review asset.
 
 ### Reject an in-review asset
 
-To reject an in-review asset:
+To reject an in-review asset, follow these steps:
 
 1. Open the `AssetManagementBehaviour` script you created.
 2. Add the following code to the end of the class:
 
 [!code-cs [behaviour-script](../Samples/Documentation/Manual/Management/UseCaseSendToReviewApproveRejectAssetExample.cs#Example_Behaviour_RejectInReviewAsset)]
 
-The script rejects an in-review asset.
+The code snippet rejects an in-review asset.
 
 ### Add the UI for interacting with assets
 
-To add UI for the example:
+To add UI for the example, follow these steps:
 
 1. Open the `AssetManagementUI` script you created.
 2. Replace the `AdditionalActions` function with the following code:
 
 [!code-cs [behaviour-script](../Samples/Documentation/Manual/Management/UseCaseSendToReviewApproveRejectAssetExample.cs#Example_UI)]
 
-The script provides UI buttons to trigger the send to review or approve in-review or reject in-review an asset.
+The code snippet provides UI buttons to trigger the send to review or approve in-review or reject in-review an asset.

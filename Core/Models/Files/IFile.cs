@@ -123,7 +123,7 @@ namespace Unity.Cloud.Assets
         /// </summary>
         /// <param name="cancellationToken">The cancellation token. </param>
         /// <returns>A task whose result is the upload url of the file. </returns>
-        Task<Uri> GetUploadUrlAsync(CancellationToken cancellationToken);
+        // Task<Uri> GetUploadUrlAsync(CancellationToken cancellationToken);
 
         /// <summary>
         /// Uploads the file from the specified stream.
@@ -132,7 +132,7 @@ namespace Unity.Cloud.Assets
         /// <param name="progress">The progress of the upload. </param>
         /// <param name="cancellationToken">The cancellation token. </param>
         /// <returns>A task with no result. </returns>
-        Task UploadAsync(Stream sourceStream, IProgress<HttpProgress> progress, CancellationToken cancellationToken);
+        // Task UploadAsync(Stream sourceStream, IProgress<HttpProgress> progress, CancellationToken cancellationToken);
 
         /// <summary>
         /// Updates the file.

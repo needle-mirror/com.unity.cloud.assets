@@ -20,7 +20,8 @@ To use the Asset Management sample, you need the following:
 * An access to the [Asset Manager service](https://docs.unity3d.com/docs-asset-manager/manual/get-started.html)
 * A Unity Project with the Asset Manager service enabled, see: [Asset Manager documentation](https://docs.unity3d.com/docs-asset-manager/manual/modify-project.html)
 
-> **Note**: While the Assets package doesn't depend on the Identity service, it is used in the sample to control the authentication process.
+>[!NOTE]
+>While the Assets package doesn't depend on the Identity service, it is used in the sample to control the authentication process.
 
 ## Install the sample
 
@@ -59,7 +60,8 @@ To search for specific assets by tag or name in this sample, follow these steps:
    </br>
    ![Screenshot of the created topic](images/search-in-manager.png)
 
-> **Note**: While using the SDK, you will be able to build different and more complex queries. For more information on asset search, see the [Search Assets](use-case-search-assets.md) use case.
+>[!NOTE]
+>While using the SDK, you will be able to build different and more complex queries. For more information on asset search, see the [Search Assets](use-case-search-assets.md) use case.
 
 #### Search prompts
 
@@ -98,7 +100,8 @@ To update an asset in this sample, follow these steps:
 8. To go back to the detail of the asset, click on the button Back on the top left corner.
 9. To go back to the list of assets of the Project, click on the button Back on the top left corner.
 
-> **Note**: When an asset is not published, you can do the two following actions :
+>[!NOTE]
+>When an asset is not published, you can do the two following actions :
 > 1. You can save the asset by selecting the **Save asset** button.
 > 
 > ![Screenshot of the save asset button](images/save-asset-button.png)

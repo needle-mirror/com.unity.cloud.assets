@@ -1,4 +1,4 @@
-# Use case: Create and upload asset files
+# Use case: Create and upload files
 
 You can use the Unity Cloud Assets package to view and create datasets within an asset.
 
@@ -9,7 +9,7 @@ The SDK supports different workflows for users with different roles.
 | [`Asset Management Viewer`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html)      | yes           | no             |
 | [`Asset Management Consumer`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html)    | yes           | no             |
 | [`Asset Management Contributor`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html) | yes           | yes            |
-| [`Asset Management Owner`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html)     | yes           | yes            |
+| [`Asset Management Owner`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html)       | yes           | yes            |
 
 ## Before you start
 
@@ -30,7 +30,7 @@ To list the datasets of an asset, open the `AssetManagementBehaviour` script you
 
 [!code-cs [behaviour-script](../Samples/Documentation/Manual/Management/UseCaseDatasetCreationExample.cs#Example_Behaviour_RefreshDatasets)]
 
-The script populates a list of datasets for the selected asset.
+The code snippet populates a list of datasets for the selected asset.
 
 ### Create a dataset
 
@@ -38,9 +38,9 @@ To create a new dataset, open the `AssetManagementBehaviour` script you created 
 
 [!code-cs [behaviour-script](../Samples/Documentation/Manual/Management/UseCaseDatasetCreationExample.cs#Example_Behaviour_CreateDataset)]
 
-The script creates a new dataset with the given name on the selected asset.
+The code snippet creates a new dataset with the given name and the tag `Custom` on the selected asset.
 
-### Add the UI for interacting with asset files
+### Add the UI for interacting with files
 
 To add UI for the example:
 
@@ -49,7 +49,7 @@ To add UI for the example:
 
 [!code-cs [behaviour-script](../Samples/Documentation/Manual/Management/UseCaseFileCreationExample.cs#Example_UI)]
 
-The script does the following:
+The code snippet does the following:
 
 * Displays a list of datasets for the selected asset.
 * Provides a text input and UI button to create a new dataset.

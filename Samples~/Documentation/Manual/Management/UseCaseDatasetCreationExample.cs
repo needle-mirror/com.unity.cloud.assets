@@ -1,10 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Unity.Cloud.Common;
 using UnityEngine;
 
 namespace Unity.Cloud.Assets.Documentation.Management
@@ -40,7 +37,7 @@ namespace Unity.Cloud.Assets.Documentation.Management
             DisplayDatasets(m_Behaviour.Datasets?.ToArray() ?? Array.Empty<IDataset>());
 
             GUILayout.BeginHorizontal();
-            m_NewDatasetName = GUILayout.TextField(m_NewDatasetName);
+            m_NewDatasetName = GUILayout.TextField(m_NewDatasetName, GUILayout.MinWidth(100f));
             if (GUILayout.Button("Create Dataset"))
             {
                 _ = m_Behaviour.CreateDataset(m_NewDatasetName);
@@ -60,7 +57,7 @@ namespace Unity.Cloud.Assets.Documentation.Management
                 for (var i = 0; i < datasets.Count; ++i)
                 {
                     var dataset = datasets[i];
-                    GUILayout.Label(dataset.Name);
+                    GUILayout.Label($"{dataset.Name}, {dataset.Status} - {(dataset.IsVisible ? "visible" : "hidden")}");
                 }
             }
         }
@@ -106,7 +103,7 @@ namespace Unity.Cloud.Assets.Documentation.Management
             var datasetCreation = new DatasetCreation(name)
             {
                 Description = "Documentation example asset dataset creation.",
-                Tags = new List<string> {"Texture"}
+                Tags = new List<string> {"Custom"}
             };
 
             var cancellationTokenSrc = new CancellationTokenSource();

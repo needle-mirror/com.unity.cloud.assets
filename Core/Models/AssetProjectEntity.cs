@@ -8,7 +8,7 @@ using Unity.Cloud.Common;
 namespace Unity.Cloud.Assets
 {
     /// <summary>
-    /// This class contains all the information pertaining to a cloud project.
+    /// This class contains all the information about a cloud project.
     /// </summary>
     sealed class AssetProjectEntity : IAssetProject
     {

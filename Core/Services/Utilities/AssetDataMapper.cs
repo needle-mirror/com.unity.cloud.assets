@@ -24,7 +24,7 @@ namespace Unity.Cloud.Assets
             if (includeFields.AssetFields.HasFlag(AssetFields.previewFileUrl))
             {
                 Uri.TryCreate(assetData.PreviewFileUrl, UriKind.RelativeOrAbsolute, out var previewFileDownloadUrl);
-                asset.m_PreviewFileDownloadUrl = previewFileDownloadUrl;
+                asset.PreviewFileUrl = previewFileDownloadUrl;
             }
 
             FileEntity[] files = null;
@@ -135,7 +135,7 @@ namespace Unity.Cloud.Assets
                 Tags = asset.Tags?.ToList(),
                 Type = asset.Type,
                 PreviewFile = asset.PreviewFile,
-                PreviewFileUrl = asset.m_PreviewFileDownloadUrl?.ToString(),
+                PreviewFileUrl = asset.PreviewFileUrl?.ToString(),
                 Status = asset.Status,
                 Created = asset.AuthoringInfo.Created,
                 CreatedBy = asset.AuthoringInfo.CreatedBy,

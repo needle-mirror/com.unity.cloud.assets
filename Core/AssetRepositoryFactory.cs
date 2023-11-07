@@ -1,3 +1,4 @@
+using System.Reflection;
 using Unity.Cloud.Common;
 
 namespace Unity.Cloud.Assets
@@ -10,6 +11,7 @@ namespace Unity.Cloud.Assets
 #if UC_MOCK_ASSETS
             dataSource = new MockDataSource();
 #else
+            serviceHttpClient = serviceHttpClient.WithApiSourceHeadersFromAssembly(Assembly.GetExecutingAssembly());
             dataSource = new AssetDataSource(serviceHttpClient, serviceHostResolver);
 #endif
             return new AssetRepository(dataSource);

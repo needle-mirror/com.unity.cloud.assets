@@ -3,13 +3,13 @@
 namespace Unity.Cloud.Assets
 {
     /// <summary>
-    /// Represents a get asset file url request.
+    /// Represents a get asset file URL request.
     /// </summary>
     class GetFileUrlRequest : FileRequest
     {
         /// <summary>
-        /// Get Asset File Url Request Object.
-        /// Get a single asset file url.
+        /// Gets an Asset File URL Request Object.
+        /// Gets a single asset file URL.
         /// </summary>
         /// <param name="projectId">ID of the project.</param>
         /// <param name="assetId">The id of the asset the file is linked to.</param>

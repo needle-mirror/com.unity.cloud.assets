@@ -25,21 +25,21 @@ Before you start, you must:
 
 ### List the collections in a project
 
-To list the existing collections in a Project:
+To list the existing collections in a Project, follow these steps:
 
 1. Open the `AssetManagementBehaviour` script you created.
 2. Add the following code to the end of the class:
 
-[!code-cs [behaviour-script](../Samples/Documentation/Manual/Management/UseCaseCollectionManagementExample.cs#Example_Behaviour_RefreshCollections)]
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Management/UseCaseManageCollectionsExample.cs#Example_Behaviour_RefreshCollections)]
 
 The code snippet does the following:
 
-   * Populates a list of the collections in the selected Project.
-   * Holds a reference to the selected collection.
+* Populates a list of the collections in the selected Project.
+* Holds a reference to the selected collection.
 
 ### Create an asset collection
 
-To create an asset collection:
+To create an asset collection, follow these steps:
 
 1. Open the `AssetManagementBehaviour` script you created.
 2. Add the following code to the end of the class:
@@ -48,13 +48,13 @@ To create an asset collection:
 
 The code snippet does the following:
 
-   * Creates a new asset collection with the specified name and parent collection.
-   * Updates the list of collections in the selected Project.
-   * Prints a message to the console on success.
+* Creates a new asset collection with the specified name and parent collection.
+* Updates the list of collections in the selected Project.
+* Prints a message to the console on success.
 
 ### Add the UI for viewing and creating collections
 
-To add UI for the example:
+To add UI for the example, follow these steps:
 
 1. Open the `AssetManagementUI` script you created.
 2. Replace the `AssetActions` function with the following code:
@@ -63,12 +63,12 @@ To add UI for the example:
 
 The code snippet does the following:
 
-   * Displays a list of the selected Project's collections.
-   * Displays UI buttons and necessary text fields to create a new collection and to select a collection.
+* Displays a list of the selected Project's collections.
+* Displays UI buttons and necessary text fields to create a new collection and to select a collection.
 
 ### Update an asset collection
 
-To update an asset collection:
+To update an asset collection, follow these steps:
 
 1. Open the `AssetManagementBehaviour` script you created.
 2. Add the following code to the end of the class:
@@ -77,12 +77,12 @@ To update an asset collection:
 
 The code snippet does the following:
 
-   * Updates the selected collection's description by incrementing a counter within the text.
-   * Prints a message to the console on success.
+* Updates the selected collection's description by incrementing a counter within the text.
+* Prints a message to the console on success.
 
 ### Delete an asset collection
 
-To delete an asset collection:
+To delete an asset collection, follow these steps:
 
 1. Open the `AssetManagementBehaviour` script you created.
 2. Add the following code to the end of the class:
@@ -91,13 +91,13 @@ To delete an asset collection:
 
 The code snippet does the following:
 
-   * Deletes the selected collection from the Project.
-   * Refreshes the list of collections in the Project.
-   * Prints a message to the console on success.
+* Deletes the selected collection from the Project.
+* Refreshes the list of collections in the Project.
+* Prints a message to the console on success.
 
 ### Move an asset collection
 
-To move an asset collection either to nest it under another collection or re-parent at the root of the project: 
+To move an asset collection either to nest it under another collection or re-parent at the root of the project, follow these steps: 
 
 1. Open the `AssetManagementBehaviour` script you created.
 2. Add the following code to the end of the class:
@@ -111,7 +111,7 @@ The code snippet does the following:
 
 ### Add an asset to a collection
 
-To add an asset to a collection: 
+To add an asset to a collection, follow these steps: 
 
 1. Open the `AssetManagementBehaviour` script you created. 
 2. Add the following code to the end of the class:
@@ -125,7 +125,7 @@ The code snippet does the following:
 
 ### Remove an asset from a collection
 
-To remove an asset from a collection:
+To remove an asset from a collection, follow these steps:
 
 1. Open the `AssetManagementBehaviour` script you created.
 2. Add the following code to the end of the class:
@@ -139,7 +139,7 @@ The code snippet does the following:
 
 ### Add the UI for interacting with a collection
 
-To add UI for the example:
+To add UI for the example, follow these steps:
 
 1. Open the `AssetManagementUI` script you created.
 2. Replace the `AssetActions` function with the following code:
@@ -151,5 +151,4 @@ The code snippet does the following:
    * Displays UI buttons to update and delete the selected collection.
    * Displays a text field and UI button to re-parent the selected collection to another collection.
    * Displays a UI button to add the selected asset to the selected collection.
-   * Displays the list of assets in the selected collection.
-     * Each asset has a UI button to remove it from the selected collection.
+   * Displays the list of assets in the selected collection. Each asset has a UI button to remove it from the selected collection.

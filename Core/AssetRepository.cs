@@ -9,7 +9,7 @@ using Unity.Cloud.Common;
 namespace Unity.Cloud.Assets
 {
     /// <summary>
-    /// Implement this interface to transform user facing data like <see cref="IProjectData"/> into service DTOs
+    /// Interface to transform user facing data like <see cref="IProjectData"/> into service DTOs.
     /// </summary>
     class AssetRepository : IAssetRepository
     {

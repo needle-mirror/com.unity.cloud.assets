@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using Unity.Cloud.Common;
 
 namespace Unity.Cloud.Assets
 {
@@ -17,7 +18,7 @@ namespace Unity.Cloud.Assets
         /// <param name="filter">filter param</param>
         /// <param name="aggregateBy">The field that can be used in the aggregation.</param>
         /// <param name="maximumNumberOfItems">The maximum number of items to be returned.</param>
-        public AcrossProjectsSearchAndAggregateRequestParameters(IEnumerable<string> projectIds, SearchRequestFilter filter = default, string aggregateBy = default, int? maximumNumberOfItems = default)
+        public AcrossProjectsSearchAndAggregateRequestParameters(IEnumerable<ProjectId> projectIds, SearchRequestFilter filter = default, string aggregateBy = default, int? maximumNumberOfItems = default)
             : base(filter, aggregateBy, maximumNumberOfItems)
         {
             ProjectIds = projectIds.ToArray();
@@ -27,6 +28,6 @@ namespace Unity.Cloud.Assets
         /// Parameter project ids of AcrossProjectsSearchAndAggregateRequest
         /// </summary>
         [DataMember(Name = "projectIds", EmitDefaultValue = false)]
-        public string[] ProjectIds { get; set; }
+        public ProjectId[] ProjectIds { get; set; }
     }
 }

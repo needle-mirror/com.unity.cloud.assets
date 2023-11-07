@@ -8,7 +8,7 @@ namespace Unity.Cloud.Assets
     class CheckProjectIsAssetSourceProjectRequest : ProjectRequest
     {
         /// <summary>
-        /// Check project is Asset source project Request Object.
+        /// Checks whether a project is an asset source project Request Object.
         /// </summary>
         /// <param name="projectId">ID of the project.</param>
         /// <param name="assetId">The id of the asset the file is linked to.</param>

@@ -1,7 +1,7 @@
 namespace Unity.Cloud.Assets
 {
     /// <summary>
-    /// This object contains the information pertaining to an asset collection.
+    /// This object contains the information about an asset collection.
     /// </summary>
     public interface IAssetCollectionCreation
     {
@@ -16,7 +16,7 @@ namespace Unity.Cloud.Assets
         string Description { get; }
 
         /// <summary>
-        /// The path to the parent collection; can be empty.
+        /// The path to the parent collection. Can be empty.
         /// </summary>
         CollectionPath ParentPath { get; set; }
     }

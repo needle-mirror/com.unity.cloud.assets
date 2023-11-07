@@ -35,7 +35,7 @@ namespace Unity.Cloud.Assets
         }
 
         /// <summary>
-        /// Returns whether two <see cref="CollectionDescriptor"/> objects are equals.
+        /// Checks whether two <see cref="CollectionDescriptor"/> objects are equals.
         /// </summary>
         /// <param name="other">Compare the values with this instance.</param>
         /// <returns>
@@ -49,7 +49,7 @@ namespace Unity.Cloud.Assets
         }
 
         /// <summary>
-        /// Validate <paramref name="obj"/> is a <see cref="CollectionDescriptor"/> instance and have the same values as this instance.
+        /// Validates whether <paramref name="obj"/> is a <see cref="CollectionDescriptor"/> instance and has the same values as this instance.
         /// </summary>
         /// <param name="obj">Compare the values with this instance.</param>
         /// <returns>
@@ -59,7 +59,7 @@ namespace Unity.Cloud.Assets
         public override bool Equals(object obj) => obj is CollectionDescriptor other && Equals(other);
 
         /// <summary>
-        /// Compute a hash code for the object.
+        /// Computes a hash code for the object.
         /// </summary>
         /// <returns>A hash code for the current object.</returns>
         /// <remarks>
@@ -78,7 +78,7 @@ namespace Unity.Cloud.Assets
         }
 
         /// <summary>
-        /// Get if two <see cref="CollectionDescriptor"/> represent the same.
+        /// Checks whether two <see cref="CollectionDescriptor"/> are the same.
         /// </summary>
         /// <param name="left">Compare with this first instance.</param>
         /// <param name="right">Compare with this other instance.</param>
@@ -89,7 +89,7 @@ namespace Unity.Cloud.Assets
         public static bool operator ==(CollectionDescriptor left, CollectionDescriptor right) => left.Equals(right);
 
         /// <summary>
-        /// Get if two <see cref="CollectionDescriptor"/> does not represent the same.
+        /// Checks whether two <see cref="CollectionDescriptor"/> are not the same.
         /// </summary>
         /// <param name="left">Compare with this first instance.</param>
         /// <param name="right">Compare with this other instance.</param>

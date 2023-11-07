@@ -7,7 +7,7 @@ using Unity.Cloud.Common;
 namespace Unity.Cloud.Assets
 {
     /// <summary>
-    /// Insert Assets into a collection request.
+    /// Inserts assets into a collection request.
     /// </summary>
     class ModifyAssetsInCollectionRequest : CollectionRequest
     {
@@ -17,7 +17,7 @@ namespace Unity.Cloud.Assets
         public IEnumerable<AssetId> AssetsInCollectionDto { get; }
 
         /// <summary>
-        /// Insert Assets into a collection request.
+        /// Inserts assets into a collection request.
         /// </summary>
         /// <param name="projectId">ID of the project</param>
         /// <param name="collectionPath">The path to the collection</param>
@@ -32,7 +32,7 @@ namespace Unity.Cloud.Assets
         }
 
         /// <summary>
-        /// Helper for constructing the request body.
+        /// Provides an helper for constructing the request body.
         /// </summary>
         /// <returns>A </returns>
         public override HttpContent ConstructBody()

@@ -34,8 +34,6 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
         const string k_NoCollectionMessage = "No collection selected.";
         const string k_FetchingMessage = "Fetching assets list...";
 
-        IAssetCollection m_CurrentCollection;
-
         public event Action<IAsset> AssetSelected;
         public IAsset SelectedAsset { get; private set; }
         public IEnumerable<IAsset> Assets => m_Entries;
@@ -47,9 +45,9 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
         {
             Show();
 
-            m_CurrentCollection = collection;
+            var currentCollection = collection;
 
-            SetDisplayMessage(m_CurrentCollection == null ? k_NoCollectionMessage : k_FetchingMessage);
+            SetDisplayMessage(currentCollection == null ? k_NoCollectionMessage : k_FetchingMessage);
         }
 
         public void Populate(IEnumerable<IAsset> assets)

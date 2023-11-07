@@ -13,8 +13,7 @@ namespace Unity.Cloud.Assets
         public async Task<IDatasetData> CreateDatasetAsync(AssetDescriptor assetDescriptor, IDatasetBaseData datasetCreation, CancellationToken token)
         {
             var request = new CreateDatasetRequest(assetDescriptor.ProjectId, assetDescriptor.AssetId, assetDescriptor.AssetVersion, datasetCreation);
-            var requestUri = m_PublicServiceHostResolver.GetResolvedRequestUri(request.ConstructUrl(GetPublicApiPath()));
-            var response = await m_ServiceHttpClient.PostAsync(requestUri, request.ConstructBody(),
+            var response = await m_ServiceHttpClient.PostAsync(GetPublicRequestUri(request), request.ConstructBody(),
                 ServiceHttpClientOptions.Default(), token);
             var jsonContent = await response.GetContentAsString();
 
@@ -54,8 +53,7 @@ namespace Unity.Cloud.Assets
         public Task UpdateDatasetAsync(DatasetDescriptor datasetDescriptor, IDatasetUpdateData datasetUpdate, CancellationToken token)
         {
             var request = new UpdateDatasetRequest(datasetDescriptor.ProjectId, datasetDescriptor.AssetId, datasetDescriptor.AssetVersion, datasetDescriptor.DatasetId, datasetUpdate);
-            var requestUri = m_PublicServiceHostResolver.GetResolvedRequestUri(request.ConstructUrl(GetPublicApiPath()));
-            return m_ServiceHttpClient.PatchAsync(requestUri, request.ConstructBody(),
+            return m_ServiceHttpClient.PatchAsync(GetPublicRequestUri(request), request.ConstructBody(),
                 ServiceHttpClientOptions.Default(), token);
         }
 
@@ -63,16 +61,14 @@ namespace Unity.Cloud.Assets
         public Task ReferenceFileFromDatasetAsync(DatasetDescriptor datasetDescriptor, DatasetId sourceDatasetId, string filePath, CancellationToken token)
         {
             var request = new AddFileReferenceRequest(datasetDescriptor.ProjectId, datasetDescriptor.AssetId, datasetDescriptor.AssetVersion, sourceDatasetId, filePath, datasetDescriptor.DatasetId);
-            var requestUri = m_PublicServiceHostResolver.GetResolvedRequestUri(request.ConstructUrl(GetPublicApiPath()));
-            return m_ServiceHttpClient.PostAsync(requestUri, request.ConstructBody(),
+            return m_ServiceHttpClient.PostAsync(GetPublicRequestUri(request), request.ConstructBody(),
                 ServiceHttpClientOptions.Default(), token);
         }
 
         public Task RemoveFileFromDatasetAsync(DatasetDescriptor datasetDescriptor, string filePath, CancellationToken token)
         {
             var request = new FileRequest(datasetDescriptor.ProjectId, datasetDescriptor.AssetId, datasetDescriptor.AssetVersion, datasetDescriptor.DatasetId, filePath);
-            var requestUri = m_PublicServiceHostResolver.GetResolvedRequestUri(request.ConstructUrl(GetPublicApiPath()));
-            return m_ServiceHttpClient.DeleteAsync(requestUri, request.ConstructBody(),
+            return m_ServiceHttpClient.DeleteAsync(GetPublicRequestUri(request), request.ConstructBody(),
                 ServiceHttpClientOptions.Default(), token);
         }
 
@@ -80,8 +76,7 @@ namespace Unity.Cloud.Assets
         public async Task<bool> CheckDatasetIsInProjectAssetVersionAsync(DatasetDescriptor datasetDescriptor, CancellationToken token)
         {
             var request = new CheckDatasetBelongsToAssetRequest(datasetDescriptor.ProjectId, datasetDescriptor.AssetId, datasetDescriptor.AssetVersion, datasetDescriptor.DatasetId);
-            var requestUri = m_PublicServiceHostResolver.GetResolvedRequestUri(request.ConstructUrl(GetPublicApiPath()));
-            var response = await m_ServiceHttpClient.GetAsync(requestUri, ServiceHttpClientOptions.Default(),
+            var response = await m_ServiceHttpClient.GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(),
                 token);
             var jsonContent = await response.GetContentAsString();
 
@@ -99,8 +94,7 @@ namespace Unity.Cloud.Assets
                 datasetDescriptor.DatasetId,
                 metadataType,
                 keys);
-            var requestUri = m_PublicServiceHostResolver.GetResolvedRequestUri(request.ConstructUrl(GetPublicApiPath()));
-            return m_ServiceHttpClient.DeleteAsync(requestUri, request.ConstructBody(),
+            return m_ServiceHttpClient.DeleteAsync(GetPublicRequestUri(request), request.ConstructBody(),
                 ServiceHttpClientOptions.Default(), token);
         }
     }

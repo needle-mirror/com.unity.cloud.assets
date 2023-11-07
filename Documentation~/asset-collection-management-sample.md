@@ -5,11 +5,11 @@ You can use the Collection Management sample to list and manage the collections 
 The SDK supports different workflows for users with different roles.
 
 | Asset Manager Project role                                                                             | List an asset's collections | Add/remove assets in collections |
-|:-------------------------------------------------------------------------------------------------------|:-------------------------------|:---------------------------------|
-| [`Asset Management Viewer`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html)      | yes                            | no                               |
-| [`Asset Management Consumer`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html)    | yes                            | no                               |
-| [`Asset Management Contributor`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html) | yes                            | yes                              |
-| [`Asset Management Owner`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html)     | yes                            | yes                              |
+|:-------------------------------------------------------------------------------------------------------|:----------------------------|:---------------------------------|
+| [`Asset Management Viewer`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html)      | yes                         | no                               |
+| [`Asset Management Consumer`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html)    | yes                         | no                               |
+| [`Asset Management Contributor`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html) | yes                         | yes                              |
+| [`Asset Management Owner`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html)       | yes                         | yes                              |
 
 ## Before you start
 
@@ -23,7 +23,8 @@ Before you can use the Collection Management sample, you must have the following
 * Access to the [Asset Manager service](https://docs.unity3d.com/docs-asset-manager/manual/get-started.html)
 * At least one published asset in an Asset Manager Project, see: [Asset Manager documentation](https://docs.unity3d.com/docs-asset-manager/manual/add-asset.html)
 
-> **Note**: While the Assets package itself doesn't depend on the Identity service, it is necessary in the sample to control the authentication process.
+>[!NOTE]
+>While the Assets package itself doesn't depend on the Identity service, it is necessary in the sample to control the authentication process.
 
 ## Install the sample
 

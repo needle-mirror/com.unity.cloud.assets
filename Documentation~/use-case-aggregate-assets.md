@@ -28,17 +28,17 @@ Before you start, you must:
 
 To implement aggregation, open the `AssetDiscoveryBehaviour` script you created and add the following code to the end of the class:
 
-[!code-cs [behaviour-script](../Samples/Documentation/Manual/Discovery/UseCaseAggregationExample.cs#Example_Behaviour)]
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Management/UseCaseAggregationExample.cs#Example_Behaviour)]
 
-The script provides a functions which returns the aggregation of assets for a given field.
+The code snippet provides a functions which returns the aggregation of assets for a given field.
 
 ### Add the UI for triggering and displaying the aggregation
 
 To add a UI to the example, open the `AssetDiscoveryUI` script you created and replace the `AssetActions` function with the following code:
 
-[!code-cs [behaviour-script](../Samples/Documentation/Manual/Discovery/UseCaseAggregationExample.cs#Example_UI)]
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Management/UseCaseAggregationExample.cs#Example_UI)]
 
-The script provides UI buttons to trigger the aggregation function with different criteria and displays the results of the aggregation.
+The code snippet provides UI buttons to trigger the aggregation function with different criteria and displays the results of the aggregation.
 The UI can aggregate assets by:
 
 * Asset type

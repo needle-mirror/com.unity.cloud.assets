@@ -1,3 +1,5 @@
+using System.Linq;
+
 namespace Unity.Cloud.Assets.Documentation.Management
 {
     #region Example
@@ -14,12 +16,18 @@ namespace Unity.Cloud.Assets.Documentation.Management
         Vector2 m_ProjectListScrollPosition;
         Vector2 m_AssetListScrollPosition;
 
+        AssetUpdate m_AssetUpdate;
+
+        string[] m_AssetTypeList = Array.Empty<string>();
+
         bool IsLoggedIn => m_AuthenticationStateProvider?.AuthenticationState == AuthenticationState.LoggedIn;
 
         void Start()
         {
             m_AuthenticationStateProvider = PlatformServices.AuthenticationStateProvider;
             m_AuthenticationStateProvider.AuthenticationStateChanged += OnAuthenticationStateChanged;
+
+            m_AssetTypeList = AssetTypeExtensions.AssetTypeList().ToArray();
         }
 
         void OnDestroy()
@@ -121,7 +129,9 @@ namespace Unity.Cloud.Assets.Documentation.Management
 
         protected virtual void AssetActions()
         {
-            ManageAnAsset();
+            CreateAnAsset();
+
+            DisplaySelectedAsset();
 
             // Add additional asset related actions here.
         }
@@ -161,7 +171,6 @@ namespace Unity.Cloud.Assets.Documentation.Management
 
             GUILayout.Label("Available Projects:");
             GUILayout.Space(10);
-
 
             var projects = m_Behaviour.AvailableProjects;
             if (projects.Count > 0)
@@ -203,6 +212,7 @@ namespace Unity.Cloud.Assets.Documentation.Management
                     if (GUILayout.Button(assets[i].Name))
                     {
                         m_Behaviour.CurrentAsset = assets[i];
+                        m_AssetUpdate = new AssetUpdate(m_Behaviour.CurrentAsset);
                         Debug.Log($"Selected: {assets[i].Descriptor.AssetId}");
                     }
                 }
@@ -271,20 +281,16 @@ namespace Unity.Cloud.Assets.Documentation.Management
             }
         }
 
-        void ManageAnAsset()
+        protected void CreateAnAsset()
         {
-            GUILayout.BeginVertical();
-
-            GUILayout.Label("Manage:");
-            GUILayout.Space(10);
-
             if (GUILayout.Button("Create new asset", GUILayout.Width(150f)))
             {
                 _ = m_Behaviour.CreateAssetAsync();
             }
+        }
 
-            GUILayout.Space(5f);
-
+        protected void DisplaySelectedAsset()
+        {
             if (m_Behaviour.CurrentAsset == null)
             {
                 GUILayout.Label(" ! No asset selected !");
@@ -294,45 +300,46 @@ namespace Unity.Cloud.Assets.Documentation.Management
                 GUILayout.Label("Asset selected:");
                 GUILayout.Space(5f);
 
-                DisplayAsset(m_Behaviour.CurrentAsset);
+                DisplayAsset(m_Behaviour.CurrentAsset, m_AssetUpdate);
             }
-
-            GUILayout.EndVertical();
         }
 
-        protected virtual void DisplayAsset(IAsset asset)
+        void DisplayAsset(IAsset asset, IAssetUpdate assetUpdate)
         {
-            var assetUpdate = new AssetUpdate(asset);
-
             GUILayout.BeginHorizontal();
 
-            var nameValue = GUILayout.TextField(asset.Name, GUILayout.Width(100f));
-            if (nameValue != asset.Name)
-            {
-                assetUpdate.Name = nameValue;
-            }
+            GUILayout.Label("Name:");
 
-            GUILayout.Space(5f);
-
-            var type = GUILayout.TextField(asset.Type.GetValueAsString(), GUILayout.Width(50f));
-            if (type != asset.Type.GetValueAsString())
-            {
-                assetUpdate.Type = type.GetAssetTypeFromString();
-            }
+            assetUpdate.Name = GUILayout.TextField(assetUpdate.Name, GUILayout.Width(100f));
 
             GUILayout.Space(5f);
 
             GUILayout.Label(asset.Status);
-            GUILayout.Space(5f);
+
+            GUILayout.EndHorizontal();
+
+            GUILayout.BeginHorizontal();
+
+            GUILayout.Label("Type: ");
+
+            var type = (int)assetUpdate.Type;
+            type = GUILayout.SelectionGrid(type, m_AssetTypeList, 4);
+            assetUpdate.Type = (AssetType)type;
+
+            GUILayout.EndHorizontal();
+
+            GUILayout.BeginHorizontal();
+
+            var tags = string.Join(',', assetUpdate.Tags);
+            tags = GUILayout.TextField(tags);
+            assetUpdate.Tags = tags.Split(',').ToList();
+
+            GUILayout.EndHorizontal();
 
             if (GUILayout.Button("Update"))
             {
                 _ = m_Behaviour.UpdateAssetAsync(asset, assetUpdate);
             }
-
-            GUILayout.Space(5f);
-
-            GUILayout.EndHorizontal();
         }
     }
 

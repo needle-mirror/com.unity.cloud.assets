@@ -68,7 +68,14 @@ namespace Unity.Cloud.Assets.Samples
 
         public void Init(VisualElement root, VisualTreeAsset chipsTemplate)
         {
-            m_AssetSearchFilter = new AssetSearchFilter();
+            m_AssetSearchFilter = new AssetSearchFilter
+            {
+                IncludedFields = new FieldsFilter
+                {
+                    AssetFields = AssetFields.all,
+                    FileFields = FileFields.downloadUrl
+                }
+            };
             m_QueryList = new List<string>();
 
             m_Root = root;

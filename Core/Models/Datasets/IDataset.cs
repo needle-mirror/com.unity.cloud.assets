@@ -104,7 +104,7 @@ namespace Unity.Cloud.Assets
         Task<IFile> UploadFileAsync(IFileCreation fileCreation, Stream sourceStream, IProgress<HttpProgress> progress, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Adds a file from the secified dataset to the current dataset.
+        /// Adds a file from the specified dataset to the current dataset.
         /// </summary>
         /// <param name="filePath">The path to the file. </param>
         /// <param name="sourceDatasetId">The id of the source dataset.</param>
@@ -153,7 +153,7 @@ namespace Unity.Cloud.Assets
         Task RemoveSystemMetadataAsync(IEnumerable<string> keys, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Returns the download url of the file.
+        /// Returns the download URL of the file.
         /// </summary>
         /// <param name="filePath"></param>
         /// <returns></returns>

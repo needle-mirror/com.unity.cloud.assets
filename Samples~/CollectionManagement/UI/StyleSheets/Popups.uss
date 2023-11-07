@@ -20,7 +20,7 @@
     border-right-color: rgb(47, 47, 47);
     border-top-color: rgb(47, 47, 47);
     border-bottom-color: rgb(47, 47, 47);
-    position: absolute;
+    position: relative;
     justify-content: space-between;
     display: none;
     overflow: hidden;

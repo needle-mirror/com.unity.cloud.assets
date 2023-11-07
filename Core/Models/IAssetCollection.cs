@@ -7,7 +7,7 @@ using Unity.Cloud.Common;
 namespace Unity.Cloud.Assets
 {
     /// <summary>
-    /// This object contains the information pertaining to an asset collection.
+    /// This object contains the information about an asset collection.
     /// </summary>
     public interface IAssetCollection
     {
@@ -75,7 +75,7 @@ namespace Unity.Cloud.Assets
         Task RemoveAssetsAsync(IEnumerable<IAsset> assets, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Reparents the collection to a new path.
+        /// Creates a new path for the collection.
         /// </summary>
         /// <param name="newCollectionPath">The new parent path. </param>
         /// <param name="cancellationToken">The cancellation token. </param>

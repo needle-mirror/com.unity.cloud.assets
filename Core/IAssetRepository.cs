@@ -11,7 +11,7 @@ namespace Unity.Cloud.Assets
     public interface IAssetRepository
     {
         /// <summary>
-        /// Implement this method to get a list of <see cref="IAssetProject"/> for an organization for current user.
+        /// Lists an organization's <see cref="IAssetProject"/> for current user.
         /// </summary>
         /// <param name="organizationId">The id of the organization. </param>
         /// <param name="pagination">The pagination parameters. </param>
@@ -20,7 +20,7 @@ namespace Unity.Cloud.Assets
         IAsyncEnumerable<IAssetProject> ListAssetProjectsAsync(OrganizationId organizationId, Pagination pagination, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Implement this method to get an <see cref="IAssetProject"/> for an organization for current user.
+        /// Gets an organization's <see cref="IAssetProject"/> for current user.
         /// </summary>
         /// <param name="projectDescriptor">The object containing the necessary information for identifying the project. </param>
         /// <param name="cancellationToken">The cancellation token. </param>
@@ -28,7 +28,7 @@ namespace Unity.Cloud.Assets
         Task<IAssetProject> GetAssetProjectAsync(ProjectDescriptor projectDescriptor, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Implement this method to create a new <see cref="IAssetProject"/> int he specified organization.
+        /// Creates a new <see cref="IAssetProject"/> in the specified organization.
         /// </summary>
         /// <param name="organizationId">The organization to create the project in. </param>
         /// <param name="projectCreation">The object containing the necessary information to create a new project. </param>
@@ -53,7 +53,7 @@ namespace Unity.Cloud.Assets
         Task<IAssetCollection> GetAssetCollectionAsync(CollectionDescriptor collectionDescriptor, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Implement this method to get a list of <see cref="Asset"/> for an organization for current user.
+        /// Lists an organization's <see cref="Asset"/> for current user.
         /// </summary>
         /// <param name="organizationId">The id of the organization. </param>
         /// <param name="projectIds">A list of project ids. </param>
@@ -64,7 +64,7 @@ namespace Unity.Cloud.Assets
         IAsyncEnumerable<IAsset> SearchAssetsAsync(OrganizationId organizationId, IEnumerable<ProjectId> projectIds, IAssetSearchFilter assetSearchFilter, Pagination pagination, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Implement this method to get a list of <see cref="Asset"/> for an organization for current user.
+        /// Lists an organization's <see cref="Asset"/> for a user.
         /// </summary>
         /// <param name="organizationId">The id of the organization. </param>
         /// <param name="projectIds">A list of project ids. </param>
@@ -75,7 +75,7 @@ namespace Unity.Cloud.Assets
         Task<Aggregation> CountAssetsAsync(OrganizationId organizationId, IEnumerable<ProjectId> projectIds, IAssetSearchFilter assetSearchFilter, AggregationParameters parameters, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Implement this method to get an <see cref="IAsset"/> by its id and version.
+        /// Retrieves an <see cref="IAsset"/> by its id and version.
         /// </summary>
         /// <param name="assetDescriptor">The descriptor containing identifiers for the asset. </param>
         /// <param name="includedFieldsFilter">The filter describing which fields to return populated. </param>
@@ -84,7 +84,7 @@ namespace Unity.Cloud.Assets
         Task<IAsset> GetAssetAsync(AssetDescriptor assetDescriptor, FieldsFilter includedFieldsFilter, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Implement this method to get a <see cref="IDataset"/> from a specified asset version.
+        /// Retrieves an <see cref="IDataset"/> from a specified asset version.
         /// </summary>
         /// <param name="datasetDescriptor">The descriptor containing identifiers for the dataset. </param>
         /// <param name="includedFields">The filter describing which fields to return populated. </param>
@@ -93,7 +93,7 @@ namespace Unity.Cloud.Assets
         Task<IDataset> GetDatasetAsync(DatasetDescriptor datasetDescriptor, DatasetFields includedFields, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Implement this method to get a <see cref="IDataset"/> with a specified tag from a specified asset version.
+        /// Retrieves an <see cref="IDataset"/> with a specified tag from a specified asset version.
         /// </summary>
         /// <param name="assetDescriptor">The descriptor containing identifiers for the dataset. </param>
         /// <param name="systemTag">The id of the dataset to get. </param>
@@ -103,7 +103,7 @@ namespace Unity.Cloud.Assets
         Task<IDataset> GetDatasetBySystemTagAsync(AssetDescriptor assetDescriptor, string systemTag, DatasetFields includedFields, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Implement this method to get a <see cref="IFile"/> from a specified dataset.
+        /// Retrieves an <see cref="IFile"/> from a specified dataset.
         /// </summary>
         /// <param name="fileDescriptor">The descriptor containing identifiers for the file. </param>
         /// <param name="includedFields">The filter describing which fields to return populated. </param>
@@ -119,7 +119,7 @@ namespace Unity.Cloud.Assets
         AssetDescriptor DeserializeAssetIdentifiers(string jsonSerialization);
 
         /// <summary>
-        /// Implement this method to get an <see cref="IAsset"/> given a serialized json.
+        /// Retrieves an <see cref="IAsset"/> with a serialized JSON.
         /// </summary>
         /// <param name="jsonSerialization">The serialization of an asset. Accepts the result of <see cref="IAsset.Serialize"/>. </param>
         /// <returns>An <see cref="IAsset"/>. </returns>

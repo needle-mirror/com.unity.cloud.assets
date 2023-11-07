@@ -10,6 +10,7 @@ namespace Unity.Cloud.Assets
         {
             file.Tags = fileData.Tags;
             file.SystemTags = fileData.SystemTags;
+            file.Status = fileData.Status;
 
             if (includeFields.HasFlag(FileFields.description))
                 file.Description = fileData.Description;

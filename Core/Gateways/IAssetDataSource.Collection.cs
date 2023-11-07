@@ -12,7 +12,7 @@ namespace Unity.Cloud.Assets
     partial interface IAssetDataSource
     {
         /// <summary>
-        /// Implement this method to get the asset collections.
+        /// Gets the asset collections.
         /// </summary>
         /// <param name="assetDescriptor">The object containing the necessary information to identify the asset.</param>
         /// <param name="cancellationToken">A token that can be used to cancel the request.</param>
@@ -20,7 +20,7 @@ namespace Unity.Cloud.Assets
         Task<IEnumerable<IAssetCollectionData>> GetAssetCollectionsAsync(AssetDescriptor assetDescriptor, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Implement this method to get the collections in a project.
+        /// Retrieves the collections in a project.
         /// </summary>
         /// <param name="projectDescriptor">The object containing the necessary information to identify the project. </param>
         /// <param name="cancellationToken">A token that can be used to cancel the request.</param>
@@ -28,7 +28,7 @@ namespace Unity.Cloud.Assets
         Task<IEnumerable<IAssetCollectionData>> ListCollectionsAsync(ProjectDescriptor projectDescriptor, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Implement this method to get the collection at the specified path.
+        /// Retrieves the collection at the specified path.
         /// </summary>
         /// <param name="collectionDescriptor">The object containing the necessary information to identify the collection. </param>
         /// <param name="cancellationToken">A token that can be used to cancel the request.</param>
@@ -36,7 +36,7 @@ namespace Unity.Cloud.Assets
         Task<IAssetCollectionData> GetCollectionAsync(CollectionDescriptor collectionDescriptor, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Implement this method to create a new collection within a project.
+        /// Creates a new collection within a project.
         /// </summary>
         /// <param name="projectDescriptor">The object containing the necessary information to identify the project. </param>
         /// <param name="assetCollection">The <see cref="IAssetCollectionData"/> to push to the cloud. </param>
@@ -45,7 +45,7 @@ namespace Unity.Cloud.Assets
         Task<CollectionPath> CreateCollectionAsync(ProjectDescriptor projectDescriptor, IAssetCollectionData assetCollection, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Implement this method to update a collection in a project.
+        /// Updates a collection in a project.
         /// </summary>
         /// <param name="collectionDescriptor">The object containing the necessary information to identify the project. </param>
         /// <param name="assetCollection">The <see cref="IAssetCollectionData"/> to push to the cloud. </param>
@@ -54,7 +54,7 @@ namespace Unity.Cloud.Assets
         Task UpdateCollectionAsync(CollectionDescriptor collectionDescriptor, IAssetCollectionData assetCollection, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Implement this method to delete a collection from a project.
+        /// Deletes a collection from a project.
         /// </summary>
         /// <param name="collectionDescriptor">The object containing the necessary information to identify the collection. </param>
         /// <param name="cancellationToken">A token that can be used to cancel the request.</param>
@@ -62,7 +62,7 @@ namespace Unity.Cloud.Assets
         Task DeleteCollectionAsync(CollectionDescriptor collectionDescriptor, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Implement this method to insert assets into a collection in a project.
+        /// Adds assets to a collection in a project.
         /// </summary>
         /// <param name="collectionDescriptor">The object containing the necessary information to identify the collection. </param>
         /// <param name="assets">List of asset ids to add to the collection</param>
@@ -71,7 +71,7 @@ namespace Unity.Cloud.Assets
         Task AddAssetsToCollectionAsync(CollectionDescriptor collectionDescriptor, IEnumerable<AssetId> assets, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Implement this method to remove assets from a collection in a project.
+        /// Removes assets from a collection in a project.
         /// </summary>
         /// <param name="collectionDescriptor">The object containing the necessary information to identify the collection. </param>
         /// <param name="assets"></param>
@@ -80,7 +80,7 @@ namespace Unity.Cloud.Assets
         Task RemoveAssetsFromCollectionAsync(CollectionDescriptor collectionDescriptor, IEnumerable<AssetId> assets, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Implement this method to move a collection in a project to a new path.
+        /// Moves a collection in a project to a new path.
         /// </summary>
         /// <param name="collectionDescriptor">The object containing the necessary information to identify the collection. </param>
         /// <param name="newCollectionPath"></param>

@@ -117,17 +117,14 @@ namespace Unity.Cloud.Assets.Samples
                     element = element.parent;
                 }
 
-                if (element != null)
+                if (element != null && m_ElementToIndex.TryGetValue(element, out var index))
                 {
-                    if (m_ElementToIndex.TryGetValue(element, out var index))
+                    if (m_ListView.selectedIndices.Contains(index))
+                        m_ListView.RemoveFromSelection(index);
+                    else
                     {
-                        if (m_ListView.selectedIndices.Contains(index))
-                            m_ListView.RemoveFromSelection(index);
-                        else
-                        {
-                            m_ListView.ClearSelection();
-                            m_ListView.AddToSelection(index);
-                        }
+                        m_ListView.ClearSelection();
+                        m_ListView.AddToSelection(index);
                     }
                 }
             }

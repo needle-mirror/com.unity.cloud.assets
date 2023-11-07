@@ -8,7 +8,7 @@ using Unity.Cloud.Common;
 namespace Unity.Cloud.Assets
 {
     /// <summary>
-    /// This object contains the information pertaining to an asset collection stored on the cloud.
+    /// This object contains the information about an asset collection stored on the cloud.
     /// </summary>
     sealed class AssetCollection : IAssetCollection
     {

@@ -21,7 +21,7 @@ It performs a basic search for all assets of the selected project and displays t
 
 ## Requirements
 
-To use Assets SDK, you must have a minimum role of * [**Asset Manager Viewer**](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html) in the Unity Cloud Project you belong to.
+To use Assets SDK, you must have a minimum role of [**Asset Manager Viewer**](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html) in the Unity Cloud Project you belong to.
 
 ## Integrate the package in a Unity project
 
@@ -120,3 +120,24 @@ The script does the following:
 * Registers to the `ICompositeAuthenticator` to track login changes.
 * Creates an instance of an `AssetManagementBehaviour`.
 * Creates a simple UI flow for selecting Organizations, Projects and do CRUD operations on assets.
+
+## Going further
+
+For a more information about asset management, see the [Asset Management sample](asset-management-sample.md).
+
+### Creating datasets
+
+By default, each asset contain two datasets:
+
+* `Sources`
+* `Previews`
+
+To create additional datasets, see the [Create datasets](use-case-create-datasets.md) use case for more information.
+
+### Uploading files
+
+See the [Upload files](use-case-create-files.md) use case for more information.
+
+### Grouping assets in collections
+
+Collections allow assets to be group together within a project. See the [Manage collections](use-case-manage-collections.md) use case for more information.

@@ -91,8 +91,16 @@ namespace Unity.Cloud.Assets.Samples
         {
             try
             {
+                var filter = new AssetSearchFilter
+                {
+                    IncludedFields = new FieldsFilter
+                    {
+                        AssetFields = AssetFields.all,
+                        FileFields = FileFields.downloadUrl
+                    }
+                };
                 var projects = m_ProjectListUi.GetProjects().Select(p => p.Descriptor.ProjectId);
-                return m_AssetRepository.SearchAssetsAsync(SelectedOrganization.Id, projects, new AssetSearchFilter(), k_DefaultPagination, cancellationToken);
+                return m_AssetRepository.SearchAssetsAsync(SelectedOrganization.Id, projects, filter, k_DefaultPagination, cancellationToken);
             }
             catch (OperationCanceledException oe)
             {

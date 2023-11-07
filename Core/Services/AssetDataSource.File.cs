@@ -15,8 +15,7 @@ namespace Unity.Cloud.Assets
         {
             var request = new CreateFileRequest(datasetDescriptor.ProjectId, datasetDescriptor.AssetId, datasetDescriptor.AssetVersion, datasetDescriptor.DatasetId, fileCreation);
 
-            var requestUri = m_PublicServiceHostResolver.GetResolvedRequestUri(request.ConstructUrl(GetPublicApiPath()));
-            var response = await m_ServiceHttpClient.PostAsync(requestUri, request.ConstructBody(),
+            var response = await m_ServiceHttpClient.PostAsync(GetPublicRequestUri(request), request.ConstructBody(),
                 ServiceHttpClientOptions.Default(), token);
             var jsonContent = await response.GetContentAsString();
             var dto = IsolatedJsonConvert.DeserializeObject<UploadUrlDto>(jsonContent);
@@ -50,8 +49,7 @@ namespace Unity.Cloud.Assets
                 fileDescriptor.Path,
                 fileUpdate);
 
-            var requestUri = m_PublicServiceHostResolver.GetResolvedRequestUri(request.ConstructUrl(GetPublicApiPath()));
-            return m_ServiceHttpClient.PatchAsync(requestUri, request.ConstructBody(),
+            return m_ServiceHttpClient.PatchAsync(GetPublicRequestUri(request), request.ConstructBody(),
                 ServiceHttpClientOptions.Default(), token);
         }
 
@@ -59,8 +57,7 @@ namespace Unity.Cloud.Assets
         public async Task<Uri> GetFileDownloadUrlAsync(FileDescriptor fileDescriptor, IFileData fileData, CancellationToken token)
         {
             var request = GetFileUrlRequest(fileDescriptor, "download", null);
-            var requestUri = m_PublicServiceHostResolver.GetResolvedRequestUri(request.ConstructUrl(GetPublicApiPath()));
-            var response = await m_ServiceHttpClient.GetAsync(requestUri,
+            var response = await m_ServiceHttpClient.GetAsync(GetPublicRequestUri(request),
                 ServiceHttpClientOptions.Default(), token);
             var jsonContent = await response.GetContentAsString();
 
@@ -73,8 +70,7 @@ namespace Unity.Cloud.Assets
         public async Task<Uri> GetFileUploadUrlAsync(FileDescriptor fileDescriptor, IFileData fileData, CancellationToken token)
         {
             var request = GetFileUrlRequest(fileDescriptor, "upload", fileData);
-            var requestUri = m_PublicServiceHostResolver.GetResolvedRequestUri(request.ConstructUrl(GetPublicApiPath()));
-            var response = await m_ServiceHttpClient.GetAsync(requestUri,
+            var response = await m_ServiceHttpClient.GetAsync(GetPublicRequestUri(request),
                 ServiceHttpClientOptions.Default(), token);
             var jsonContent = await response.GetContentAsString();
 
@@ -90,8 +86,7 @@ namespace Unity.Cloud.Assets
                 fileDescriptor.AssetId,
                 fileDescriptor.AssetVersion,
                 fileDescriptor.Path);
-            var requestUri = m_PublicServiceHostResolver.GetResolvedRequestUri(request.ConstructUrl(GetPublicApiPath()));
-            return m_ServiceHttpClient.PostAsync(requestUri, request.ConstructBody(),
+            return m_ServiceHttpClient.PostAsync(GetPublicRequestUri(request), request.ConstructBody(),
                 ServiceHttpClientOptions.Default(), token);
         }
 
@@ -103,8 +98,7 @@ namespace Unity.Cloud.Assets
                 fileDescriptor.AssetVersion,
                 fileDescriptor.DatasetId,
                 fileDescriptor.Path);
-            var requestUri = m_PublicServiceHostResolver.GetResolvedRequestUri(request.ConstructUrl(GetPublicApiPath()));
-            var response = await m_ServiceHttpClient.GetAsync(requestUri,
+            var response = await m_ServiceHttpClient.GetAsync(GetPublicRequestUri(request),
                 ServiceHttpClientOptions.Default(), token);
             var jsonContent = await response.GetContentAsString();
 
@@ -123,8 +117,7 @@ namespace Unity.Cloud.Assets
                 fileDescriptor.Path,
                 metadataType,
                 keys);
-            var requestUri = m_PublicServiceHostResolver.GetResolvedRequestUri(request.ConstructUrl(GetPublicApiPath()));
-            return m_ServiceHttpClient.DeleteAsync(requestUri, request.ConstructBody(),
+            return m_ServiceHttpClient.DeleteAsync(GetPublicRequestUri(request), request.ConstructBody(),
                 ServiceHttpClientOptions.Default(), token);
         }
 

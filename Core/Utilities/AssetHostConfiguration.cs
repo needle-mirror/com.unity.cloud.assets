@@ -4,7 +4,7 @@ using Unity.Cloud.Common;
 namespace Unity.Cloud.Assets
 {
     /// <summary>
-    /// A client for making requests to Assets Manager API endpoints in the UCF gateway.
+    /// A client to request Asset Manager API endpoints in the UCF gateway.
     /// </summary>
     sealed class AssetHostConfiguration
     {
@@ -20,7 +20,7 @@ namespace Unity.Cloud.Assets
         }
 
         /// <summary>
-        /// Returns the service address of the Assets Manager API
+        /// Returns the service address of the Assets Manager API.
         /// </summary>
         /// <returns></returns>
         /// <exception cref="ArgumentOutOfRangeException"></exception>

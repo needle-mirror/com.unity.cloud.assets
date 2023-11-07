@@ -7,7 +7,7 @@ using Unity.Cloud.Common;
 namespace Unity.Cloud.Assets
 {
     /// <summary>
-    /// This interface contains all the information pertaining to a cloud asset.
+    /// This interface contains all the information about a cloud asset.
     /// </summary>
     [JsonObject(ItemNullValueHandling = NullValueHandling.Ignore)]
     interface IAssetData : IAssetBaseData, IAuthoringData

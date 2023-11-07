@@ -1,4 +1,4 @@
-> :bulb: **TIP!** Automatically add the latest version of Unity Cloud Assets to the Unity Editor! <button onclick="window.location.href='com.unity3d.kharma:upmpackage/com.unity.cloud.assets';">Add package</button>
+:bulb: **TIP!** Automatically add the latest version of Unity Cloud Assets to the Unity Editor! <button onclick="window.location.href='com.unity3d.kharma:upmpackage/com.unity.cloud.assets';">Add package</button>
 
 # Installation
 

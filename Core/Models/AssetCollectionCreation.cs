@@ -3,7 +3,7 @@ using System;
 namespace Unity.Cloud.Assets
 {
     /// <summary>
-    /// This object contains the information pertaining to an asset collection.
+    /// This object contains the information about an asset collection.
     /// </summary>
     public class AssetCollectionCreation : IAssetCollectionCreation
     {
@@ -21,7 +21,7 @@ namespace Unity.Cloud.Assets
         }
 
         /// <summary>
-        /// Verifies whether the input strings are valid.
+        /// Checks whether the input strings are valid.
         /// </summary>
         /// <param name="name">A string to verify. </param>
         /// <param name="description">A string to verify. </param>

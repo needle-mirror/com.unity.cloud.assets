@@ -8,7 +8,7 @@ namespace Unity.Cloud.Assets
     class AssetRequest : ProjectRequest
     {
         /// <summary>
-        /// Change the Asset's status Request Object.
+        /// Changes the asset's status Request Object.
         /// </summary>
         /// <param name="projectId">ID of the project.</param>
         /// <param name="assetId">The id of the asset the file is linked to.</param>

@@ -10,7 +10,7 @@ namespace Unity.Cloud.Assets
     class UpdateCollectionRequest : CollectionRequest
     {
         /// <summary>
-        /// Returns the collection
+        /// Returns the collection.
         /// </summary>
         IAssetCollectionData AssetCollection { get; }
 

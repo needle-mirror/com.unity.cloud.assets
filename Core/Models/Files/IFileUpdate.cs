@@ -3,7 +3,7 @@ using System.Collections.Generic;
 namespace Unity.Cloud.Assets
 {
     /// <summary>
-    /// File properties that are common across all the file-entities: creation, update, pending and uploaded
+    /// File properties that are common across all the file-entities: creation, update, pending, and uploaded.
     /// </summary>
     public interface IFileUpdate
     {

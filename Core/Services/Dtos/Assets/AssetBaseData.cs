@@ -5,7 +5,7 @@ using System.Runtime.Serialization;
 namespace Unity.Cloud.Assets
 {
     /// <summary>
-    /// This object contains all the information pertaining to an updated asset.
+    /// This object contains all the information about an updated asset.
     /// </summary>
     [DataContract]
     class AssetBaseData : IAssetBaseData

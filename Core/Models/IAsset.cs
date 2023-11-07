@@ -7,7 +7,7 @@ using Unity.Cloud.Common;
 namespace Unity.Cloud.Assets
 {
     /// <summary>
-    /// This is a base class containing the information pertaining to an asset.
+    /// This is a base class containing the information about an asset.
     /// </summary>
     public interface IAsset
     {
@@ -76,6 +76,11 @@ namespace Unity.Cloud.Assets
         /// The preview file ID of the asset.
         /// </summary>
         string PreviewFile { get; }
+
+        /// <summary>
+        /// The url of the preview file of the asset.
+        /// </summary>
+        Uri PreviewFileUrl { get; }
 
         /// <summary>
         /// The status of the asset.
@@ -156,18 +161,11 @@ namespace Unity.Cloud.Assets
         Task UnlinkFromProjectAsync(ProjectDescriptor projectDescriptor, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Returns the download urls for the asset's files and attachements.
+        /// Returns the download URLs for the asset's files.
         /// </summary>
         /// <param name="cancellationToken">The cancellation token. </param>
-        /// <returns>A task whose result is the download urls for all the asset's files and attachements. </returns>
+        /// <returns>A task whose result is the download URLs for all the asset's files and attachments. </returns>
         Task<IDictionary<string, Uri>> GetAssetDownloadUrlsAsync(CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Returns the download url for the asset's preview file.
-        /// </summary>
-        /// <param name="cancellationToken">The cancellation token. </param>
-        /// <returns>A task whose result is the download url of the preview file. </returns>
-        Task<Uri> GetPreviewFileDownloadUrlAsync(CancellationToken cancellationToken);
 
         /// <summary>
         /// Refreshes the
@@ -185,7 +183,7 @@ namespace Unity.Cloud.Assets
         Task<IAssetCollection> GetCollectionAsync(CollectionPath collectionPath, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Returns a <see cref="IDataset"/> with the specified creation info.
+        /// Returns a <see cref="IDataset"/> with the specified creation information.
         /// </summary>
         /// <param name="datasetCreation">The object containing the necessary information to create a dataset. </param>
         /// <param name="cancellationToken">The cancellation token. </param>
@@ -193,7 +191,7 @@ namespace Unity.Cloud.Assets
         Task<IDataset> CreateDatasetAsync(DatasetCreation datasetCreation, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Get the specified <see cref="IDataset"/>.
+        /// Retrieves the specified <see cref="IDataset"/>.
         /// </summary>
         /// <param name="datasetId">The id of the dataset. </param>
         /// <param name="cancellationToken">The cancellation token. </param>
@@ -201,7 +199,7 @@ namespace Unity.Cloud.Assets
         Task<IDataset> GetDatasetAsync(DatasetId datasetId, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Gets all the <see cref="IDataset"/>.
+        /// Retrieves all the <see cref="IDataset"/>.
         /// </summary>
         /// <param name="range"></param>
         /// <param name="cancellationToken">The cancellation token. </param>
@@ -209,7 +207,7 @@ namespace Unity.Cloud.Assets
         IAsyncEnumerable<IDataset> ListDatasetsAsync(Range range, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Gets the specified <see cref="IFile"/>.
+        /// Retrieves the specified <see cref="IFile"/>.
         /// </summary>
         /// <param name="filePath">The id of the file</param>
         /// <param name="cancellationToken">The cancellation token. </param>
@@ -217,7 +215,7 @@ namespace Unity.Cloud.Assets
         Task<IFile> GetFileAsync(string filePath, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Gets all the <see cref="IFile"/>s for the asset.
+        /// Retrieves all the <see cref="IFile"/>s for the asset.
         /// </summary>
         /// <param name="range"></param>
         /// <param name="cancellationToken">The cancellation token. </param>

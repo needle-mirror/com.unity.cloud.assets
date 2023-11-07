@@ -5,8 +5,8 @@ namespace Unity.Cloud.Assets
     class GenerateFileTagsRequest : FileRequest
     {
         /// <summary>
-        /// Create Asset File Request Object.
-        /// Create a single asset file.
+        /// Creates an Asset File Request Object.
+        /// Creates a single asset file.
         /// </summary>
         /// <param name="projectId">ID of the project.</param>
         /// <param name="assetId">The id of the asset the file will linked to.</param>

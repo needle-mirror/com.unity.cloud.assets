@@ -205,7 +205,7 @@ namespace Unity.Cloud.Assets.Samples.AssetDatabaseUploader
                 {
                     await UploadFileAsync(assetPath, sourceDataset);
                     fileCreated = true;
-                    Debug.Log($"Asset file created: {assetPath}");
+                    Debug.Log($"Asset file created and uploaded: {assetPath}");
                 }
             }
 
@@ -298,6 +298,8 @@ namespace Unity.Cloud.Assets.Samples.AssetDatabaseUploader
             }
 
             await UploadFileAsync(assetPath, sourceDataset);
+
+            Debug.Log($"Asset file created and uploaded: {assetPath}");
         }
 
         async Task<IAsset> CreateAssetAsync(string assetPath, string assetName)
@@ -431,7 +433,7 @@ namespace Unity.Cloud.Assets.Samples.AssetDatabaseUploader
 
         List<string> GetAssetFileTags(AssetType assetFileType)
         {
-            return new List<string> {assetFileType.GetValueAsString()};
+            return new List<string> { assetFileType.GetValueAsString() };
         }
 
         void Clear()

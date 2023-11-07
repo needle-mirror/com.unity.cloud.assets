@@ -61,7 +61,8 @@ Alternatively, the results can be iterated over and compiled into a list, so tha
 
 [!code-cs [behaviour-script](../Samples/Documentation/Manual/UseCaseSearchAssetsExample.cs#Example_NameInclude)]
 
-> **Note**: This type of search checks for assets whose entire name exactly matches the parameter.
+>[!NOTE]
+>This type of search checks for assets whose entire name exactly matches the parameter.
 
 * You can also exclude assets by name, like so:
 
@@ -77,7 +78,8 @@ You can search for assets by tag using the `Tags` property of the `AssetSearchFi
 
 [!code-cs [behaviour-script](../Samples/Documentation/Manual/UseCaseSearchAssetsExample.cs#Example_TagsInclude)]
 
-> **Note**: This type of search checks for assets whose tag list contains all the included parameters.
+>[!NOTE]
+>This type of search checks for assets whose tag list contains all the included parameters.
 
 #### Filter by Collections
 

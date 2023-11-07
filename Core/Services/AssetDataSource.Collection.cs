@@ -12,8 +12,7 @@ namespace Unity.Cloud.Assets
         public async Task<IEnumerable<IAssetCollectionData>> GetAssetCollectionsAsync(AssetDescriptor assetDescriptor, CancellationToken cancellationToken)
         {
             var request = new GetAssetCollectionsRequest(assetDescriptor.ProjectId, assetDescriptor.AssetId);
-            var requestUri = m_PublicServiceHostResolver.GetResolvedRequestUri(request.ConstructUrl(GetPublicApiPath()));
-            var response = await m_ServiceHttpClient.GetAsync(requestUri, ServiceHttpClientOptions.Default(),
+            var response = await m_ServiceHttpClient.GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(),
                 cancellationToken);
             var jsonContent = await response.GetContentAsString();
 
@@ -26,8 +25,7 @@ namespace Unity.Cloud.Assets
         public async Task<IEnumerable<IAssetCollectionData>> ListCollectionsAsync(ProjectDescriptor projectDescriptor, CancellationToken cancellationToken)
         {
             var request = new GetCollectionListRequest(projectDescriptor.ProjectId);
-            var requestUri = m_PublicServiceHostResolver.GetResolvedRequestUri(request.ConstructUrl(GetPublicApiPath()));
-            var response = await m_ServiceHttpClient.GetAsync(requestUri, ServiceHttpClientOptions.Default(),
+            var response = await m_ServiceHttpClient.GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(),
                 cancellationToken);
             var jsonContent = await response.GetContentAsString();
 
@@ -40,8 +38,7 @@ namespace Unity.Cloud.Assets
         public async Task<IAssetCollectionData> GetCollectionAsync(CollectionDescriptor collectionDescriptor, CancellationToken cancellationToken)
         {
             var request = new CollectionRequest(collectionDescriptor.ProjectId, collectionDescriptor.CollectionPath);
-            var requestUri = m_PublicServiceHostResolver.GetResolvedRequestUri(request.ConstructUrl(GetPublicApiPath()));
-            var response = await m_ServiceHttpClient.GetAsync(requestUri, ServiceHttpClientOptions.Default(),
+            var response = await m_ServiceHttpClient.GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(),
                 cancellationToken);
             var jsonContent = await response.GetContentAsString();
 
@@ -54,8 +51,7 @@ namespace Unity.Cloud.Assets
         public async Task<CollectionPath> CreateCollectionAsync(ProjectDescriptor projectDescriptor, IAssetCollectionData assetCollection, CancellationToken cancellationToken)
         {
             var request = new CreateCollectionRequest(projectDescriptor.ProjectId, assetCollection);
-            var requestUri = m_PublicServiceHostResolver.GetResolvedRequestUri(request.ConstructUrl(GetPublicApiPath()));
-            var response = await m_ServiceHttpClient.PostAsync(requestUri, request.ConstructBody(),
+            var response = await m_ServiceHttpClient.PostAsync(GetPublicRequestUri(request), request.ConstructBody(),
                 ServiceHttpClientOptions.Default(), cancellationToken);
             var jsonContent = await response.GetContentAsString();
 
@@ -68,8 +64,7 @@ namespace Unity.Cloud.Assets
         public Task UpdateCollectionAsync(CollectionDescriptor collectionDescriptor, IAssetCollectionData assetCollection, CancellationToken cancellationToken)
         {
             var request = new UpdateCollectionRequest(collectionDescriptor.ProjectId, collectionDescriptor.CollectionPath, assetCollection);
-            var requestUri = m_PublicServiceHostResolver.GetResolvedRequestUri(request.ConstructUrl(GetPublicApiPath()));
-            return m_ServiceHttpClient.PutAsync(requestUri, request.ConstructBody(),
+            return m_ServiceHttpClient.PutAsync(GetPublicRequestUri(request), request.ConstructBody(),
                 ServiceHttpClientOptions.Default(), cancellationToken);
         }
 
@@ -77,8 +72,7 @@ namespace Unity.Cloud.Assets
         public Task DeleteCollectionAsync(CollectionDescriptor collectionDescriptor, CancellationToken cancellationToken)
         {
             var request = new CollectionRequest(collectionDescriptor.ProjectId, collectionDescriptor.CollectionPath);
-            var requestUri = m_PublicServiceHostResolver.GetResolvedRequestUri(request.ConstructUrl(GetPublicApiPath()));
-            return m_ServiceHttpClient.DeleteAsync(requestUri, request.ConstructBody(),
+            return m_ServiceHttpClient.DeleteAsync(GetPublicRequestUri(request), request.ConstructBody(),
                 ServiceHttpClientOptions.Default(), cancellationToken);
         }
 
@@ -86,8 +80,7 @@ namespace Unity.Cloud.Assets
         public Task AddAssetsToCollectionAsync(CollectionDescriptor collectionDescriptor, IEnumerable<AssetId> assets, CancellationToken cancellationToken)
         {
             var request = new ModifyAssetsInCollectionRequest(collectionDescriptor.ProjectId, collectionDescriptor.CollectionPath, assets);
-            var requestUri = m_PublicServiceHostResolver.GetResolvedRequestUri(request.ConstructUrl(GetPublicApiPath()));
-            return m_ServiceHttpClient.PostAsync(requestUri, request.ConstructBody(),
+            return m_ServiceHttpClient.PostAsync(GetPublicRequestUri(request), request.ConstructBody(),
                 ServiceHttpClientOptions.Default(), cancellationToken);
         }
 
@@ -95,8 +88,7 @@ namespace Unity.Cloud.Assets
         public Task RemoveAssetsFromCollectionAsync(CollectionDescriptor collectionDescriptor, IEnumerable<AssetId> assets, CancellationToken cancellationToken)
         {
             var request = new ModifyAssetsInCollectionRequest(collectionDescriptor.ProjectId, collectionDescriptor.CollectionPath, assets);
-            var requestUri = m_PublicServiceHostResolver.GetResolvedRequestUri(request.ConstructUrl(GetPublicApiPath()));
-            return m_ServiceHttpClient.PatchAsync(requestUri, request.ConstructBody(),
+            return m_ServiceHttpClient.PatchAsync(GetPublicRequestUri(request), request.ConstructBody(),
                 ServiceHttpClientOptions.Default(), cancellationToken);
         }
 
@@ -104,8 +96,7 @@ namespace Unity.Cloud.Assets
         public async Task<CollectionPath> MoveCollectionToNewPathAsync(CollectionDescriptor collectionDescriptor, CollectionPath newCollectionPath, CancellationToken cancellationToken)
         {
             var request = new MoveCollectionToNewPathRequest(collectionDescriptor.ProjectId, collectionDescriptor.CollectionPath, newCollectionPath);
-            var requestUri = m_PublicServiceHostResolver.GetResolvedRequestUri(request.ConstructUrl(GetPublicApiPath()));
-            var response = await m_ServiceHttpClient.PatchAsync(requestUri, request.ConstructBody(),
+            var response = await m_ServiceHttpClient.PatchAsync(GetPublicRequestUri(request), request.ConstructBody(),
                 ServiceHttpClientOptions.Default(), cancellationToken);
             var jsonContent = await response.GetContentAsString();
 

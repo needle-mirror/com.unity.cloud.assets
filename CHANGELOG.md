@@ -4,6 +4,29 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [1.0.0-exp.2] - 2023-11-07
+
+### Added
+- Added `PreviewFileUrl` to `IAsset` to expose the preview file url of the asset.
+
+### Changed
+- Updated LICENSE.md file.
+- Improved information in README
+- Update `ListProjectsAsync`, `GetProjectAsync`and `CreateProjectAsync` to call public api endpoints
+
+### Fixes
+- Fix SearchBarController to include Asset fields on search actions.
+- Fixed potential null reference exception in in the `ThumbnailController` class used in the `Asset Discovery` sample.
+
+### Removed
+- [Breaking] Removed `UploadAsync` and `GetUploadUrlAsync` methods from `IFile`. Overwriting file content is not supported.
+- Removed inapplicable notices in documentation.
+- [Breaking] Removed `GetPreviewFileDownloadUrlAsync` from `IAsset`. Use `GetDownloadUrlAsync` of `IFile` instead.
+
+### Fixed
+- Fixed missing version header.
+- Fix `DatasetEntity.ListFilesAsync` to show all files fields information and included `Status` as a default field.
+
 ## [1.0.0-exp.1] - 2023-10-26
 
 ### Added
@@ -28,7 +51,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Add UI message to give feedback after an action like (publish asset, save asset)
 - Added filtering of already included assets for the 'Add to Collection' asset list in Asset Collection sample.
 - `IDataset` refreshes its data when `UpdateAsync` and `RemoveFileAsync` are called.
-- Fix `IAsset.UnlinkFromProjectAsync` unlinking context project instead of the one passed in parameter. 
+- Fix `IAsset.UnlinkFromProjectAsync` unlinking context project instead of the one passed in parameter.
 
 ### Removed
 - Removing empty and unused directories and scripts.

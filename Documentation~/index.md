@@ -2,8 +2,6 @@
 
 ![Assets Feature Splash](images/splash-render-light-sphere.png)
 
-> Important! This SDK is in Beta. To request access, see Unity Assets information [here](https://docs.unity3d.com/docs-asset-manager/manual/request-access.html).
-
 The Unity Cloud Assets makes it easy for developers to discover, create, update, delete, and manage Unity assets at runtime:
 
 * High-level abstraction over the Web API eliminates the need to spend time on low-level details.

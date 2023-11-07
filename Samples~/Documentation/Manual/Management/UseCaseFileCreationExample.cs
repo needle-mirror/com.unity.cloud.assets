@@ -72,7 +72,21 @@ namespace Unity.Cloud.Assets.Documentation.Management
                 _ = m_Behaviour.UploadAssetFile(dataset);
             }
 
+            GUI.enabled = m_SelectedDataset == null;
+            if (GUILayout.Button("Link asset file"))
+            {
+                m_WindowRect = new Rect(Screen.width * 0.4f, Screen.height * 0.4f, Screen.width * 0.2f, Screen.height * 0.2f);
+                m_SelectedDataset = dataset;
+                m_AvailableFiles = m_Behaviour.Files?.Where(f => !f.LinkedDatasets.Contains(dataset.Descriptor)).ToList();
+            }
+            GUI.enabled = true;
+
             GUILayout.EndHorizontal();
+
+            if (m_SelectedDataset != null)
+            {
+                m_WindowRect = GUILayout.Window(0, m_WindowRect, DisplayWindow, "Select files to link");
+            }
 
             if (files.Count == 0)
             {
@@ -82,14 +96,68 @@ namespace Unity.Cloud.Assets.Documentation.Management
             {
                 foreach (var file in files)
                 {
-                    DisplayAssetFile(file);
+                    DisplayAssetFile(dataset, file);
                 }
             }
         }
 
-        static void DisplayAssetFile(IFile file)
+        void DisplayAssetFile(IDataset dataset, IFile file)
         {
-            GUILayout.Label($"  > {file.Descriptor.Path}");
+            GUILayout.BeginHorizontal();
+
+            GUILayout.Label($"  > {file.Descriptor.Path} ({file.SizeBytes} kb)");
+            if (GUILayout.Button("Unlink"))
+            {
+                _ = m_Behaviour.UnlinkFile(dataset, file);
+            }
+
+            GUILayout.EndHorizontal();
+        }
+
+        Rect m_WindowRect;
+        IDataset m_SelectedDataset;
+        List<IFile> m_AvailableFiles;
+
+        void DisplayWindow(int windowId)
+        {
+            GUILayout.BeginVertical();
+
+            GUILayout.Label($"Link files to {m_SelectedDataset.Name}:");
+
+            if (m_AvailableFiles.Count == 0)
+            {
+                GUILayout.Label(" ! No files !");
+            }
+            else
+            {
+                for (var i = 0; i < m_AvailableFiles.Count; ++i)
+                {
+                    GUILayout.BeginHorizontal();
+
+                    GUILayout.Label(m_AvailableFiles[i].Descriptor.Path);
+
+                    if (GUILayout.Button("Link"))
+                    {
+                        _ = m_Behaviour.LinkFile(m_SelectedDataset, m_AvailableFiles[i]);
+                        m_AvailableFiles.RemoveAt(i);
+                        GUILayout.EndHorizontal();
+                        break;
+                    }
+
+                    GUILayout.EndHorizontal();
+                }
+            }
+
+            GUILayout.Space(10f);
+
+            if (GUILayout.Button("Close"))
+            {
+                m_SelectedDataset = null;
+                m_AvailableFiles = null;
+                _ = m_Behaviour.GetFiles();
+            }
+
+            GUILayout.EndVertical();
         }
 
         #endregion
@@ -119,6 +187,7 @@ namespace Unity.Cloud.Assets.Documentation.Management
         {
             Datasets = new List<IDataset>();
 
+            await CurrentAsset.RefreshAsync(new FieldsFilter {AssetFields = AssetFields.datasets}, CancellationToken.None);
             var asyncList = CurrentAsset.ListDatasetsAsync(Range.All, CancellationToken.None);
             await foreach (var dataset in asyncList)
             {
@@ -136,6 +205,7 @@ namespace Unity.Cloud.Assets.Documentation.Management
         {
             Files = new List<IFile>();
 
+            await CurrentAsset.RefreshAsync(new FieldsFilter {AssetFields = AssetFields.files, FileFields = FileFields.fileSize}, CancellationToken.None);
             var asyncList = CurrentAsset.ListFilesAsync(Range.All, CancellationToken.None);
             await foreach (var file in asyncList)
             {
@@ -166,7 +236,7 @@ namespace Unity.Cloud.Assets.Documentation.Management
         {
             var fileCreation = new FileCreation
             {
-                Path = CurrentAsset.Name + $"_file_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}",
+                Path = $"file_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}",
                 Description = "Documentation example asset file creation.",
                 Tags = new List<string> {"Texture", "Gray"}
             };
@@ -185,7 +255,42 @@ namespace Unity.Cloud.Assets.Documentation.Management
             }
             catch (Exception e)
             {
-                Debug.LogError($"Failed to upload asset file: {fileCreation.Path}. {e}");
+                Debug.LogError($"Failed to upload file: {fileCreation.Path}. {e}");
+            }
+        }
+
+        #endregion
+
+        #region Example_Behaviour_AddFileReference
+
+        public async Task LinkFile(IDataset dataset, IFile file)
+        {
+            try
+            {
+                await dataset.AddExistingFileAsync(file.Descriptor.Path, file.Descriptor.DatasetId, CancellationToken.None);
+                Debug.Log($"File: {file.Descriptor.Path} linked to dataset {dataset.Descriptor.DatasetId}.");
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"Failed to link asset file: {file.Descriptor.Path}. {e}");
+            }
+        }
+
+        #endregion
+
+        #region Example_Behaviour_RemoveFileReference
+
+        public async Task UnlinkFile(IDataset dataset, IFile file)
+        {
+            try
+            {
+                await dataset.RemoveFileAsync(file.Descriptor.Path, CancellationToken.None);
+                Debug.Log($"File: {file.Descriptor.Path} unlinked from dataset {dataset.Descriptor.DatasetId}.");
+                Files = null;
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"Failed to unlink asset file: {file.Descriptor.Path}. {e}");
             }
         }
 

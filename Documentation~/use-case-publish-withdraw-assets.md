@@ -9,8 +9,8 @@ You can use the Unity Cloud Assets package to publish assets so they are availab
 | [`Asset Management Contributor`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html) | yes              |
 | [`Asset Management Owner`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html)       | yes              |
 
-
-> **Note**: Asset management requires users have the role of [`Asset Management Contributor`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html) OR a minimum role of [`Manager`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html) in the Organization.
+>[!NOTE]
+>Asset management requires users have the role of [`Asset Management Contributor`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html) OR a minimum role of [`Manager`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html) in the Organization.
 
 ## Before you start
 
@@ -27,33 +27,33 @@ Before you start, you must:
 
 ### Publish an asset
 
-To publish an asset:
+To publish an asset, follow these steps:
 
 1. Open the `AssetManagementBehaviour` script you created.
 2. Add the following code to the end of the class:
 
 [!code-cs [behaviour-script](../Samples/Documentation/Manual/Management/UseCasePublishWithdrawAssetExample.cs#Example_Behaviour_PublishAsset)]
 
-The script sets the asset in the cloud as published.
+The code snippet sets the asset in the cloud as published.
 
 ### Withdraw a published asset
 
-To withdraw a published asset:
+To withdraw a published asset, follow these steps:
 
 1. Open the `AssetManagementBehaviour` script you created.
 2. Add the following code to the end of the class:
 
 [!code-cs [behaviour-script](../Samples/Documentation/Manual/Management/UseCasePublishWithdrawAssetExample.cs#Example_Behaviour_WithdrawAsset)]
 
-The script withdraws the published asset.
+The code snippet withdraws the published asset.
 
 ### Add the UI for interacting with assets
 
-To add UI for the example:
+To add UI for the example, follow these steps:
 
 1. Open the `AssetManagementUI` script you created.
 2. Replace the `AssetActions` function with the following code:
 
 [!code-cs [behaviour-script](../Samples/Documentation/Manual/Management/UseCasePublishWithdrawAssetExample.cs#Example_UI)]
 
-The script provides UI buttons to trigger the publish or the withdraw of a new asset.
+The code snippet provides UI buttons to trigger the publish or the withdraw of a new asset.

@@ -45,7 +45,10 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
         public event Action<IAsset> OnClosePanel;
 
         MessageDialogController m_MessageDialogController;
+
+#if !UNITY_EDITOR
         TextInputDialogController m_AssetFilePathDialogController;
+#endif
 
         IAssetProject m_AssetProject;
         IAsset m_CurrentAsset;

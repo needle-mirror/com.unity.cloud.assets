@@ -20,7 +20,8 @@ Before you use the Asset Database Uploader sample, you must have the following:
 * Access to [Asset Manager service](https://docs.unity3d.com/docs-asset-manager/manual/get-started.html)
 * A Unity Project with the Asset Manager service enabled, see: [Asset Manager documentation](https://docs.unity3d.com/docs-asset-manager/manual/modify-project.html)
 
-> **Note**: While the Assets package doesn't depend on the Identity service, it is used in the sample to control the authentication process.
+>[!NOTE]
+>While the Assets package doesn't depend on the Identity service, it is used in the sample to control the authentication process.
 
 ## Install the sample
 
@@ -61,8 +62,9 @@ To run the sample, follow these steps:
    </br>
    ![Screenshot of the upload assets button](images/uploader-upload-assets.png)
 
-> **Note**: The script is basic and doesn't handle asset defined by multiple files. Each file is seen as a new asset.
-> Also, all the uploaded assets are set with draft status. The script doesn't provide a way to change the status of an asset.
+>[!NOTE]
+>The script is basic and doesn't handle asset defined by multiple files. Each file is seen as a new asset.
+>Also, all the uploaded assets are set with draft status. The script doesn't provide a way to change the status of an asset.
 
    ![Screenshot of the Fetch Organizations and Projects button](images/uploader-fetch-organizations-projects.png)
 
@@ -101,8 +103,8 @@ To open the OrgAndProjectSelector script, go to your `Assets/Samples/Unity Cloud
 The `AssetsUploader` script shows you how to do the following:
 
 * Create an asset in a Unity Cloud Project
-* Create an asset file and attach it to the created asset
-* Upload asset file contents
+* Create a file and attach it to the created asset
+* Upload the file contents
 
 To open the AssetsUploader script, go to your `Assets/Samples/Unity Cloud Assets/<package-version>/AssetDatabaseUploader/Scripts/AssetsUploader.cs` file.
 

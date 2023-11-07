@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 namespace Unity.Cloud.Assets
 {
     /// <summary>
-    /// This object contains all the information pertaining to an updated asset.
+    /// This object contains all the information about an updated asset.
     /// </summary>
     [JsonObject(ItemNullValueHandling = NullValueHandling.Ignore)]
     interface IAssetBaseData : IMetadataInfo

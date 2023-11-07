@@ -34,7 +34,6 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
         Button m_CreateDatasetButton;
         Button m_BackButton;
 
-        IAssetProject m_AssetProject;
         IAsset m_CurrentAsset;
         ScrollView m_DatasetScrollView;
 
@@ -148,9 +147,9 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
             ClearAssetInformation();
 
-            m_AssetProject = project;
+            var assetProject = project;
 
-            m_DatasetCreationController.CreateNewAssetAndDataset(m_AssetProject);
+            m_DatasetCreationController.CreateNewAssetAndDataset(assetProject);
         }
 
         void DrawTags(List<string> tagsList)
@@ -232,7 +231,6 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
         void ClearAssetInformation()
         {
-            m_AssetProject = null;
             m_CurrentAsset = null;
             m_AssetTitleLabel.text = "AssetName";
             m_AssetStatusLastEditLabel.text = "";

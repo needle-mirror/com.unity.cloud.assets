@@ -9,7 +9,7 @@ using Unity.Cloud.Common;
 namespace Unity.Cloud.Assets
 {
     /// <summary>
-    /// This is a base class containing the information pertaining to an asset.
+    /// This is a base class containing the information about an asset.
     /// </summary>
     sealed class Asset : IAsset
     {
@@ -24,7 +24,6 @@ namespace Unity.Cloud.Assets
 
         IEnumerable<IAssetCollection> m_Collections = Array.Empty<IAssetCollection>();
         internal ProjectDescriptor[] m_LinkedProjects = Array.Empty<ProjectDescriptor>();
-        internal Uri m_PreviewFileDownloadUrl;
 
         /// <inheritdoc />
         public AssetDescriptor Descriptor { get; }
@@ -64,6 +63,9 @@ namespace Unity.Cloud.Assets
 
         /// <inheritdoc />
         public string PreviewFile { get; set; }
+
+        /// <inheritdoc />
+        public Uri PreviewFileUrl { get; set; }
 
         /// <inheritdoc />
         public IEnumerable<CollectionPath> Collections { get; private set; } = Array.Empty<CollectionPath>();
@@ -229,23 +231,6 @@ namespace Unity.Cloud.Assets
             }
 
             return urls;
-        }
-
-        /// <inheritdoc />
-        public async Task<Uri> GetPreviewFileDownloadUrlAsync(CancellationToken cancellationToken)
-        {
-            if (m_PreviewFileDownloadUrl == null && !string.IsNullOrEmpty(PreviewFile))
-            {
-                if (Files == null) await RefreshFiles(cancellationToken);
-
-                var previewFile = Files?.FirstOrDefault(x => x.Descriptor.Path == PreviewFile);
-                if (previewFile != null)
-                {
-                    m_PreviewFileDownloadUrl = await previewFile.GetDownloadUrlAsync(cancellationToken);
-                }
-            }
-
-            return m_PreviewFileDownloadUrl;
         }
 
         /// <inheritdoc />

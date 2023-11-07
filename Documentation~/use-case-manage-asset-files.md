@@ -1,15 +1,15 @@
-# Use case: Manage asset files
+# Use case: Manage an asset's files
 
-You can use the Unity Cloud Assets package to add or remove references of files from other datasets.
+You can use the Unity Cloud Assets package to edit file metadata and download file content.
 
 The SDK supports different workflows for users with different roles.
 
-| Asset Manager Project role                                                                             | Edit files | Add/remove file references |
-|:-------------------------------------------------------------------------------------------------------|:-----------|:---------------------------|
-| [`Asset Management Viewer`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html)      | no         | no                         |
-| [`Asset Management Consumer`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html)    | no         | no                         |
-| [`Asset Management Contributor`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html) | yes        | yes                        |
-| [`Asset Management Owner`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html)     | yes        | yes                        |
+| Asset Manager Project role                                                                             | Download files | Edit files |
+|:-------------------------------------------------------------------------------------------------------|----------------|:-----------|
+| [`Asset Management Viewer`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html)      | no             | no         |
+| [`Asset Management Consumer`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html)    | yes            | no         |
+| [`Asset Management Contributor`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html) | yes            | yes        |
+| [`Asset Management Owner`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html)       | yes            | yes        |
 
 ## Before you start
 
@@ -22,11 +22,11 @@ Before you start, you must:
    * You can upload assets from existing Unity assets; see the [Asset Database Uploader sample](./asset-database-uploader-sample.md).
    * You can create assets through the dashboard; see the [Managing assets on the dashboard](https://docs.unity3d.com/docs-asset-manager/manual/add-asset.html) documentation.
 
-You should also have uploaded files to an asset; see the [Create asset files use case](use-case-create-asset-files.md).
+You should also have uploaded files to an asset; see the [Create files use case](use-case-create-asset-files.md).
 
 ## How do I...?
 
-### List the asset files of an asset
+### List the files of an asset
 
 By default, when you get an asset, the files associated with are not included in the response.
 To get files associated to an asset:
@@ -34,64 +34,58 @@ To get files associated to an asset:
 1. Open the `AssetManagementBehaviour` script you created.
 2. Add the following code to the end of the class:
 
-[!code-cs [behaviour-script](../Samples/Documentation/Manual/Management/UseCaseFileManagementExample.cs#Example_Behaviour_RefreshAssetFiles)]
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Management/UseCaseFileManagementExample.cs#Example_Behaviour_RefreshFiles)]
 
-The script populates the `Files` property of the selected asset.
+The code snippet populates the `Files` property of the selected asset.
 
-### Get an asset file's download URL
+### Download a file
 
-To get the download URL of an asset file:
+To download the file of an asset, follow these steps:
 
 1. Open the `AssetManagementBehaviour` script you created.
 2. Add the following code to the end of the class:
 
-[!code-cs [behaviour-script](../Samples/Documentation/Manual/Management/UseCaseFileManagementExample.cs#Example_Behaviour_DownloadUrls)]
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Management/UseCaseFileManagementExample.cs#Example_Behaviour_DownloadAssetFile)]
 
-The script prints the download URL of the specified asset file to the console.
+The code snippet does the following:
 
-### Update an asset file
+* Gets the files of an asset.
+* Downloads the selected file to the desktop.
+* Prints a message to the console when the download is complete OR prints an error message if the download fails.
 
-To update an asset file:
+### Update a file
+
+To update a file, follow these steps:
 
 1. Open the `AssetManagementBehaviour` script you created.
 2. Add the following code to the end of the class:
 
 [!code-cs [behaviour-script](../Samples/Documentation/Manual/Management/UseCaseFileManagementExample.cs#Example_Behaviour_UpdateAssetFile)]
 
-The script does the following:
+The code snippet does the following:
 
-* Increments the index in the name of the asset file.
+* Increments the index in the name of the file.
 * Prints a message to the console on success.
 
-### Delete an asset file
+### Delete a file
 
-To delete an asset file:
+Deleting a file involves removing all references to the file from the asset.
+For more information see the use case for [Removing a file reference from a dataset](use-case-create-asset-files.md#remove-a-file-reference-from-a-dataset).
 
-1. Open the `AssetManagementBehaviour` script you created.
-2. Add the following code to the end of the class:
+### Add the UI for interacting with files
 
-[!code-cs [behaviour-script](../Samples/Documentation/Manual/Management/UseCaseFileManagementExample.cs#Example_Behaviour_DeleteAssetFile)]
-
-The script does the following:
-
-* Deletes the asset file.
-* Refreshes the list of files for the selected asset.
-* Prints a message to the console on success.
-
-### Add the UI for interacting with asset files
-
-To add UI for the example:
+To add UI for the example, follow these steps:
 
 1. Open the `AssetManagementUI` script you created.
 2. Replace the `AssetActions` function with the following code:
 
 [!code-cs [behaviour-script](../Samples/Documentation/Manual/Management/UseCaseFileManagementExample.cs#Example_UI)]
 
-The script does the following:
+The code snippet does the following:
 
-* Displays a list of the selected asset's asset files.
-* Displays UI buttons to update, delete, and output the download URL of each asset file.
+* Displays a button to force refresh the list of files of the selected asset.
+* Displays each file of the selected asset with a UI buttons to update and download.
 
 ## Going further
 
-For more a more in-depth look at file management, see the [Asset Database Uploader sample](./asset-database-uploader-sample.md).
+For more a more in-depth look at file management, see the [Asset Database Uploader sample](asset-database-uploader-sample.md).

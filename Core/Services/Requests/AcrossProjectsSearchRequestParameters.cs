@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using Unity.Cloud.Common;
 
 namespace Unity.Cloud.Assets
 {
@@ -17,7 +18,7 @@ namespace Unity.Cloud.Assets
         /// <param name="filter">filter param</param>
         /// <param name="includeFields">The fields to be returned.</param>
         /// <param name="pagination">pagination param</param>
-        public AcrossProjectsSearchRequestParameters(IEnumerable<string> projectIds, SearchRequestFilter filter = default, FieldsFilter includeFields = default, SearchRequestPagination pagination = default)
+        public AcrossProjectsSearchRequestParameters(IEnumerable<ProjectId> projectIds, SearchRequestFilter filter = default, FieldsFilter includeFields = default, SearchRequestPagination pagination = default)
             : base(filter, includeFields, pagination)
         {
             ProjectIds = projectIds.ToArray();
@@ -27,6 +28,6 @@ namespace Unity.Cloud.Assets
         /// Parameter project ids of AcrossProjectsSearchRequest
         /// </summary>
         [DataMember(Name = "projectIds", EmitDefaultValue = false)]
-        public string[] ProjectIds { get; set; }
+        public ProjectId[] ProjectIds { get; set; }
     }
 }

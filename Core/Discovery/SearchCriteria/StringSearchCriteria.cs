@@ -3,7 +3,7 @@ using System;
 namespace Unity.Cloud.Assets
 {
     /// <summary>
-    /// A flexible string search; splits the string on whitespaces and performs a <see cref="string.Contains(string)"/> comparisons instead of equalities.
+    /// A flexible string search: splits the string on whitespaces and performs a <see cref="string.Contains(string)"/> comparisons instead of equalities.
     /// </summary>
     public sealed class StringSearchCriteria : SearchCriteria<string>
     {

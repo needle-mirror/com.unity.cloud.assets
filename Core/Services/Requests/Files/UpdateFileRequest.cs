@@ -15,8 +15,8 @@ namespace Unity.Cloud.Assets
         public IFileBaseData FileData { get; }
 
         /// <summary>
-        /// Update Asset File Request Object.
-        /// Update a single asset file.
+        /// Updates an Asset File Request Object.
+        /// Updates a single asset file.
         /// </summary>
         /// <param name="projectId">ID of the project.</param>
         /// <param name="assetId">The id of the asset the file is linked to.</param>
@@ -33,7 +33,7 @@ namespace Unity.Cloud.Assets
         }
 
         /// <summary>
-        /// Helper for constructing the request body.
+        /// Provides a helper for constructing the request body.
         /// </summary>
         /// <returns>A </returns>
         public override HttpContent ConstructBody()

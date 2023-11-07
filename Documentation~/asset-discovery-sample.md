@@ -12,7 +12,6 @@ You will need at least a Consumer Role to be able to download assets
 | [`Asset Management Contributor`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html) | yes    | yes      |
 | [`Asset Management Owner`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html)       | yes    | yes      |
 
-
 ## Before you start
 
 Before you use the Asset Discovery sample, you must have the following:
@@ -25,7 +24,8 @@ Before you use the Asset Discovery sample, you must have the following:
 * At least one asset in an Asset Management Project, see: [Asset Manager documentation](https://docs.unity3d.com/docs-asset-manager/manual/add-asset.html)
 * A Unity Project with the Asset Manager service enabled, see: [Asset Manager documentation](https://docs.unity3d.com/docs-asset-manager/manual/modify-project.html)
 
-> **Note**: While the Assets package doesn't depend on the Identity service, it is used in the sample to control the authentication process.
+>[!NOTE]
+>While the Assets package doesn't depend on the Identity service, it is used in the sample to control the authentication process.
 
 ## Install the sample
 
@@ -64,7 +64,8 @@ To search for specific assets by tag or name in this sample, follow these steps:
    </br>
    ![Screenshot of the created topic](images/search.png)
 
-> **Note**: While using the SDK, you will be able to build different and more complex queries. For more information on asset search, see the [Search Assets manual](use-case-search-assets.md).
+>[!NOTE]
+>While using the SDK, you will be able to build different and more complex queries. For more information on asset search, see the [Search Assets manual](use-case-search-assets.md).
 
 #### Search prompts
 
@@ -79,7 +80,7 @@ To see your asset information in this sample, follow these steps:
     </br>
     ![Screenshot of the created topic](images/asset-detail.png)
 
-2. To download your asset files, select **Download**.
+2. To download your files, select **Download**.
 
 To edit the download's filepath, update the `path` variable in `AssetInformationPanelController.OnAssetDownloadButtonClicked()`.
 ```C#
@@ -90,7 +91,8 @@ async void OnAssetDownloadButtonClicked()
     var path = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
 ```
 
-> **Note**: To download assets, you will need the right permissions in your Project to **consume** assets.
+>[!NOTE]
+>To download assets, you will need the right permissions in your Project to **consume** assets.
 
 ## Main components
 

@@ -288,13 +288,13 @@ namespace Unity.Cloud.Assets
             {
                 AssetFields = AssetFields.files,
                 DatasetFields = DatasetFields.none,
-                FileFields = FileFields.none
+                FileFields = FileFields.all
             };
             var data = await m_DataSource.GetAssetAsync(Descriptor.AssetDescriptor, filter, cancellationToken);
 
             Files = data.Files?
                 .Where(f => f.DatasetIds.Contains(Descriptor.DatasetId))
-                .Select(fileData => fileData.From(m_DataSource, new FileDescriptor(Descriptor, fileData.Path), FileFields.none))
+                .Select(fileData => fileData.From(m_DataSource, new FileDescriptor(Descriptor, fileData.Path), FileFields.all))
                 .ToArray();
         }
     }

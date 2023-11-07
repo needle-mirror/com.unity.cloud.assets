@@ -91,11 +91,12 @@ namespace Unity.Cloud.Assets.Samples
             }
 
             var entryArray = entries as U[] ?? entries.ToArray();
+            m_Entries = entryArray.ToList();
+
             if (entryArray.Any())
             {
                 m_DisplayMessageContainer.style.display = DisplayStyle.None;
 
-                m_Entries = entryArray.ToList();
                 m_ListController.UpdateList(entryArray);
             }
             else
