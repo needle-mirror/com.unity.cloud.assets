@@ -1,14 +1,15 @@
 ﻿using System.Collections.Generic;
-using Newtonsoft.Json;
+using System.Runtime.Serialization;
 
 namespace Unity.Cloud.Assets
 {
+    [DataContract]
     class ProjectPageDto
     {
-        [JsonProperty("projects")]
+        [DataMember(Name = "projects")]
         public ProjectData[] Projects { get; set; }
 
-        [JsonProperty("projectsRole")]
+        [DataMember(Name = "projectsRole")]
         public Dictionary<string, string[]> ProjectsRole { get; set; }
     }
 }

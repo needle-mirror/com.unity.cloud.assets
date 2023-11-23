@@ -83,7 +83,7 @@ namespace Unity.Cloud.Assets
         /// Refreshes the file with the specified fields.
         /// </summary>
         /// <param name="includeFields">The fields to refresh. </param>
-        /// <param name="cancellationToken">The cancellation token. </param>
+        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task with no result. </returns>
         // Task RefreshAsync(FileFields includeFields, CancellationToken cancellationToken);
 
@@ -98,14 +98,14 @@ namespace Unity.Cloud.Assets
         /// Returns the datasets that are linked to this file.
         /// </summary>
         /// <param name="range">The range of datasets to return. </param>
-        /// <param name="cancellationToken">The cancellation token. </param>
+        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task whose result is an async enumeration of datasets. </returns>
         IAsyncEnumerable<IDataset> GetLinkedDatasetsAsync(Range range, CancellationToken cancellationToken);
 
         /// <summary>
         /// Returns the download URL for the file.
         /// </summary>
-        /// <param name="cancellationToken">The cancellation token. </param>
+        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task whose result is the download url of the file. </returns>
         Task<Uri> GetDownloadUrlAsync(CancellationToken cancellationToken);
 
@@ -114,14 +114,14 @@ namespace Unity.Cloud.Assets
         /// </summary>
         /// <param name="targetStream">The stream in which to download the file. </param>
         /// <param name="progress">The progress of the download. </param>
-        /// <param name="cancellationToken">The cancellation token. </param>
+        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task with no result. </returns>
         Task DownloadAsync(Stream targetStream, IProgress<HttpProgress> progress, CancellationToken cancellationToken);
 
         /// <summary>
         /// Returns the upload URL for the file.
         /// </summary>
-        /// <param name="cancellationToken">The cancellation token. </param>
+        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task whose result is the upload url of the file. </returns>
         // Task<Uri> GetUploadUrlAsync(CancellationToken cancellationToken);
 
@@ -130,7 +130,7 @@ namespace Unity.Cloud.Assets
         /// </summary>
         /// <param name="sourceStream">The stream from which to upload the file. </param>
         /// <param name="progress">The progress of the upload. </param>
-        /// <param name="cancellationToken">The cancellation token. </param>
+        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task with no result. </returns>
         // Task UploadAsync(Stream sourceStream, IProgress<HttpProgress> progress, CancellationToken cancellationToken);
 
@@ -138,7 +138,7 @@ namespace Unity.Cloud.Assets
         /// Updates the file.
         /// </summary>
         /// <param name="fileUpdate">The object containing the necessary information to update the file. </param>
-        /// <param name="cancellationToken">The cancellation token. </param>
+        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task with no result. </returns>
         Task UpdateAsync(IFileUpdate fileUpdate, CancellationToken cancellationToken);
 
@@ -146,7 +146,7 @@ namespace Unity.Cloud.Assets
         /// Removes the specified user metadata fields from the file.
         /// </summary>
         /// <param name="keys">The metadata fields to remove. </param>
-        /// <param name="cancellationToken">The cancellation token. </param>
+        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task with no result. </returns>
         Task RemoveUserMetadataAsync(string[] keys, CancellationToken cancellationToken);
 
@@ -154,7 +154,7 @@ namespace Unity.Cloud.Assets
         /// Removes the specified system metadata fields from the file.
         /// </summary>
         /// <param name="keys">The metadata fields to remove. </param>
-        /// <param name="cancellationToken">The cancellation token. </param>
+        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task with no result. </returns>
         Task RemoveSystemMetadataAsync(string[] keys, CancellationToken cancellationToken);
     }

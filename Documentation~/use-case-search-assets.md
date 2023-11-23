@@ -2,12 +2,12 @@
 
 You can use the Unity Cloud Assets package to filter assets in a Project based on a set of search criteria.
 
-| Asset Manager Project role                                                                             | Search |
-|:-------------------------------------------------------------------------------------------------------|:-------|
-| [`Asset Management Viewer`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html)      | yes    |
-| [`Asset Management Consumer`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html)    | yes    |
-| [`Asset Management Contributor`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html) | yes    |
-| [`Asset Management Owner`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html)       | yes    |
+| Asset Manager Project role                                                                           | Search |
+|:-----------------------------------------------------------------------------------------------------|:-------|
+| [`Asset Management Viewer`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles)      | yes    |
+| [`Asset Management Consumer`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles)    | yes    |
+| [`Asset Management Contributor`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles) | yes    |
+| [`Asset Management Owner`](https://docs.unity.com/cloud/en-us/accounts/roles-and-permissions)        | yes    |
 
 ## How do I...?
 

@@ -5,9 +5,9 @@ By creating them and uploading them, your assets will be available in the Unity 
 
 The sample use the management endpoints that requires a minimum role of:
 
-* [`Asset Management Contributor`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html). <br/>
+* [`Asset Management Contributor`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles). <br/>
   OR
-* [`Asset Management Owner`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html).
+* [`Asset Management Owner`](https://docs.unity.com/cloud/en-us/accounts/roles-and-permissions).
 
 ## Before you start
 

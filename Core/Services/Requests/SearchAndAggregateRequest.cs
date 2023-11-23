@@ -19,10 +19,9 @@ namespace Unity.Cloud.Assets
         /// Aggregations of assets that match a criteria by a defined field.
         /// </summary>
         /// <param name="projectId">ID of the project</param>
-        /// <param name="xCorrelationId">Correlation id of the request.</param>
         /// <param name="parameters">The request containing the read filter and the field to be used in the aggregation..</param>
-        public SearchAndAggregateRequest(ProjectId projectId, SearchAndAggregateRequestParameters parameters = default, string xCorrelationId = default)
-            : base(projectId, xCorrelationId)
+        public SearchAndAggregateRequest(ProjectId projectId, SearchAndAggregateRequestParameters parameters = default)
+            : base(projectId)
         {
             m_PathAndQueryParams += "/assets/aggregations/search";
 
@@ -35,7 +34,7 @@ namespace Unity.Cloud.Assets
         /// <returns>A list of IMultipartFormSection representing the request body.</returns>
         public override HttpContent ConstructBody()
         {
-            var body = IsolatedJsonConvert.SerializeObject(Parameters, SerializationUtilities.Converters);
+            var body = IsolatedSerialization.SerializeWithDefaultConverters(Parameters);
             return new StringContent(body, Encoding.UTF8, "application/json");
         }
     }

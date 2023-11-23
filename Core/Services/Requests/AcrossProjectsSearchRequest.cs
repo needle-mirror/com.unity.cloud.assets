@@ -11,23 +11,21 @@ namespace Unity.Cloud.Assets
     class AcrossProjectsSearchRequest : OrganizationRequest
     {
         /// <summary>Accessor for AcrossProjectsSearchRequestParameters </summary>
-        public AcrossProjectsSearchRequestParameters AcrossProjectsSearchRequestParameters { get; }
+        public AcrossProjectsSearchRequestParameters Parameters { get; }
 
         /// <summary>
         /// Across projects search Request Object.
         /// Across projects search assets based on criteria.
         /// </summary>
         /// <param name="organizationId">Genesis ID of the organization</param>
-        /// <param name="xCorrelationId">Correlation id of the request.</param>
-        /// <param name="acrossProjectsSearchRequestParameters">The search asset request criteria.</param>
+        /// <param name="parameters">The search asset request criteria.</param>
         public AcrossProjectsSearchRequest(OrganizationId organizationId,
-            AcrossProjectsSearchRequestParameters acrossProjectsSearchRequestParameters = default,
-            string xCorrelationId = default)
-            : base(organizationId, xCorrelationId)
+            AcrossProjectsSearchRequestParameters parameters = default)
+            : base(organizationId)
         {
             m_PathAndQueryParams += $"/assets/search";
 
-            AcrossProjectsSearchRequestParameters = acrossProjectsSearchRequestParameters;
+            Parameters = parameters;
         }
 
         /// <summary>
@@ -36,7 +34,7 @@ namespace Unity.Cloud.Assets
         /// <returns>A </returns>
         public override HttpContent ConstructBody()
         {
-            var body = IsolatedJsonConvert.SerializeObject(AcrossProjectsSearchRequestParameters, SerializationUtilities.Converters);
+            var body = IsolatedSerialization.SerializeWithDefaultConverters(Parameters);
             return new StringContent(body, Encoding.UTF8, "application/json");
         }
     }

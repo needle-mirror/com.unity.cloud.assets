@@ -1,6 +1,4 @@
-﻿#if !UC_EXCLUDE_SAMPLES
-using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using UnityEngine.UIElements;
 
 namespace Unity.Cloud.Assets.Samples
@@ -31,7 +29,7 @@ namespace Unity.Cloud.Assets.Samples
             m_TaskSource = new TaskCompletionSource<bool>();
 
             m_MessageLabel.text = content;
-            
+
             OkClicked += CloseMessageWithResult;
 
             ShowDialog();
@@ -56,4 +54,3 @@ namespace Unity.Cloud.Assets.Samples
         }
     }
 }
-#endif

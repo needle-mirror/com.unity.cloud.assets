@@ -1,13 +1,10 @@
 using System.Runtime.Serialization;
-using Newtonsoft.Json;
-using Unity.Cloud.Common;
 
 namespace Unity.Cloud.Assets
 {
     /// <summary>
     /// This object contains the information about an asset collection.
     /// </summary>
-    [JsonObject(ItemNullValueHandling = NullValueHandling.Ignore)]
     interface IAssetCollectionData
     {
         /// <summary>

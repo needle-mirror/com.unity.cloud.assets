@@ -17,11 +17,11 @@ namespace Unity.Cloud.Assets
                 ServiceHttpClientOptions.Default(), token);
             var jsonContent = await response.GetContentAsString();
 
-            var createdDatasetResponse = IsolatedJsonConvert.DeserializeObject<CreatedDatasetDto>(jsonContent, IsolatedJsonConvert.jsonSerializerSettingsWithoutType);
+            var createdDatasetResponse = IsolatedSerialization.DeserializeWithConverters<CreatedDatasetDto>(jsonContent, IsolatedSerialization.DatasetIdConverter);
 
             var createdDatasetData = new DatasetData
             {
-                DatasetId = new DatasetId(createdDatasetResponse.DatasetId),
+                DatasetId = createdDatasetResponse.DatasetId,
                 Name = datasetCreation.Name,
                 Description = datasetCreation.Description,
                 Tags = datasetCreation.Tags ?? new List<string>(),
@@ -52,7 +52,7 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc />
         public Task UpdateDatasetAsync(DatasetDescriptor datasetDescriptor, IDatasetUpdateData datasetUpdate, CancellationToken token)
         {
-            var request = new UpdateDatasetRequest(datasetDescriptor.ProjectId, datasetDescriptor.AssetId, datasetDescriptor.AssetVersion, datasetDescriptor.DatasetId, datasetUpdate);
+            var request = new DatasetRequest(datasetDescriptor.ProjectId, datasetDescriptor.AssetId, datasetDescriptor.AssetVersion, datasetDescriptor.DatasetId, datasetUpdate);
             return m_ServiceHttpClient.PatchAsync(GetPublicRequestUri(request), request.ConstructBody(),
                 ServiceHttpClientOptions.Default(), token);
         }
@@ -68,8 +68,7 @@ namespace Unity.Cloud.Assets
         public Task RemoveFileFromDatasetAsync(DatasetDescriptor datasetDescriptor, string filePath, CancellationToken token)
         {
             var request = new FileRequest(datasetDescriptor.ProjectId, datasetDescriptor.AssetId, datasetDescriptor.AssetVersion, datasetDescriptor.DatasetId, filePath);
-            return m_ServiceHttpClient.DeleteAsync(GetPublicRequestUri(request), request.ConstructBody(),
-                ServiceHttpClientOptions.Default(), token);
+            return m_ServiceHttpClient.DeleteAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(), token);
         }
 
         /// <inheritdoc />
@@ -80,7 +79,7 @@ namespace Unity.Cloud.Assets
                 token);
             var jsonContent = await response.GetContentAsString();
 
-            var dto = IsolatedJsonConvert.DeserializeObject<DatasetAssetCheckDto>(jsonContent, IsolatedJsonConvert.jsonSerializerSettingsWithoutType);
+            var dto = JsonSerialization.Deserialize<DatasetAssetCheckDto>(jsonContent);
 
             return !string.IsNullOrEmpty(dto.DatasetVersionId);
         }

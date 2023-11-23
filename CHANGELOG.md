@@ -4,6 +4,20 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [1.0.0-exp.3] - 2023-11-23
+
+### Added
+- `IFieldDefinition` to expose field definitions of organizations for managing asset metadata.
+- `ListFieldDefinitionsAsync`, `GetFieldDefinitionAsync`, `CreateFieldDefinitionAsync`, `DeleteFieldDefinitionAsync` methods added to `IAssetRepository`.
+- Added Supported platforms section to the Prerequisites page of the manual documentation.
+
+### Changed
+- Clean up of (de)serialization to reduce external dependencies.
+- `AuthoringInfo` changed from struct to class to allow null values.
+- Switched from multiple asmef files to one asmdef file in Samples/Shared and multiple asmref files in each sample folder.
+- Added the !UC_EXCLUDE_SAMPLES constraint to the asmdef file in Samples/Shared and removed the conditional compilation code in the sample scripts.
+- [Breaking] Internal `Pagination.Order` enum extracted and renamed `SortingOrder`.
+
 ## [1.0.0-exp.2] - 2023-11-07
 
 ### Added
@@ -14,16 +28,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Improved information in README
 - Update `ListProjectsAsync`, `GetProjectAsync`and `CreateProjectAsync` to call public api endpoints
 
-### Fixes
-- Fix SearchBarController to include Asset fields on search actions.
-- Fixed potential null reference exception in in the `ThumbnailController` class used in the `Asset Discovery` sample.
-
 ### Removed
 - [Breaking] Removed `UploadAsync` and `GetUploadUrlAsync` methods from `IFile`. Overwriting file content is not supported.
 - Removed inapplicable notices in documentation.
 - [Breaking] Removed `GetPreviewFileDownloadUrlAsync` from `IAsset`. Use `GetDownloadUrlAsync` of `IFile` instead.
+- Removed mocking code for assets.
 
 ### Fixed
+- Fix SearchBarController to include Asset fields on search actions.
+- Fixed potential null reference exception in in the `ThumbnailController` class used in the `Asset Discovery` sample.
 - Fixed missing version header.
 - Fix `DatasetEntity.ListFilesAsync` to show all files fields information and included `Status` as a default field.
 
@@ -42,7 +55,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Refactored `AssetDataSource` to match other packages.
 - Change minimal Unity version to 2022.3
 
-### Fixes
+### Fixed
 - Asset Collection sample list selection now allows de-selection of item.
 - Remove usage of system.web for encoding urls.
 - Remove Cancellation tokens timeout from Asset Management sample to allow big file to be uploaded.

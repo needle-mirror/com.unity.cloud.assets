@@ -18,9 +18,8 @@ namespace Unity.Cloud.Assets
         /// <param name="filePath">The asset file id url to get.</param>
         /// <param name="urlType"></param>
         /// <param name="fileData"></param>
-        /// <param name="xCorrelationId">Correlation id of the request.</param>
-        public GetFileUrlRequest(ProjectId projectId, AssetId assetId, AssetVersion assetVersion, DatasetId datasetId, string filePath, string urlType, IFileData fileData, string xCorrelationId = default)
-            : base(projectId, assetId, assetVersion, datasetId, filePath, xCorrelationId)
+        public GetFileUrlRequest(ProjectId projectId, AssetId assetId, AssetVersion assetVersion, DatasetId datasetId, string filePath, string urlType, IFileData fileData)
+            : base(projectId, assetId, assetVersion, datasetId, filePath)
         {
             m_PathAndQueryParams += $"/url";
 

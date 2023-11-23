@@ -7,7 +7,6 @@ using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 using Unity.Cloud.Common;
 
 namespace Unity.Cloud.Assets
@@ -15,8 +14,6 @@ namespace Unity.Cloud.Assets
     partial class AssetDataSource : IAssetDataSource
     {
         const string k_PublicApiPath = "/assets/v1";
-
-        static readonly JsonConverter[] s_AssetConverters = SerializationUtilities.Converters;
 
         readonly IServiceHttpClient m_ServiceHttpClient;
         readonly IServiceHostResolver m_PublicServiceHostResolver;
@@ -33,68 +30,6 @@ namespace Unity.Cloud.Assets
         }
 
         /// <inheritdoc/>
-        public async IAsyncEnumerable<IProjectData> ListProjectsAsync(OrganizationId organizationId, Pagination pagination, [EnumeratorCancellation] CancellationToken cancellationToken)
-        {
-            const int maxPageSize = 99;
-
-            var (offset, length) = await pagination.Range.GetOffsetAndLengthAsync(_ => Task.FromResult(int.MaxValue), cancellationToken);
-            var pageSize = Math.Min(maxPageSize, Math.Max(offset, length));
-            var pageNumber = offset / pageSize + 1;
-
-            var startIndex = offset % pageSize;
-            var count = 0;
-            do
-            {
-                var request = new GetProjectsByOrganizationAndUserIdsRequest(organizationId, null, pageNumber, pageSize);
-                var response = await m_ServiceHttpClient.GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(),
-                    cancellationToken);
-                var jsonContent = await response.GetContentAsString();
-                var projectPageDto = IsolatedJsonConvert.DeserializeObject<ProjectPageDto>(jsonContent, s_AssetConverters);
-
-                ++pageNumber;
-
-                if (projectPageDto.Projects == null || projectPageDto.Projects.Length == 0) break;
-
-                for (var i = 0; i < projectPageDto.Projects.Length; ++i)
-                {
-                    if (count == 0 && i < startIndex) continue;
-                    if (count >= length) break;
-
-                    ++count;
-                    yield return projectPageDto.Projects[i];
-                }
-            } while (count < length);
-        }
-
-        /// <inheritdoc/>
-        public async Task<IProjectData> GetProjectAsync(ProjectDescriptor projectDescriptor, CancellationToken cancellationToken)
-        {
-            var request = new ProjectRequest(projectDescriptor.ProjectId);
-            var response = await m_ServiceHttpClient.GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(),
-                cancellationToken);
-            var jsonContent = await response.GetContentAsString();
-
-            return IsolatedJsonConvert.DeserializeObject<ProjectData>(jsonContent, s_AssetConverters);
-        }
-
-        /// <inheritdoc/>
-        public async Task<IProjectData> CreateProjectAsync(OrganizationId organizationId, IProjectBaseData projectCreation, CancellationToken cancellationToken)
-        {
-            var request = new CreateProjectRequest(organizationId, projectCreation);
-            var response = await m_ServiceHttpClient.PostAsync(GetPublicRequestUri(request), request.ConstructBody(),
-                ServiceHttpClientOptions.Default(), cancellationToken);
-            var jsonContent = await response.GetContentAsString();
-
-            var projectDto = IsolatedJsonConvert.DeserializeObject<CreatedProjectDto>(jsonContent, s_AssetConverters);
-
-            return new ProjectData(projectDto.Id)
-            {
-                Name = projectCreation.Name,
-                Metadata = projectCreation.Metadata
-            };
-        }
-
-        /// <inheritdoc/>
         public async Task<IAssetData> GetAssetAsync(AssetDescriptor assetDescriptor, FieldsFilter includedFieldsFilter, CancellationToken cancellationToken)
         {
             var request = new GetAssetByIdAndVersionRequest(assetDescriptor.ProjectId, assetDescriptor.AssetId, assetDescriptor.AssetVersion, includedFieldsFilter);
@@ -102,7 +37,7 @@ namespace Unity.Cloud.Assets
                 cancellationToken);
             var jsonContent = await response.GetContentAsString();
 
-            return IsolatedJsonConvert.DeserializeObject<AssetData>(jsonContent, s_AssetConverters);
+            return IsolatedSerialization.DeserializeWithDefaultConverters<AssetData>(jsonContent);
         }
 
         /// <inheritdoc />
@@ -119,8 +54,6 @@ namespace Unity.Cloud.Assets
             // - bool includeThumbnailDownloadURLs
             var requestParams = new SearchRequestParameters(requestFilter, assetSearchFilter.IncludedFields, searchPagination);
 
-            // Still missing definitions for optional params:
-            // - string xCorrelationId
             var request = new SearchRequest(projectDescriptor.ProjectId, requestParams);
 
             var (offset, length) = await pagination.Range.GetOffsetAndLengthAsync(token => GetTotalCount(projectDescriptor, token), cancellationToken);
@@ -130,7 +63,7 @@ namespace Unity.Cloud.Assets
 
             var lastIndex = offset + length;
             var pageSize = Math.Min(maxPageSize, lastIndex);
-            request.SearchRequestParameter.Pagination.Limit = pageSize;
+            request.Parameters.Pagination.Limit = pageSize;
 
             var startPage = offset / pageSize;
             var index = offset % pageSize;
@@ -168,8 +101,6 @@ namespace Unity.Cloud.Assets
             var enumerable = projectIds?.ToArray() ?? Array.Empty<ProjectId>();
             var requestParams = new AcrossProjectsSearchRequestParameters(enumerable, requestFilter, assetSearchFilter.IncludedFields, searchPagination);
 
-            // Still missing definitions for optional params:
-            // - string xCorrelationId
             var request = new AcrossProjectsSearchRequest(organizationId, requestParams);
 
             var (offset, length) = await pagination.Range.GetOffsetAndLengthAsync(token => GetAcrossProjectsTotalCount(organizationId, enumerable, token), cancellationToken);
@@ -179,7 +110,7 @@ namespace Unity.Cloud.Assets
 
             var lastIndex = offset + length;
             var pageSize = Math.Min(maxPageSize, lastIndex);
-            request.AcrossProjectsSearchRequestParameters.Pagination.Limit = pageSize;
+            request.Parameters.Pagination.Limit = pageSize;
 
             var startPage = offset / pageSize;
             var index = offset % pageSize;
@@ -212,7 +143,7 @@ namespace Unity.Cloud.Assets
                 ServiceHttpClientOptions.Default(), cancellationToken);
             var jsonContent = await response.GetContentAsString();
 
-            var aggregations = IsolatedJsonConvert.DeserializeObject<AggregationsDto>(jsonContent, IsolatedJsonConvert.jsonSerializerSettingsWithoutType).Aggregations;
+            var aggregations = JsonSerialization.Deserialize<AggregationsDto>(jsonContent).Aggregations;
 
             var data = new Dictionary<string, int>();
             for (var i = 0; i < aggregations.Length; ++i)
@@ -233,7 +164,7 @@ namespace Unity.Cloud.Assets
                 ServiceHttpClientOptions.Default(), cancellationToken);
             var jsonContent = await response.GetContentAsString();
 
-            var aggregations = IsolatedJsonConvert.DeserializeObject<AggregationsDto>(jsonContent, IsolatedJsonConvert.jsonSerializerSettingsWithoutType).Aggregations;
+            var aggregations = JsonSerialization.Deserialize<AggregationsDto>(jsonContent).Aggregations;
 
             var data = new Dictionary<string, int>();
             for (var i = 0; i < aggregations.Length; ++i)
@@ -253,7 +184,7 @@ namespace Unity.Cloud.Assets
                 ServiceHttpClientOptions.Default(), cancellationToken);
             var jsonContent = await response.GetContentAsString();
 
-            var createdAsset = IsolatedJsonConvert.DeserializeObject<CreatedAssetDto>(jsonContent, IsolatedJsonConvert.jsonSerializerSettingsWithoutType);
+            var createdAsset = JsonSerialization.Deserialize<CreatedAssetDto>(jsonContent);
             createdAsset.AssetId ??= "";
             createdAsset.StorageId ??= "";
 
@@ -282,7 +213,7 @@ namespace Unity.Cloud.Assets
                 cancellationToken);
             var jsonContent = await response.GetContentAsString();
 
-            var assetDownloadUrlsDto = IsolatedJsonConvert.DeserializeObject<AssetDownloadUrlsDto>(jsonContent, IsolatedJsonConvert.jsonSerializerSettingsWithoutType);
+            var assetDownloadUrlsDto = JsonSerialization.Deserialize<AssetDownloadUrlsDto>(jsonContent);
 
             var urlList = assetDownloadUrlsDto.FileUrls.Select(f => new AssetDownloadUrl {FilePath = f.Path, DownloadUrl = new Uri(f.Url)}).ToList();
 
@@ -290,17 +221,17 @@ namespace Unity.Cloud.Assets
         }
 
         /// <inheritdoc />
-        public Task LinkAssetToProjectAsync(AssetDescriptor assetDescriptor, ProjectDescriptor destinationProjectId, CancellationToken cancellationToken)
+        public Task LinkAssetToProjectAsync(AssetDescriptor assetDescriptor, ProjectDescriptor destinationProject, CancellationToken cancellationToken)
         {
-            var request = new LinkAssetToProjectRequest(assetDescriptor.ProjectId, assetDescriptor.AssetId, destinationProjectId.ProjectId);
+            var request = new LinkAssetToProjectRequest(assetDescriptor.ProjectId, assetDescriptor.AssetId, destinationProject.ProjectId);
             return m_ServiceHttpClient.PostAsync(GetPublicRequestUri(request), request.ConstructBody(),
                 ServiceHttpClientOptions.Default(), cancellationToken);
         }
 
         /// <inheritdoc />
-        public Task UnlinkAssetFromProjectAsync(AssetDescriptor assetDescriptor, ProjectDescriptor destinationProjectId, CancellationToken cancellationToken)
+        public Task UnlinkAssetFromProjectAsync(AssetDescriptor assetDescriptor, ProjectDescriptor destinationProject, CancellationToken cancellationToken)
         {
-            var request = new UnlinkAssetFromProjectRequest(destinationProjectId.ProjectId, assetDescriptor.AssetId);
+            var request = new UnlinkAssetFromProjectRequest(destinationProject.ProjectId, assetDescriptor.AssetId);
             return m_ServiceHttpClient.PostAsync(GetPublicRequestUri(request), request.ConstructBody(),
                 ServiceHttpClientOptions.Default(), cancellationToken);
         }
@@ -484,14 +415,14 @@ namespace Unity.Cloud.Assets
             {
                 ++currentPage;
                 jsonContent = await response.GetContentAsString();
-                var pageTokenDto = IsolatedJsonConvert.DeserializeObject<PageTokenDto>(jsonContent, IsolatedJsonConvert.jsonSerializerSettingsWithoutType);
+                var pageTokenDto = JsonSerialization.Deserialize<PageTokenDto>(jsonContent);
                 pagination.Token = pageTokenDto.Token;
                 response = await m_ServiceHttpClient.PostAsync(requestUri, request.ConstructBody(),
                     ServiceHttpClientOptions.Default(), cancellationToken);
             }
 
             jsonContent = await response.GetContentAsString();
-            return IsolatedJsonConvert.DeserializeObject<AssetPageDto>(jsonContent, s_AssetConverters);
+            return IsolatedSerialization.DeserializeWithDefaultConverters<AssetPageDto>(jsonContent);
         }
 
         async IAsyncEnumerator<IAssetData> GetNextAssetFirstPage(ApiRequest request, SearchRequestPagination pagination, int startPage, int index, CancellationToken cancellationToken)
@@ -518,7 +449,7 @@ namespace Unity.Cloud.Assets
                 var response = await m_ServiceHttpClient.PostAsync(requestUri, request.ConstructBody(),
                     ServiceHttpClientOptions.Default(), cancellationToken);
                 var jsonContent = await response.GetContentAsString();
-                var dto = IsolatedJsonConvert.DeserializeObject<AssetPageDto>(jsonContent, s_AssetConverters);
+                var dto = IsolatedSerialization.DeserializeWithDefaultConverters<AssetPageDto>(jsonContent);
 
                 // To prevent an infinite loop, return if no assets were returned
                 if (dto.Assets.Length == 0) break;

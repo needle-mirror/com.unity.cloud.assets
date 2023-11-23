@@ -23,9 +23,8 @@ namespace Unity.Cloud.Assets
         /// <param name="assetId">The id of the asset the file is linked to.</param>
         /// <param name="assetVersion">The version of the asset the file is linked to.</param>
         /// <param name="statusAction"></param>
-        /// <param name="xCorrelationId">Correlation id of the request.</param>
-        public ChangeAssetStatusRequest(ProjectId projectId, AssetId assetId, AssetVersion assetVersion, ChangeAssetStatusAction statusAction, string xCorrelationId = default)
-            : base(projectId, assetId, assetVersion, xCorrelationId)
+        public ChangeAssetStatusRequest(ProjectId projectId, AssetId assetId, AssetVersion assetVersion, ChangeAssetStatusAction statusAction)
+            : base(projectId, assetId, assetVersion)
         {
             m_PathAndQueryParams += $"/status/{statusAction.ToString()}";
         }

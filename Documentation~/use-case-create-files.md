@@ -8,12 +8,12 @@ You can use the Unity Cloud Assets package to:
 
 The SDK supports several workflows for users with different roles.
 
-| Asset Manager Project role                                                                             | View files | Upload new file | Add/remove file references |
-|:-------------------------------------------------------------------------------------------------------|------------|:----------------|----------------------------|
-| [`Asset Management Viewer`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html)      | yes        | no              | no                         |
-| [`Asset Management Consumer`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html)    | yes        | no              | no                         |
-| [`Asset Management Contributor`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html) | yes        | yes             | yes                        |
-| [`Asset Management Owner`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html)       | yes        | yes             | yes                        |
+| Asset Manager Project role                                                                           | View files | Upload new file | Add/remove file references |
+|:-----------------------------------------------------------------------------------------------------|------------|:----------------|----------------------------|
+| [`Asset Management Viewer`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles)      | yes        | no              | no                         |
+| [`Asset Management Consumer`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles)    | yes        | no              | no                         |
+| [`Asset Management Contributor`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles) | yes        | yes             | yes                        |
+| [`Asset Management Owner`](https://docs.unity.com/cloud/en-us/accounts/roles-and-permissions)        | yes        | yes             | yes                        |
 
 ## Before you start
 
@@ -32,11 +32,11 @@ Before you start, you must:
 
 To list datasets, open the `AssetManagementBehaviour` script you created and add the following code to the end of the class:
 
-[!code-cs [behaviour-script](../Samples/Documentation/Manual/Management/UseCaseFileCreationExample.cs#Example_Behaviour_RefreshDatasets)]
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseFileCreationExample.cs#Example_Behaviour_RefreshDatasets)]
 
 To list files, open the `AssetManagementBehaviour` script you created and add the following code to the end of the class:
 
-[!code-cs [behaviour-script](../Samples/Documentation/Manual/Management/UseCaseFileCreationExample.cs#Example_Behaviour_RefreshFiles)]
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseFileCreationExample.cs#Example_Behaviour_RefreshFiles)]
 
 ### Upload a file
 
@@ -45,7 +45,7 @@ To upload a file to an asset's dataset, follow these steps:
 1. Open the `AssetManagementBehaviour` script you created.
 2. Add the following code to the end of the class:
 
-[!code-cs [behaviour-script](../Samples/Documentation/Manual/Management/UseCaseFileCreationExample.cs#Example_Behaviour_UploadAssetFile)]
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseFileCreationExample.cs#Example_Behaviour_UploadAssetFile)]
 
 The code snippet does the following:
 
@@ -61,7 +61,7 @@ To reference a file in a different dataset, follow these steps:
 1. Open the `AssetManagementBehaviour` script you created.
 2. Add the following code to the end of the class:
 
-[!code-cs [behaviour-script](../Samples/Documentation/Manual/Management/UseCaseFileCreationExample.cs#Example_Behaviour_AddFileReference)]
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseFileCreationExample.cs#Example_Behaviour_AddFileReference)]
 
 The code snippet does the following:
 
@@ -75,21 +75,36 @@ To remove a file reference from a dataset, follow these steps:
 1. Open the `AssetManagementBehaviour` script you created.
 2. Add the following code to the end of the class:
 
-[!code-cs [behaviour-script](../Samples/Documentation/Manual/Management/UseCaseFileCreationExample.cs#Example_Behaviour_RemoveFileReference)]
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseFileCreationExample.cs#Example_Behaviour_RemoveFileReference)]
 
 The code snippet does the following:
 
 * Unlinks a file from a dataset.
 * Prints a message to the console on success OR an error message if the unlinking fails.
 
-### Add the UI for interacting with files
+### Add the UI for creating files
 
-To add UI for the example, follow these steps:
+To create UI for creating files, follow these steps:
 
-1. Open the `AssetManagementUI` script you created.
-2. Replace the `AssetActions` function with the following code:
+1. In your Unity Project window, go to **Assets** > **Scripts**.
+2. Select and hold the `Assets/Scripts` folder.
+3. Go to **Create** > **C# Script**. Name your script `UseCaseFileCreationExampleUI`.
+4. Open the `UseCaseFileCreationExampleUI` script you created and replace the contents of the file with the following code sample:
 
-[!code-cs [behaviour-script](../Samples/Documentation/Manual/Management/UseCaseFileCreationExample.cs#Example_UI)]
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseFileCreationExample.cs#Example_UIClass)]
+
+5. In the same script, replace the `OnGUI` function with the following code:
+
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseFileCreationExample.cs#Example_UIContent)]
+
+6. Open the `AssetManagementUI` script you created and replace the contents of the `Awake` function with the following code:
+
+```cs
+   m_UI.Add(new OrganizationSelectionExampleUI(m_Behaviour));
+   m_UI.Add(new ProjectSelectionExampleUI(m_Behaviour));
+   m_UI.Add(new AssetSelectionExampleUI(m_Behaviour));
+   m_UI.Add(new UseCaseFileCreationExampleUI(m_Behaviour));
+```
 
 The code snippet does the following:
 

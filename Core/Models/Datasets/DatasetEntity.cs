@@ -96,7 +96,7 @@ namespace Unity.Cloud.Assets
         public async Task<IAsset> GetAssetAsync(FieldsFilter includedFieldsFilter, CancellationToken cancellationToken)
         {
             var data = await m_DataSource.GetAssetAsync(Descriptor.AssetDescriptor, includedFieldsFilter, cancellationToken);
-            return data.From(m_DataSource, Descriptor.AssetDescriptor);
+            return data.From(m_DataSource, Descriptor.AssetDescriptor, includedFieldsFilter);
         }
 
         /// <inheritdoc />
@@ -174,6 +174,7 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc />
         public Uri GetFileUrl(string filePath)
         {
+            filePath = Uri.EscapeDataString(filePath);
             var fileUriBuilder = new UriBuilder(m_DataSource.GetServiceUrl())
             {
                 Path = $"assets/storage/v1/projects/{Descriptor.ProjectId}/assets/{Descriptor.AssetId}/versions/{Descriptor.AssetVersion}/datasets/{Descriptor.DatasetId}/files/{filePath}"

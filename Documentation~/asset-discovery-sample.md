@@ -5,12 +5,12 @@ You can use the Asset Discovery sample to search and download assets from your O
 You can use the Unity Cloud Assets package to filter assets in a Project based on a set of search criteria.
 You will need at least a Consumer Role to be able to download assets
 
-| Asset Manager Project role                                                                             | Search | Download |
-|:-------------------------------------------------------------------------------------------------------|:-------|:---------|
-| [`Asset Management Viewer`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html)      | yes    | No       |
-| [`Asset Management Consumer`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html)    | yes    | yes      |
-| [`Asset Management Contributor`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html) | yes    | yes      |
-| [`Asset Management Owner`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html)       | yes    | yes      |
+| Asset Manager Project role                                                                           | Search | Download |
+|:-----------------------------------------------------------------------------------------------------|:-------|:---------|
+| [`Asset Management Viewer`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles)      | yes    | No       |
+| [`Asset Management Consumer`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles)    | yes    | yes      |
+| [`Asset Management Contributor`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles) | yes    | yes      |
+| [`Asset Management Owner`](https://docs.unity.com/cloud/en-us/accounts/roles-and-permissions)        | yes    | yes      |
 
 ## Before you start
 
@@ -70,7 +70,7 @@ To search for specific assets by tag or name in this sample, follow these steps:
 #### Search prompts
 
 As you type in the search bar, the sample will display a list of keyword suggestions based on your search. These keywords are aggregated from the tags and names of your assets.
-To select a keyword, click on it. The search bar will add it as a parameter and the sample will refresh the asset list to match the new search.
+To select a keyword, select it. The search bar will add it as a parameter and the sample will refresh the asset list to match the new search.
 
 ### See asset details and download files
 

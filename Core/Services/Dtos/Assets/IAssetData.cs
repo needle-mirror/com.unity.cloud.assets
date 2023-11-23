@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
-using Newtonsoft.Json;
 using Unity.Cloud.Common;
 
 namespace Unity.Cloud.Assets
@@ -9,7 +8,6 @@ namespace Unity.Cloud.Assets
     /// <summary>
     /// This interface contains all the information about a cloud asset.
     /// </summary>
-    [JsonObject(ItemNullValueHandling = NullValueHandling.Ignore)]
     interface IAssetData : IAssetBaseData, IAuthoringData
     {
         /// <summary>

@@ -15,7 +15,7 @@ namespace Unity.Cloud.Assets
         /// </summary>
         /// <param name="organizationId">The id of the organization. </param>
         /// <param name="pagination">The pagination parameters. </param>
-        /// <param name="cancellationToken">The cancellation token. </param>
+        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task whose result is an async enumeration of <see cref="IAssetProject"/>. </returns>
         IAsyncEnumerable<IAssetProject> ListAssetProjectsAsync(OrganizationId organizationId, Pagination pagination, CancellationToken cancellationToken);
 
@@ -23,7 +23,7 @@ namespace Unity.Cloud.Assets
         /// Gets an organization's <see cref="IAssetProject"/> for current user.
         /// </summary>
         /// <param name="projectDescriptor">The object containing the necessary information for identifying the project. </param>
-        /// <param name="cancellationToken">The cancellation token. </param>
+        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task whose result is an <see cref="IAssetProject"/>. </returns>
         Task<IAssetProject> GetAssetProjectAsync(ProjectDescriptor projectDescriptor, CancellationToken cancellationToken);
 
@@ -32,7 +32,7 @@ namespace Unity.Cloud.Assets
         /// </summary>
         /// <param name="organizationId">The organization to create the project in. </param>
         /// <param name="projectCreation">The object containing the necessary information to create a new project. </param>
-        /// <param name="cancellationToken">The cancellation token. </param>
+        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task whose result is the new <see cref="IAssetProject"/>. </returns>
         Task<IAssetProject> CreateAssetProjectAsync(OrganizationId organizationId, IAssetProjectCreation projectCreation, CancellationToken cancellationToken);
 
@@ -40,7 +40,7 @@ namespace Unity.Cloud.Assets
         /// Lists a project's <see cref="IAssetCollection"/>.
         /// </summary>
         /// <param name="projectDescriptor">The object containing the necessary information for identifying the project. </param>
-        /// <param name="cancellationToken">The cancellation token. </param>
+        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task whose result is an async enumeration of <see cref="IAssetCollection"/>. </returns>
         IAsyncEnumerable<IAssetCollection> ListAssetCollectionsAsync(ProjectDescriptor projectDescriptor, CancellationToken cancellationToken);
 
@@ -48,7 +48,7 @@ namespace Unity.Cloud.Assets
         /// Gets an <see cref="IAssetCollection"/>.
         /// </summary>
         /// <param name="collectionDescriptor">The object containing the necessary information for identifying the collection. </param>
-        /// <param name="cancellationToken">The cancellation token. </param>
+        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task whose result is an <see cref="IAssetCollection"/></returns>
         Task<IAssetCollection> GetAssetCollectionAsync(CollectionDescriptor collectionDescriptor, CancellationToken cancellationToken);
 
@@ -59,7 +59,7 @@ namespace Unity.Cloud.Assets
         /// <param name="projectIds">A list of project ids. </param>
         /// <param name="assetSearchFilter">The search filter. </param>
         /// <param name="pagination">The pagination parameters. </param>
-        /// <param name="cancellationToken">The cancellation token. </param>
+        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task whose result is an async enumeration of <see cref="Asset"/>. </returns>
         IAsyncEnumerable<IAsset> SearchAssetsAsync(OrganizationId organizationId, IEnumerable<ProjectId> projectIds, IAssetSearchFilter assetSearchFilter, Pagination pagination, CancellationToken cancellationToken);
 
@@ -70,7 +70,7 @@ namespace Unity.Cloud.Assets
         /// <param name="projectIds">A list of project ids. </param>
         /// <param name="assetSearchFilter">The search filter. </param>
         /// <param name="parameters">The aggregation parameters. </param>
-        /// <param name="cancellationToken">The cancellation token. </param>
+        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task whose result is an aggregation. </returns>
         Task<Aggregation> CountAssetsAsync(OrganizationId organizationId, IEnumerable<ProjectId> projectIds, IAssetSearchFilter assetSearchFilter, AggregationParameters parameters, CancellationToken cancellationToken);
 
@@ -79,7 +79,7 @@ namespace Unity.Cloud.Assets
         /// </summary>
         /// <param name="assetDescriptor">The descriptor containing identifiers for the asset. </param>
         /// <param name="includedFieldsFilter">The filter describing which fields to return populated. </param>
-        /// <param name="cancellationToken">The cancellation token. </param>
+        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task whose result is an <see cref="IAsset"/>. </returns>
         Task<IAsset> GetAssetAsync(AssetDescriptor assetDescriptor, FieldsFilter includedFieldsFilter, CancellationToken cancellationToken);
 
@@ -88,7 +88,7 @@ namespace Unity.Cloud.Assets
         /// </summary>
         /// <param name="datasetDescriptor">The descriptor containing identifiers for the dataset. </param>
         /// <param name="includedFields">The filter describing which fields to return populated. </param>
-        /// <param name="cancellationToken">The cancellation token. </param>
+        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task whose result is a <see cref="IDataset"/>. </returns>
         Task<IDataset> GetDatasetAsync(DatasetDescriptor datasetDescriptor, DatasetFields includedFields, CancellationToken cancellationToken);
 
@@ -98,7 +98,7 @@ namespace Unity.Cloud.Assets
         /// <param name="assetDescriptor">The descriptor containing identifiers for the dataset. </param>
         /// <param name="systemTag">The id of the dataset to get. </param>
         /// <param name="includedFields">The filter describing which fields to return populated. </param>
-        /// <param name="cancellationToken">The cancellation token. </param>
+        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task whose result is a <see cref="IDataset"/>. </returns>
         Task<IDataset> GetDatasetBySystemTagAsync(AssetDescriptor assetDescriptor, string systemTag, DatasetFields includedFields, CancellationToken cancellationToken);
 
@@ -107,9 +107,44 @@ namespace Unity.Cloud.Assets
         /// </summary>
         /// <param name="fileDescriptor">The descriptor containing identifiers for the file. </param>
         /// <param name="includedFields">The filter describing which fields to return populated. </param>
-        /// <param name="cancellationToken">The cancellation token. </param>
+        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task whose result is a <see cref="IFile"/>. </returns>
         Task<IFile> GetFileAsync(FileDescriptor fileDescriptor, FileFields includedFields, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Lists an organization's existing <see cref="IFieldDefinition"/>.
+        /// </summary>
+        /// <param name="organizationId">The id of the organization. </param>
+        /// <param name="pagination">The pagination parameters. </param>
+        /// <param name="includeDeleted">Whether to include deleted fields. </param>
+        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
+        /// <returns>A task whose result is an async enumeration of <see cref="IFieldDefinition"/>. </returns>
+        IAsyncEnumerable<IFieldDefinition> ListFieldDefinitionsAsync(OrganizationId organizationId, Pagination pagination, bool includeDeleted, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Retrieves an <see cref="IFieldDefinition"/>.
+        /// </summary>
+        /// <param name="fieldDefinitionDescriptor">The descriptor containing the indentifiers for the field definition. </param>
+        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
+        /// <returns>A task whose result is an <see cref="IFieldDefinition"/>. </returns>
+        Task<IFieldDefinition> GetFieldDefinitionAsync(FieldDefinitionDescriptor fieldDefinitionDescriptor, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Creates a new field definition within an organization.
+        /// </summary>
+        /// <param name="organizationId">The id of the organization in which to add the field definitino. </param>
+        /// <param name="fieldDefinitionCreation">The object containing the necessary information to create a field definition.</param>
+        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
+        /// <returns>A task whose result is the newly created <see cref="IFieldDefinition"/>. </returns>
+        Task<IFieldDefinition> CreateFieldDefinitionAsync(OrganizationId organizationId, IFieldDefinitionCreation fieldDefinitionCreation, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Deletes an <see cref="IFieldDefinition"/>.
+        /// </summary>
+        /// <param name="fieldDefinitionDescriptor">The descriptor containing the indentifiers for the field definition. </param>
+        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
+        /// <returns>A task with no result. </returns>
+        Task DeleteFieldDefinitionAsync(FieldDefinitionDescriptor fieldDefinitionDescriptor, CancellationToken cancellationToken);
 
         /// <summary>
         /// Implement this method to get an <see cref="AssetDescriptor"/> given a serialized json of asset identifiers.

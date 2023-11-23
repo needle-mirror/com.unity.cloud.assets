@@ -16,7 +16,7 @@ namespace Unity.Cloud.Assets
                 cancellationToken);
             var jsonContent = await response.GetContentAsString();
 
-            var assetCollectionDtos = IsolatedJsonConvert.DeserializeObject<AssetCollectionData[]>(jsonContent, s_AssetConverters);
+            var assetCollectionDtos = DeserializeCollectionPath<AssetCollectionData[]>(jsonContent);
 
             return assetCollectionDtos ?? Array.Empty<AssetCollectionData>();
         }
@@ -29,7 +29,7 @@ namespace Unity.Cloud.Assets
                 cancellationToken);
             var jsonContent = await response.GetContentAsString();
 
-            var collectionListDto = IsolatedJsonConvert.DeserializeObject<AssetCollectionData[]>(jsonContent, s_AssetConverters);
+            var collectionListDto = DeserializeCollectionPath<AssetCollectionData[]>(jsonContent);
 
             return collectionListDto ?? Array.Empty<AssetCollectionData>();
         }
@@ -42,9 +42,7 @@ namespace Unity.Cloud.Assets
                 cancellationToken);
             var jsonContent = await response.GetContentAsString();
 
-            var assetCollection = IsolatedJsonConvert.DeserializeObject<AssetCollectionData>(jsonContent, s_AssetConverters);
-
-            return assetCollection;
+            return DeserializeCollectionPath<AssetCollectionData>(jsonContent);
         }
 
         /// <inheritdoc/>
@@ -55,15 +53,15 @@ namespace Unity.Cloud.Assets
                 ServiceHttpClientOptions.Default(), cancellationToken);
             var jsonContent = await response.GetContentAsString();
 
-            var pathDto = IsolatedJsonConvert.DeserializeObject<AssetCollectionPathDto>(jsonContent, IsolatedJsonConvert.jsonSerializerSettingsWithoutType);
+            var pathDto = DeserializeCollectionPath<AssetCollectionPathDto>(jsonContent);
 
-            return new CollectionPath(pathDto.Path);
+            return pathDto.Path;
         }
 
         /// <inheritdoc/>
         public Task UpdateCollectionAsync(CollectionDescriptor collectionDescriptor, IAssetCollectionData assetCollection, CancellationToken cancellationToken)
         {
-            var request = new UpdateCollectionRequest(collectionDescriptor.ProjectId, collectionDescriptor.CollectionPath, assetCollection);
+            var request = new CollectionRequest(collectionDescriptor.ProjectId, collectionDescriptor.CollectionPath, assetCollection);
             return m_ServiceHttpClient.PutAsync(GetPublicRequestUri(request), request.ConstructBody(),
                 ServiceHttpClientOptions.Default(), cancellationToken);
         }
@@ -100,9 +98,14 @@ namespace Unity.Cloud.Assets
                 ServiceHttpClientOptions.Default(), cancellationToken);
             var jsonContent = await response.GetContentAsString();
 
-            var pathDto = IsolatedJsonConvert.DeserializeObject<AssetCollectionPathDto>(jsonContent, IsolatedJsonConvert.jsonSerializerSettingsWithoutType);
+            var pathDto = DeserializeCollectionPath<AssetCollectionPathDto>(jsonContent);
 
-            return new CollectionPath(pathDto.Path);
+            return pathDto.Path;
+        }
+
+        static T DeserializeCollectionPath<T>(string json)
+        {
+            return IsolatedSerialization.DeserializeWithConverters<T>(json, IsolatedSerialization.CollectionPathConverter);
         }
     }
 }

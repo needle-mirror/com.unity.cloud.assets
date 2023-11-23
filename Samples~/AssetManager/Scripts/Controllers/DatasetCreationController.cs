@@ -1,5 +1,3 @@
-#if !UC_EXCLUDE_SAMPLES
-
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -140,7 +138,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             m_DatasetTitleLabel.text = dataset.Name;
             m_DatasetNameField.value = dataset.Name;
             m_DatasetDescriptionField.value = dataset.Description;
-            m_DatasetStatusLastEditLabel.text = dataset.AuthoringInfo.Updated.ToString("MMM dd, yyyy h:mm tt GMT");
+            m_DatasetStatusLastEditLabel.text = dataset.AuthoringInfo?.Updated.ToString("MMM dd, yyyy h:mm tt GMT") ?? "unknown";
             m_DatasetVisibleToggle.value = dataset.IsVisible;
 
             DrawTags(m_DatasetUpdate.Tags);
@@ -629,4 +627,3 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
         }
     }
 }
-#endif

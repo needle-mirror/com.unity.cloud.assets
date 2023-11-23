@@ -9,8 +9,8 @@ namespace Unity.Cloud.Assets
     {
         IDatasetBaseData DatasetData { get; }
 
-        public CreateDatasetRequest(ProjectId projectId, AssetId assetId, AssetVersion assetVersion, IDatasetBaseData datasetInfo, string xCorrelationId = default)
-            : base(projectId, assetId, assetVersion, xCorrelationId)
+        public CreateDatasetRequest(ProjectId projectId, AssetId assetId, AssetVersion assetVersion, IDatasetBaseData datasetInfo)
+            : base(projectId, assetId, assetVersion)
         {
             m_PathAndQueryParams += $"/datasets";
 
@@ -20,7 +20,7 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc/>
         public override HttpContent ConstructBody()
         {
-            var body = IsolatedJsonConvert.SerializeObject(DatasetData, SerializationUtilities.DatasetIdConverter);
+            var body = IsolatedSerialization.SerializeWithConverters(DatasetData, IsolatedSerialization.DatasetIdConverter, IsolatedSerialization.JsonObjectConverter);
             return new StringContent(body, Encoding.UTF8, "application/json");
         }
     }

@@ -1,5 +1,6 @@
 using System;
 using System.Runtime.Serialization;
+using Unity.Cloud.Common;
 
 namespace Unity.Cloud.Assets
 {
@@ -7,6 +8,6 @@ namespace Unity.Cloud.Assets
     struct CreatedDatasetDto
     {
         [DataMember(Name = "datasetId")]
-        public string DatasetId { get; set; }
+        public DatasetId DatasetId { get; set; }
     }
 }

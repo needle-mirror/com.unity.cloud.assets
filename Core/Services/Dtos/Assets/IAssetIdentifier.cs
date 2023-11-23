@@ -1,10 +1,8 @@
 using System.Runtime.Serialization;
-using Newtonsoft.Json;
 using Unity.Cloud.Common;
 
 namespace Unity.Cloud.Assets
 {
-    [JsonObject(ItemRequired = Required.Always)]
     interface IAssetIdentifier
     {
         /// <summary>

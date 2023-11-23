@@ -2,7 +2,6 @@
     * [Prerequisites](prerequisites.md)
     * [Installation](installation.md)
     * [Basic concepts](basic-concepts.md)
-    * [Upgrade guide](upgrade-guide.md)
 * [Get started with Asset Management](get-started-management.md)
 * Samples
     * [Asset discovery](asset-discovery-sample.md)
@@ -21,4 +20,5 @@
     * [Manage assets review](use-case-send-to-review-approve-reject-assets.md)
     * [Search assets in a project](use-case-search-assets.md)
     * [Search assets across projects](use-case-search-across-projects-assets.md)
+    * [Manage the field definitions of an organization](use-case-manage-fields.md)
 * [Troubleshooting](troubleshooting.md)

@@ -4,12 +4,12 @@ You can use the Unity Cloud Assets package to retrieve the number of assets in a
 
 The SDK supports different workflows for users with different roles.
 
-| Asset Manager Project role                                                                             | Aggregation search |
-|:-------------------------------------------------------------------------------------------------------|:-------------------|
-| [`Asset Management Viewer`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html)      | yes                |
-| [`Asset Management Consumer`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html)    | yes                |
-| [`Asset Management Contributor`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html) | yes                |
-| [`Asset Management Owner`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html)       | yes                |
+| Asset Manager Project role                                                                           | Aggregation search |
+|:-----------------------------------------------------------------------------------------------------|:-------------------|
+| [`Asset Management Viewer`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles)      | yes                |
+| [`Asset Management Consumer`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles)    | yes                |
+| [`Asset Management Contributor`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles) | yes                |
+| [`Asset Management Owner`](https://docs.unity.com/cloud/en-us/accounts/roles-and-permissions)        | yes                |
 
 ## Before you start
 
@@ -28,15 +28,32 @@ Before you start, you must:
 
 To implement aggregation, open the `AssetDiscoveryBehaviour` script you created and add the following code to the end of the class:
 
-[!code-cs [behaviour-script](../Samples/Documentation/Manual/Management/UseCaseAggregationExample.cs#Example_Behaviour)]
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseAggregationExample.cs#Example_Behaviour)]
 
 The code snippet provides a functions which returns the aggregation of assets for a given field.
 
-### Add the UI for triggering and displaying the aggregation
+### Add the UI for displaying aggregation information
 
-To add a UI to the example, open the `AssetDiscoveryUI` script you created and replace the `AssetActions` function with the following code:
+To create UI for displaying aggregation information, follow these steps:
 
-[!code-cs [behaviour-script](../Samples/Documentation/Manual/Management/UseCaseAggregationExample.cs#Example_UI)]
+1. In your Unity Project window, go to **Assets** > **Scripts**.
+2. Select and hold the `Assets/Scripts` folder.
+3. Go to **Create** > **C# Script**. Name your script `UseCaseAggregationExampleUI`.
+4. Open the `UseCaseAggregationExampleUI` script you created and replace the contents of the file with the following code sample:
+
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseAggregationExample.cs#Example_UIClass)]
+
+5. In the same script, replace the `OnGUI` function with the following code:
+
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseAggregationExample.cs#Example_UIContent)]
+
+6. Open the `AssetManagementUI` script you created and replace the contents of the `Awake` function with the following code:
+
+```cs
+   m_UI.Add(new OrganizationSelectionExampleUI(m_Behaviour));
+   m_UI.Add(new ProjectSelectionExampleUI(m_Behaviour));
+   m_UI.Add(new UseCaseAggregationExampleUI(m_Behaviour));
+```
 
 The code snippet provides UI buttons to trigger the aggregation function with different criteria and displays the results of the aggregation.
 The UI can aggregate assets by:

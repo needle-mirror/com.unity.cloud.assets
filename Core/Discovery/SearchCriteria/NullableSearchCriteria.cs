@@ -27,26 +27,26 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc/>
         bool ISearchCriteria.TryGetIncluded(out object includedValue)
         {
-            includedValue = m_Included ?? default(T);
+            includedValue = TransformValue(m_Included);
             return m_Included.HasValue;
         }
 
         /// <inheritdoc/>
         bool ISearchCriteria.TryGetExcluded(out object excludedValue)
         {
-            excludedValue = m_Excluded ?? default(T);
+            excludedValue = TransformValue(m_Excluded);
             return m_Excluded.HasValue;
         }
 
         /// <inheritdoc/>
         bool ISearchCriteria.TryGetAny(out object anyValue)
         {
-            anyValue = m_Any ?? default(T);
+            anyValue = TransformValue(m_Any);
             return m_Any.HasValue;
         }
 
         /// <inheritdoc/>
-        void ISearchCriteria.Include(object value) => Include((T) value);
+        void ISearchCriteria.Include(object value) => Include(TransformValue(value));
 
         /// <inheritdoc/>
         void ISearchCriteria.Include(Dictionary<string, object> includedValues, string prefix)
@@ -58,7 +58,7 @@ namespace Unity.Cloud.Assets
         }
 
         /// <inheritdoc/>
-        void ISearchCriteria.Exclude(object value) => Exclude((T) value);
+        void ISearchCriteria.Exclude(object value) => Exclude(TransformValue(value));
 
         /// <inheritdoc/>
         void ISearchCriteria.Exclude(Dictionary<string, object> excludedValues, string prefix)
@@ -79,7 +79,7 @@ namespace Unity.Cloud.Assets
         }
 
         /// <inheritdoc/>
-        void ISearchCriteria.ForAny(object value) => ForAny((T) value);
+        void ISearchCriteria.ForAny(object value) => ForAny(TransformValue(value));
 
         /// <inheritdoc/>
         bool ISearchCriteria.IsMatch(object input)
@@ -127,7 +127,17 @@ namespace Unity.Cloud.Assets
 
         protected virtual bool IsValidType(object input)
         {
-            return input is T;
+            return input is null or T;
+        }
+
+        protected virtual object TransformValue(T? value)
+        {
+            return value ?? default(T);
+        }
+
+        protected virtual T? TransformValue(object value)
+        {
+            return (T) value;
         }
 
         protected virtual bool SatisfiesMatch(object input)

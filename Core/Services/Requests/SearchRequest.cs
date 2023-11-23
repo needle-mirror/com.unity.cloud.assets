@@ -12,21 +12,20 @@ namespace Unity.Cloud.Assets
     class SearchRequest : ProjectRequest
     {
         /// <summary>Accessor for searchRequestParameter </summary>
-        public SearchRequestParameters SearchRequestParameter { get; }
+        public SearchRequestParameters Parameters { get; }
 
         /// <summary>
         /// Search Request Object.
         /// Search assets based on criteria.
         /// </summary>
         /// <param name="projectId">ID of the project</param>
-        /// <param name="xCorrelationId">Correlation id of the request.</param>
-        /// <param name="searchRequestParameter">The search asset request criteria.</param>
-        public SearchRequest(ProjectId projectId, SearchRequestParameters searchRequestParameter = default, string xCorrelationId = default)
-            : base(projectId, xCorrelationId)
+        /// <param name="parameters">The search asset request criteria.</param>
+        public SearchRequest(ProjectId projectId, SearchRequestParameters parameters = default)
+            : base(projectId)
         {
             m_PathAndQueryParams += $"/assets/search";
 
-            SearchRequestParameter = searchRequestParameter;
+            Parameters = parameters;
         }
 
         /// <summary>
@@ -35,7 +34,7 @@ namespace Unity.Cloud.Assets
         /// <returns>A </returns>
         public override HttpContent ConstructBody()
         {
-            var body = IsolatedJsonConvert.SerializeObject(SearchRequestParameter, SerializationUtilities.Converters);
+            var body = IsolatedSerialization.SerializeWithDefaultConverters(Parameters);
             return new StringContent(body, Encoding.UTF8, "application/json");
         }
     }

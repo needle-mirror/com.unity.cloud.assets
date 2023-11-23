@@ -1,10 +1,11 @@
-using Newtonsoft.Json;
+using System.Runtime.Serialization;
 
 namespace Unity.Cloud.Assets
 {
+    [DataContract]
     struct UrlDto
     {
-        [JsonProperty("url")]
+        [DataMember(Name = "url")]
         public string Url { get; set; }
     }
 }

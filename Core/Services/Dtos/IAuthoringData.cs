@@ -11,12 +11,12 @@ namespace Unity.Cloud.Assets
         string CreatedBy { get; }
 
         [DataMember(Name = "created")]
-        DateTime Created { get; }
+        DateTime? Created { get; }
 
         [DataMember(Name = "updatedBy")]
         string UpdatedBy { get; }
 
         [DataMember(Name = "updated")]
-        DateTime Updated { get; }
+        DateTime? Updated { get; }
     }
 }

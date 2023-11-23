@@ -4,12 +4,12 @@ You can use the Collection Management sample to list and manage the collections 
 
 The SDK supports different workflows for users with different roles.
 
-| Asset Manager Project role                                                                             | List an asset's collections | Add/remove assets in collections |
-|:-------------------------------------------------------------------------------------------------------|:----------------------------|:---------------------------------|
-| [`Asset Management Viewer`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html)      | yes                         | no                               |
-| [`Asset Management Consumer`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html)    | yes                         | no                               |
-| [`Asset Management Contributor`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html) | yes                         | yes                              |
-| [`Asset Management Owner`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html)       | yes                         | yes                              |
+| Asset Manager Project role                                                                           | List an asset's collections | Add/remove assets in collections |
+|:-----------------------------------------------------------------------------------------------------|:----------------------------|:---------------------------------|
+| [`Asset Management Viewer`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles)      | yes                         | no                               |
+| [`Asset Management Consumer`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles)    | yes                         | no                               |
+| [`Asset Management Contributor`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles) | yes                         | yes                              |
+| [`Asset Management Owner`](https://docs.unity.com/cloud/en-us/accounts/roles-and-permissions)        | yes                         | yes                              |
 
 ## Before you start
 
@@ -78,7 +78,7 @@ To create a new collection, follow these steps:
 To edit an existing collection, follow these steps:
 
 1. Select one of the collections in the list.
-2. Open the context menu by clicking the **...** button next to the `Collections` label.
+2. Next to the `Collections` label, select the **...** button to open the context menu.
 
    <img alt="Screenshot of the context menu" width="460" src="images/collections-context-menu.png"/>
    
@@ -86,15 +86,15 @@ To edit an existing collection, follow these steps:
 
    <img alt="Screenshot of editing collection popup" width="380" src="images/edit-collection-popup.png"/>
    
-4. Enter a new name and a new description for the collection and click **Apply**.
+4. Enter a new name and a new description for the collection.
+5. Select **Apply**.
 
 #### Delete an existing collection
 
 To delete an existing collection, follow these steps:
 
 1. Select one of the collections in the list.
-
-2. Open the context menu by clicking the **...** button next to the `Collections` label.
+2. Next to the `Collections` label, select the **...** button to open the context menu.
 
    <img alt="Screenshot of the context menu" width="460" src="images/collections-context-menu.png"/>
 
@@ -105,8 +105,7 @@ To delete an existing collection, follow these steps:
 To add an asset to a collection, follow these steps:
 
 1. Select one of the collections in the list.
-
-2. Open the context menu by clicking the **...** button next to the `Assets in Collection` label.
+2. Next to the `Assets in Collection` label, select the **...** button to open the context menu.
 
    <img alt="Screenshot of the context menu" width="460" src="images/collection-assets-context-menu-no-selection.png"/>
    
@@ -114,7 +113,8 @@ To add an asset to a collection, follow these steps:
 
    <img alt="Screenshot of adding assets to collection popup" width="380" src="images/add-to-collection-popup.png"/>
 
-4. Select all the assets you want to add to the collection and click **Add**.
+4. Select all the assets you want to add to the collection. 
+5. Select **Add**.
 
    <img alt="Screenshot of selected assets" width="460" src="images/collection-assets-added.png"/>
 
@@ -123,10 +123,10 @@ To add an asset to a collection, follow these steps:
 To remove an asset from a collection, follow these steps:
 
 1. Select one of the assets in the list.
-2. Open the context menu by clicking the **...** button next to the `Assets in Collection` label.
+2. Next to the `Assets in Collection` label, select **...** to open the context menu.
 
    <img alt="Screenshot of the context menu" width="460" src="images/collection-assets-context-menu.png"/>
-3. Click **Remove**.
+3. Select **Remove**.
 
 ## Main components
 

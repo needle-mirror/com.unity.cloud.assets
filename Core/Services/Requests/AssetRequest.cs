@@ -13,9 +13,8 @@ namespace Unity.Cloud.Assets
         /// <param name="projectId">ID of the project.</param>
         /// <param name="assetId">The id of the asset the file is linked to.</param>
         /// <param name="assetVersion">The version of the asset the file is linked to.</param>
-        /// <param name="xCorrelationId">Correlation id of the request.</param>
-        public AssetRequest(ProjectId projectId, AssetId assetId, AssetVersion assetVersion, string xCorrelationId = default)
-            : base(projectId, xCorrelationId)
+        public AssetRequest(ProjectId projectId, AssetId assetId, AssetVersion assetVersion)
+            : base(projectId)
         {
             m_PathAndQueryParams += $"/assets/{assetId}/versions/{assetVersion}";
         }

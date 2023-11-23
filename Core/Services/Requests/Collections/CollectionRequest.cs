@@ -1,4 +1,6 @@
 using System;
+using System.Net.Http;
+using System.Text;
 using Unity.Cloud.Common;
 
 namespace Unity.Cloud.Assets
@@ -8,16 +10,31 @@ namespace Unity.Cloud.Assets
     /// </summary>
     class CollectionRequest : ProjectRequest
     {
+        readonly IAssetCollectionData m_Data;
+
         /// <summary>
         /// Initializes and returns an API request for a collection.
         /// </summary>
-        /// <param name="projectId">ID of the project</param>
-        /// <param name="collectionPath">The path to the collection</param>
-        /// <param name="xCorrelationId">Correlation id of the request</param>
-        public CollectionRequest(ProjectId projectId, CollectionPath collectionPath, string xCorrelationId = default)
-            : base(projectId, xCorrelationId)
+        /// <param name="projectId">ID of the project. </param>
+        /// <param name="collectionPath">The path to the collection. </param>
+        /// <param name="data">The object containing the data of the collection. </param>
+        public CollectionRequest(ProjectId projectId, CollectionPath collectionPath, IAssetCollectionData data = null)
+            : base(projectId)
         {
             m_PathAndQueryParams += $"/collections/{Uri.EscapeDataString(collectionPath)}";
+
+            m_Data = data;
+        }
+
+        public override HttpContent ConstructBody()
+        {
+            if (m_Data == null)
+            {
+                return base.ConstructBody();
+            }
+
+            var body = IsolatedSerialization.SerializeWithConverters(m_Data, IsolatedSerialization.CollectionPathConverter);
+            return new StringContent(body, Encoding.UTF8, "application/json");
         }
     }
 }

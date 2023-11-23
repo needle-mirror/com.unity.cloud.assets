@@ -5,7 +5,7 @@ namespace Unity.Cloud.Assets
     /// <summary>
     /// Represents a finalized upload asset file request.
     /// </summary>
-    class FinalizeFileUploadRequest : AssetRequest
+    class FinalizeFileUploadRequest : FileRequest
     {
         /// <summary>
         /// Creates an Asset File Request Object.
@@ -15,11 +15,10 @@ namespace Unity.Cloud.Assets
         /// <param name="assetId">The id of the asset the file will linked to.</param>
         /// <param name="assetVersion">The version of the asset the file will linked to.</param>
         /// <param name="filePath">The path to the file for which the upload will be finalized.</param>
-        /// <param name="xCorrelationId">Correlation id of the request.</param>
-        public FinalizeFileUploadRequest(ProjectId projectId, AssetId assetId, AssetVersion assetVersion, string filePath, string xCorrelationId = default)
-            : base(projectId, assetId, assetVersion, xCorrelationId)
+        public FinalizeFileUploadRequest(ProjectId projectId, AssetId assetId, AssetVersion assetVersion, string filePath)
+            : base(projectId, assetId, assetVersion, filePath)
         {
-            m_PathAndQueryParams += $"/files/{filePath}/finalize";
+            m_PathAndQueryParams += $"/finalize";
         }
     }
 }

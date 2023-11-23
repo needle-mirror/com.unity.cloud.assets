@@ -19,9 +19,8 @@ namespace Unity.Cloud.Assets
         /// </summary>
         /// <param name="projectId">ID of the project</param>
         /// <param name="assetCollectionDto">The collection</param>
-        /// <param name="xCorrelationId">Correlation id of the request</param>
-        public CreateCollectionRequest(ProjectId projectId, IAssetCollectionData assetCollectionDto, string xCorrelationId = default)
-            : base(projectId, xCorrelationId)
+        public CreateCollectionRequest(ProjectId projectId, IAssetCollectionData assetCollectionDto)
+            : base(projectId)
         {
             AssetCollection = assetCollectionDto;
 
@@ -30,7 +29,7 @@ namespace Unity.Cloud.Assets
 
         public override HttpContent ConstructBody()
         {
-            var body = IsolatedJsonConvert.SerializeObject(AssetCollection, new CollectionPathStringConverter());
+            var body = IsolatedSerialization.SerializeWithConverters(AssetCollection, IsolatedSerialization.CollectionPathConverter);
             return new StringContent(body, Encoding.UTF8, "application/json");
         }
     }

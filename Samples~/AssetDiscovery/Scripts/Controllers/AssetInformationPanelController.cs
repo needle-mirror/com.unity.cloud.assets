@@ -1,4 +1,3 @@
-#if !UC_EXCLUDE_SAMPLES
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -29,7 +28,7 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
             nameof(IAsset.SourceProject),
             nameof(IAsset.LinkedProjects),
             nameof(IAsset.Name),
-            nameof(IAsset.AuthoringInfo),
+            nameof(IAsset.PreviewFileUrl),
             nameof(IAsset.Metadata),
             nameof(IAsset.PortalMetadata),
             nameof(IAsset.SystemMetadata),
@@ -42,7 +41,6 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
             nameof(IDataset.Metadata),
             nameof(IDataset.PortalMetadata),
             nameof(IDataset.SystemMetadata),
-            nameof(IDataset.AuthoringInfo),
             nameof(IDataset.FileOrder)
         };
 
@@ -396,4 +394,3 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
         }
     }
 }
-#endif

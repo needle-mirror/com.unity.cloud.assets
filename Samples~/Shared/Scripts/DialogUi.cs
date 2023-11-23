@@ -1,5 +1,4 @@
-﻿#if !UC_EXCLUDE_SAMPLES
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace Unity.Cloud.Assets.Samples
@@ -41,4 +40,3 @@ namespace Unity.Cloud.Assets.Samples
         }
     }
 }
-#endif

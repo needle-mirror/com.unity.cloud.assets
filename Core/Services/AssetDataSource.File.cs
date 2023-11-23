@@ -18,7 +18,7 @@ namespace Unity.Cloud.Assets
             var response = await m_ServiceHttpClient.PostAsync(GetPublicRequestUri(request), request.ConstructBody(),
                 ServiceHttpClientOptions.Default(), token);
             var jsonContent = await response.GetContentAsString();
-            var dto = IsolatedJsonConvert.DeserializeObject<UploadUrlDto>(jsonContent);
+            var dto = JsonSerialization.Deserialize<UploadUrlDto>(jsonContent);
 
             return new PendingFileData
             {
@@ -43,7 +43,7 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc />
         public Task UpdateFileAsync(FileDescriptor fileDescriptor, IFileBaseData fileUpdate, CancellationToken token)
         {
-            var request = new UpdateFileRequest(fileDescriptor.ProjectId,
+            var request = new FileRequest(fileDescriptor.ProjectId,
                 fileDescriptor.AssetId,
                 fileDescriptor.AssetVersion,
                 fileDescriptor.Path,
@@ -61,7 +61,7 @@ namespace Unity.Cloud.Assets
                 ServiceHttpClientOptions.Default(), token);
             var jsonContent = await response.GetContentAsString();
 
-            var dto = IsolatedJsonConvert.DeserializeObject<FileUrl>(jsonContent);
+            var dto = JsonSerialization.Deserialize<FileUrl>(jsonContent);
 
             return new Uri(dto.Url);
         }
@@ -74,7 +74,7 @@ namespace Unity.Cloud.Assets
                 ServiceHttpClientOptions.Default(), token);
             var jsonContent = await response.GetContentAsString();
 
-            var dto = IsolatedJsonConvert.DeserializeObject<FileUrl>(jsonContent);
+            var dto = JsonSerialization.Deserialize<FileUrl>(jsonContent);
 
             return new Uri(dto.Url);
         }
@@ -102,7 +102,7 @@ namespace Unity.Cloud.Assets
                 ServiceHttpClientOptions.Default(), token);
             var jsonContent = await response.GetContentAsString();
 
-            var dto = IsolatedJsonConvert.DeserializeObject<FileTags>(jsonContent);
+            var dto = JsonSerialization.Deserialize<FileTags>(jsonContent);
 
             return dto.Tags;
         }
@@ -121,13 +121,13 @@ namespace Unity.Cloud.Assets
                 ServiceHttpClientOptions.Default(), token);
         }
 
-        static GetFileUrlRequest GetFileUrlRequest(FileDescriptor fileDescriptor, string urlType, IFileData fileData, string xCorrelationId = default)
+        static GetFileUrlRequest GetFileUrlRequest(FileDescriptor fileDescriptor, string urlType, IFileData fileData)
         {
             return new GetFileUrlRequest(fileDescriptor.ProjectId,
                 fileDescriptor.AssetId,
                 fileDescriptor.AssetVersion,
                 fileDescriptor.DatasetId,
-                fileDescriptor.Path, urlType, fileData, xCorrelationId);
+                fileDescriptor.Path, urlType, fileData);
         }
     }
 }

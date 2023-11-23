@@ -23,9 +23,8 @@ namespace Unity.Cloud.Assets
         /// <param name="assetVersion">The version of the asset the file will linked to.</param>
         /// <param name="datasetId"></param>
         /// <param name="fileData">The asset file to create.</param>
-        /// <param name="xCorrelationId">Correlation id of the request.</param>
-        public CreateFileRequest(ProjectId projectId, AssetId assetId, AssetVersion assetVersion, DatasetId datasetId, IFileBaseData fileData, string xCorrelationId = default)
-            : base(projectId, assetId, assetVersion, datasetId, xCorrelationId)
+        public CreateFileRequest(ProjectId projectId, AssetId assetId, AssetVersion assetVersion, DatasetId datasetId, IFileBaseData fileData)
+            : base(projectId, assetId, assetVersion, datasetId)
         {
             m_PathAndQueryParams += $"/files";
 
@@ -38,7 +37,7 @@ namespace Unity.Cloud.Assets
         /// <returns>A </returns>
         public override HttpContent ConstructBody()
         {
-            var body = IsolatedJsonConvert.SerializeObject(FileData);
+            var body = IsolatedSerialization.Serialize(FileData, IsolatedSerialization.defaultSettings);
             return new StringContent(body, Encoding.UTF8, "application/json");
         }
     }

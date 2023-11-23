@@ -12,7 +12,7 @@ namespace Unity.Cloud.Assets
         /// <summary>
         /// The asset to update.
         /// </summary>
-        public IAssetBaseData Data { get; }
+        IAssetBaseData Data { get; }
 
         /// <summary>
         /// Update Asset Request Object.
@@ -20,11 +20,10 @@ namespace Unity.Cloud.Assets
         /// </summary>
         /// <param name="projectId">ID of the project.</param>
         /// <param name="data"></param>
-        /// <param name="xCorrelationId">Correlation id of the request.</param>
         /// <param name="assetId"></param>
         /// <param name="assetVersion"></param>
-        public UpdateAssetRequest(ProjectId projectId, AssetId assetId, AssetVersion assetVersion, IAssetBaseData data, string xCorrelationId = default)
-            : base(projectId, assetId, assetVersion, xCorrelationId)
+        public UpdateAssetRequest(ProjectId projectId, AssetId assetId, AssetVersion assetVersion, IAssetBaseData data)
+            : base(projectId, assetId, assetVersion)
         {
             Data = data;
         }
@@ -35,7 +34,7 @@ namespace Unity.Cloud.Assets
         /// <returns>A </returns>
         public override HttpContent ConstructBody()
         {
-            var body = IsolatedJsonConvert.SerializeObject(Data, SerializationUtilities.Converters);
+            var body = IsolatedSerialization.SerializeWithDefaultConverters(Data);
             return new StringContent(body, Encoding.UTF8, "application/json");
         }
     }

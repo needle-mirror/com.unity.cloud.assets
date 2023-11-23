@@ -1,17 +1,18 @@
 ﻿using System;
-using Newtonsoft.Json;
+using System.Runtime.Serialization;
 
 namespace Unity.Cloud.Assets
 {
+    [DataContract]
     struct CreatedAssetDto
     {
-        [JsonProperty("storageId")]
+        [DataMember(Name = "storageId")]
         public string StorageId { get; set; }
 
-        [JsonProperty("assetId")]
+        [DataMember(Name = "assetId")]
         public string AssetId { get; set; }
 
-        [JsonProperty("assetVersion")]
+        [DataMember(Name = "assetVersion")]
         public int AssetVersion { get; set; }
 
         public CreatedAssetDto(string storageId, string assetId, int assetVersion)

@@ -1,5 +1,3 @@
-#if !UC_EXCLUDE_SAMPLES
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -44,8 +42,8 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
                 var item = m_AssetListItemTemplate.Instantiate();
 
                 item.Q<Label>("TitleLabel").text = asset.Name;
-                item.Q<Label>("IngestedDateLabel").text = asset.AuthoringInfo.Updated.ToString("MMM dd, yyyy");
-                item.Q<Label>("IngestedTimeLabel").text = asset.AuthoringInfo.Updated.ToString("h:mm tt GMT");
+                item.Q<Label>("IngestedDateLabel").text = asset.AuthoringInfo?.Updated.ToString("MMM dd, yyyy") ?? "unknown";
+                item.Q<Label>("IngestedTimeLabel").text = asset.AuthoringInfo?.Updated.ToString("h:mm tt GMT") ?? "unknown";
                 item.Q<Label>("DescriptionLabel").text = asset.Description;
                 item.Q<Label>("TagsLabel").text = asset.Tags.FirstOrDefault();
                 item.Q<Label>("TypeLabel").text = asset.Type.ToString();
@@ -124,4 +122,3 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
         }
     }
 }
-#endif

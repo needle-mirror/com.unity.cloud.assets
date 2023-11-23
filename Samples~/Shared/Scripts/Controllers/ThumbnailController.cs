@@ -1,11 +1,8 @@
-﻿#if !UC_EXCLUDE_SAMPLES
-using System;
+﻿using System;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Unity.Cloud.Assets;
 using System.Collections.Generic;
 using System.Threading;
-using System.Web;
 using UnityEngine;
 using UnityEngine.Networking;
 
@@ -16,24 +13,54 @@ namespace Unity.Cloud.Assets.Samples
         class ThumbnailDownloadEntry
         {
             public Texture2D Texture2D;
-            public readonly List<Action<Texture2D>> Listeners = new List<Action<Texture2D>>();
+            public readonly List<Action<Texture2D>> Listeners = new();
+
+            public async Task DownloadThumbnail(string url)
+            {
+#if USE_WEBTEXTURE
+                using var requestMessage = new HttpRequestMessage(HttpMethod.Get, new Uri(url));
+
+                using var uwr = new UnityWebRequest(url, UnityWebRequest.kHttpVerbGET);
+                uwr.downloadHandler = new DownloadHandlerTexture();
+
+                var operation = uwr.SendWebRequest();
+
+                while (!operation.isDone)
+                {
+                    await Task.Yield();
+                }
+
+                Texture2D = DownloadHandlerTexture.GetContent(uwr);
+
+                // Texture is ready
+                lock (Listeners)
+                {
+                    foreach (var listener in Listeners)
+                    {
+                        listener.Invoke(Texture2D);
+                    }
+
+                    Listeners.Clear();
+                }
+#else
+                await Task.CompletedTask;
+#endif
+            }
         }
 
-        static Dictionary<string, ThumbnailDownloadEntry> m_ThumbnailCache = new Dictionary<string, ThumbnailDownloadEntry>();
+        static Dictionary<string, ThumbnailDownloadEntry> m_ThumbnailCache = new();
 
-        public static async Task GetThumbnail(IAsset asset, Action<Texture2D> thumbnailReadyCallback, int width)
+        public static void GetThumbnail(IAsset asset, Action<Texture2D> thumbnailReadyCallback, int width)
         {
-            var url = asset.PreviewFileUrl;
+            if (asset.PreviewFileUrl == null) return;
 
-            var resizedUrl = $"https://transformation.unity.com/api/images?url={Uri.EscapeDataString(url.ToString())}&width={width}";
+            var resizedUrl = $"https://transformation.unity.com/api/images?url={Uri.EscapeDataString(asset.PreviewFileUrl.ToString())}&width={width}";
 
             if (!m_ThumbnailCache.TryGetValue(asset.PreviewFile, out var entry))
             {
                 // Create new download request
-                entry = new ThumbnailDownloadEntry
-                {
-                    Texture2D = await DownloadThumbnail(resizedUrl)
-                };
+                entry = new ThumbnailDownloadEntry();
+                _ = entry.DownloadThumbnail(resizedUrl);
 
                 lock (entry.Listeners)
                 {
@@ -51,42 +78,12 @@ namespace Unity.Cloud.Assets.Samples
                     {
                         entry.Listeners.Add(thumbnailReadyCallback);
                     }
-
-                    return;
                 }
-            }
-
-            // Texture is ready
-            lock (entry.Listeners)
-            {
-                foreach (var listener in entry.Listeners)
+                else
                 {
-                    listener.Invoke(entry.Texture2D);
                     thumbnailReadyCallback.Invoke(entry.Texture2D);
                 }
             }
         }
-
-        static async Task<Texture2D> DownloadThumbnail(string url)
-        {
-        #if USE_WEBTEXTURE
-            using var requestMessage = new HttpRequestMessage(HttpMethod.Get, new Uri(url));
-
-            using var uwr = new UnityWebRequest(url, UnityWebRequest.kHttpVerbGET);
-            uwr.downloadHandler = new DownloadHandlerTexture();
-
-            var operation = uwr.SendWebRequest();
-
-            while (!operation.isDone)
-            {
-                await Task.Yield();
-            }
-
-            return DownloadHandlerTexture.GetContent(uwr);
-        #else
-            return null;
-        #endif
-        }
     }
 }
-#endif

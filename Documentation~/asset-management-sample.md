@@ -5,9 +5,9 @@ A typical example of audience for this guide is the developers who want to integ
 
 The sample use the management endpoints that requires a minimum role of:
 
-* [`Asset Management Contributor`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html). <br/> 
+* [`Asset Management Contributor`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles). <br/> 
 OR 
-* [`Asset Management Owner`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html).
+* [`Asset Management Owner`](https://docs.unity.com/cloud/en-us/accounts/roles-and-permissions).
 
 ## Before you start
 
@@ -66,7 +66,7 @@ To search for specific assets by tag or name in this sample, follow these steps:
 #### Search prompts
 
 As you type in the search bar, the sample will display a list of keyword suggestions based on your search. These keywords are aggregated from the tags and names of your assets.
-To select a keyword, click on it. The search bar will add it as a parameter and the sample will refresh the asset list to match the new search.
+To select a keyword, select it. The search bar will add it as a parameter and the sample will refresh the asset list to match the new search.
 
 ### Update/edit an asset
 
@@ -79,26 +79,26 @@ To update an asset in this sample, follow these steps:
 3. In the asset details page, edit the asset's information and select the **Save asset** button.
    </br>
    ![Screenshot of the asset edit panel](images/asset-edit-panel.png)
-4. To add a new dataset to the asset, click on the **Create dataset** button.
+4. To add a new dataset to the asset, select the **Create dataset** button.
    </br>
    ![Screenshot of the add dataset button](images/asset-edit-create-dataset-button.png)
 5. A new dataset with an automatic name is added to the asset.
     </br>
    ![Screenshot of the new created dataset in list](images/asset-edit-new-created-dataset.png)
-6. To update a dataset or manage the files of an asset, you can click on the desired dataset.
+6. To update a dataset or manage the files of an asset, you can select the desired dataset.
    </br>
    ![Screenshot of the dataset in list](images/asset-edit-dataset-list.png)
 5. In the dataset details page, edit the dataset's information and select the **Save dataset** button.
    </br>
    ![Screenshot of the dataset panel](images/dataset-edit-panel.png)
-6. To add a new file to the dataset, click on the **Browse** button, select the desired file.
+6. To add a new file to the dataset, select the **Browse** button, select the desired file.
    </br>
    ![Screenshot of the browse button](images/dataset-edit-panel-browse-button.png)
-7. To remove a file from the dataset, click on the **Trash icon** button.
+7. To remove a file from the dataset, select the **Trash icon** button.
    </br>
    ![Screenshot of the remove button](images/trash-icon-button.png)
-8. To go back to the detail of the asset, click on the button Back on the top left corner.
-9. To go back to the list of assets of the Project, click on the button Back on the top left corner.
+8. To go back to the detail of the asset, select the **Back** button on the top left corner.
+9. To go back to the list of assets of the Project, select the **Back** button on the top left corner.
 
 >[!NOTE]
 >When an asset is not published, you can do the two following actions :

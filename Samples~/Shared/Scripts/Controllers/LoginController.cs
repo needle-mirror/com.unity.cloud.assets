@@ -1,7 +1,4 @@
-#if !UC_EXCLUDE_SAMPLES
 using System;
-using System.Net.Http;
-using System.Threading.Tasks;
 using Unity.Cloud.Common;
 using Unity.Cloud.Identity;
 using UnityEngine;
@@ -168,4 +165,3 @@ namespace Unity.Cloud.Assets.Samples
         }
     }
 }
-#endif

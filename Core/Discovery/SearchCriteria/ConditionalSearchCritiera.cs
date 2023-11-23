@@ -31,7 +31,7 @@ namespace Unity.Cloud.Assets
         bool ISearchCriteria.TryGetIncluded(out object includedValue)
         {
             m_Included.Clean();
-            includedValue = IsolatedJsonConvert.SerializeObject(m_Included);
+            includedValue = IsolatedSerialization.Serialize(m_Included, IsolatedSerialization.defaultSettings);
             return !IsValueEmpty(m_Included);
         }
 
@@ -39,7 +39,7 @@ namespace Unity.Cloud.Assets
         bool ISearchCriteria.TryGetExcluded(out object excludedValue)
         {
             m_Excluded.Clean();
-            excludedValue = IsolatedJsonConvert.SerializeObject(m_Excluded);
+            excludedValue = IsolatedSerialization.Serialize(m_Excluded, IsolatedSerialization.defaultSettings);
             return !IsValueEmpty(m_Excluded);
         }
 
@@ -47,7 +47,7 @@ namespace Unity.Cloud.Assets
         bool ISearchCriteria.TryGetAny(out object anyValue)
         {
             m_Any.Clean();
-            anyValue = IsolatedJsonConvert.SerializeObject(m_Any);
+            anyValue = IsolatedSerialization.Serialize(m_Any, IsolatedSerialization.defaultSettings);
             return !IsValueEmpty(m_Any);
         }
 
@@ -156,7 +156,7 @@ namespace Unity.Cloud.Assets
                 null => null,
                 T tValue => new SearchConditionValue(SearchConditionType.GreaterThanOrEqual, tValue),
                 SearchConditionValue scv => scv,
-                string s => IsolatedJsonConvert.DeserializeObject<SearchConditionValue>(s),
+                string s => IsolatedSerialization.Deserialize<SearchConditionValue>(s, IsolatedSerialization.defaultSettings),
                 _ => throw new InvalidArgumentException($"ConditionalSearchCriteria can only filter SearchConditionValue or string.")
             };
         }

@@ -22,13 +22,13 @@ namespace Unity.Cloud.Assets
         public string CreatedBy { get; set; }
 
         /// <inheritdoc />
-        public DateTime Created { get; set; }
+        public DateTime? Created { get; set; }
 
         /// <inheritdoc />
         public string UpdatedBy { get; set; }
 
         /// <inheritdoc />
-        public DateTime Updated { get; set; }
+        public DateTime? Updated { get; set; }
 
         /// <inheritdoc />
         public string WorkflowName { get; set; }

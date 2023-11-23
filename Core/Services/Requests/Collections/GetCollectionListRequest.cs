@@ -11,9 +11,8 @@ namespace Unity.Cloud.Assets
         /// Initializes an API request to get the list of collections from a project.
         /// </summary>
         /// <param name="projectId">ID of the project</param>
-        /// <param name="xCorrelationId">Correlation id of the request.</param>
-        public GetCollectionListRequest(ProjectId projectId, string xCorrelationId = default(string))
-            : base(projectId, xCorrelationId)
+        public GetCollectionListRequest(ProjectId projectId)
+            : base(projectId)
         {
             m_PathAndQueryParams += "/collections";
         }

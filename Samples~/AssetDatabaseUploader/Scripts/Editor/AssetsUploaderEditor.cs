@@ -1,4 +1,4 @@
-﻿#if !UC_EXCLUDE_SAMPLES && UNITY_EDITOR
+﻿#if UNITY_EDITOR
 #if !USE_UIELEMENTS
 #error Missing dependency to com.unity.modules.uielements
 #else

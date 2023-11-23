@@ -1,4 +1,3 @@
-#if !UC_EXCLUDE_SAMPLES
 using System;
 using UnityEngine.UIElements;
 
@@ -32,7 +31,7 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
 
         void OnInputChanged(InputEvent _)
         {
-            var (isValid, errorMsg) = m_ValidateCollectionName?.Invoke(m_NameInput.value) ?? (true, string.Empty);
+            var (isValid, errorMsg) = m_ValidateCollectionName?.Invoke(m_NameInput.value.Trim()) ?? (true, string.Empty);
 
             if (!string.IsNullOrEmpty(errorMsg))
             {
@@ -50,8 +49,8 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
 
         protected override void OnClicked()
         {
-            var newCollection = new AssetCollectionCreation(m_NameInput.value, m_DescriptionInput.value);
-            var parentPath = m_ParentPathInput.value;
+            var newCollection = new AssetCollectionCreation(m_NameInput.value.Trim(), m_DescriptionInput.value);
+            var parentPath = m_ParentPathInput.value.Trim();
             if (!string.IsNullOrEmpty(parentPath.Trim()))
                 newCollection.ParentPath = new CollectionPath(parentPath);
 
@@ -65,4 +64,3 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
         }
     }
 }
-#endif

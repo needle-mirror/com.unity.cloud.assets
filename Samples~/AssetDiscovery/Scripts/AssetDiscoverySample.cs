@@ -1,4 +1,3 @@
-#if !UC_EXCLUDE_SAMPLES
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -87,13 +86,13 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
 
             HideAssetDiscoveryLayout();
 
-            var assetGridContainer =  m_UiDocumentRoot.Q<VisualElement>("ContentPanel");
+            var assetGridContainer = m_UiDocumentRoot.Q<VisualElement>("ContentPanel");
             assetGridContainer.Add(assetGridLayout);
             assetGridContainer.Add(assetInformationLayout);
 
             // Init controllers
             var thumbnails = new Dictionary<AssetType, Texture2D>();
-            foreach(var defaultThumbnail in m_DefaultThumbnails)
+            foreach (var defaultThumbnail in m_DefaultThumbnails)
             {
                 thumbnails.Add(defaultThumbnail.AssetType, defaultThumbnail.Thumbnail);
             }
@@ -199,6 +198,8 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
                 }
             }
 
+            if (newListToken.IsCancellationRequested) return;
+
             if (!updateToken.IsCancellationRequested)
             {
                 OnAssetsListChanged(m_ProjectAssetsList);
@@ -252,19 +253,28 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
 
         void OnClearSearchQuery()
         {
-            _ = GetCancellationToken();
+            CancelUpdate();
 
             OnAssetsListChanged(m_ProjectAssetsList);
         }
 
+        void CancelUpdate()
+        {
+            if (m_UpdateListCancellationTokenSource != null)
+            {
+                m_UpdateListCancellationTokenSource.Cancel();
+                m_UpdateListCancellationTokenSource.Dispose();
+            }
+
+            m_UpdateListCancellationTokenSource = null;
+        }
+
         CancellationToken GetCancellationToken()
         {
-            m_UpdateListCancellationTokenSource.Cancel();
-            m_UpdateListCancellationTokenSource.Dispose();
+            CancelUpdate();
 
             m_UpdateListCancellationTokenSource = new CancellationTokenSource();
             return m_UpdateListCancellationTokenSource.Token;
         }
     }
 }
-#endif

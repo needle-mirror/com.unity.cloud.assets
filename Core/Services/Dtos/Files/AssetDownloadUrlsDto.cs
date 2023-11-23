@@ -1,11 +1,12 @@
 ﻿using System.Collections.Generic;
-using Newtonsoft.Json;
+using System.Runtime.Serialization;
 
 namespace Unity.Cloud.Assets
 {
+    [DataContract]
     struct AssetDownloadUrlsDto
     {
-        [JsonProperty("files")]
+        [DataMember(Name = "files")]
         public List<FileUrl> FileUrls { get; set; }
     }
 }

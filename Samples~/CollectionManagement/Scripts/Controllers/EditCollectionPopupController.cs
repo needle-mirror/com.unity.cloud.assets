@@ -1,4 +1,3 @@
-#if !UC_EXCLUDE_SAMPLES
 using System;
 using UnityEngine.UIElements;
 
@@ -36,8 +35,9 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
         {
             var (isValid, errorMsg) = (true, string.Empty);
 
-            if (m_AssetCollection.Name != m_NameInput.value)
-                (isValid, errorMsg) = m_ValidateCollectionName?.Invoke(m_NameInput.value) ?? (true, string.Empty);
+            var trimmedName = m_NameInput.value.Trim();
+            if (m_AssetCollection.Name != trimmedName)
+                (isValid, errorMsg) = m_ValidateCollectionName?.Invoke(trimmedName) ?? (true, string.Empty);
 
             if (!string.IsNullOrEmpty(errorMsg))
             {
@@ -60,7 +60,7 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
 
             try
             {
-                m_AssetCollection.SetName(m_NameInput.value);
+                m_AssetCollection.SetName(m_NameInput.value.Trim());
             }
             catch
             {
@@ -82,4 +82,3 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
         }
     }
 }
-#endif

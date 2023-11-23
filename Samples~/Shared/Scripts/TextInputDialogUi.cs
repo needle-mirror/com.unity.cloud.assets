@@ -1,6 +1,4 @@
-﻿#if !UC_EXCLUDE_SAMPLES
-
-namespace Unity.Cloud.Assets.Samples
+﻿namespace Unity.Cloud.Assets.Samples
 {
     public class TextInputDialogUi : DialogUi
     {
@@ -10,4 +8,3 @@ namespace Unity.Cloud.Assets.Samples
         }
     }
 }
-#endif

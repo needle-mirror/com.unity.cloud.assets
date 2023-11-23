@@ -1,7 +1,4 @@
-﻿#if !UC_EXCLUDE_SAMPLES
-using System;
-
-namespace Unity.Cloud.Assets.Samples
+﻿namespace Unity.Cloud.Assets.Samples
 {
     public class Result<T> : Result, IDialogResult<T>
     {
@@ -48,4 +45,3 @@ namespace Unity.Cloud.Assets.Samples
         }
     }
 }
-#endif

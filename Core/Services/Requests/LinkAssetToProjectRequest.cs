@@ -13,9 +13,8 @@ namespace Unity.Cloud.Assets
         /// <param name="projectId">ID of the project.</param>
         /// <param name="assetId">The id of the asset the file is linked to.</param>
         /// <param name="destinationProjectId">The destination project id</param>
-        /// <param name="xCorrelationId"></param>
-        public LinkAssetToProjectRequest(ProjectId projectId, AssetId assetId, ProjectId destinationProjectId, string xCorrelationId = default)
-            : base(projectId, xCorrelationId)
+        public LinkAssetToProjectRequest(ProjectId projectId, AssetId assetId, ProjectId destinationProjectId)
+            : base(projectId)
         {
             m_PathAndQueryParams += $"/assets/{assetId}/link/projects/{destinationProjectId}";
         }

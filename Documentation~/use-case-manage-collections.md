@@ -5,10 +5,10 @@ You can use the Unity Cloud Assets package to create, delete, and edit an asset 
 
 | Asset Manager Project role                                                                             | Getting collections | Create/delete/edit collections | Add/remove assets in collections |
 |:-------------------------------------------------------------------------------------------------------|:--------------------|--------------------------------|:---------------------------------|
-| [`Asset Management Viewer`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html)      | yes                 | no                             | no                               |
-| [`Asset Management Consumer`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html)    | yes                 | no                             | no                               |
-| [`Asset Management Contributor`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html) | yes                 | no                             | no                               |
-| [`Asset Management Owner`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html)       | yes                 | yes                            | yes                              |
+| [`Asset Management Viewer`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles)      | yes                 | no                             | no                               |
+| [`Asset Management Consumer`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles)    | yes                 | no                             | no                               |
+| [`Asset Management Contributor`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles) | yes                 | no                             | no                               |
+| [`Asset Management Owner`](https://docs.unity.com/cloud/en-us/accounts/roles-and-permissions)       | yes                 | yes                            | yes                              |
 
 ## Before you start
 
@@ -30,7 +30,7 @@ To list the existing collections in a Project, follow these steps:
 1. Open the `AssetManagementBehaviour` script you created.
 2. Add the following code to the end of the class:
 
-[!code-cs [behaviour-script](../Samples/Documentation/Manual/Management/UseCaseManageCollectionsExample.cs#Example_Behaviour_RefreshCollections)]
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseManageCollectionsExample.cs#Example_Behaviour_RefreshCollections)]
 
 The code snippet does the following:
 
@@ -44,27 +44,13 @@ To create an asset collection, follow these steps:
 1. Open the `AssetManagementBehaviour` script you created.
 2. Add the following code to the end of the class:
 
-[!code-cs [behaviour-script](../Samples/Documentation/Manual/Management/UseCaseManageCollectionsExample.cs#Example_Behaviour_CreateCollection)]
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseManageCollectionsExample.cs#Example_Behaviour_CreateCollection)]
 
 The code snippet does the following:
 
 * Creates a new asset collection with the specified name and parent collection.
 * Updates the list of collections in the selected Project.
 * Prints a message to the console on success.
-
-### Add the UI for viewing and creating collections
-
-To add UI for the example, follow these steps:
-
-1. Open the `AssetManagementUI` script you created.
-2. Replace the `AssetActions` function with the following code:
-
-[!code-cs [behaviour-script](../Samples/Documentation/Manual/Management/UseCaseManageCollectionsExample.cs#Example_UIProject)]
-
-The code snippet does the following:
-
-* Displays a list of the selected Project's collections.
-* Displays UI buttons and necessary text fields to create a new collection and to select a collection.
 
 ### Update an asset collection
 
@@ -73,7 +59,7 @@ To update an asset collection, follow these steps:
 1. Open the `AssetManagementBehaviour` script you created.
 2. Add the following code to the end of the class:
 
-[!code-cs [behaviour-script](../Samples/Documentation/Manual/Management/UseCaseManageCollectionsExample.cs#Example_Behaviour_UpdateCollection)]
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseManageCollectionsExample.cs#Example_Behaviour_UpdateCollection)]
 
 The code snippet does the following:
 
@@ -87,7 +73,7 @@ To delete an asset collection, follow these steps:
 1. Open the `AssetManagementBehaviour` script you created.
 2. Add the following code to the end of the class:
 
-[!code-cs [behaviour-script](../Samples/Documentation/Manual/Management/UseCaseManageCollectionsExample.cs#Example_Behaviour_DeleteCollection)]
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseManageCollectionsExample.cs#Example_Behaviour_DeleteCollection)]
 
 The code snippet does the following:
 
@@ -102,7 +88,7 @@ To move an asset collection either to nest it under another collection or re-par
 1. Open the `AssetManagementBehaviour` script you created.
 2. Add the following code to the end of the class:
 
-[!code-cs [behaviour-script](../Samples/Documentation/Manual/Management/UseCaseManageCollectionsExample.cs#Example_Behaviour_MoveCollection)]
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseManageCollectionsExample.cs#Example_Behaviour_MoveCollection)]
 
 The code snippet does the following:
 
@@ -116,12 +102,12 @@ To add an asset to a collection, follow these steps:
 1. Open the `AssetManagementBehaviour` script you created. 
 2. Add the following code to the end of the class:
 
-[!code-cs [behaviour-script](../Samples/Documentation/Manual/Management/UseCaseManageCollectionsExample.cs#Example_Behaviour_CollectionInsert)]
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseManageCollectionsExample.cs#Example_Behaviour_CollectionInsert)]
 
 The code snippet does the following:
 
-   * Adds the selected asset to the selected collection.
-   * Prints a message to the console on success.
+* Adds the selected asset to the selected collection.
+* Prints a message to the console on success.
 
 ### Remove an asset from a collection
 
@@ -130,24 +116,41 @@ To remove an asset from a collection, follow these steps:
 1. Open the `AssetManagementBehaviour` script you created.
 2. Add the following code to the end of the class:
 
-[!code-cs [behaviour-script](../Samples/Documentation/Manual/Management/UseCaseManageCollectionsExample.cs#Example_Behaviour_CollectionRemove)]
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseManageCollectionsExample.cs#Example_Behaviour_CollectionRemove)]
 
 The code snippet does the following:
 
 * Removes the target asset from the selected collection.
 * Prints a message to the console on success.
 
-### Add the UI for interacting with a collection
+### Add the UI for listing and managing collections
 
-To add UI for the example, follow these steps:
+To create UI for listing and managing collections, follow these steps:
 
-1. Open the `AssetManagementUI` script you created.
-2. Replace the `AssetActions` function with the following code:
+1. In your Unity Project window, go to **Assets** > **Scripts**.
+2. Select and hold the `Assets/Scripts` folder.
+3. Go to **Create** > **C# Script**. Name your script `UseCaseManageCollectionsExampleUI`.
+4. Open the `UseCaseManageCollectionsExampleUI` script you created and replace the contents of the file with the following code sample:
 
-[!code-cs [behaviour-script](../Samples/Documentation/Manual/Management/UseCaseManageCollectionsExample.cs#Example_UIActions)]
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseManageCollectionsExample.cs#Example_UIClass)]
+
+5. In the same script, replace the `OnGUI` function with the following code:
+
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseManageCollectionsExample.cs#Example_UIContent)]
+
+6. Open the `AssetManagementUI` script you created and replace the contents of the `Awake` function with the following code:
+
+```cs
+   m_UI.Add(new OrganizationSelectionExampleUI(m_Behaviour));
+   m_UI.Add(new ProjectSelectionExampleUI(m_Behaviour));
+   m_UI.Add(new AssetSelectionExampleUI(m_Behaviour));
+   m_UI.Add(new UseCaseManageCollectionsExampleUI(m_Behaviour));
+```
 
 The code snippet does the following:
 
+   * Displays a list of the selected Project's collections.
+   * Displays UI buttons and necessary text fields to create a new collection and to select a collection.
    * Displays UI buttons to update and delete the selected collection.
    * Displays a text field and UI button to re-parent the selected collection to another collection.
    * Displays a UI button to add the selected asset to the selected collection.

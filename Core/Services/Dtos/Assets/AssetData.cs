@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
-using Newtonsoft.Json;
 using Unity.Cloud.Common;
 
 namespace Unity.Cloud.Assets
@@ -13,10 +12,10 @@ namespace Unity.Cloud.Assets
         public string StorageId { get; set; }
 
         /// <inheritdoc />
-        public AssetId Id { get; }
+        public AssetId Id { get; set; }
 
         /// <inheritdoc />
-        public AssetVersion Version { get; }
+        public AssetVersion Version { get; set; }
 
         /// <inheritdoc />
         public IEnumerable<string> SystemTags { get; set; }
@@ -31,13 +30,13 @@ namespace Unity.Cloud.Assets
         public bool IsFrozen { get; set; }
 
         /// <inheritdoc />
-        public DateTime Created { get; set; }
+        public DateTime? Created { get; set; }
 
         /// <inheritdoc />
         public string CreatedBy { get; set; }
 
         /// <inheritdoc />
-        public DateTime Updated { get; set; }
+        public DateTime? Updated { get; set; }
 
         /// <inheritdoc />
         public string UpdatedBy { get; set; }
@@ -74,7 +73,6 @@ namespace Unity.Cloud.Assets
             StorageId = storageId;
         }
 
-        [JsonConstructor]
         internal AssetData(AssetId assetId, AssetVersion assetVersion)
         {
             Id = assetId;

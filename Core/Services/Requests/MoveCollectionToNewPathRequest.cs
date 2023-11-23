@@ -20,9 +20,8 @@ namespace Unity.Cloud.Assets
         /// <param name="projectId">ID of the project</param>
         /// <param name="collectionPath">The path to the collection</param>
         /// <param name="newCollectionPath">The new path to the collection</param>
-        /// <param name="xCorrelationId">Correlation id of the request.</param>
-        public MoveCollectionToNewPathRequest(ProjectId projectId, CollectionPath collectionPath, string newCollectionPath, string xCorrelationId = default)
-            : base(projectId, collectionPath, xCorrelationId)
+        public MoveCollectionToNewPathRequest(ProjectId projectId, CollectionPath collectionPath, string newCollectionPath)
+            : base(projectId, collectionPath)
         {
             NewCollectionPath = newCollectionPath;
 

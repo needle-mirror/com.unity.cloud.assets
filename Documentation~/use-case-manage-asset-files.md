@@ -4,12 +4,12 @@ You can use the Unity Cloud Assets package to edit file metadata and download fi
 
 The SDK supports different workflows for users with different roles.
 
-| Asset Manager Project role                                                                             | Download files | Edit files |
-|:-------------------------------------------------------------------------------------------------------|----------------|:-----------|
-| [`Asset Management Viewer`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html)      | no             | no         |
-| [`Asset Management Consumer`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html)    | yes            | no         |
-| [`Asset Management Contributor`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html) | yes            | yes        |
-| [`Asset Management Owner`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html)       | yes            | yes        |
+| Asset Manager Project role                                                                           | Download files | Edit files |
+|:-----------------------------------------------------------------------------------------------------|----------------|:-----------|
+| [`Asset Management Viewer`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles)      | no             | no         |
+| [`Asset Management Consumer`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles)    | yes            | no         |
+| [`Asset Management Contributor`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles) | yes            | yes        |
+| [`Asset Management Owner`](https://docs.unity.com/cloud/en-us/accounts/roles-and-permissions)        | yes            | yes        |
 
 ## Before you start
 
@@ -22,7 +22,7 @@ Before you start, you must:
    * You can upload assets from existing Unity assets; see the [Asset Database Uploader sample](./asset-database-uploader-sample.md).
    * You can create assets through the dashboard; see the [Managing assets on the dashboard](https://docs.unity3d.com/docs-asset-manager/manual/add-asset.html) documentation.
 
-You should also have uploaded files to an asset; see the [Create files use case](use-case-create-asset-files.md).
+You should also have uploaded files to an asset; see the [Create files use case](use-case-create-files.md).
 
 ## How do I...?
 
@@ -34,7 +34,7 @@ To get files associated to an asset:
 1. Open the `AssetManagementBehaviour` script you created.
 2. Add the following code to the end of the class:
 
-[!code-cs [behaviour-script](../Samples/Documentation/Manual/Management/UseCaseFileManagementExample.cs#Example_Behaviour_RefreshFiles)]
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseFileManagementExample.cs#Example_Behaviour_RefreshFiles)]
 
 The code snippet populates the `Files` property of the selected asset.
 
@@ -45,7 +45,7 @@ To download the file of an asset, follow these steps:
 1. Open the `AssetManagementBehaviour` script you created.
 2. Add the following code to the end of the class:
 
-[!code-cs [behaviour-script](../Samples/Documentation/Manual/Management/UseCaseFileManagementExample.cs#Example_Behaviour_DownloadAssetFile)]
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseFileManagementExample.cs#Example_Behaviour_DownloadAssetFile)]
 
 The code snippet does the following:
 
@@ -60,7 +60,7 @@ To update a file, follow these steps:
 1. Open the `AssetManagementBehaviour` script you created.
 2. Add the following code to the end of the class:
 
-[!code-cs [behaviour-script](../Samples/Documentation/Manual/Management/UseCaseFileManagementExample.cs#Example_Behaviour_UpdateAssetFile)]
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseFileManagementExample.cs#Example_Behaviour_UpdateAssetFile)]
 
 The code snippet does the following:
 
@@ -74,12 +74,27 @@ For more information see the use case for [Removing a file reference from a data
 
 ### Add the UI for interacting with files
 
-To add UI for the example, follow these steps:
+To create UI for interacting with files, follow these steps:
 
-1. Open the `AssetManagementUI` script you created.
-2. Replace the `AssetActions` function with the following code:
+1. In your Unity Project window, go to **Assets** > **Scripts**.
+2. Select and hold the `Assets/Scripts` folder.
+3. Go to **Create** > **C# Script**. Name your script `UseCaseFileManagementExampleUI`.
+4. Open the `UseCaseFileManagementExampleUI` script you created and replace the contents of the file with the following code sample:
 
-[!code-cs [behaviour-script](../Samples/Documentation/Manual/Management/UseCaseFileManagementExample.cs#Example_UI)]
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseFileManagementExample.cs#Example_UIClass)]
+
+5. In the same script, replace the `OnGUI` function with the following code:
+
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseFileManagementExample.cs#Example_UIContent)]
+
+6. Open the `AssetManagementUI` script you created and replace the contents of the `Awake` function with the following code:
+
+```cs
+   m_UI.Add(new OrganizationSelectionExampleUI(m_Behaviour));
+   m_UI.Add(new ProjectSelectionExampleUI(m_Behaviour));
+   m_UI.Add(new AssetSelectionExampleUI(m_Behaviour));
+   m_UI.Add(new UseCaseFileManagementExampleUI(m_Behaviour));
+```
 
 The code snippet does the following:
 

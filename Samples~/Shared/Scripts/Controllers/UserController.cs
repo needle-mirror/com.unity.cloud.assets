@@ -1,4 +1,3 @@
-#if !UC_EXCLUDE_SAMPLES
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -96,7 +95,8 @@ namespace Unity.Cloud.Assets.Samples
                     IncludedFields = new FieldsFilter
                     {
                         AssetFields = AssetFields.all,
-                        FileFields = FileFields.downloadUrl
+                        DatasetFields = DatasetFields.authoring,
+                        FileFields = FileFields.authoring | FileFields.downloadUrl
                     }
                 };
                 var projects = m_ProjectListUi.GetProjects().Select(p => p.Descriptor.ProjectId);
@@ -104,8 +104,8 @@ namespace Unity.Cloud.Assets.Samples
             }
             catch (OperationCanceledException oe)
             {
-                Debug.LogException(oe);
-                throw;
+                Debug.Log(oe);
+                return null;
             }
             catch (AggregateException e)
             {
@@ -128,15 +128,16 @@ namespace Unity.Cloud.Assets.Samples
                     IncludedFields = new FieldsFilter
                     {
                         AssetFields = AssetFields.all,
-                        FileFields = FileFields.downloadUrl
+                        DatasetFields = DatasetFields.authoring,
+                        FileFields = FileFields.authoring | FileFields.downloadUrl
                     }
                 };
                 return SelectedProject.SearchAssetsAsync(filter, k_DefaultPagination, cancellationToken);
             }
             catch (OperationCanceledException oe)
             {
-                Debug.LogException(oe);
-                throw;
+                Debug.Log(oe);
+                return null;
             }
             catch (AggregateException e)
             {
@@ -184,4 +185,3 @@ namespace Unity.Cloud.Assets.Samples
         }
     }
 }
-#endif

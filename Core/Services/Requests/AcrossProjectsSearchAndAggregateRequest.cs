@@ -11,23 +11,21 @@ namespace Unity.Cloud.Assets
     class AcrossProjectsSearchAndAggregateRequest : OrganizationRequest
     {
         /// <summary>Accessor for CrossProjectsSearchAndAggregateRequestParameters </summary>
-        public AcrossProjectsSearchAndAggregateRequestParameters AcrossProjectsSearchAndAggregateRequestParameters { get; }
+        AcrossProjectsSearchAndAggregateRequestParameters Parameters { get; }
 
         /// <summary>
         /// Search Request Object.
         /// Search assets based on criteria.
         /// </summary>
         /// <param name="organizationId">Genesis ID of the organization</param>
-        /// <param name="xCorrelationId">Correlation id of the request.</param>
-        /// <param name="acrossProjectsSearchAndAggregateRequestParameters">The search asset request criteria.</param>
+        /// <param name="parameters">The search asset request criteria.</param>
         public AcrossProjectsSearchAndAggregateRequest(OrganizationId organizationId,
-            AcrossProjectsSearchAndAggregateRequestParameters acrossProjectsSearchAndAggregateRequestParameters = default,
-            string xCorrelationId = default)
-            : base(organizationId, xCorrelationId)
+            AcrossProjectsSearchAndAggregateRequestParameters parameters = default)
+            : base(organizationId)
         {
             m_PathAndQueryParams += $"/assets/aggregations/search";
 
-            AcrossProjectsSearchAndAggregateRequestParameters = acrossProjectsSearchAndAggregateRequestParameters;
+            Parameters = parameters;
         }
 
         /// <summary>
@@ -36,7 +34,7 @@ namespace Unity.Cloud.Assets
         /// <returns>A </returns>
         public override HttpContent ConstructBody()
         {
-            var body = IsolatedJsonConvert.SerializeObject(AcrossProjectsSearchAndAggregateRequestParameters, SerializationUtilities.Converters);
+            var body = IsolatedSerialization.SerializeWithDefaultConverters(Parameters);
             return new StringContent(body, Encoding.UTF8, "application/json");
         }
     }

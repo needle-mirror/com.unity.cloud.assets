@@ -1,27 +1,27 @@
 {
   "name": "com.unity.cloud.assets",
-  "version": "1.0.0-exp.2",
+  "version": "1.0.0-exp.3",
   "displayName": "Unity Cloud Assets",
   "description": "Unity Cloud Assets makes it easy to discover, create, update, delete, and manage Unity assets through the Assets service interface.",
   "unity": "2022.3",
   "dependencies": {
-    "com.unity.cloud.common": "1.0.0-pre.1",
+    "com.unity.cloud.common": "1.0.0-pre.2",
     "com.unity.editorcoroutines": "1.0.0"
   },
   "relatedPackages": {
-    "com.unity.cloud.assets.tests": "1.0.0-exp.2"
+    "com.unity.cloud.assets.tests": "1.0.0-exp.3"
   },
   "_upm": {
-    "changelog": "### Added\n- Added `PreviewFileUrl` to `IAsset` to expose the preview file url of the asset.\n\n### Changed\n- Updated LICENSE.md file.\n- Improved information in README\n- Update `ListProjectsAsync`, `GetProjectAsync`and `CreateProjectAsync` to call public api endpoints\n\n### Fixes\n- Fix SearchBarController to include Asset fields on search actions.\n- Fixed potential null reference exception in in the `ThumbnailController` class used in the `Asset Discovery` sample.\n\n### Removed\n- [Breaking] Removed `UploadAsync` and `GetUploadUrlAsync` methods from `IFile`. Overwriting file content is not supported.\n- Removed inapplicable notices in documentation.\n- [Breaking] Removed `GetPreviewFileDownloadUrlAsync` from `IAsset`. Use `GetDownloadUrlAsync` of `IFile` instead.\n\n### Fixed\n- Fixed missing version header.\n- Fix `DatasetEntity.ListFilesAsync` to show all files fields information and included `Status` as a default field."
+    "changelog": "### Added\n- `IFieldDefinition` to expose field definitions of organizations for managing asset metadata.\n- `ListFieldDefinitionsAsync`, `GetFieldDefinitionAsync`, `CreateFieldDefinitionAsync`, `DeleteFieldDefinitionAsync` methods added to `IAssetRepository`.\n- Added Supported platforms section to the Prerequisites page of the manual documentation.\n\n### Changed\n- Clean up of (de)serialization to reduce external dependencies.\n- `AuthoringInfo` changed from struct to class to allow null values.\n- Switched from multiple asmef files to one asmdef file in Samples/Shared and multiple asmref files in each sample folder.\n- Added the !UC_EXCLUDE_SAMPLES constraint to the asmdef file in Samples/Shared and removed the conditional compilation code in the sample scripts.\n- [Breaking] Internal `Pagination.Order` enum extracted and renamed `SortingOrder`."
   },
   "upmCi": {
-    "footprint": "7db14fbe131d437ba00423383a2bf038a61cc6ba"
+    "footprint": "1ed1c47c13d9b8b3bef37a9f3564d2a2d80d91e3"
   },
   "documentationUrl": "https://docs.unity3d.com/Packages/com.unity.cloud.assets@1.0/manual/index.html",
   "repository": {
     "url": "https://github.cds.internal.unity3d.com/unity/digital-twins-sdk.git",
     "type": "git",
-    "revision": "b40c64c62e793641c7e9466906448f096c764295"
+    "revision": "9eddc958b886388f7ab226d78a4e9962a8a58728"
   },
   "samples": [
     {

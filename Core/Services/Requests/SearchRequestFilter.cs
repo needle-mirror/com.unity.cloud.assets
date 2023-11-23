@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
-using Newtonsoft.Json;
 
 namespace Unity.Cloud.Assets
 {
@@ -22,9 +21,9 @@ namespace Unity.Cloud.Assets
         /// <param name="collections">The collection paths.</param>
         public SearchRequestFilter(Dictionary<string, object> includeQuery = default, Dictionary<string, object> excludeQuery = default, Dictionary<string, object> anyQuery = default, int? anyQueryMinimumMatch = default, IEnumerable<CollectionPath> collections = default)
         {
-            IncludeQuery = JsonObject.GetNewJsonObjectResponse(includeQuery);
-            ExcludeQuery = JsonObject.GetNewJsonObjectResponse(excludeQuery);
-            AnyQuery = JsonObject.GetNewJsonObjectResponse(anyQuery);
+            IncludeQuery = includeQuery;
+            ExcludeQuery = excludeQuery;
+            AnyQuery = anyQuery;
             AnyQueryMinimumMatch = anyQueryMinimumMatch;
 
             Collections = collections?.ToArray();
@@ -34,34 +33,31 @@ namespace Unity.Cloud.Assets
         /// <summary>
         /// The dictionary to include all the entries matching all the criteria.
         /// </summary>
-        [JsonConverter(typeof(JsonObjectCollectionConverter))]
         [DataMember(Name = "includeQuery", EmitDefaultValue = false)]
-        public Dictionary<string, IDeserializable> IncludeQuery{ get; }
+        public Dictionary<string, object> IncludeQuery { get; }
 
         /// <summary>
         /// The dictionary to exclude all the entries matching all the criteria.
         /// </summary>
-        [JsonConverter(typeof(JsonObjectCollectionConverter))]
         [DataMember(Name = "excludeQuery", EmitDefaultValue = false)]
-        public Dictionary<string, IDeserializable> ExcludeQuery{ get; }
+        public Dictionary<string, object> ExcludeQuery { get; }
 
         /// <summary>
         /// The dictionary to Include all entries matching any of the criterias.
         /// </summary>
-        [JsonConverter(typeof(JsonObjectCollectionConverter))]
         [DataMember(Name = "anyQuery", EmitDefaultValue = false)]
-        public Dictionary<string, IDeserializable> AnyQuery{ get; }
+        public Dictionary<string, object> AnyQuery { get; }
 
         /// <summary>
         /// The minimum any query match amount to be considered a match for return.
         /// </summary>
         [DataMember(Name = "anyQueryMinimumMatch", EmitDefaultValue = false)]
-        public int? AnyQueryMinimumMatch{ get; }
+        public int? AnyQueryMinimumMatch { get; }
 
         /// <summary>
         /// The collection paths.
         /// </summary>
         [DataMember(Name = "collections", EmitDefaultValue = false)]
-        public CollectionPath[] Collections{ get; }
+        public CollectionPath[] Collections { get; }
     }
 }

@@ -1,4 +1,3 @@
-#if !UC_EXCLUDE_SAMPLES
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -21,10 +20,11 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
         VisualElement m_AssetGridList;
         VisualTreeAsset m_AssetGridItemTemplate;
         Button m_CurrentSelectedButton;
-        static readonly Color k_DefaultButtonBackgroundColor = new Color32(46, 46, 46, 255);
-        static readonly Color k_DefaultButtonColor = new Color32(255, 255, 255, 255);
-        static readonly Color k_SelectedButtonBackgroundColor = new Color32(41, 161, 255, 255);
-        static readonly Color k_SelectedButtonColor = new Color32(0, 0, 0, 255);
+        Label m_CurrentSelectedLabel;
+        static readonly Color k_DefaultBackgroundColor = new Color32(46, 46, 46, 255);
+        static readonly Color k_DefaultTextColor = new Color32(210, 210, 210, 255);
+        static readonly Color k_SelectedBackgroundColor = new Color32(41, 161, 255, 255);
+        static readonly Color k_SelectedTextColor = new Color32(46, 46, 46, 255);
 
         public event Action<IAsset> AssetSelected;
         const int k_ThumbnailSize = 100;
@@ -36,7 +36,7 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
 
             m_AssetGridItemTemplate = assetsGridItemTemplate;
             m_DefaultThumbnails = defaultThumbnails;
-            m_AssetGridList = root.Q<VisualElement>("AssetGridList");
+            m_AssetGridList = root.Q("AssetGridList");
 
             var scrollView = root.Q<ScrollView>("AssetGridScrollView");
 
@@ -51,43 +51,57 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
             foreach (var asset in assetsInfo)
             {
                 var item = m_AssetGridItemTemplate.Instantiate();
-                var button = item.Q<Button>("AssetGridItem");
-                var icon = button.Q<VisualElement>("Icon");
-                var defaultThumbnail = GetDefaultThumbnail(asset.Type);
-                if(defaultThumbnail != null)
-                    icon.style.backgroundImage = new StyleBackground(defaultThumbnail);
 
-                button.text = asset.Name;
-                _= ThumbnailController.GetThumbnail(asset, texture2D =>
-                {
-                    icon .style.backgroundImage = null;
-                    button .style.backgroundImage = new StyleBackground(texture2D);
-                }, k_ThumbnailSize);
+                var button = item.Q<Button>("AssetGridItem");
+
+                var label = item.Q<Label>();
+                label.text = asset.Name;
+
+                SetThumbnail(asset, button);
 
                 m_AssetGridList.Add(item);
 
                 item.RegisterCallback<ClickEvent>(_ =>
                 {
-                    if (m_CurrentSelectedButton != null)
+                    m_CurrentSelectedButton?.schedule.Execute(() =>
                     {
-                        m_CurrentSelectedButton.schedule.Execute(() =>
-                        {
-                            m_CurrentSelectedButton.style.backgroundColor = k_DefaultButtonBackgroundColor;
-                            m_CurrentSelectedButton.style.color = k_DefaultButtonColor;
-                        });
-                    }
+                        m_CurrentSelectedButton.style.backgroundColor = k_DefaultBackgroundColor;
+                        m_CurrentSelectedLabel.style.backgroundColor = k_DefaultBackgroundColor;
+                        m_CurrentSelectedLabel.style.color = k_DefaultTextColor;
+                    });
 
                     button.schedule.Execute(() =>
                     {
-                        button.style.backgroundColor = k_SelectedButtonBackgroundColor;
-                        button.style.color = k_SelectedButtonColor;
+                        button.style.backgroundColor = k_SelectedBackgroundColor;
+                        label.style.backgroundColor = k_SelectedBackgroundColor;
+                        label.style.color = k_SelectedTextColor;
 
                         m_CurrentSelectedButton = button;
+                        m_CurrentSelectedLabel = label;
                     });
 
                     AssetSelected?.Invoke(asset);
                 });
             }
+        }
+
+        void SetThumbnail(IAsset asset, VisualElement container)
+        {
+            var icon = container.Q("Icon");
+
+            // Set the default thumbnail
+            var defaultThumbnail = GetDefaultThumbnail(asset.Type);
+            if (defaultThumbnail != null)
+            {
+                icon.style.backgroundImage = new StyleBackground(defaultThumbnail);
+            }
+
+            // When a thumbnail is successfully retrieved, set it as the background image and the default is cleared.`
+            ThumbnailController.GetThumbnail(asset, texture2D =>
+            {
+                icon.style.backgroundImage = null;
+                container.style.backgroundImage = new StyleBackground(texture2D);
+            }, k_ThumbnailSize);
         }
 
         Texture2D GetDefaultThumbnail(AssetType type)
@@ -118,4 +132,3 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
         }
     }
 }
-#endif

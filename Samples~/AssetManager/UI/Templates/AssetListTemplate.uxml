@@ -44,5 +44,4 @@
             </ui:VisualElement>
         </ui:VisualElement>
     </ui:VisualElement>
-    <ui:ListView name="SearchValues" show-border="true" selection-type="Single" style="align-items: stretch; white-space: nowrap; background-color: rgb(78, 78, 78); border-left-color: rgb(117, 117, 117); border-right-color: rgb(117, 117, 117); border-top-color: rgb(117, 117, 117); border-bottom-color: rgb(117, 117, 117); border-left-width: 1px; border-right-width: 1px; border-top-width: 1px; border-bottom-width: 1px; color: rgb(210, 210, 210); -unity-font-style: bold; -unity-background-scale-mode: scale-and-crop; display: none; position: absolute; left: 0; top: 60px; width: 60%; height: 80%; margin-left: 12px; margin-right: 12px; padding-left: 3px; padding-right: 3px;" />
 </ui:UXML>

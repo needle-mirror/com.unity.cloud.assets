@@ -2,7 +2,7 @@ using System;
 
 namespace Unity.Cloud.Assets
 {
-    public struct AuthoringInfo
+    public class AuthoringInfo
     {
         /// <summary>
         /// The id of the user who created.
@@ -24,12 +24,12 @@ namespace Unity.Cloud.Assets
         /// </summary>
         public DateTime Updated { get; }
 
-        internal AuthoringInfo(string createdBy, DateTime created, string updatedBy, DateTime updated)
+        internal AuthoringInfo(string createdBy, DateTime? created, string updatedBy, DateTime? updated)
         {
             CreatedBy = createdBy;
-            Created = created;
+            Created = created ?? default;
             UpdatedBy = updatedBy;
-            Updated = updated;
+            Updated = updated ?? default;
         }
     }
 }

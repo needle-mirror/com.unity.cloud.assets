@@ -1,10 +1,11 @@
-using Newtonsoft.Json;
+using System.Runtime.Serialization;
 
 namespace Unity.Cloud.Assets
 {
+    [DataContract]
     struct AssetCollectionPathDto
     {
-        [JsonProperty("path")]
-        public string Path { get; set; }
+        [DataMember(Name = "path")]
+        public CollectionPath Path { get; set; }
     }
 }

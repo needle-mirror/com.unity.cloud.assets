@@ -4,12 +4,12 @@ You can use the Unity Cloud Assets package to view and create datasets within an
 
 The SDK supports different workflows for users with different roles.
 
-| Asset Manager Project role                                                                             | View datasets | Create dataset |
-|:-------------------------------------------------------------------------------------------------------|:--------------|----------------|
-| [`Asset Management Viewer`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html)      | yes           | no             |
-| [`Asset Management Consumer`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html)    | yes           | no             |
-| [`Asset Management Contributor`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html) | yes           | yes            |
-| [`Asset Management Owner`](https://docs.unity3d.com/docs-asset-manager/manual/manage-users.html)       | yes           | yes            |
+| Asset Manager Project role                                                                           | View datasets | Create dataset |
+|:-----------------------------------------------------------------------------------------------------|:--------------|----------------|
+| [`Asset Management Viewer`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles)      | yes           | no             |
+| [`Asset Management Consumer`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles)    | yes           | no             |
+| [`Asset Management Contributor`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles) | yes           | yes            |
+| [`Asset Management Owner`](https://docs.unity.com/cloud/en-us/accounts/roles-and-permissions)        | yes           | yes            |
 
 ## Before you start
 
@@ -28,7 +28,7 @@ Before you start, you must:
 
 To list the datasets of an asset, open the `AssetManagementBehaviour` script you created and add the following code to the end of the class:
 
-[!code-cs [behaviour-script](../Samples/Documentation/Manual/Management/UseCaseDatasetCreationExample.cs#Example_Behaviour_RefreshDatasets)]
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseDatasetCreationExample.cs#Example_Behaviour_RefreshDatasets)]
 
 The code snippet populates a list of datasets for the selected asset.
 
@@ -36,18 +36,33 @@ The code snippet populates a list of datasets for the selected asset.
 
 To create a new dataset, open the `AssetManagementBehaviour` script you created and add the following code to the end of the class:
 
-[!code-cs [behaviour-script](../Samples/Documentation/Manual/Management/UseCaseDatasetCreationExample.cs#Example_Behaviour_CreateDataset)]
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseDatasetCreationExample.cs#Example_Behaviour_CreateDataset)]
 
 The code snippet creates a new dataset with the given name and the tag `Custom` on the selected asset.
 
-### Add the UI for interacting with files
+### Add the UI for listing datasets
 
-To add UI for the example:
+To create UI for listing datasets, follow these steps:
 
-1. Open the `AssetManagementUI` script you created.
-2. Replace the `AssetActions` function with the following code:
+1. In your Unity Project window, go to **Assets** > **Scripts**.
+2. Select and hold the `Assets/Scripts` folder.
+3. Go to **Create** > **C# Script**. Name your script `UseCaseDatasetCreationExampleUI`.
+4. Open the `UseCaseDatasetCreationExampleUI` script you created and replace the contents of the file with the following code sample:
 
-[!code-cs [behaviour-script](../Samples/Documentation/Manual/Management/UseCaseFileCreationExample.cs#Example_UI)]
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseDatasetCreationExample.cs#Example_UIClass)]
+
+5. In the same script, replace the `OnGUI` function with the following code:
+
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseDatasetCreationExample.cs#Example_UIContent)]
+
+6. Open the `AssetManagementUI` script you created and replace the contents of the `Awake` function with the following code:
+
+```cs
+   m_UI.Add(new OrganizationSelectionExampleUI(m_Behaviour));
+   m_UI.Add(new ProjectSelectionExampleUI(m_Behaviour));
+   m_UI.Add(new AssetSelectionExampleUI(m_Behaviour));
+   m_UI.Add(new UseCaseDatasetCreationExampleUI(m_Behaviour));
+```
 
 The code snippet does the following:
 

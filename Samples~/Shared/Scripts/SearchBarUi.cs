@@ -1,4 +1,3 @@
-#if !UC_EXCLUDE_SAMPLES
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -39,9 +38,8 @@ namespace Unity.Cloud.Assets.Samples
 
         public void Initialize(VisualElement root, VisualElement parentElement)
         {
-            var searchBarContainer = m_SearchBarTemplate.Instantiate();
-            searchBarContainer.name = "SearchBar";
-            parentElement.Add(searchBarContainer);
+            var searchBar = m_SearchBarTemplate.Instantiate();
+            parentElement.Add(searchBar);
 
             m_SearchBarController.Init(root, m_SearchBarChipTemplate);
         }
@@ -82,8 +80,7 @@ namespace Unity.Cloud.Assets.Samples
             }
             catch (OperationCanceledException oe)
             {
-                Debug.LogException(oe);
-                throw;
+                Debug.Log(oe);
             }
             catch (AggregateException e)
             {
@@ -108,8 +105,7 @@ namespace Unity.Cloud.Assets.Samples
             }
             catch (OperationCanceledException oe)
             {
-                Debug.LogException(oe);
-                throw;
+                Debug.Log(oe);
             }
             catch (AggregateException e)
             {
@@ -135,4 +131,3 @@ namespace Unity.Cloud.Assets.Samples
         }
     }
 }
-#endif

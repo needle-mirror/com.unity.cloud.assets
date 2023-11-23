@@ -1,4 +1,4 @@
-#if !UC_EXCLUDE_SAMPLES && UNITY_EDITOR
+#if UNITY_EDITOR
 
 using System;
 using System.Threading.Tasks;

@@ -1,5 +1,4 @@
-﻿#if !UC_EXCLUDE_SAMPLES
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace Unity.Cloud.Assets.Samples.AssetDiscovery
 {
@@ -17,4 +16,3 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
         }
     }
 }
-#endif

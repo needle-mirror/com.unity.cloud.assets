@@ -3,39 +3,35 @@
     /// <summary>
     /// A simple Asset type search but wrapped in a type.
     /// </summary>
-    public sealed class AssetTypeSearchCriteria : SearchCriteria<AssetType>
+    public sealed class AssetTypeSearchCriteria : NullableSearchCriteria<AssetType>
     {
         /// <summary>
         /// The search key for the AssetType.
         /// </summary>
         public static string SearchKey => "primaryType";
 
-        internal AssetTypeSearchCriteria(string propertyName, string searchKey, AssetType emptyValue = default)
-            : base(propertyName, searchKey, emptyValue) { }
+        internal AssetTypeSearchCriteria(string propertyName, string searchKey)
+            : base(propertyName, searchKey) { }
+
         protected override bool IsValidType(object input)
         {
-            return input is AssetType || input is string || base.IsValidType(input);
+            // A string is not valid if it cannot be parsed into an AssetType.
+            return base.IsValidType(input) || (input is string && input.ToString().TryGetAssetTypeFromString(out _));
         }
 
-        protected override object TransformValue(AssetType value)
+        protected override object TransformValue(AssetType? value)
         {
-            return value.GetValueAsString();
+            return value?.GetValueAsString()!;
         }
 
-        protected override AssetType TransformValue(object value)
+        protected override AssetType? TransformValue(object value)
         {
-            if(value is AssetType assetType)
+            if (value is AssetType assetType || value.ToString().TryGetAssetTypeFromString(out assetType))
             {
                 return assetType;
             }
 
-            string valueAsStr = value?.ToString();
-            if (!string.IsNullOrEmpty(valueAsStr))
-            {
-                return valueAsStr.GetAssetTypeFromString();
-            }
-
-            return AssetType.Other;
+            return null;
         }
     }
 }

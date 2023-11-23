@@ -1,19 +1,20 @@
-using Newtonsoft.Json;
+using System.Runtime.Serialization;
 
 namespace Unity.Cloud.Assets
 {
+    [DataContract]
     struct AggregationsDto
     {
-        [JsonProperty("aggregations")]
+        [DataMember(Name = "aggregations")]
         public AggregateDto[] Aggregations { get; set; }
     }
 
     struct AggregateDto
     {
-        [JsonProperty("value")]
+        [DataMember(Name = "value")]
         public string Value { get; set; }
 
-        [JsonProperty("count")]
+        [DataMember(Name = "count")]
         public int Count { get; set; }
 
         public AggregateDto(string value, int count)

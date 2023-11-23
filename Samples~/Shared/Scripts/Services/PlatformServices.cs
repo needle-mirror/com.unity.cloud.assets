@@ -1,4 +1,3 @@
-#if !UC_EXCLUDE_SAMPLES
 using System;
 using System.Threading.Tasks;
 using Unity.Cloud.Common;
@@ -81,4 +80,3 @@ namespace Unity.Cloud.Assets.Samples
         }
     }
 }
-#endif

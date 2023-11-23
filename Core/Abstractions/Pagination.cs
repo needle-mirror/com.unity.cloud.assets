@@ -8,12 +8,6 @@ namespace Unity.Cloud.Assets
     /// </summary>
     public struct Pagination
     {
-        public enum Order
-        {
-            Ascending,
-            Descending
-        }
-
         /// <summary>
         /// Returns the sorting method for the items of the page.
         /// </summary>
@@ -24,7 +18,7 @@ namespace Unity.Cloud.Assets
         /// Returns the sorting method for the items of the page.
         /// </summary>
         /// <value>A sorting method. </value>
-        public Order SortingOrder { get; }
+        public SortingOrder SortingOrder { get; }
 
         /// <summary>
         /// Returns the number of items per page.
@@ -37,7 +31,7 @@ namespace Unity.Cloud.Assets
         /// </summary>
         /// <param name="range">The set of results to retrieve. </param>
         /// <param name="order">The order of the results based on the default sorting field. </param>
-        public Pagination(Range range, Order order = Order.Ascending)
+        public Pagination(Range range, SortingOrder order = SortingOrder.Ascending)
         {
             SortingField = nameof(IAsset.Name);
             SortingOrder = order;
@@ -51,7 +45,7 @@ namespace Unity.Cloud.Assets
         /// <param name="range">The set of results to retrieve. </param>
         /// <param name="order">The order of the results based on the <paramref name="sortingField"/>. </param>
         /// <exception cref="InvalidArgumentException">Throws if the <paramref name="sortingField"/> is a null or empty string. </exception>
-        public Pagination(string sortingField, Range range, Order order = Order.Ascending)
+        public Pagination(string sortingField, Range range, SortingOrder order = SortingOrder.Ascending)
         {
             if (string.IsNullOrWhiteSpace(sortingField))
             {

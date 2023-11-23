@@ -76,7 +76,7 @@ namespace Unity.Cloud.Assets
             var assetEnumerator = m_DataSource.ListAssetsAsync(organizationId, availableProjects, assetSearchFilter, pagination, cancellationToken).GetAsyncEnumerator(cancellationToken);
             while (await assetEnumerator.MoveNextAsync())
             {
-                yield return assetEnumerator.Current.From(m_DataSource, organizationId, availableProjects);
+                yield return assetEnumerator.Current.From(m_DataSource, organizationId, availableProjects, assetSearchFilter.IncludedFields);
             }
         }
 
@@ -90,7 +90,7 @@ namespace Unity.Cloud.Assets
         public async Task<IAsset> GetAssetAsync(AssetDescriptor assetDescriptor, FieldsFilter includedFieldsFilter, CancellationToken cancellationToken)
         {
             var assetData = await m_DataSource.GetAssetAsync(assetDescriptor, includedFieldsFilter, cancellationToken);
-            return assetData.From(m_DataSource, assetDescriptor);
+            return assetData.From(m_DataSource, assetDescriptor, includedFieldsFilter);
         }
 
         /// <inheritdoc />
@@ -133,9 +133,39 @@ namespace Unity.Cloud.Assets
         }
 
         /// <inheritdoc />
+        public async IAsyncEnumerable<IFieldDefinition> ListFieldDefinitionsAsync(OrganizationId organizationId, Pagination pagination, bool includeDeleted, [EnumeratorCancellation] CancellationToken cancellationToken)
+        {
+            var asyncEnumerator = m_DataSource.ListFieldDefinitionsAsync(organizationId, pagination, includeDeleted, cancellationToken).GetAsyncEnumerator(cancellationToken);
+            while (await asyncEnumerator.MoveNextAsync())
+            {
+                yield return asyncEnumerator.Current.From(m_DataSource, organizationId);
+            }
+        }
+
+        /// <inheritdoc />
+        public async Task<IFieldDefinition> GetFieldDefinitionAsync(FieldDefinitionDescriptor fieldDefinitionDescriptor, CancellationToken cancellationToken)
+        {
+            var data = await m_DataSource.GetFieldDefinitionAsync(fieldDefinitionDescriptor, cancellationToken);
+            return data.From(m_DataSource, fieldDefinitionDescriptor);
+        }
+
+        /// <inheritdoc />
+        public async Task<IFieldDefinition> CreateFieldDefinitionAsync(OrganizationId organizationId, IFieldDefinitionCreation fieldDefinitionCreation, CancellationToken cancellationToken)
+        {
+            var data = await m_DataSource.CreateFieldDefinitionAsync(organizationId, fieldDefinitionCreation.From(), cancellationToken);
+            return data.From(m_DataSource, organizationId);
+        }
+
+        /// <inheritdoc />
+        public Task DeleteFieldDefinitionAsync(FieldDefinitionDescriptor fieldDefinitionDescriptor, CancellationToken cancellationToken)
+        {
+            return m_DataSource.DeleteFieldDefinitionAsync(fieldDefinitionDescriptor, cancellationToken);
+        }
+
+        /// <inheritdoc />
         public AssetDescriptor DeserializeAssetIdentifiers(string jsonSerialization)
         {
-            var ids = IsolatedJsonConvert.DeserializeObject<AssetIdentifier>(jsonSerialization, SerializationUtilities.Converters);
+            var ids = IsolatedSerialization.DeserializeWithDefaultConverters<AssetIdentifier>(jsonSerialization);
             return ids.From();
         }
 
@@ -144,8 +174,8 @@ namespace Unity.Cloud.Assets
         {
             if (jsonSerialization.Contains(AssetDataWithIdentifiers.SerializedType))
             {
-                var data = IsolatedJsonConvert.DeserializeObject<AssetDataWithIdentifiers>(jsonSerialization, SerializationUtilities.Converters);
-                return data.From(m_DataSource);
+                var data = IsolatedSerialization.DeserializeWithDefaultConverters<AssetDataWithIdentifiers>(jsonSerialization);
+                return data.From(m_DataSource, FieldsFilter.All);
             }
 
             return null;

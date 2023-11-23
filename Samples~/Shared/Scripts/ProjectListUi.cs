@@ -1,4 +1,3 @@
-#if !UC_EXCLUDE_SAMPLES
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -48,8 +47,8 @@ namespace Unity.Cloud.Assets.Samples
             }
             catch (OperationCanceledException oe)
             {
-                Debug.LogException(oe);
-                throw;
+                Debug.Log(oe);
+                return null;
             }
             catch (AggregateException e)
             {
@@ -69,7 +68,7 @@ namespace Unity.Cloud.Assets.Samples
             IsAllProjectSelected = selectedProject != null && selectedProject is not IAssetProject;
             SelectedProject = selectedProject as IAssetProject;
 
-            Debug.Log($"Project Selected: {SelectedProject?.Name}");
+            Debug.Log($"Project Selected: {(IsAllProjectSelected ? "All" : SelectedProject?.Name ?? "None")}.");
             ProjectSelected?.Invoke();
         }
 
@@ -79,4 +78,3 @@ namespace Unity.Cloud.Assets.Samples
         }
     }
 }
-#endif

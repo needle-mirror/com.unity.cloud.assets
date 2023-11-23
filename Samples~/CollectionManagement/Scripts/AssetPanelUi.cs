@@ -1,4 +1,3 @@
-#if !UC_EXCLUDE_SAMPLES
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -137,4 +136,3 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
         }
     }
 }
-#endif
