@@ -30,7 +30,8 @@ namespace Unity.Cloud.Assets.Samples
             None = -1,
             Name,
             Tags,
-            Type
+            Type,
+            Status,
         }
 
         const string k_SearchBarPlaceholder = "Search by name, type or tag...";
@@ -60,6 +61,8 @@ namespace Unity.Cloud.Assets.Samples
         readonly HashSet<string> m_AllSearchValues = new();
         readonly List<SearchValue> m_SearchValues = new();
 
+        public FieldsFilter FieldsToInclude { get; set; }
+
         public event Action<IAsyncEnumerable<IAsset>> addSearchQuery;
         public event Action<IAsyncEnumerable<IAsset>> deleteSearchQuery;
         public event Action clearSearchQuery;
@@ -84,12 +87,7 @@ namespace Unity.Cloud.Assets.Samples
         {
             m_AssetSearchFilter = new AssetSearchFilter
             {
-                IncludedFields = new FieldsFilter
-                {
-                    AssetFields = AssetFields.all,
-                    DatasetFields = DatasetFields.authoring,
-                    FileFields = FileFields.authoring | FileFields.downloadUrl
-                }
+                IncludedFields = FieldsToInclude
             };
             m_QueryList = new List<string>();
 
@@ -105,6 +103,7 @@ namespace Unity.Cloud.Assets.Samples
 
             searchBarButton.clickable.clicked += AddChipAsync;
             m_SearchBarClearButton.clickable.clicked += HideAndClearSearchBar;
+            m_SearchBarClearButton.style.display = DisplayStyle.None;
 
             m_SearchBarField.RegisterCallback<ClickEvent>(_ =>
             {
@@ -139,10 +138,12 @@ namespace Unity.Cloud.Assets.Samples
             }
 
             var assetCount = await CountAssetsAsync(searchString);
+            var overflowString = assetCount > 100 ? "+" : "";
+            assetCount = Math.Min(assetCount, 100);
 
             var chip = m_SearchBarChipTemplate.Instantiate();
             chip.Q<Label>("Label").viewDataKey = searchString;
-            chip.Q<Label>("Label").text = $"{searchString} ({assetCount})";
+            chip.Q<Label>("Label").text = $"{searchString} ({assetCount}{overflowString})";
             chip.Q<Button>("DeleteButton").clickable.clickedWithEventInfo += DeleteChip;
 
             m_SearchBarChipsContainer.Add(chip);
@@ -159,8 +160,8 @@ namespace Unity.Cloud.Assets.Samples
         {
             var target = obj.currentTarget as Button;
 
-            // SearchBarChipDeleteButton(Button) -> DeleteButton(VisualElement) -> SearchBarChip(VisualElement) -> SearchBarChipTemplate(uxml)
-            var targetGrandparent = target?.hierarchy.parent.parent.parent;
+            // SearchBarChipDeleteButton(Button) -> SearchBarChip(VisualElement) -> SearchBarChipTemplate(uxml)
+            var targetGrandparent = target?.hierarchy.parent.parent;
             var targetName = targetGrandparent.Q<Label>("Label").viewDataKey;
 
             m_QueryList.Remove(targetName);
@@ -242,6 +243,7 @@ namespace Unity.Cloud.Assets.Samples
             UpdateSearchCriterionString(SearchCriterion.Name, m_AllSearchValues, m_QueryList.ToArray());
             UpdateSearchCriterionString(SearchCriterion.Type, m_AllSearchValues, m_QueryList.ToArray());
             UpdateSearchCriterionList(SearchCriterion.Tags, m_AllSearchValues, m_QueryList.ToArray());
+            UpdateSearchCriterionString(SearchCriterion.Status, m_AllSearchValues, m_QueryList.ToArray());
 
             try
             {
@@ -255,9 +257,13 @@ namespace Unity.Cloud.Assets.Samples
                     return m_CurrentProject.SearchAssetsAsync(m_AssetSearchFilter, m_DefaultPagination, CancellationToken.None);
                 }
             }
+            catch (OperationCanceledException)
+            {
+                return null;
+            }
             catch (Exception e)
             {
-                Debug.LogException(e);
+                e.LogException();
                 throw;
             }
 
@@ -391,8 +397,9 @@ namespace Unity.Cloud.Assets.Samples
             UpdateSearchCriterionString(SearchCriterion.Name, m_AllSearchValues, query);
             UpdateSearchCriterionString(SearchCriterion.Type, m_AllSearchValues, query);
             UpdateSearchCriterionList(SearchCriterion.Tags, m_AllSearchValues, query);
+            UpdateSearchCriterionString(SearchCriterion.Status, m_AllSearchValues, query);
 
-            var parameters = new AggregationParameters(AssetTypeSearchCriteria.SearchKey);
+            var parameters = new AggregationParameters(AssetTypeSearchCriteria.SearchKey, 101);
 
             try
             {
@@ -408,9 +415,13 @@ namespace Unity.Cloud.Assets.Samples
 
                 return aggregation?.Total ?? 0;
             }
+            catch (OperationCanceledException)
+            {
+                return 0;
+            }
             catch (Exception e)
             {
-                Debug.LogException(e);
+                e.LogException();
                 throw;
             }
         }
@@ -463,7 +474,7 @@ namespace Unity.Cloud.Assets.Samples
 
                 if (searchValues.Count > 0)
                 {
-                    m_SearchValues.Add(new SearchValue($"=== {criterionAggregation.Key.ToString()} ({count}) ===", criterionAggregation.Key, count));
+                    m_SearchValues.Add(new SearchValue($"=== {criterionAggregation.Key.ToString()} ({criterionAggregation.Value.Length}) ===", criterionAggregation.Key, count));
                     m_SearchValues.AddRange(searchValues);
                 }
             }

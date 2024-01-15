@@ -56,8 +56,12 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
         {
             Show();
 
-            var collections = await GetCollectionsAsync(project);
-            UpdateList(collections, true);
+            var collections = (await GetCollectionsAsync(project)).ToArray();
+
+            m_ListController.ClearList();
+            m_ListController.ClearSelection();
+
+            UpdateList(collections);
 
             if (m_SelectedCollection != null)
             {
@@ -78,17 +82,12 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
             }
             catch (OperationCanceledException oe)
             {
-                Debug.Log(oe);
+                oe.LogException();
                 return null;
-            }
-            catch (AggregateException e)
-            {
-                Debug.LogException(e.InnerException);
-                throw;
             }
             catch (Exception e)
             {
-                Debug.LogException(e);
+                e.LogException();
                 throw;
             }
         }

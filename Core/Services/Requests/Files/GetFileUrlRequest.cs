@@ -28,7 +28,7 @@ namespace Unity.Cloud.Assets
             {
                 AddParamToQueryParams("userChecksum", fileData.UserChecksum);
                 AddParamToQueryParams("fileSize", fileData.SizeBytes.ToString());
-                // TODO?? AddParamToQueryParams("width", "???");
+                // To be done by [UCAM-317] AddParamToQueryParams("width", width.ToString())
             }
         }
     }

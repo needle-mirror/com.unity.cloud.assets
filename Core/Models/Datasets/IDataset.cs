@@ -45,21 +45,6 @@ namespace Unity.Cloud.Assets
         AuthoringInfo AuthoringInfo { get; }
 
         /// <summary>
-        /// The portal metadata of the dataset.
-        /// </summary>
-        IDeserializable PortalMetadata { get; }
-
-        /// <summary>
-        /// The user metadata of the dataset.
-        /// </summary>
-        IDeserializable Metadata { get; }
-
-        /// <summary>
-        /// The system metadata of the dataset.
-        /// </summary>
-        IDeserializable SystemMetadata { get; }
-
-        /// <summary>
         /// The order of the files in the dataset.
         /// </summary>
         IEnumerable<string> FileOrder { get; }
@@ -70,12 +55,22 @@ namespace Unity.Cloud.Assets
         bool IsVisible { get; }
 
         /// <summary>
+        /// The searchable metadata of the asset.
+        /// </summary>
+        IMetadataContainer Metadata { get; }
+
+        /// <summary>
+        /// The non-searchable metadata of the asset.
+        /// </summary>
+        IMetadataContainer SystemMetadata { get; }
+
+        /// <summary>
         /// Refreshes the dataset with the specified fields.
         /// </summary>
         /// <param name="includeFields">The fields to refresh. </param>
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task with no result. </returns>
-        // Task RefreshAsync(DatasetFields includeFields, CancellationToken cancellationToken);
+        // Task RefreshAsync(DatasetFields includeFields, CancellationToken cancellationToken)
 
         /// <summary>
         /// Returns the asset that this dataset is associated with.
@@ -137,26 +132,24 @@ namespace Unity.Cloud.Assets
         Task<IFile> GetFileAsync(string filePath, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Removes the specified user metadata fields from the dataset.
-        /// </summary>
-        /// <param name="keys">The metadata files to remove. </param>
-        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
-        /// <returns>A task with no result. </returns>
-        Task RemoveUserMetadataAsync(IEnumerable<string> keys, CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Removes the specified system metadata fields from the dataset.
-        /// </summary>
-        /// <param name="keys">The metadata files to remove. </param>
-        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
-        /// <returns>A task with no result. </returns>
-        Task RemoveSystemMetadataAsync(IEnumerable<string> keys, CancellationToken cancellationToken);
-
-        /// <summary>
         /// Returns the download URL of the file.
         /// </summary>
         /// <param name="filePath"></param>
         /// <returns></returns>
         Uri GetFileUrl(string filePath);
+
+        /// <summary>
+        /// Start a transformation on the dataset
+        /// </summary>
+        /// <param name="workflowType">The type of transformation to apply on the dataset. </param>
+        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
+        Task<ITransformation> StartTransformationAsync(WorkflowType workflowType, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Get specified transformation on the dataset
+        /// </summary>
+        /// <param name="transformationId">The id of the transformation to get. </param>
+        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
+        Task<ITransformation> GetTransformationAsync(TransformationId transformationId, CancellationToken cancellationToken);
     }
 }

@@ -8,12 +8,12 @@ You can use the Unity Cloud Assets package to:
 
 The SDK supports several workflows for users with different roles.
 
-| Asset Manager Project role                                                                           | View files | Upload new file | Add/remove file references |
+| Organization or Asset Manager Project role                                                           | View files | Upload new file | Add/remove file references |
 |:-----------------------------------------------------------------------------------------------------|------------|:----------------|----------------------------|
 | [`Asset Management Viewer`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles)      | yes        | no              | no                         |
 | [`Asset Management Consumer`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles)    | yes        | no              | no                         |
 | [`Asset Management Contributor`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles) | yes        | yes             | yes                        |
-| [`Asset Management Owner`](https://docs.unity.com/cloud/en-us/accounts/roles-and-permissions)        | yes        | yes             | yes                        |
+| [`Organization Owner`](https://docs.unity.com/cloud/en-us/accounts/roles-and-permissions)            | yes        | yes             | yes                        |
 
 ## Before you start
 

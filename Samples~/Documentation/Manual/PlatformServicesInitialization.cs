@@ -1,4 +1,4 @@
-namespace Unity.Cloud.Assets.Documentation
+namespace Unity.Cloud.Documentation.Assets
 {
     #region PlatformServices_Initialization
 

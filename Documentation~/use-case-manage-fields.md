@@ -3,12 +3,12 @@
 You can use the Unity Cloud Assets package to create, delete, and edit the field definitions of an organization.
 
 
-| Asset Manager Project role                                                                           | Getting field definitions | Create/delete/edit field definitions |
+| Organization or Asset Manager Project role                                                           | Getting field definitions | Create/delete/edit field definitions |
 |:-----------------------------------------------------------------------------------------------------|:--------------------------|--------------------------------------|
 | [`Asset Management Viewer`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles)      | yes                       | no                                   |
 | [`Asset Management Consumer`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles)    | yes                       | no                                   |
 | [`Asset Management Contributor`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles) | yes                       | no                                   |
-| [`Asset Management Owner`](https://docs.unity.com/cloud/en-us/accounts/roles-and-permissions)        | yes                       | yes                                  |
+| [`Organization Owner`](https://docs.unity.com/cloud/en-us/accounts/roles-and-permissions)            | yes                       | yes                                  |
 
 ## Before you start
 

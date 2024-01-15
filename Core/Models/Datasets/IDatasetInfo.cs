@@ -7,8 +7,5 @@ namespace Unity.Cloud.Assets
         string Name { get; set; }
         string Description { get; set; }
         List<string> Tags { get; }
-        IDeserializable PortalMetadata { get; }
-        IDeserializable Metadata { get; }
-        IDeserializable SystemMetadata { get; }
     }
 }

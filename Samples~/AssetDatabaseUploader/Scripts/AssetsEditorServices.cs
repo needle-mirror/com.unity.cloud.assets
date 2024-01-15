@@ -1,10 +1,12 @@
 #if UNITY_EDITOR
 using System;
 using System.Threading.Tasks;
+using Unity.Cloud.AppLinking.Runtime;
 using Unity.Cloud.Common;
 using Unity.Cloud.Common.Runtime;
 using Unity.Cloud.Identity;
 using Unity.Cloud.Identity.Editor;
+using Unity.Cloud.Identity.Runtime;
 
 namespace Unity.Cloud.Assets.Samples.AssetDatabaseUploader
 {

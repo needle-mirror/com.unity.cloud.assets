@@ -70,7 +70,7 @@ namespace Unity.Cloud.Assets
         /// <param name="assetCreation">The object containing the necessary information to create an <see cref="IAssetData"/>. </param>
         /// <param name="cancellationToken">A token that can be used to cancel the request.</param>
         /// <returns>A task whose result is an <see cref="IAssetData"/>. </returns>
-        Task<IAssetData> CreateAssetAsync(ProjectDescriptor projectDescriptor, IAssetCreation assetCreation, CancellationToken cancellationToken);
+        Task<IAssetData> CreateAssetAsync(ProjectDescriptor projectDescriptor, IAssetCreateData assetCreation, CancellationToken cancellationToken);
 
         /// <summary>
         /// Updates an asset.

@@ -7,7 +7,7 @@ The sample use the management endpoints that requires a minimum role of:
 
 * [`Asset Management Contributor`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles). <br/> 
 OR 
-* [`Asset Management Owner`](https://docs.unity.com/cloud/en-us/accounts/roles-and-permissions).
+* [`Organization Owner`](https://docs.unity.com/cloud/en-us/accounts/roles-and-permissions).
 
 ## Before you start
 
@@ -76,7 +76,7 @@ To update an asset in this sample, follow these steps:
 2. On the right side of the screen, select **...** button of the asset you want to update and select **Open**.
    </br>
    ![Screenshot of the open button](images/open-selected-asset.png)
-3. In the asset details page, edit the asset's information and select the **Save asset** button.
+3. In the asset details page, edit the asset's information and select the **Save asset** button. Add metadata to the asset by selecting the **Add Metadata** or **Add System Metadata** button.
    </br>
    ![Screenshot of the asset edit panel](images/asset-edit-panel.png)
 4. To add a new dataset to the asset, select the **Create dataset** button.
@@ -91,7 +91,7 @@ To update an asset in this sample, follow these steps:
 5. In the dataset details page, edit the dataset's information and select the **Save dataset** button.
    </br>
    ![Screenshot of the dataset panel](images/dataset-edit-panel.png)
-6. To add a new file to the dataset, select the **Browse** button, select the desired file.
+6. To add a new file to the dataset, select the **Browse** button, select the desired file. If a dataset possesses at least one file, you can generate a preview image by selecting **Generate Preview** button.
    </br>
    ![Screenshot of the browse button](images/dataset-edit-panel-browse-button.png)
 7. To remove a file from the dataset, select the **Trash icon** button.
@@ -125,17 +125,19 @@ To open the platform services script, go to your `Assets/Samples/Unity Cloud Ass
 
 The `PlatformServices` class has two accompanying classes called `PlatformServicesInitialization` and `PlatformServicesShutdown` that call the initialization and shutdown methods through Unity's standard `Monobehaviour` methods `Awake()`, `Start()` and `OnDestroy()`.
 
-### User Controller script
+### Project controller script
 
-The `UserController` class makes it so you can sign into your application and uses your ID to grant access to the Asset Management sample. For more information on authentication, see the **Get user information** use case in the [Identity package documentation](https://docs.unity3d.com/Packages/com.unity.cloud.identity@latest).
+The `ProjectController` class inherits from the `OrganizationController` class which makes it so you can sign into your application and uses your ID to grant access to the Asset Management sample. For more information on authentication, see the **Get user information** use case in the [Identity package documentation](https://docs.unity3d.com/Packages/com.unity.cloud.identity@latest).
+The `ProjectController` class uses the `IOrganizationRepository` of the `PlatformServices` to retrieve the list of organizations you have access to.
+The `ProjectController` class also uses the `IAssetRepository` of the `PlatformServices` to retrieve the list of projects you have access to for the selected organization.
 
-To open the UserController script, go to your `Assets/Samples/Unity Cloud Assets/<package-version>/Shared/Scripts/Controllers/UserController.cs` file.
+To open the project controller script, go to your `Assets/Samples/Unity Cloud Assets/<package-version>/Shared/Scripts/Controllers/ProjectController.cs` file.
 
 ### Asset Management sample script
 
 The `AssetManagerSample` shows you how to do the following:
 
-* Integrate the login flow with the `UserController` class
+* Integrate the login flow with the `ProjectController` class
 * Retrieve Organizations and Projects from the Asset Manager service
 * Retrieve assets from the Asset Manager service and manage them
 * Search for assets by tag or name

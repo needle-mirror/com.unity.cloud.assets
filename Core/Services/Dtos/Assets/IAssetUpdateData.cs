@@ -9,7 +9,7 @@ namespace Unity.Cloud.Assets
     interface IAssetUpdateData : IAssetBaseData
     {
         /// <summary>
-        /// The preview file ID of the asset.
+        /// The preview file path of the asset.
         /// </summary>
         [DataMember(Name = "previewFilePath")]
         string PreviewFile { get; }

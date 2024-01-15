@@ -4,12 +4,12 @@ You can use the Unity Cloud Assets package to view and create datasets within an
 
 The SDK supports different workflows for users with different roles.
 
-| Asset Manager Project role                                                                           | View datasets | Create dataset |
+| Organization or Asset Manager Project role                                                           | View datasets | Create dataset |
 |:-----------------------------------------------------------------------------------------------------|:--------------|----------------|
 | [`Asset Management Viewer`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles)      | yes           | no             |
 | [`Asset Management Consumer`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles)    | yes           | no             |
 | [`Asset Management Contributor`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles) | yes           | yes            |
-| [`Asset Management Owner`](https://docs.unity.com/cloud/en-us/accounts/roles-and-permissions)        | yes           | yes            |
+| [`Organization Owner`](https://docs.unity.com/cloud/en-us/accounts/roles-and-permissions)            | yes           | yes            |
 
 ## Before you start
 

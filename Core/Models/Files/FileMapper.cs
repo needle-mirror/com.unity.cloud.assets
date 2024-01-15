@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Unity.Cloud.Common;
 
@@ -6,32 +7,43 @@ namespace Unity.Cloud.Assets
 {
     static partial class EntityMapper
     {
-        internal static void MapFrom(this FileEntity file, IFileData fileData, FileFields includeFields)
+        internal static void MapFrom(this FileEntity file, IAssetDataSource assetDataSource, IFileData fileData, FileFields includeFields)
         {
             file.Tags = fileData.Tags;
             file.SystemTags = fileData.SystemTags;
             file.Status = fileData.Status;
 
             if (includeFields.HasFlag(FileFields.description))
-                file.Description = fileData.Description;
+                file.Description = fileData.Description ?? string.Empty;
             if (includeFields.HasFlag(FileFields.authoring))
                 file.AuthoringInfo = new AuthoringInfo(fileData.CreatedBy, fileData.Created, fileData.UpdatedBy, fileData.Updated);
             if (includeFields.HasFlag(FileFields.downloadUrl))
             {
-                Uri.TryCreate(fileData.DownloadUrl, UriKind.RelativeOrAbsolute, out var downloadUrl);
-                file.DownloadUrl = downloadUrl;
+                if (Uri.TryCreate(fileData.DownloadUrl, UriKind.RelativeOrAbsolute, out var downloadUrl))
+                {
+                    file.DownloadUrl = downloadUrl;
+                    file.IsDownloadable = downloadUrl != null;
+                }
+                else
+                {
+                    file.DownloadUrl = null;
+                    file.IsDownloadable = false;
+                }
+            }
+            else
+            {
+                file.IsDownloadable = fileData.Status == "Uploaded";
             }
             if (includeFields.HasFlag(FileFields.previewUrl))
             {
                 Uri.TryCreate(fileData.PreviewUrl, UriKind.RelativeOrAbsolute, out var previewUrl);
                 file.PreviewUrl = previewUrl;
             }
-            if (includeFields.HasFlag(FileFields.portalMetadata))
-                file.PortalMetadata = fileData.PortalMetadata;
+
             if (includeFields.HasFlag(FileFields.metadata))
-                file.Metadata = fileData.Metadata;
+                file.MetadataEntity.Properties = fileData.Metadata?.From(assetDataSource, file.Descriptor.OrganizationGenesisId);
             if (includeFields.HasFlag(FileFields.systemMetadata))
-                file.SystemMetadata = fileData.SystemMetadata;
+                file.SystemMetadataEntity.Properties = fileData.SystemMetadata?.From(assetDataSource, file.Descriptor.OrganizationGenesisId);
             if (includeFields.HasFlag(FileFields.userChecksum))
                 file.UserChecksum = fileData.UserChecksum;
             if (includeFields.HasFlag(FileFields.fileSize))
@@ -41,7 +53,7 @@ namespace Unity.Cloud.Assets
         internal static FileEntity From(this IFileData fileData, IAssetDataSource assetDataSource, FileDescriptor fileDescriptor, FileFields includeFields)
         {
             var file = new FileEntity(assetDataSource, fileDescriptor, fileData.DatasetIds);
-            file.MapFrom(fileData, includeFields);
+            file.MapFrom(assetDataSource, fileData, includeFields);
             return file;
         }
 
@@ -62,9 +74,8 @@ namespace Unity.Cloud.Assets
                 Description = fileEntity.Description,
                 Tags = fileEntity.Tags,
                 SystemTags = fileEntity.SystemTags,
-                PortalMetadata = fileEntity.PortalMetadata,
-                Metadata = fileEntity.Metadata,
-                SystemMetadata = fileEntity.SystemMetadata,
+                Metadata = fileEntity.MetadataEntity?.From() ?? new Dictionary<string, object>(),
+                SystemMetadata = fileEntity.SystemMetadataEntity?.From() ?? new Dictionary<string, object>(),
                 CreatedBy = fileEntity.AuthoringInfo?.CreatedBy,
                 Created = fileEntity.AuthoringInfo?.Created,
                 UpdatedBy = fileEntity.AuthoringInfo?.UpdatedBy,
@@ -82,9 +93,6 @@ namespace Unity.Cloud.Assets
             {
                 Description = fileUpdate.Description,
                 Tags = fileUpdate.Tags,
-                PortalMetadata = fileUpdate.PortalMetadata,
-                Metadata = fileUpdate.Metadata,
-                SystemMetadata = fileUpdate.SystemMetadata
             };
         }
     }

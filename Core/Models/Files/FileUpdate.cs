@@ -14,30 +14,12 @@ namespace Unity.Cloud.Assets
         /// </summary>
         public IEnumerable<string> Tags { get; set; }
 
-        /// <summary>
-        /// The metadata of the asset file.
-        /// </summary>
-        public IDeserializable Metadata { get; set; }
-
-        /// <summary>
-        /// The system metadata of the asset file.
-        /// </summary>
-        public IDeserializable SystemMetadata { get; set; }
-
-        /// <summary>
-        /// The system metadata of the asset file.
-        /// </summary>
-        public IDeserializable PortalMetadata { get; set; }
-
         public FileUpdate() { }
 
         public FileUpdate(IFile file)
         {
             Description = file.Description;
             Tags = file.Tags;
-            Metadata = file.Metadata;
-            SystemMetadata = file.SystemMetadata;
-            PortalMetadata = file.PortalMetadata;
         }
     }
 }

@@ -1,4 +1,7 @@
-namespace Unity.Cloud.Assets.Documentation
+using Unity.Cloud.AppLinking.Runtime;
+using Unity.Cloud.Identity.Runtime;
+
+namespace Unity.Cloud.Documentation.Assets
 {
     #region PlatformServices
 
@@ -40,7 +43,7 @@ namespace Unity.Cloud.Assets.Documentation
             var platformSupport = PlatformSupportFactory.GetAuthenticationPlatformSupport();
 
             var compositeAuthenticatorSettings = new CompositeAuthenticatorSettingsBuilder(httpClient, platformSupport, serviceHostResolver, playerSettings)
-                .AddDefaultPkceAuthenticator(playerSettings, playerSettings)
+                .AddDefaultPkceAuthenticator(playerSettings)
                 .Build();
 
             Authenticator = new CompositeAuthenticator(compositeAuthenticatorSettings);

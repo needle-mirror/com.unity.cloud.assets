@@ -24,31 +24,6 @@ namespace Unity.Cloud.Assets
         FieldsFilter IncludedFields { get; }
 
         /// <summary>
-        /// Returns whether the current filter matches the asset being queried.
-        /// </summary>
-        /// <param name="asset">The <see cref="IAsset"/> to query for match. </param>
-        /// <returns>True if the asset matches this search filter. </returns>
-        bool IsMatch(IAsset asset);
-
-        /// <summary>
-        /// Includes all populated fields of the provided <see cref="IAsset"/> in the search.
-        /// </summary>
-        /// <param name="asset">An <see cref="IAsset"/></param>
-        void Include(IAsset asset);
-
-        /// <summary>
-        /// Excludes all populated fields of the provided <see cref="IAsset"/> in the search.
-        /// </summary>
-        /// <param name="asset">An <see cref="IAsset"/></param>
-        void Exclude(IAsset asset);
-
-        /// <summary>
-        /// Includes all populated fields of the provided <see cref="IAsset"/> as optional criteria in the search.
-        /// </summary>
-        /// <param name="asset">An <see cref="IAsset"/></param>
-        void Any(IAsset asset);
-
-        /// <summary>
         /// Gets the required search criteria of the filter.
         /// </summary>
         /// <returns>A dictionary containing the required search criteria. </returns>

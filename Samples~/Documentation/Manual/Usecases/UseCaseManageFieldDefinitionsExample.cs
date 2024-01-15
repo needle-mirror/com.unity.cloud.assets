@@ -1,20 +1,19 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using Unity.Cloud.Common;
-using Unity.Cloud.Identity;
-using UnityEditor;
-using UnityEngine;
-
-namespace Unity.Cloud.Assets.Documentation
+namespace Unity.Cloud.Documentation.Assets
 {
 #pragma warning disable S4487 // Unread "private" fields should be removed
 #pragma warning disable S1186 // Methods should not be empty
+#pragma warning disable S1144 // Remove unused private method
 
     #region Example_UIClass
+
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using Unity.Cloud.Assets;
+    using Unity.Cloud.Identity;
+    using UnityEngine;
 
     public class UseCaseManageFieldDefinitionsExampleUI : IAssetManagementUI
     {
@@ -33,6 +32,7 @@ namespace Unity.Cloud.Assets.Documentation
 
     #endregion
 
+#pragma warning restore S1144 // Remove unused private method
 #pragma warning restore S1186 // Methods should not be empty
 #pragma warning restore S4487 // Unread "private" fields should be removed
 
@@ -52,6 +52,7 @@ namespace Unity.Cloud.Assets.Documentation
 
         IOrganization m_CurrentOrganization;
         FieldDefinitionCreation m_FieldDefinitionCreation = new();
+        List<string> m_SelectionAcceptedValues = new();
         Vector2 m_FieldsScrollPosition;
 
         public void OnGUI()
@@ -125,13 +126,17 @@ namespace Unity.Cloud.Assets.Documentation
 
                 for (var i = 0; i < fields.Count; ++i)
                 {
-                    EditorGUILayout.BeginHorizontal();
+                    GUILayout.BeginHorizontal();
 
                     GUILayout.Label(fields[i].Descriptor.FieldKey);
 
                     if (GUILayout.Button("Select"))
                     {
                         m_Behaviour.SetCurrentFieldDefinition(fields[i]);
+                        if (m_Behaviour.CurrentFieldDefinition.Type == FieldDefinitionType.Selection)
+                        {
+                            m_SelectionAcceptedValues = fields[i].AsSelectionFieldDefinition().AcceptedValues?.ToList() ?? new List<string>();
+                        }
                     }
 
                     if (GUILayout.Button("Delete"))
@@ -139,7 +144,7 @@ namespace Unity.Cloud.Assets.Documentation
                         _ = m_Behaviour.DeleteFieldDefinition(fields[i]);
                     }
 
-                    EditorGUILayout.EndHorizontal();
+                    GUILayout.EndHorizontal();
                 }
 
                 GUILayout.EndScrollView();
@@ -160,19 +165,6 @@ namespace Unity.Cloud.Assets.Documentation
             var type = (int) m_FieldDefinitionCreation.Type;
             type = GUILayout.SelectionGrid(type, m_FieldTypeList, 3);
             m_FieldDefinitionCreation.Type = Enum.Parse<FieldDefinitionType>(m_FieldTypeList[type], true);
-
-            GUI.enabled = m_FieldDefinitionCreation.Type == FieldDefinitionType.Selection;
-            m_FieldDefinitionCreation.Multiselection = GUILayout.Toggle(m_FieldDefinitionCreation.Multiselection ?? false, "Is multiselection");
-
-            GUILayout.Label("Accepted Values:");
-            var value = string.Join(',', m_FieldDefinitionCreation.AcceptedValues ?? new List<string>());
-            var newValue = GUILayout.TextField(value);
-            if (value != newValue)
-            {
-                m_FieldDefinitionCreation.AcceptedValues = newValue.Split(',').Select(x => x.Trim()).ToList();
-            }
-
-            GUI.enabled = true;
 
             var isEmpty = string.IsNullOrEmpty(m_FieldDefinitionCreation.Key);
             var isUnique = m_Behaviour.FieldDefinitions != null && m_Behaviour.FieldDefinitions.All(x => x.Descriptor.FieldKey != m_FieldDefinitionCreation.Key);
@@ -196,43 +188,68 @@ namespace Unity.Cloud.Assets.Documentation
         void DisplayFieldDefinition()
         {
             var field = m_Behaviour.CurrentFieldDefinition;
-            var update = m_Behaviour.FieldDefinitionUpdate;
 
             GUILayout.Label($"Field Definition: {field.Descriptor.FieldKey}");
             GUILayout.Label($"Status: {field.Status}");
             GUILayout.Label($"Created on: {field.AuthoringInfo?.Created:yyyy-M-d dddd}");
             GUILayout.Label($"Updated on: {field.AuthoringInfo?.Updated:yyyy-M-d dddd}");
-            var multiSelectionStatus = field.Multiselection.HasValue ? (field.Multiselection.Value ? ", Multi" : ", Single") : "";
+
+            var multiSelectionStatus = string.Empty;
+            var acceptedValues = string.Empty;
+
+            if (field.Type == FieldDefinitionType.Selection)
+            {
+                var selectionFieldDefinition = field.AsSelectionFieldDefinition();
+
+                multiSelectionStatus = selectionFieldDefinition.Multiselection ? ", Multi" : ", Single";
+                acceptedValues = string.Join(',', selectionFieldDefinition.AcceptedValues ?? new List<string>());
+            }
+
             GUILayout.Label($"Type: {field.Type}{multiSelectionStatus}");
 
             if (field.Status == "Deleted")
             {
                 GUILayout.Label($"Display name: {field.DisplayName}");
-                GUILayout.Label($"Accepted values: {string.Join(',', field.AcceptedValues ?? new List<string>())}");
+                if (!string.IsNullOrEmpty(acceptedValues))
+                {
+                    GUILayout.Label($"Accepted values: {acceptedValues}");
+                }
+
                 return;
             }
 
             GUILayout.Space(5f);
-            GUILayout.Label("Display name:");
-            update.DisplayName = GUILayout.TextField(update.DisplayName);
 
-            if (field.Type == FieldDefinitionType.Selection)
+            DisplayUpdateValues(m_Behaviour.FieldDefinitionUpdate);
+
+            if (m_Behaviour.CurrentFieldDefinition.Type == FieldDefinitionType.Selection)
             {
-                GUILayout.Space(5f);
-                GUILayout.Label("Accepted Values:");
-
-                var value = string.Join(',', update.AcceptedValues ?? new List<string>());
-                var newValue = GUILayout.TextField(value);
-                if (value != newValue)
-                {
-                    update.AcceptedValues = newValue.Split(',').Select(x => x.Trim()).ToList();
-                }
+                DisplaySelectionValues();
             }
 
             GUILayout.Space(5f);
             if (GUILayout.Button("Update"))
             {
-                _ = m_Behaviour.UpdateFieldDefinition();
+                _ = m_Behaviour.UpdateFieldDefinition(m_SelectionAcceptedValues);
+            }
+        }
+
+        static void DisplayUpdateValues(FieldDefinitionUpdate update)
+        {
+            GUILayout.Label("Display name:");
+            update.DisplayName = GUILayout.TextField(update.DisplayName);
+        }
+
+        void DisplaySelectionValues()
+        {
+            GUILayout.Space(5f);
+            GUILayout.Label("Accepted Values:");
+
+            var value = string.Join(',', m_SelectionAcceptedValues);
+            var newValue = GUILayout.TextField(value);
+            if (value != newValue)
+            {
+                m_SelectionAcceptedValues = newValue.Split(',').Select(x => x.Trim()).ToList();
             }
         }
 
@@ -301,6 +318,7 @@ namespace Unity.Cloud.Assets.Documentation
             {
                 SetCurrentFieldDefinition(null);
             }
+
             Debug.Log($"Field definition {fieldDefinition.Descriptor.FieldKey} deleted.");
         }
 
@@ -308,9 +326,15 @@ namespace Unity.Cloud.Assets.Documentation
 
         #region Example_Behaviour_UpdateMetadata
 
-        public async Task UpdateFieldDefinition()
+        public async Task UpdateFieldDefinition(IEnumerable<string> selectionAcceptedValues)
         {
             await CurrentFieldDefinition.UpdateAsync(FieldDefinitionUpdate, CancellationToken.None);
+
+            if (CurrentFieldDefinition.Type == FieldDefinitionType.Selection)
+            {
+                await CurrentFieldDefinition.AsSelectionFieldDefinition().SetSelectionValuesAsync(selectionAcceptedValues, CancellationToken.None);
+            }
+
             Debug.Log($"Field definition {CurrentFieldDefinition.Descriptor.FieldKey} updated.");
         }
 

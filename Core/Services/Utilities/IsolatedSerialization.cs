@@ -1,6 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 
 namespace Unity.Cloud.Assets
@@ -23,7 +26,9 @@ namespace Unity.Cloud.Assets
 
         public static JsonConverter CollectionPathConverter => new CollectionPathStringConverter();
         public static JsonConverter DatasetIdConverter => new DatasetIdConverter();
+        public static JsonConverter TransformationIdConverter => new TransformationIdConverter();
         public static JsonConverter JsonObjectConverter => new JsonObjectConverter();
+        public static JsonConverter StringEnumConverter => new StringEnumConverter();
 
         public static readonly JsonConverter[] Converters =
         {
@@ -32,8 +37,10 @@ namespace Unity.Cloud.Assets
             new AssetIdConverter(),
             new AssetVersionIdConverter(),
             DatasetIdConverter,
+            TransformationIdConverter,
             CollectionPathConverter,
-            JsonObjectConverter
+            JsonObjectConverter,
+            StringEnumConverter
         };
 
         /// <summary>
@@ -162,6 +169,50 @@ namespace Unity.Cloud.Assets
             };
 #endif
             return cloneSettings;
+        }
+
+        static Dictionary<string, object> ToObjectDictionary(object jsonObject)
+        {
+            if (jsonObject is not JObject jObject)
+                return new Dictionary<string, object>();
+
+            var properties = new Dictionary<string, object>();
+
+            foreach (var property in jObject.Properties())
+            {
+                properties[property.Name] = ToObject(property.Value);
+            }
+
+            return properties;
+        }
+
+        static object[] ToObjectArray(object jToken)
+        {
+            if (jToken is not JArray jArray)
+                return Array.Empty<object>();
+
+            var values = new object[jArray.Count];
+
+            for (var i = 0; i < values.Length; ++i)
+            {
+                values[i] = ToObject(jArray[i]);
+            }
+
+            return values;
+        }
+
+        internal static object ToObject(object jToken)
+        {
+            if (jToken is not JToken)
+                return jToken;
+
+            return jToken switch
+            {
+                JObject => ToObjectDictionary(jToken),
+                JValue jValue => jValue.Value,
+                JArray => ToObjectArray(jToken),
+                _ => throw new InvalidOperationException($"Cannot convert value for {jToken.GetType()}")
+            };
         }
     }
 }

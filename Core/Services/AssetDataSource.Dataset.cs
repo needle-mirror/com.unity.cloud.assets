@@ -25,7 +25,6 @@ namespace Unity.Cloud.Assets
                 Name = datasetCreation.Name,
                 Description = datasetCreation.Description,
                 Tags = datasetCreation.Tags ?? new List<string>(),
-                PortalMetadata = datasetCreation.PortalMetadata,
                 Metadata = datasetCreation.Metadata,
                 SystemMetadata = datasetCreation.SystemMetadata,
                 SystemTags = new List<string>(),
@@ -39,14 +38,26 @@ namespace Unity.Cloud.Assets
         public async Task<IDatasetData> GetDatasetAsync(DatasetDescriptor datasetDescriptor, FieldsFilter includedFieldsFilter, CancellationToken token)
         {
             var assetData = await GetAssetAsync(datasetDescriptor.AssetDescriptor, includedFieldsFilter, token);
-            return assetData.Datasets.FirstOrDefault(d => d.DatasetId == datasetDescriptor.DatasetId);
+            var dataset = assetData.Datasets.FirstOrDefault(d => d.DatasetId == datasetDescriptor.DatasetId);
+            if (dataset == null)
+            {
+                throw new NotFoundException($"Dataset with id \"{datasetDescriptor.DatasetId}\" not found at that location.");
+            }
+
+            return dataset;
         }
 
         /// <inheritdoc />
         public async Task<IDatasetData> GetDatasetBySystemTagAsync(AssetDescriptor assetDescriptor, string systemTag, FieldsFilter includedFieldsFilter, CancellationToken token)
         {
             var assetData = await GetAssetAsync(assetDescriptor, includedFieldsFilter, token);
-            return assetData.Datasets.FirstOrDefault(d => d.SystemTags != null && d.SystemTags.Contains(systemTag));
+            var dataset = assetData.Datasets.FirstOrDefault(d => d.SystemTags != null && d.SystemTags.Contains(systemTag));
+            if (dataset == null)
+            {
+                throw new NotFoundException($"Dataset with system tag \"{systemTag}\" not found at that location.");
+            }
+
+            return dataset;
         }
 
         /// <inheritdoc />

@@ -1,0 +1,83 @@
+.PopupContainer {
+    align-items: center;
+    justify-content: space-around;
+    position: absolute;
+    width: 95%;
+    height: 95%;
+    align-self: center;
+    left: 2.5%;
+}
+
+.Popup {
+    border-left-width: 2px;
+    border-right-width: 2px;
+    border-top-width: 2px;
+    border-bottom-width: 2px;
+    border-top-left-radius: 2px;
+    border-bottom-left-radius: 2px;
+    border-top-right-radius: 2px;
+    border-bottom-right-radius: 2px;
+    background-color: rgb(56, 56, 56);
+    border-left-color: rgb(47, 47, 47);
+    border-right-color: rgb(47, 47, 47);
+    border-top-color: rgb(47, 47, 47);
+    border-bottom-color: rgb(47, 47, 47);
+    position: relative;
+    justify-content: space-between;
+    display: none;
+    overflow: hidden;
+    padding-top: 4px;
+    padding-right: 4px;
+    padding-bottom: 4px;
+    padding-left: 4px;
+    max-height: 100%;
+}
+
+.PopupError {
+    display: none;
+    border-left-color: rgb(255, 94, 81);
+    border-right-color: rgb(255, 94, 81);
+    border-top-color: rgb(255, 94, 81);
+    border-bottom-color: rgb(255, 94, 81);
+    margin-left: 9px;
+    margin-right: 9px;
+    margin-top: 9px;
+    margin-bottom: 9px;
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    color: rgb(238, 94, 81);
+    -unity-font-style: bold;
+    border-top-left-radius: 3px;
+    border-bottom-left-radius: 3px;
+    border-top-right-radius: 3px;
+    border-bottom-right-radius: 3px;
+    padding-left: 3px;
+    padding-right: 3px;
+    padding-top: 3px;
+    padding-bottom: 3px;
+}
+
+.PopupClose {
+    background-image: url('../../../Shared/UI/Sprites/delete.png?fileID=21300000&guid=2fba3b8e11a714aeca7937eb158f6f0b&type=3#delete');
+    width: 20px;
+    height: 20px;
+    background-color: rgba(88, 88, 88, 0);
+    border-left-width: 0;
+    border-right-width: 0;
+    border-top-width: 0;
+    border-bottom-width: 0;
+    margin-left: 8px;
+    margin-right: 8px;
+    margin-top: 8px;
+    margin-bottom: 8px;
+    padding-left: 0;
+    padding-right: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+Label {
+    color: rgb(210, 210, 210);
+}

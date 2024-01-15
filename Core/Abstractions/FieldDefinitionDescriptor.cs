@@ -1,5 +1,6 @@
+using Unity.Cloud.Common;
 
-namespace Unity.Cloud.Common
+namespace Unity.Cloud.Assets
 {
     /// <summary>
     /// This struct contains the identifiers for a project.

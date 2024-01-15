@@ -7,7 +7,7 @@ using Unity.Cloud.Common;
 namespace Unity.Cloud.Assets
 {
     /// <summary>
-    /// This is a base class containing the information about an asset.
+    /// An interface containing the information about an asset.
     /// </summary>
     public interface IAsset
     {
@@ -58,21 +58,6 @@ namespace Unity.Cloud.Assets
         AssetType Type { get; }
 
         /// <summary>
-        /// The portal metadata of the asset.
-        /// </summary>
-        IDeserializable PortalMetadata { get; }
-
-        /// <summary>
-        /// The user metadata of the asset.
-        /// </summary>
-        IDeserializable Metadata { get; }
-
-        /// <summary>
-        /// The system metadata of the asset.
-        /// </summary>
-        IDeserializable SystemMetadata { get; }
-
-        /// <summary>
         /// The preview file ID of the asset.
         /// </summary>
         string PreviewFile { get; }
@@ -107,6 +92,16 @@ namespace Unity.Cloud.Assets
         /// The collections of the asset.
         /// </summary>
         IEnumerable<CollectionPath> Collections { get; }
+
+        /// <summary>
+        /// The searchable metadata of the asset.
+        /// </summary>
+        IMetadataContainer Metadata { get; }
+
+        /// <summary>
+        /// The non-searchable metadata of the asset.
+        /// </summary>
+        IMetadataContainer SystemMetadata { get; }
 
         /// <summary>
         /// Returns an asset in the context of the specified project.
@@ -221,22 +216,6 @@ namespace Unity.Cloud.Assets
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task whose result is an async enumeration of <see cref="IFile"/> referenced by the asset. </returns>
         IAsyncEnumerable<IFile> ListFilesAsync(Range range, CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Removes the specified user metadata fields from the dataset.
-        /// </summary>
-        /// <param name="keys">The metadata files to remove. </param>
-        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
-        /// <returns>A task with no result. </returns>
-        Task RemoveUserMetadataAsync(IEnumerable<string> keys, CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Removes the specified system metadata fields from the dataset.
-        /// </summary>
-        /// <param name="keys">The metadata files to remove. </param>
-        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
-        /// <returns>A task with no result. </returns>
-        Task RemoveSystemMetadataAsync(IEnumerable<string> keys, CancellationToken cancellationToken);
 
         /// <summary>
         /// Updates the asset status to published.

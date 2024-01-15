@@ -34,14 +34,8 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc cref="IAsset.SystemTags"/>
         public HashsetSearchCriteria<string> SystemTags { get; } = new(nameof(IAsset.SystemTags), "systemTags");
 
-        /// <inheritdoc cref="IAsset.PortalMetadata"/>
-        public DeserializableSearchCriteria PortalMetadata { get; } = new(nameof(IAsset.PortalMetadata), "portalMetadata");
-
-        /// <inheritdoc cref="IAsset.Metadata"/>
-        public MetadataSearchFilter Metadata { get; } = new(nameof(IAsset.Metadata), "metadata");
-
-        /// <inheritdoc cref="IAsset.SystemMetadata"/>
-        public MetadataSearchFilter SystemMetadata { get; } = new(nameof(IAsset.SystemMetadata), "systemMetadata");
+        /// <inheritdoc cref="Asset.Metadata"/>
+        public MetadataSearchFilter Metadata { get; } = new(nameof(Asset.Metadata), "metadata");
 
         /// <inheritdoc cref="IAsset.PreviewFile"/>
         public SearchCriteria<string> PreviewFile { get; } = new(nameof(IAsset.PreviewFile), "previewFileId");

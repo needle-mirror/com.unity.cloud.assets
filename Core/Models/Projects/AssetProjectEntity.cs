@@ -45,7 +45,7 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc />
         public async Task<IAsset> CreateAssetAsync(IAssetCreation assetCreation, CancellationToken cancellationToken)
         {
-            var data = await m_DataSource.CreateAssetAsync(Descriptor, assetCreation, cancellationToken);
+            var data = await m_DataSource.CreateAssetAsync(Descriptor, assetCreation.From(), cancellationToken);
             return data.From(m_DataSource, Descriptor, FieldsFilter.All);
         }
 
@@ -57,6 +57,8 @@ namespace Unity.Cloud.Assets
             {
                 yield return assetEnumerator.Current.From(m_DataSource, Descriptor, assetSearchFilter.IncludedFields);
             }
+
+            await assetEnumerator.DisposeAsync();
         }
 
         /// <inheritdoc />

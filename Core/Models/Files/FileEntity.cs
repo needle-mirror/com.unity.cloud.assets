@@ -22,11 +22,17 @@ namespace Unity.Cloud.Assets
             {
                 m_LinkedDatasets = datasetIds.Select(id => new DatasetDescriptor(descriptor.DatasetDescriptor.AssetDescriptor, id)).ToArray();
             }
+
+            MetadataEntity = new FileMetadataContainer(Descriptor, FileFields.metadata, m_DataSource);
+            SystemMetadataEntity = new FileMetadataContainer(Descriptor, FileFields.systemMetadata, m_DataSource);
         }
 
         internal FileEntity(FileDescriptor fileDescriptor)
         {
             Descriptor = fileDescriptor;
+
+            MetadataEntity = new FileMetadataContainer(Descriptor, FileFields.metadata, null);
+            SystemMetadataEntity = new FileMetadataContainer(Descriptor, FileFields.systemMetadata, null);
         }
 
         /// <inheritdoc />
@@ -50,17 +56,28 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc />
         public IEnumerable<string> SystemTags { get; set; }
 
-        /// <inheritdoc />
-        public IDeserializable PortalMetadata { get; set; }
+        /// <summary>
+        /// The user metadata of the asset.
+        /// </summary>
+        public IMetadataContainer Metadata => MetadataEntity;
 
-        /// <inheritdoc />
-        public IDeserializable Metadata { get; set; }
-
-        /// <inheritdoc />
-        public IDeserializable SystemMetadata { get; set; }
+        /// <summary>
+        /// The system metadata of the asset.
+        /// </summary>
+        public IMetadataContainer SystemMetadata => SystemMetadataEntity;
 
         /// <inheritdoc />
         public IEnumerable<DatasetDescriptor> LinkedDatasets => m_LinkedDatasets;
+
+        /// <summary>
+        /// The metadata of the file.
+        /// </summary>
+        public MetadataContainerEntity MetadataEntity { get; }
+
+        /// <summary>
+        /// The system metadata of the file.
+        /// </summary>
+        public MetadataContainerEntity SystemMetadataEntity { get; }
 
         /// <inheritdoc />
         public long SizeBytes { get; set; }
@@ -70,6 +87,8 @@ namespace Unity.Cloud.Assets
         internal Uri UploadUrl { get; set; }
 
         internal Uri DownloadUrl { get; set; }
+
+        internal bool IsDownloadable { get; set; } = true;
 
         AssetDescriptor AssetDescriptor => Descriptor.DatasetDescriptor.AssetDescriptor;
 
@@ -89,9 +108,8 @@ namespace Unity.Cloud.Assets
                 AuthoringInfo = AuthoringInfo,
                 Tags = Tags?.ToArray(),
                 SystemTags = SystemTags?.ToArray(),
-                PortalMetadata = PortalMetadata,
-                Metadata = Metadata,
-                SystemMetadata = SystemMetadata,
+                MetadataEntity = { Properties = MetadataEntity.Properties },
+                SystemMetadataEntity = { Properties = SystemMetadataEntity.Properties },
                 SizeBytes = SizeBytes,
                 UserChecksum = UserChecksum,
                 UploadUrl = UploadUrl,
@@ -110,7 +128,7 @@ namespace Unity.Cloud.Assets
             };
 
             var fileData = await m_DataSource.GetFileAsync(Descriptor, filter, cancellationToken);
-            this.MapFrom(fileData, includeFields);
+            this.MapFrom(m_DataSource, fileData, includeFields);
         }
 
         /// <inheritdoc />
@@ -141,6 +159,8 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc />
         public async Task<Uri> GetDownloadUrlAsync(CancellationToken cancellationToken)
         {
+            if (!IsDownloadable) return null;
+
             if (DownloadUrl == null)
             {
                 var data = new FileData
@@ -149,7 +169,15 @@ namespace Unity.Cloud.Assets
                     UserChecksum = UserChecksum,
                     SizeBytes = SizeBytes
                 };
-                DownloadUrl = await m_DataSource.GetFileDownloadUrlAsync(Descriptor, data, cancellationToken);
+                try
+                {
+                    DownloadUrl = await m_DataSource.GetFileDownloadUrlAsync(Descriptor, data, cancellationToken);
+                }
+                catch (NotFoundException)
+                {
+                    IsDownloadable = false;
+                    return null;
+                }
             }
 
             return DownloadUrl;
@@ -158,13 +186,15 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc />
         public async Task DownloadAsync(Stream targetStream, IProgress<HttpProgress> progress, CancellationToken cancellationToken)
         {
+            if (!IsDownloadable) return;
+
             await GetDownloadUrlAsync(cancellationToken);
 
             try
             {
                 await m_DataSource.DownloadContentAsync(DownloadUrl, targetStream, progress, cancellationToken);
             }
-            catch (Exception) // TODO determine a more specific exception type
+            catch (NotFoundException)
             {
                 // If the download fails, try to get a new download url and try again.
                 DownloadUrl = null;
@@ -199,7 +229,7 @@ namespace Unity.Cloud.Assets
             {
                 await m_DataSource.UploadContentAsync(UploadUrl, sourceStream, progress, cancellationToken);
             }
-            catch (Exception) // TODO determine a more specific exception type
+            catch (NotFoundException)
             {
                 // If the upload fails, try to get a new upload url and try again.
                 UploadUrl = null;
@@ -213,20 +243,6 @@ namespace Unity.Cloud.Assets
         {
             await m_DataSource.UpdateFileAsync(Descriptor, fileUpdate.From(), cancellationToken);
             await RefreshAsync(FileFields.all, default);
-        }
-
-        /// <inheritdoc />
-        public async Task RemoveUserMetadataAsync(string[] keys, CancellationToken cancellationToken)
-        {
-            await m_DataSource.RemoveFileMetadataAsync(Descriptor, "metadata", keys, cancellationToken);
-            await RefreshAsync(FileFields.metadata, default);
-        }
-
-        /// <inheritdoc />
-        public async Task RemoveSystemMetadataAsync(string[] keys, CancellationToken cancellationToken)
-        {
-            await m_DataSource.RemoveFileMetadataAsync(Descriptor, "systemMetadata", keys, cancellationToken);
-            await RefreshAsync(FileFields.systemMetadata, default);
         }
     }
 }

@@ -1,0 +1,43 @@
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace Unity.Cloud.Assets
+{
+    public interface IMetadataContainer
+    {
+        /// <summary>
+        /// Adds or updates the specified fields in the metadata dictionary.
+        /// </summary>
+        /// <param name="metadataValues">A collection of <see cref="IMetadataValue"/> to add or update. </param>
+        /// <param name="cancellationToken">A token that can be used to cancel the request.</param>
+        /// <returns>A task with no result.</returns>
+        /// <exception cref="ArgumentException">If the type of a dictionary value is not recognized as valid metadata type. </exception>
+        Task AddOrUpdateAsync(IDictionary<string, object> metadataValues, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Adds or updates the specified field in the metadata dictionary.
+        /// </summary>
+        /// <param name="key">The key of an existing <see cref="IFieldDefinition"/>. </param>
+        /// <param name="metadataValue">The value of the field. </param>
+        /// <param name="cancellationToken">A token that can be used to cancel the request.</param>
+        /// <returns>A task with no result.</returns>
+        /// <exception cref="ArgumentException">If <paramref name="metadataValue"/> type is not a valid metadata type. </exception>
+        Task AddOrUpdateAsync(string key, object metadataValue, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Removes the specified fields from the metadata dictionary.
+        /// </summary>
+        /// <param name="keys">The keys to remove from this dictionary. </param>
+        /// <param name="cancellationToken">A token that can be used to cancel the request.</param>
+        /// <returns>A task with no result.</returns>
+        Task RemoveAsync(IEnumerable<string> keys, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Returns a <see cref="MetadataQueryBuilder"/> for filtering and fetching metadata.
+        /// </summary>
+        /// <returns>A <see cref="MetadataQueryBuilder"/> for defining and executing queries. </returns>
+        MetadataQueryBuilder Query();
+    }
+}

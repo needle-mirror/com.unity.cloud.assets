@@ -7,9 +7,22 @@
 }
 
 #SearchBarChip {
-    background-color: rgba(80, 80, 80, 255);
+    background-color: rgb(80, 80, 80);
     border-top-left-radius: 16px;
     border-bottom-left-radius: 16px;
     border-top-right-radius: 16px;
     border-bottom-right-radius: 16px;
+    border-left-color: rgb(78, 78, 78);
+    border-right-color: rgb(78, 78, 78);
+    border-top-color: rgb(78, 78, 78);
+    border-bottom-color: rgb(78, 78, 78);
+    border-top-width: 1px;
+    border-right-width: 1px;
+    border-bottom-width: 1px;
+    border-left-width: 1px;
+    margin-top: 6px;
+    margin-right: 3px;
+    margin-bottom: 6px;
+    margin-left: 3px;
+    flex-direction: row;
 }

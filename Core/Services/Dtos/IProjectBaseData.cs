@@ -1,5 +1,4 @@
 ﻿using System.Runtime.Serialization;
-using Unity.Cloud.Common;
 
 namespace Unity.Cloud.Assets
 {

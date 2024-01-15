@@ -1,18 +1,19 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using Unity.Cloud.Common;
-using UnityEngine;
-
-namespace Unity.Cloud.Assets.Documentation
+namespace Unity.Cloud.Documentation.Assets
 {
 #pragma warning disable S4487 // Unread "private" fields should be removed
 #pragma warning disable S1186 // Methods should not be empty
 
     #region Example_UIClass
+
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using Unity.Cloud.Assets;
+    using Unity.Cloud.Common;
+    using UnityEngine;
 
     public class UseCaseFileCreationExampleUI : IAssetManagementUI
     {
@@ -276,7 +277,7 @@ namespace Unity.Cloud.Assets.Documentation
         {
             var fileCreation = new FileCreation
             {
-                Path = $@"myproject&myfiles/file_{DateTime.Now:MM-dd_HH-mm-ss}",
+                Path = $@"files/file_{DateTime.Now:MM-dd_HH-mm-ss}",
                 Description = "Documentation example asset file creation.",
                 Tags = new List<string> {"Texture", "Gray"}
             };

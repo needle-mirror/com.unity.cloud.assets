@@ -25,7 +25,7 @@ namespace Unity.Cloud.Assets.Samples
 
         protected abstract string EmptyListMessage { get; }
 
-        public void Initialize(VisualElement uiDocumentRoot, VisualTreeAsset listItemTemplate)
+        public virtual void Initialize(VisualElement uiDocumentRoot, VisualTreeAsset listItemTemplate)
         {
             m_Container = uiDocumentRoot.Q<VisualElement>(VisualElementName);
             m_DisplayMessageContainer = m_Container.Q<VisualElement>("DisplayMessageContainer");
@@ -33,6 +33,11 @@ namespace Unity.Cloud.Assets.Samples
             var listView = m_Container.Q<ListView>();
 
             m_ListController.Initialize(listView, listItemTemplate, OnSelectionChange);
+        }
+
+        public void SetName(string name)
+        {
+            m_Container.Q<Label>("ListLabel").text = name;
         }
 
         public void Show()
@@ -52,6 +57,8 @@ namespace Unity.Cloud.Assets.Samples
 
         protected async Task UpdateList(IEnumerable<U> existingEntries, IAsyncEnumerable<U> asyncEntries, CancellationToken token, OnEntryRetrieved onEntryRetrieved = null)
         {
+            if (token.IsCancellationRequested) return;
+
             var startTime = DateTime.UtcNow;
 
             m_ListController.ClearList();
@@ -81,13 +88,8 @@ namespace Unity.Cloud.Assets.Samples
             }
         }
 
-        protected void UpdateList(IEnumerable<U> entries, bool clearList = false)
+        protected void UpdateList(IEnumerable<U> entries)
         {
-            if (clearList)
-            {
-                m_ListController.ClearList();
-            }
-
             var entryArray = entries as U[] ?? entries.ToArray();
             m_Entries = entryArray.ToList();
 

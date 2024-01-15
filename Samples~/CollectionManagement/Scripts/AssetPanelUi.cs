@@ -107,7 +107,7 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
             }
             catch (Exception e)
             {
-                Debug.LogError(e.ToString());
+                e.LogException();
             }
         }
 

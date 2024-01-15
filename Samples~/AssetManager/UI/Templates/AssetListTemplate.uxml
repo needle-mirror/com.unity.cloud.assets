@@ -10,36 +10,40 @@
         <ui:VisualElement name="AssetListContent" style="height: 90%; align-items: center;">
             <ui:VisualElement name="AssetListBox" style="width: 95%; height: 95%;">
                 <ui:VisualElement name="AssetListTopBar" style="min-height: 30px; max-height: 30px; flex-direction: row;">
-                    <ui:VisualElement name="LeftTopPanel" class="AssetListLeftBar LeftPanel" style="justify-content: flex-start;">
-                        <ui:VisualElement name="TitleContainer" class="AssetListItem">
-                            <ui:Label text="Title" display-tooltip-when-elided="true" name="TitleLabel" />
+                    <ui:VisualElement name="LeftTopPanel" class="AssetListLeftBar" style="justify-content: flex-start; width: auto;">
+                        <ui:VisualElement style="flex-grow: 1; flex-direction: row; flex-shrink: 1; overflow: hidden; min-width: 100px;">
+                            <ui:VisualElement name="TitleContainer" class="AssetListItem" style="width: 35%; min-width: 100px;">
+                                <ui:Label text="Title" display-tooltip-when-elided="true" name="TitleLabel" />
+                            </ui:VisualElement>
+                            <ui:VisualElement name="DescriptionContainer" class="AssetListItem" style="width: 40%;">
+                                <ui:Label text="Description" display-tooltip-when-elided="true" name="DescriptionLabel" />
+                            </ui:VisualElement>
+                            <ui:VisualElement name="TagsContainer" class="AssetListItem" style="width: 25%;">
+                                <ui:Label text="Tags" display-tooltip-when-elided="true" name="TagsLabel" />
+                            </ui:VisualElement>
                         </ui:VisualElement>
-                        <ui:VisualElement name="IngestedContainer" class="AssetListItem">
+                        <ui:VisualElement name="IngestedContainer" class="AssetListItem" style="width: 100px;">
                             <ui:Label text="Ingested" display-tooltip-when-elided="true" name="IngestedLabel" />
                         </ui:VisualElement>
-                        <ui:VisualElement name="DescriptionContainer" class="AssetListItem">
-                            <ui:Label text="Description" display-tooltip-when-elided="true" name="DescriptionLabel" />
-                        </ui:VisualElement>
-                        <ui:VisualElement name="TagsContainer" class="AssetListItem">
-                            <ui:Label text="Tags" display-tooltip-when-elided="true" name="TagsLabel" />
-                        </ui:VisualElement>
-                        <ui:VisualElement name="TypeContainer" class="AssetListItem">
+                        <ui:VisualElement name="TypeContainer" class="AssetListItem" style="width: 80px;">
                             <ui:Label text="Type" display-tooltip-when-elided="true" name="TypeLabel" />
                         </ui:VisualElement>
-                        <ui:VisualElement name="VersionContainer" class="AssetListItem">
+                        <ui:VisualElement name="VersionContainer" class="AssetListItem" style="width: 80px;">
                             <ui:Label text="Version" display-tooltip-when-elided="true" name="VersionLabel" />
                         </ui:VisualElement>
-                        <ui:VisualElement name="StatusContainer" class="AssetListItem">
+                        <ui:VisualElement name="StatusContainer" class="AssetListItem" style="width: 80px;">
                             <ui:Label text="Status" display-tooltip-when-elided="true" name="StatusLabel" />
                         </ui:VisualElement>
                     </ui:VisualElement>
                     <ui:VisualElement name="RightPanel" class="AssetListRightBar" style="border-bottom-right-radius: 0;" />
                 </ui:VisualElement>
-                <ui:ScrollView name="AssetListScrollView">
-                    <ui:VisualElement name="AssetList" />
-                </ui:ScrollView>
-                <ui:VisualElement name="AssetListBottomBar" style="min-height: 30px; max-height: 30px; flex-direction: row;">
-                    <ui:VisualElement name="LeftBottomPanel" class="AssetListLeftBar LeftPanel" style="width: 100%;" />
+                <ui:VisualElement style="flex-direction: row;">
+                    <ui:ListView focusable="true" selection-type="None" show-bound-collection-size="false" fixed-item-height="50" virtualization-method="DynamicHeight" style="flex-grow: 1; min-height: 0; max-height: none;" />
+                </ui:VisualElement>
+                <ui:VisualElement name="AssetListBottomBar" class="AssetListLeftBar" style="min-height: 30px; max-height: 30px;">
+                    <ui:VisualElement name="DisplayMessageContainer" style="align-self: center; align-items: center; width: 100%;">
+                        <ui:Label text="Empty" display-tooltip-when-elided="true" name="DisplayMessage" style="font-size: 16px; color: rgb(210, 210, 210); -unity-font-style: italic; white-space: normal;" />
+                    </ui:VisualElement>
                 </ui:VisualElement>
             </ui:VisualElement>
         </ui:VisualElement>

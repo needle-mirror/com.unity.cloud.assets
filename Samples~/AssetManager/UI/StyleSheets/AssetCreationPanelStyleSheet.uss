@@ -1,18 +1,12 @@
-.unity-base-field {
-    flex-direction: column;
-}
-
-.unity-base-field__label {
-    color: rgb(210, 210, 210);
-    -unity-font-style: bold;
-    padding-bottom: 5px;
-}
-
 .unity-base-field__input {
     background-color: rgb(48, 48, 48);
     color: rgba(255, 255, 255, 0.82);
     border-radius: 4px;
     border-color: rgb(59, 59, 59);
+    margin-top: 0;
+    margin-right: 0;
+    margin-bottom: 0;
+    margin-left: 0;
 }
 
 .unity-base-field__input:hover {
@@ -21,48 +15,84 @@
 
 .unity-base-popup-field__arrow {
     -unity-background-image-tint-color: rgb(155, 155, 155);
-    height: 100%;
-    width: 3%;
+    height: 24px;
+    width: 24px;
     background-image: url('../Sprites/expand-more.png?fileID=21300000&guid=4061895147129422f9f8ec4dad3b1087&type=3#expand-more');
+    margin-top: -4px;
+    margin-right: -4px;
+    margin-bottom: -4px;
+    margin-left: -4px;
 }
 
-#AssetDescriptionField > #unity-text-input {
-    height: 100px;
-    -unity-text-align: upper-left;
-}
-
-.AssetFile {
-    border-color: rgb(28, 28, 28);
-    border-radius: 0.5px;
-    border-width: 2px;
-    /*width: 95%;*/
-}
-
-#AssetFileScrollView {
-    max-height: 80%;
-    min-height: 80%;
-}
-
-#FileUpload {
-    background-color: rgb(28, 28, 28);
-    border-radius: 0.5px;
+.unity-toggle {
+    flex-direction: row;
+    padding: 4px 8px;
+    margin: -2px -3px -4px;
+    margin-top: 2px;
+    margin-right: 4px;
+    margin-bottom: 2px;
+    margin-left: 4px;
+    padding-top: 0;
+    padding-right: 0;
+    padding-bottom: 0;
+    padding-left: 0;
     align-items: center;
-    justify-content: center;
-    max-height: 100%;
-    min-height: 20%;
-    height: 100%;
 }
 
-#FileUpload:hover {
-    background-color: rgb(19, 19, 19);
-    border-top-width: 0;
+Label {
+    color: rgba(255, 255, 255, 0.82);
+    min-width: 120px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    -unity-font-style: bold;
+    align-self: center;
+    margin-top: 2px;
+    margin-right: 2px;
+    margin-bottom: 2px;
+    margin-left: 2px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+    padding-right: 2px;
+    padding-left: 2px;
+}
+
+#LastEdit Label {
+    color: rgba(255, 255, 255, 0.48);
+    margin-top: 0;
+    margin-right: 0;
+    margin-bottom: 0;
+    margin-left: 0;
+    padding-top: 0;
+    padding-right: 0;
+    padding-bottom: 0;
+    padding-left: 0;
+    min-width: auto;
+    overflow: hidden;
+}
+
+#MetadataValue Label {
+    min-width: 0;
+    align-self: center;
+    padding-top: 0;
+    padding-right: 0;
+    padding-bottom: 0;
+    padding-left: 0;
+}
+
+#SearchBarChip Label {
+    min-width: auto;
+    min-height: auto;
+}
+
+#StatusNameLabel {
+    min-width: auto;
+    min-height: auto;
 }
 
 #FileUploadButton {
     background-color: rgb(28, 28, 28);
     border-color: rgb(59, 59, 59);
     border-radius: 6px;
-    color: rgb(210, 210, 210);
 }
 
 #FileUploadButton:hover {
@@ -71,101 +101,62 @@
     border-radius: 6px;
 }
 
-.AssetLastEdit Label {
-    color: rgba(255, 255, 255, 0.48);
+#AddMetadataButton {
+    margin-top: 2px;
+    margin-right: 8px;
+    margin-bottom: 2px;
+    margin-left: 8px;
+    min-width: 150px;
+    align-self: center;
+    width: 300px;
+    background-color: rgba(0, 0, 0, 0);
+    border-left-color: rgb(41, 161, 255);
+    border-right-color: rgb(41, 161, 255);
+    border-top-color: rgb(41, 161, 255);
+    border-bottom-color: rgb(41, 161, 255);
+    border-top-width: 2px;
+    border-right-width: 2px;
+    border-bottom-width: 2px;
+    border-left-width: 2px;
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+    border-bottom-right-radius: 16px;
+    border-bottom-left-radius: 16px;
+    color: rgb(41, 161, 255);
+    -unity-font-style: bold;
 }
 
-#AssetLastEditLabel {
-    padding-left: 6px;
+#AddMetadataButton:hover {
+    background-color: rgba(41, 161, 255, 0.19);
 }
 
-Label {
-    color: rgba(255, 255, 255, 0.82);
+.AssetFile {
+    border-color: rgb(28, 28, 28);
+    border-radius: 1px;
+    border-width: 2px;
 }
 
-#AssetInfoContainer {
-    height: 100%;
-    width: 95%;
-}
-
-.RightPanelInputs {
-    width: 100%;
-    min-height: 10%;
-}
-
-.unity-toggle {
-    flex-direction: row;
+.sample-button {
+    border-radius: 4px;
     padding: 4px 8px;
-    margin: -2px -3px -4px;
+    margin: 2px 4px;
+    min-width: 80px;
 }
 
-.unity-toggle__label {
-    margin-right: -95px;
-    padding-bottom: -10px;
-}
-
-.AssetTitle {
-    margin: 5px;
-}
-
-#AssetTitleContainer {
-    width: 95%;
-}
-
-#AssetTitleLabel {
-    font-size: 20px;
-}
-
-#AssetPublishContainer {
-    width: 95%;
-}
-
-#AssetSaveButton {
+.button-blue {
     color: rgba(255, 255, 255, 0.82);
     background-color: rgb(41, 161, 255);
     border-color: rgb(41, 161, 255);
     transition-duration: 0.25s;
     transition-timing-function: ease-out-back;
-    padding: 4px 8px;
 }
 
-#AssetSaveButton:hover {
+.button-blue:hover {
     background-color: rgb(76, 176, 255);
     border-color: rgb(76, 176, 255);
 }
 
-#AssetPublishButton {
-    color: rgba(255, 255, 255, 0.82);
-    background-color: rgb(41, 161, 255);
-    border-color: rgb(41, 161, 255);
-    transition-duration: 0.25s;
-    transition-timing-function: ease-out-back;
-    padding: 4px 8px;
-}
-
-#AssetPublishButton:hover {
-    background-color: rgb(76, 176, 255);
-    border-color: rgb(76, 176, 255);
-}
-
-#CreateAssetButton {
-    color: rgba(255, 255, 255, 0.82);
-    background-color: rgb(41, 161, 255);
-    border-color: rgb(41, 161, 255);
-    transition-duration: 0.25s;
-    transition-timing-function: ease-out-back;
-    margin: 2px;
-    padding: 4px 8px;
-    min-width: 97px;
-}
-
-#CreateAssetButton:hover {
-    background-color: rgb(76, 176, 255);
-    border-color: rgb(76, 176, 255);
-}
-
-#TopBarContainer {
-    margin-left: 10px;
-    margin-bottom: 10px;
-    margin-top: 10px;
+.MetadataValue {
+    display: none;
+    flex-grow: 1;
 }

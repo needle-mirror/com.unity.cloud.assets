@@ -1,0 +1,25 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <ui:Template name="ContextMenu" src="../../../Shared/UI/Templates/ContextMenu.uxml?fileID=9197481963319205126&amp;guid=013acd66da79b4563b22404be89cbf17&amp;type=3#ContextMenu" />
+    <ui:Template name="MultiSelectionMetadataTemplate" src="../Templates/MultiSelectionMetadataTemplate.uxml?fileID=9197481963319205126&amp;guid=18b0be96bc5fd42f5915557ecb33d451&amp;type=3#MultiSelectionMetadataTemplate" />
+    <Style src="../StyleSheets/AssetCreationPanelStyleSheet.uss?fileID=7433441132597879392&amp;guid=2a9d0e7b4e75049048525c21e638987e&amp;type=3#AssetCreationPanelStyleSheet" />
+    <Style src="../../../Shared/UI/StyleSheets/ContextMenuStyleSheet.uss?fileID=7433441132597879392&amp;guid=aad11b3cc0a914227ad16f5524ef8075&amp;type=3#ContextMenuStyleSheet" />
+    <ui:VisualElement style="flex-direction: row; align-items: flex-start; flex-wrap: nowrap; padding-top: 2px; padding-bottom: 2px;">
+        <ui:VisualElement style="flex-grow: 1; margin-right: 4px;">
+            <ui:Label text="label" display-tooltip-when-elided="true" name="MetadataKey" style="align-items: flex-start; margin-right: 32px; overflow: hidden; align-self: flex-start;" />
+            <ui:Instance template="ContextMenu" class="ContextMenuContainer" style="flex-direction: row-reverse;" />
+        </ui:VisualElement>
+        <ui:VisualElement name="MetadataValue" style="align-items: flex-start; justify-content: flex-start; flex-direction: column; flex-grow: 1; min-width: 65%;">
+            <ui:TextField picking-mode="Ignore" value="filler text" name="Text" class="MetadataValue" style="margin-left: 0;" />
+            <ui:DoubleField value="42.2" name="Number" class="MetadataValue" style="margin-left: 0;" />
+            <ui:Toggle name="Boolean" class="MetadataValue" style="margin-left: 0; flex-grow: 0;" />
+            <ui:DropdownField index="-1" choices="System.Collections.Generic.List`1[System.String]" name="SingleSelection" class="MetadataValue" style="margin-left: 0;" />
+            <ui:VisualElement name="Url" class="MetadataValue" style="width: 100%;">
+                <ui:TextField picking-mode="Ignore" label="Label" name="UrlLabel" style="margin-left: 0;" />
+                <ui:TextField picking-mode="Ignore" label="Uri" value="https://" name="Uri" style="margin-left: 0;" />
+            </ui:VisualElement>
+            <ui:VisualElement style="flex-grow: 1; flex-direction: row; flex-wrap: wrap;">
+                <ui:Instance template="MultiSelectionMetadataTemplate" name="MultiSelectionMetadataTemplate" class="MetadataValue" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

@@ -2,11 +2,10 @@
     <ui:Template name="LoginBar" src="./Templates/LoginBar.uxml?fileID=9197481963319205126&amp;guid=9fa56a2abec2c41e39ce0436d53028a5&amp;type=3#LoginBar" />
     <ui:Template name="AssetBrowserTemplate" src="./Templates/AssetBrowserTemplate.uxml?fileID=9197481963319205126&amp;guid=fd3907f00ee0cd64e8bc4e96c180c751&amp;type=3#AssetBrowserTemplate" />
     <Style src="./StyleSheets/SampleSheet.uss?fileID=7433441132597879392&amp;guid=7376c3d25e9f04a989663c45cc94f5c7&amp;type=3#SampleSheet" />
-    <ui:VisualElement name="MainContainer" style="background-color: rgb(19, 19, 19); width: 100%; height: 100%; flex-wrap: nowrap; align-items: stretch; flex-grow: 1;">
-        <ui:VisualElement name="EditingContainer" style="width: 100%; height: 100%; overflow: visible; display: flex;">
+    <ui:VisualElement name="MainContainer" style="background-color: rgb(19, 19, 19); width: 100%; height: 100%; flex-grow: 1;">
+        <ui:VisualElement style="width: 100%; height: 100%;">
             <ui:Instance template="LoginBar" name="LoginBar" />
             <ui:Instance template="AssetBrowserTemplate" name="AssetBrowserTemplate" style="flex-grow: 1;" />
         </ui:VisualElement>
-        <ui:VisualElement name="DialogContainer" style="width: 100%; height: 100%; display: none;" />
     </ui:VisualElement>
 </ui:UXML>

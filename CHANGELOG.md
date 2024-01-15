@@ -1,8 +1,56 @@
 # Changelog
+
 All notable changes to this package will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
+
+## [1.0.0-exp.6] - 2024-01-15
+
+### Added
+- Added `IMetadataContainer` and `IMetadataValue` to expose metadata operations.
+- Added `ISelectionFieldDefinition`, `ISelectionFieldDefinitionCreation`, and `ISelectionFieldDefinitionUpdate` which exposes selection specific field definition properties.
+- Added `StartTransformationAsync` and `GetTransformationAsync` methods to `IDataset`.
+
+### Changed
+- [Breaking] `IAsset.GetCollectionAsync`, `IAsset.GetDatasetAsync`, `IAsset.GetFileAsync`, and `IDataset.GetFileAsync` throw `NotFoundException` if the requested entity fails to be found.
+- [Breaking] Moved `Multiselection` and `AcceptedValues` properties and `AddSelectionValuesAsync` and `RemoveSelectionValuesAsync` methods from `IFieldDefinition` to `ISelectionFieldDefinition`.
+- [Breaking] Changed types of  `Metadata` and `SystemMetadata` properties of `IAsset`, `IDataset`, and `IFile` from `IDeserializable` to `IMetadataContainer`.
+- Updated `Asset Discovery` and `Asset Management` samples to display metadata values.
+- Unified exception logging across samples.
+- Error thrown on selection field definition creation when accepted values are not provided.
+- Update com.unity.cloud.common dependency to 1.0.0-pre.5.
+
+### Fixed
+- Fixed asset searches returning incorrect number of results for large offsets.
+- Fixed `AssetType` searching to allow searching for more than one type.
+- Added validation to `SearchConditionValue`.
+- Fixed issue with metadata DateTime values not being serialized correctly.
+
+### Removed
+- [Breaking] Removed `IsMatch`, `Include`, `Exclude`, and `Any` methods from `IAssetSearchFilter`.
+- [Breaking] Removed `GetAssetTypeFromString` from `AssetType`.
+- [Breaking] Turned `AssetDownloadUrl` internal
+- [Breaking] Removed `PortalMetadata` properties from `IAsset`, `IDataset`, and `IFile`.
+- [Breaking] Removed `SystemMetadata` properties from `AssetSearchFilter`, `DatasetSearchFilter`, and `FileSearchFilter`; searching by system metadata is not supported.
+- [Breaking] Removed `Metadata` and `SystemMetadata` properties from `IAssetUpdate`, `IDatasetUpdate`, and `IFileUpdate`; use `IMetadataContainer.AddOrUpdateAsync` instead.
+
+## [1.0.0-exp.5] - 2023-12-20
+
+### Fixed
+- Fixed exception in Asset Management sample on start up.
+
+## [1.0.0-exp.4] - 2023-12-07
+
+### Added
+- Added a Metadata Management sample for listing and managing an organization's field definitions.
+
+### Changed
+- Update `ListProjectsAsync` to call new public api endpoints.
+
+### Fixed
+- Fixed asset and asset list refreshing in Asset Management sample following create, save, and publish actions.
+- Fixed `IFile` url fetching when using the `FileFilter.All` flag.
 
 ## [1.0.0-exp.3] - 2023-11-23
 
@@ -28,17 +76,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Improved information in README
 - Update `ListProjectsAsync`, `GetProjectAsync`and `CreateProjectAsync` to call public api endpoints
 
-### Removed
-- [Breaking] Removed `UploadAsync` and `GetUploadUrlAsync` methods from `IFile`. Overwriting file content is not supported.
-- Removed inapplicable notices in documentation.
-- [Breaking] Removed `GetPreviewFileDownloadUrlAsync` from `IAsset`. Use `GetDownloadUrlAsync` of `IFile` instead.
-- Removed mocking code for assets.
-
 ### Fixed
 - Fix SearchBarController to include Asset fields on search actions.
 - Fixed potential null reference exception in in the `ThumbnailController` class used in the `Asset Discovery` sample.
 - Fixed missing version header.
 - Fix `DatasetEntity.ListFilesAsync` to show all files fields information and included `Status` as a default field.
+
+### Removed
+- [Breaking] Removed `UploadAsync` and `GetUploadUrlAsync` methods from `IFile`. Overwriting file content is not supported.
+- Removed inapplicable notices in documentation.
+- [Breaking] Removed `GetPreviewFileDownloadUrlAsync` from `IAsset`. Use `GetDownloadUrlAsync` of `IFile` instead.
+- Removed mocking code for assets.
 
 ## [1.0.0-exp.1] - 2023-10-26
 
@@ -76,9 +124,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - `IDataset` to expose dataset operations.
 - Default thumbnails in asset discovery sample
 - `SerializeIdentifiers` method added to `IAsset` to allow for serialization.
-  - `DeserializeAssetIdentifiers` added to `IAssetRepository` to deserialize identifiers into a usable `AssetDescriptor`.
+- `DeserializeAssetIdentifiers` added to `IAssetRepository` to deserialize identifiers into a usable `AssetDescriptor`.
 - `Serialize` method added to `IAsset` to allow for serialization.
-  - `DeserializeAsset` added to `IAssetRepository` to deserialize an asset from a JSON string.
+- `DeserializeAsset` added to `IAssetRepository` to deserialize an asset from a JSON string.
 - [Breaking] `FieldsFilter` added to `GetAssetAsync` operations and to the `IAssetSearchFilter` to define which `IAsset` fields are populated.
 - `MockDataSource` class added. `UC_MOCK_ASSETS` symbol must be defined to use the `MockDataSource` instead of `AssetDataSource`.
 - `GetFileUrl` added to `IDataset` to get the a file download url.
@@ -99,8 +147,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Changed
 - Changed the discovery sample to show smaller thumbnails by using an image resizer service.
 - [Breaking] Migration to v1 of the Assets API.
-  - [Breaking] `IFile` replaces `IAssetFile` for file operations.
-  - `IAsset` exposes `IDataset` and `IFile`.
+- [Breaking] `IFile` replaces `IAssetFile` for file operations.
+- `IAsset` exposes `IDataset` and `IFile`.
 - [Breaking] New `AuthoringInfo` struct encapsulates `Created`, `CreatedBy`, `Updated`, and `UpdatedBy` properties.
 - Changed `MockDataSource` to return 2 files in mocked `DatasetData.FileOrder`.
 - [Breaking] Updated `AssetSearchCriteria` properties for parity with searchable fields of `IAsset`.
@@ -111,19 +159,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - [Breaking] `ListFiles` in `IDataset` renamed to `ListFilesAsync`.
 - [Breaking] `GetAssetDownloadUrlsAsync` of `IAsset` returns a mapping of file paths to Uris.
 - [Breaking] Renamed `LinkedDatasetIds` in `IFile` to `LinkedDatasets` and enumerable type changed to `DatasetDescriptor`.
-
-### Removed
-- [Breaking] Removed `AssetServiceConfiguration`.
-- [Breaking] `AssetTaxonomy`, `AssetAuthor`, `AssetLocation` removed.
-- [Breaking] `Metadata` property of `IProject` removed.
-- [Breaking] `CatalogId` and `Metadata` properties removed from `IAssetCollection`
-- [Breaking] `VersionName`, `Origin`, `ShortId`, `Categories`, `StatusDetails` properties removed from `IAsset`
-- Removed mocking code from `AssetDataSource`.
-- [Breaking] Removed `IOrganizationProvider` and `IOrganization`. Use Identity's `IOrganizationRepository` and `IOrganization` instead.
-- [Breaking] Removed `Id` and `Version` properties from `IAsset`; use `Descriptor.AssetId` and `Descriptor.Version` instead.
-- [Breaking] Removed `Id` property from `IDataset`; use `Descriptor.DatasetId`.
-- [Breaking] Removed `Path` property from `IFile`; use `Descriptor.FilePath`.
-- [Breaking] Remove `UserCriteria` from `AssetSearchFilter`. For custom fields, extend `AssetSearchFilter` or implement `IAssetSearchFilter`.
 
 ### Fixed
 - Fixed CryptographicUnexpectedOperationException during Md5 checksum calculation.
@@ -136,6 +171,19 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Cross project search with included collections.
 - Aggregation search with included collections.
 
+### Removed
+- [Breaking] Removed `AssetServiceConfiguration`.
+- [Breaking] `AssetTaxonomy`, `AssetAuthor`, `AssetLocation` removed.
+- [Breaking] `Metadata` property of `IProject` removed.
+- [Breaking] `CatalogId` and `Metadata` properties removed from `IAssetCollection`
+- [Breaking] `VersionName`, `Origin`, `ShortId`, `Categories`, `StatusDetails` properties removed from `IAsset`
+- Removed mocking code from `AssetDataSource`.
+- [Breaking] Removed `IOrganizationProvider` and `IOrganization`. Use Identity's `IOrganizationRepository` and `IOrganization` instead.
+- [Breaking] Removed `Id` and `Version` properties from `IAsset`; use `Descriptor.AssetId` and `Descriptor.Version` instead.
+- [Breaking] Removed `Id` property from `IDataset`; use `Descriptor.DatasetId`.
+- [Breaking] Removed `Path` property from `IFile`; use `Descriptor.Path`.
+- [Breaking] Remove `UserCriteria` from `AssetSearchFilter`. For custom fields, extend `AssetSearchFilter` or implement `IAssetSearchFilter`.
+
 ## [0.6.0] - 2023-09-15
 
 ### Added
@@ -147,7 +195,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Removed
 - [Breaking] Removed all manager scripts: `IAssetProvider`, `IAssetManager`, `IFileManager`, `ICollectionManager`.
-  - All previous actions are now available in entities: `IProject`, `IAsset`, `IAssetFile`, `IAssetCollection`.
+- All previous actions are now available in entities: `IProject`, `IAsset`, `IAssetFile`, `IAssetCollection`.
 
 ## [0.5.0] - 2023-08-31
 

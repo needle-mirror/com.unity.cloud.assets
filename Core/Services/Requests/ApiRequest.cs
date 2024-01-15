@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Text;
 
@@ -18,23 +19,15 @@ namespace Unity.Cloud.Assets
         /// </summary>
         /// <param name="requestBasePath">The start path of a request. </param>
         /// <returns>The full request url. </returns>
-        public virtual string ConstructUrl(string requestBasePath)
+        public string ConstructUrl(string requestBasePath)
         {
             var url = requestBasePath + m_PathAndQueryParams;
             if (m_QueryParams.Count > 0)
             {
                 url += $"?{string.Join("&", m_QueryParams)}";
             }
-            return url;
-        }
 
-        /// <summary>
-        /// Method for constructing the request headers.
-        /// </summary>
-        /// <returns>A dictionary containing the request headers.</returns>
-        public virtual IEnumerable<(string, string)> GetHeaders()
-        {
-            yield break;
+            return url;
         }
 
         /// <summary>
@@ -66,17 +59,11 @@ namespace Unity.Cloud.Assets
         /// <param name="pathParam">The list of values to convert to string.</param>
         protected void AddParamToQueryParams(string key, IEnumerable<string> pathParam)
         {
-            var paramString = "";
-            foreach (var value in pathParam)
-            {
-                paramString += $"{Uri.EscapeDataString(value)},";
-            }
+            var enumerable = pathParam?.Where(x => !string.IsNullOrEmpty(x)).Select(Uri.EscapeDataString).ToArray();
 
-            paramString = paramString.Remove(paramString.Length - 1);
+            if (enumerable == null || enumerable.Length == 0) return;
 
-            if (string.IsNullOrEmpty(paramString)) return;
-
-            m_QueryParams.Add($"{key}={paramString}");
+            m_QueryParams.Add($"{key}={string.Join(",", enumerable)}");
         }
     }
 }

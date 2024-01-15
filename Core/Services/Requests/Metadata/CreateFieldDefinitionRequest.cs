@@ -19,7 +19,7 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc/>
         public override HttpContent ConstructBody()
         {
-            var body = IsolatedSerialization.Serialize(m_Data, IsolatedSerialization.defaultSettings);
+            var body = IsolatedSerialization.SerializeWithConverters(m_Data, IsolatedSerialization.StringEnumConverter);
             return new StringContent(body, Encoding.UTF8, "application/json");
         }
     }

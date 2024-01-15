@@ -2,12 +2,12 @@
 
 You can use the Unity Cloud Assets package to filter assets in a Project based on a set of search criteria.
 
-| Asset Manager Project role                                                                           | Search |
+| Organization or Asset Manager Project role                                                           | Search |
 |:-----------------------------------------------------------------------------------------------------|:-------|
 | [`Asset Management Viewer`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles)      | yes    |
 | [`Asset Management Consumer`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles)    | yes    |
 | [`Asset Management Contributor`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles) | yes    |
-| [`Asset Management Owner`](https://docs.unity.com/cloud/en-us/accounts/roles-and-permissions)        | yes    |
+| [`Organization Owner`](https://docs.unity.com/cloud/en-us/accounts/roles-and-permissions)            | yes    |
 
 ## How do I...?
 
@@ -20,17 +20,7 @@ The `AssetSearchFilter` class provides the set of properties that can be used to
 
 You can create a new search filter by instantiating the `AssetSearchFilter` class, like so:
 
-[!code-cs [behaviour-script](../Samples/Documentation/Manual/UseCaseSearchAssetsExample.cs#Example_Constructor)]
-
-Searches are scoped to a specific Organization and Project. However, the instance can be reused to search for assets in different Projects and Organizations by updating the properties.
-
-* To update the search to another Organization, you can use the `Organization` property, like so:
-
-[!code-cs [behaviour-script](../Samples/Documentation/Manual/UseCaseSearchAssetsExample.cs#Example_Organization)]
-
-* To update the search to another Project, you can use the `Project` property, like so:
-
-[!code-cs [behaviour-script](../Samples/Documentation/Manual/UseCaseSearchAssetsExample.cs#Example_Project)]
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseSearchAssetsExample.cs#Example_Constructor)]
 
 Each searchable property provides 3 avenues for searching:
 
@@ -40,7 +30,7 @@ Each searchable property provides 3 avenues for searching:
 
 To compute the search results, you can use the `SearchAssetsAsync` method of an `IAssetProject`, like so:
 
-[!code-cs [behaviour-script](../Samples/Documentation/Manual/UseCaseSearchAssetsExample.cs#Example_Search)]
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseSearchAssetsExample.cs#Example_Search)]
 
 The `Pagination` struct is used to control the range of results to be returned and the ordering of results.
 
@@ -49,34 +39,34 @@ The `Search` method returns an awaitable `IAsyncEnumerable` that will return eac
 
 The results can be iterated over using a `foreach` loop and used as they become available, like so:
 
-[!code-cs [behaviour-script](../Samples/Documentation/Manual/UseCaseSearchAssetsExample.cs#Example_Foreach)]
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseSearchAssetsExample.cs#Example_Foreach)]
 
 Alternatively, the results can be iterated over and compiled into a list, so that the complete set of results can be used, like so:
 
-[!code-cs [behaviour-script](../Samples/Documentation/Manual/UseCaseSearchAssetsExample.cs#Example_ToList)]
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseSearchAssetsExample.cs#Example_ToList)]
 
 #### Search by Name
 
 * You can search for assets by name using the `Name` property of the `AssetSearchFilter` class, like so:
 
-[!code-cs [behaviour-script](../Samples/Documentation/Manual/UseCaseSearchAssetsExample.cs#Example_NameInclude)]
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseSearchAssetsExample.cs#Example_NameInclude)]
 
 >[!NOTE]
 >This type of search checks for assets whose entire name exactly matches the parameter.
 
 * You can also exclude assets by name, like so:
 
-[!code-cs [behaviour-script](../Samples/Documentation/Manual/UseCaseSearchAssetsExample.cs#Example_NameExclude)]
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseSearchAssetsExample.cs#Example_NameExclude)]
 
 * You can also search for assets whose name contains a specific string, like so:
 
-[!code-cs [behaviour-script](../Samples/Documentation/Manual/UseCaseSearchAssetsExample.cs#Example_NameAny)]
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseSearchAssetsExample.cs#Example_NameAny)]
 
 #### Search by Tags
 
 You can search for assets by tag using the `Tags` property of the `AssetSearchFilter` class, like so:
 
-[!code-cs [behaviour-script](../Samples/Documentation/Manual/UseCaseSearchAssetsExample.cs#Example_TagsInclude)]
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseSearchAssetsExample.cs#Example_TagsInclude)]
 
 >[!NOTE]
 >This type of search checks for assets whose tag list contains all the included parameters.
@@ -85,7 +75,7 @@ You can search for assets by tag using the `Tags` property of the `AssetSearchFi
 
 You can search for assets in specific collections by adding them to the search filter's list of collections, like so:
 
-[!code-cs [behaviour-script](../Samples/Documentation/Manual/UseCaseSearchAssetsExample.cs#Example_Collections)]
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseSearchAssetsExample.cs#Example_Collections)]
 
 ### Custom Search Filter
 

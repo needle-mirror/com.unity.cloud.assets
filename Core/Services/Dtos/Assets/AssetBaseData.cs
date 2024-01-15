@@ -20,15 +20,12 @@ namespace Unity.Cloud.Assets
         public IEnumerable<string> Tags { get; set; }
 
         /// <inheritdoc />
-        public AssetType Type { get; set; }
+        public AssetType? Type { get; set; }
 
         /// <inheritdoc />
-        public IDeserializable PortalMetadata { get; set; }
+        public Dictionary<string, object> Metadata { get; set; }
 
         /// <inheritdoc />
-        public IDeserializable Metadata { get; set; }
-
-        /// <inheritdoc />
-        public IDeserializable SystemMetadata { get; set; }
+        public Dictionary<string, object> SystemMetadata { get; set; }
     }
 }

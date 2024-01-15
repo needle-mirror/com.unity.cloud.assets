@@ -1,17 +1,20 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
-using Unity.Cloud.Common;
-using UnityEngine;
+using System.Linq;
 
-namespace Unity.Cloud.Assets.Documentation
+namespace Unity.Cloud.Documentation.Assets
 {
 #pragma warning disable S4487 // Unread "private" fields should be removed
 #pragma warning disable S1186 // Methods should not be empty
 
     #region Example_UIClass
+
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using Unity.Cloud.Assets;
+    using Unity.Cloud.Common;
+    using UnityEngine;
 
     public class UseCaseFileReuploadExampleUI : IAssetManagementUI
     {
@@ -163,6 +166,14 @@ namespace Unity.Cloud.Assets.Documentation
         {
             var cancellationToken = GetCancellationToken();
 
+            var metadata = await file.Metadata.Query().ExecuteAsync(cancellationToken);
+
+            if (cancellationToken.IsCancellationRequested) return;
+
+            var systemMetadata = await file.SystemMetadata.Query().ExecuteAsync(cancellationToken);
+
+            if (cancellationToken.IsCancellationRequested) return;
+
             var datasets = new List<IDataset>();
             var datasetList = file.GetLinkedDatasetsAsync(Range.All, cancellationToken);
 
@@ -188,9 +199,8 @@ namespace Unity.Cloud.Assets.Documentation
                 Path = file.Descriptor.Path,
                 Description = file.Description,
                 Tags = file.Tags,
-                Metadata = file.Metadata,
-                SystemMetadata = file.SystemMetadata,
-                PortalMetadata = file.PortalMetadata
+                Metadata = metadata.ToDictionary(x => x.Key, x => (object)x.Value),
+                SystemMetadata = systemMetadata.ToDictionary(x => x.Key, x => (object)x.Value)
             };
 
             var newFile = await UploadFileAsync(datasets[0], fileCreation, memoryStream, cancellationToken);

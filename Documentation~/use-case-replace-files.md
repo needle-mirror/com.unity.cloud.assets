@@ -10,12 +10,12 @@ You can use the Unity Cloud Assets package to upload new content for a file.
 
 The SDK supports different workflows for users with different roles.
 
-| Asset Manager Project role                                                                           | Upload file content |
+| Organization or Asset Manager Project role                                                           | Upload file content |
 |:-----------------------------------------------------------------------------------------------------|:--------------------|
 | [`Asset Management Viewer`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles)      | no                  |
 | [`Asset Management Consumer`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles)    | no                  |
 | [`Asset Management Contributor`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles) | yes                 |
-| [`Asset Management Owner`](https://docs.unity.com/cloud/en-us/accounts/roles-and-permissions)        | yes                 |
+| [`Organization Owner`](https://docs.unity.com/cloud/en-us/accounts/roles-and-permissions)            | yes                 |
 
 ## Before you start
 

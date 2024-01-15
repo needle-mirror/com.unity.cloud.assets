@@ -27,7 +27,6 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
         static readonly Color k_SelectedTextColor = new Color32(46, 46, 46, 255);
 
         public event Action<IAsset> AssetSelected;
-        const int k_ThumbnailSize = 100;
         Dictionary<AssetType, Texture2D> m_DefaultThumbnails;
 
         public void Init(VisualElement root, VisualTreeAsset assetsGridItemTemplate, Dictionary<AssetType, Texture2D> defaultThumbnails)
@@ -39,15 +38,11 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
             m_AssetGridList = root.Q("AssetGridList");
 
             var scrollView = root.Q<ScrollView>("AssetGridScrollView");
-
             scrollView.verticalScrollerVisibility = ScrollerVisibility.Hidden;
         }
 
         public void PopulateAssetsGrid(List<IAsset> assetsInfo)
         {
-            m_AssetGridList.Clear();
-            m_CurrentSelectedButton = null;
-
             foreach (var asset in assetsInfo)
             {
                 var item = m_AssetGridItemTemplate.Instantiate();
@@ -101,16 +96,12 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
             {
                 icon.style.backgroundImage = null;
                 container.style.backgroundImage = new StyleBackground(texture2D);
-            }, k_ThumbnailSize);
+            });
         }
 
         Texture2D GetDefaultThumbnail(AssetType type)
         {
-            if (m_DefaultThumbnails.TryGetValue(type, out var texture))
-            {
-                return texture;
-            }
-            return null;
+            return m_DefaultThumbnails.TryGetValue(type, out var texture) ? texture : null;
         }
 
         public void DisplayAssetGrid()

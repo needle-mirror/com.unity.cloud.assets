@@ -23,20 +23,5 @@ namespace Unity.Cloud.Assets
         /// The type of the asset.
         /// </summary>
         AssetType Type { get; set; }
-
-        /// <summary>
-        /// The portal metadata of the asset.
-        /// </summary>
-        IDeserializable PortalMetadata { get; set; }
-
-        /// <summary>
-        /// The user metadata of the asset.
-        /// </summary>
-        IDeserializable Metadata { get; set; }
-
-        /// <summary>
-        /// The system metadata of the asset.
-        /// </summary>
-        IDeserializable SystemMetadata { get; set; }
     }
 }

@@ -4,12 +4,12 @@ You can use the Unity Cloud Assets package to edit file metadata and download fi
 
 The SDK supports different workflows for users with different roles.
 
-| Asset Manager Project role                                                                           | Download files | Edit files |
+| Organization or Asset Manager Project role                                                           | Download files | Edit files |
 |:-----------------------------------------------------------------------------------------------------|----------------|:-----------|
 | [`Asset Management Viewer`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles)      | no             | no         |
 | [`Asset Management Consumer`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles)    | yes            | no         |
 | [`Asset Management Contributor`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles) | yes            | yes        |
-| [`Asset Management Owner`](https://docs.unity.com/cloud/en-us/accounts/roles-and-permissions)        | yes            | yes        |
+| [`Organization Owner`](https://docs.unity.com/cloud/en-us/accounts/roles-and-permissions)            | yes            | yes        |
 
 ## Before you start
 
@@ -70,7 +70,7 @@ The code snippet does the following:
 ### Delete a file
 
 Deleting a file involves removing all references to the file from the asset.
-For more information see the use case for [Removing a file reference from a dataset](use-case-create-asset-files.md#remove-a-file-reference-from-a-dataset).
+For more information see the use case for [Removing a file reference from a dataset](use-case-create-files.md#remove-a-file-reference-from-a-dataset).
 
 ### Add the UI for interacting with files
 

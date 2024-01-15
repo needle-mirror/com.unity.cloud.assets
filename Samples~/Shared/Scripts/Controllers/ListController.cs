@@ -20,7 +20,7 @@ namespace Unity.Cloud.Assets.Samples
         {
             m_ListView = listView;
 
-            m_ListView.makeItem = itemTemplate.Instantiate;
+            m_ListView.makeItem = () => OnMakeItem(itemTemplate);
             m_ListView.bindItem = OnBindItem;
             m_ListView.unbindItem = OnUnbindItem;
 
@@ -67,15 +67,14 @@ namespace Unity.Cloud.Assets.Samples
             return item1.Equals(item2);
         }
 
-        public virtual void ClearList()
+        public void ClearList()
         {
             Hide();
-            ClearSelection();
 
             m_ListView.Clear();
         }
 
-        public virtual void ClearSelection()
+        public void ClearSelection()
         {
             m_ListView.ClearSelection();
         }
@@ -83,6 +82,11 @@ namespace Unity.Cloud.Assets.Samples
         public void SetSelectionWithoutNotify(IEnumerable<int> indices)
         {
             m_ListView.SetSelectionWithoutNotify(indices);
+        }
+
+        protected virtual VisualElement OnMakeItem(VisualTreeAsset itemTemplate)
+        {
+            return itemTemplate.Instantiate();
         }
 
         protected abstract void OnBindItem(VisualElement element, int i);

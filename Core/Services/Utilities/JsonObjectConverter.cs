@@ -13,6 +13,12 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc/>
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
+            if(value is IDeserializable deserializable and not JsonObject)
+            {
+                JObject.Parse(deserializable.GetAsString()).WriteTo(writer);
+                return;
+            }
+
             var jobj = (JsonObject) value;
 
             if (jobj?.obj == null)

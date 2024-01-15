@@ -15,14 +15,5 @@ namespace Unity.Cloud.Assets
 
         /// <inheritdoc/>
         public List<string> Tags { get; set; }
-
-        /// <inheritdoc/>
-        public IDeserializable PortalMetadata { get; set; }
-
-        /// <inheritdoc/>
-        public IDeserializable Metadata { get; set; }
-
-        /// <inheritdoc/>
-        public IDeserializable SystemMetadata { get; set; }
     }
 }

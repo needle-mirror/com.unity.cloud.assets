@@ -9,11 +9,6 @@
     margin: 1px;
 }
 
-#ProjectsPanel {
-    background-color: rgb(28, 28, 28);
-    border-color: rgba(255, 255, 255, 0.48);
-}
-
 #AssetDownloadButton {
     background-color: rgb(41, 161, 255);
     width: 100%;

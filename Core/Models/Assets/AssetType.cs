@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 
 namespace Unity.Cloud.Assets
 {
@@ -10,7 +8,6 @@ namespace Unity.Cloud.Assets
     /// Asset's type accepted values.
     /// </summary>
     [DataContract]
-    [JsonConverter(typeof(StringEnumConverter))]
     public enum AssetType
     {
         [EnumMember(Value = "2D Asset")]
@@ -38,36 +35,17 @@ namespace Unity.Cloud.Assets
         /// <returns></returns>
         public static string GetValueAsString(this AssetType assetType)
         {
-            switch (assetType)
+            return assetType switch
             {
-                case AssetType.Asset_2D:
-                    return "2D Asset";
-                case AssetType.Model_3D:
-                    return "3D Model";
-                case AssetType.Audio:
-                    return "Audio";
-                case AssetType.Material:
-                    return "Material";
-                case AssetType.Other:
-                    return "Other";
-                case AssetType.Script:
-                    return "Script";
-                case AssetType.Video:
-                    return "Video";
-                default:
-                    return "Other";
-            }
-        }
-
-        /// <summary>
-        /// Returns the AssetType from the string value.
-        /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        public static AssetType GetAssetTypeFromString(this string value)
-        {
-            TryGetAssetTypeFromString(value, out var assetType);
-            return assetType;
+                AssetType.Asset_2D => "2D Asset",
+                AssetType.Model_3D => "3D Model",
+                AssetType.Audio => "Audio",
+                AssetType.Material => "Material",
+                AssetType.Other => "Other",
+                AssetType.Script => "Script",
+                AssetType.Video => "Video",
+                _ => string.Empty
+            };
         }
 
         /// <summary>
@@ -80,28 +58,29 @@ namespace Unity.Cloud.Assets
         {
             assetType = AssetType.Other;
 
+            if (Enum.TryParse(value, out assetType)) return true;
+
             switch (value.Trim())
             {
-                case var s when s.Equals("2D Asset", StringComparison.OrdinalIgnoreCase):
+                case var s when s.OrdinalEquals("2D Asset") || s.OrdinalEquals("2D") || s.OrdinalEquals("Asset"):
                     assetType = AssetType.Asset_2D;
                     break;
-                case var s when s.Equals("3D Model", StringComparison.OrdinalIgnoreCase):
-                case var s1 when s1.Equals("Model", StringComparison.OrdinalIgnoreCase)://To support old data format for 3D Model
+                case var s when s.OrdinalEquals("3D Model") || s.OrdinalEquals("3D") || s.OrdinalEquals("Model"):
                     assetType = AssetType.Model_3D;
                     break;
-                case var s when s.Equals("Audio", StringComparison.OrdinalIgnoreCase):
+                case var s when s.OrdinalEquals("Audio"):
                     assetType = AssetType.Audio;
                     break;
-                case var s when s.Equals("Material", StringComparison.OrdinalIgnoreCase):
+                case var s when s.OrdinalEquals("Material"):
                     assetType = AssetType.Material;
                     break;
-                case var s when s.Equals("Other", StringComparison.OrdinalIgnoreCase):
+                case var s when s.OrdinalEquals("Other"):
                     assetType = AssetType.Other;
                     break;
-                case var s when s.Equals("Script", StringComparison.OrdinalIgnoreCase):
+                case var s when s.OrdinalEquals("Script"):
                     assetType = AssetType.Script;
                     break;
-                case var s when s.Equals("Video", StringComparison.OrdinalIgnoreCase):
+                case var s when s.OrdinalEquals("Video"):
                     assetType = AssetType.Video;
                     break;
                 default:
@@ -109,6 +88,11 @@ namespace Unity.Cloud.Assets
             }
 
             return true;
+        }
+
+        static bool OrdinalEquals(this string value, string other)
+        {
+            return value.Equals(other, StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>

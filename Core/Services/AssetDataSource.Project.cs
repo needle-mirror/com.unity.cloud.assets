@@ -22,7 +22,7 @@ namespace Unity.Cloud.Assets
             var count = 0;
             do
             {
-                var request = new GetProjectsByOrganizationAndUserIdsRequest(organizationId, null, pageNumber, pageSize);
+                var request = new ListProjectsRequest(organizationId,pageNumber, pageSize);
                 var response = await m_ServiceHttpClient.GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(),
                     cancellationToken);
                 var jsonContent = await response.GetContentAsString();

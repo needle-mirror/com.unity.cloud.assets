@@ -78,6 +78,8 @@ namespace Unity.Cloud.Assets
             {
                 yield return assetEnumerator.Current.From(m_DataSource, organizationId, availableProjects, assetSearchFilter.IncludedFields);
             }
+
+            await assetEnumerator.DisposeAsync();
         }
 
         /// <inheritdoc />

@@ -10,7 +10,6 @@ namespace Unity.Cloud.Assets
         public string Name { get; }
         public string Description { get; }
         public CollectionPath ParentPath { get; set; }
-        public IDeserializable Metadata { get; set; }
 
         public AssetCollectionCreation(string name, string description)
         {

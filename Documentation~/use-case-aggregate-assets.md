@@ -4,12 +4,12 @@ You can use the Unity Cloud Assets package to retrieve the number of assets in a
 
 The SDK supports different workflows for users with different roles.
 
-| Asset Manager Project role                                                                           | Aggregation search |
+| Organization or Asset Manager Project role                                                           | Aggregation search |
 |:-----------------------------------------------------------------------------------------------------|:-------------------|
 | [`Asset Management Viewer`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles)      | yes                |
 | [`Asset Management Consumer`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles)    | yes                |
 | [`Asset Management Contributor`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles) | yes                |
-| [`Asset Management Owner`](https://docs.unity.com/cloud/en-us/accounts/roles-and-permissions)        | yes                |
+| [`Organization Owner`](https://docs.unity.com/cloud/en-us/accounts/roles-and-permissions)            | yes                |
 
 ## Before you start
 

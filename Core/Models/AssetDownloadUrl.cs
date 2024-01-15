@@ -2,7 +2,7 @@ using System;
 
 namespace Unity.Cloud.Assets
 {
-    public struct AssetDownloadUrl
+    struct AssetDownloadUrl
     {
         public string FilePath { get; set; }
         public Uri DownloadUrl { get; set; }

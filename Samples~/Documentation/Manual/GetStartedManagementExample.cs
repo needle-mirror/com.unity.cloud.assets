@@ -1,15 +1,15 @@
-namespace Unity.Cloud.Assets.Documentation
+namespace Unity.Cloud.Documentation.Assets
 {
     #region Example
 
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
-    using System.Linq;
-    using UnityEngine;
     using Unity.Cloud.Assets;
     using Unity.Cloud.Identity;
+    using UnityEngine;
 
     public class AssetManagementBehaviour
     {
@@ -177,7 +177,14 @@ namespace Unity.Cloud.Assets.Documentation
             try
             {
                 var token = m_AssetCancellationTokenSrc.Token;
-                var assets = CurrentProject.SearchAssetsAsync(new AssetSearchFilter(), k_DefaultPagination, token);
+                var filter = new AssetSearchFilter
+                {
+                    IncludedFields = new FieldsFilter
+                    {
+                        AssetFields = AssetFields.all
+                    }
+                };
+                var assets = CurrentProject.SearchAssetsAsync(filter, k_DefaultPagination, token);
                 _ = PopulateAssetsAsync(assets, token);
             }
             catch (OperationCanceledException oe)
@@ -199,9 +206,17 @@ namespace Unity.Cloud.Assets.Documentation
             AvailableAssets.Clear();
             CurrentAsset = null;
 
-            await foreach (var asset in assets.WithCancellation(token))
+            try
             {
-                AvailableAssets.Add(asset);
+                await foreach (var asset in assets.WithCancellation(token))
+                {
+                    AvailableAssets.Add(asset);
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.LogError("Could not load assets: " + e);
+                throw;
             }
         }
     }

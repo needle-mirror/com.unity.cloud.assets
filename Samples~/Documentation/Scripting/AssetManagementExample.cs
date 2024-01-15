@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Unity.Cloud.Assets;
 using Unity.Cloud.Common;
 using UnityEngine;
 
-namespace Unity.Cloud.Assets.Documentation.Scripting
+namespace Unity.Cloud.Documentation.Assets.Scripting
 {
 #pragma warning disable S1144 // Remove unused private method
 public class AssetManagementExample

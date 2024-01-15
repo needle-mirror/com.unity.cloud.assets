@@ -1,0 +1,17 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="../../../Shared/UI/StyleSheets/Popups.uss?fileID=7433441132597879392&amp;guid=ea7c14029cf904c2e9d83863be857eec&amp;type=3#Popups" />
+    <ui:VisualElement name="AddMetadataPopup" class="Popup" style="min-width: 400px; display: flex;">
+        <ui:VisualElement style="flex-direction: row; align-items: center; justify-content: space-between; flex-shrink: 0;">
+            <ui:Label text="Add Metadata" style="font-size: 18px; -unity-font-style: bold; margin-bottom: 9px; margin-top: 7px; margin-left: 7px; margin-right: 2px; padding-left: 0; padding-right: 0; padding-top: 0; padding-bottom: 0; flex-grow: 1;" />
+            <ui:Button display-tooltip-when-elided="true" name="Close" class="PopupClose" />
+        </ui:VisualElement>
+        <ui:VisualElement style="flex-shrink: 0; padding-top: 2px; padding-right: 8px; padding-bottom: 2px; padding-left: 8px;">
+            <ui:DropdownField label="Available Fields" index="-1" focusable="false" style="margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0;" />
+            <ui:Label tabindex="-1" text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua." parse-escape-sequences="true" display-tooltip-when-elided="true" name="FieldInfo" style="white-space: normal; -unity-text-align: upper-right; -unity-font-style: italic;" />
+            <ui:Label display-tooltip-when-elided="true" name="ErrorLabel" text="Error:" class="PopupError" />
+        </ui:VisualElement>
+        <ui:VisualElement style="align-items: center; flex-shrink: 0;">
+            <ui:Button text="Add" name="Action" style="margin-left: 7px; margin-right: 2px; min-width: 120px;" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

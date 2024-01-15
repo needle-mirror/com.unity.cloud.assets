@@ -7,12 +7,12 @@ You can use the Unity Cloud Assets package to:
 
 The SDK supports different workflows for users with different roles.
 
-| Asset Manager Project role                                                                           | List an asset's collections | Add/remove assets in collections |
+| Organization or Asset Manager Project role                                                           | List an asset's collections | Add/remove assets in collections |
 |:-----------------------------------------------------------------------------------------------------|:----------------------------|:---------------------------------|
 | [`Asset Management Viewer`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles)      | yes                         | no                               |
 | [`Asset Management Consumer`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles)    | yes                         | no                               |
 | [`Asset Management Contributor`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles) | yes                         | yes                              |
-| [`Asset Management Owner`](https://docs.unity.com/cloud/en-us/accounts/roles-and-permissions)        | yes                         | yes                              |
+| [`Organization Owner`](https://docs.unity.com/cloud/en-us/accounts/roles-and-permissions)            | yes                         | yes                              |
 
 ## Before you start
 
@@ -48,11 +48,11 @@ The code snippet does the following:
 
 * Removes the selected asset from the specified collection.
 * Updates the list of collections of the selected asset.
-v* Prints a message to the console on success.
+* Prints a message to the console on success.
 
 ### Add the UI for viewing and creating collections
 
-To create UI for displaying aggregation information, follow these steps:
+To create UI for displaying asset collections, follow these steps:
 
 1. In your Unity Project window, go to **Assets** > **Scripts**.
 2. Select and hold the `Assets/Scripts` folder.

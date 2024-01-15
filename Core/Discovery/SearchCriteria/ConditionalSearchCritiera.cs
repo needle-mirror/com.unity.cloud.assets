@@ -1,117 +1,85 @@
 using System;
-using System.Collections.Generic;
 using Unity.Cloud.Common;
 
 namespace Unity.Cloud.Assets
 {
-    public sealed class ConditionalSearchCriteria<T> : ISearchCriteria
+    public sealed class ConditionalSearchCriteria<T> : SearchCriteriaBase, ISearchCriteria
     {
-        readonly string m_PropertyName;
-        readonly string m_SearchKey;
         readonly SearchConditionData m_Included;
         readonly SearchConditionData m_Excluded;
         readonly SearchConditionData m_Any;
 
-        /// <inheritdoc/>
-        string ISearchCriteria.PropertyName => m_PropertyName;
-
-        /// <inheritdoc/>
-        Type ISearchCriteria.SearchFieldType => typeof(SearchConditionData);
-
         internal ConditionalSearchCriteria(string propertyName, string searchKey, string type)
+            : base(propertyName, searchKey, typeof(SearchConditionData))
         {
-            m_PropertyName = propertyName;
-            m_SearchKey = searchKey;
             m_Included = new SearchConditionData(type);
             m_Excluded = new SearchConditionData(type);
             m_Any = new SearchConditionData(type);
         }
 
         /// <inheritdoc/>
-        bool ISearchCriteria.TryGetIncluded(out object includedValue)
+        protected override bool TryGetIncluded(out object includedValue)
         {
             m_Included.Clean();
-            includedValue = IsolatedSerialization.Serialize(m_Included, IsolatedSerialization.defaultSettings);
+            includedValue = m_Included;
             return !IsValueEmpty(m_Included);
         }
 
         /// <inheritdoc/>
-        bool ISearchCriteria.TryGetExcluded(out object excludedValue)
+        protected override bool TryGetExcluded(out object excludedValue)
         {
             m_Excluded.Clean();
-            excludedValue = IsolatedSerialization.Serialize(m_Excluded, IsolatedSerialization.defaultSettings);
+            excludedValue = m_Excluded;
             return !IsValueEmpty(m_Excluded);
         }
 
         /// <inheritdoc/>
-        bool ISearchCriteria.TryGetAny(out object anyValue)
+        protected override bool TryGetAny(out object anyValue)
         {
             m_Any.Clean();
-            anyValue = IsolatedSerialization.Serialize(m_Any, IsolatedSerialization.defaultSettings);
+            anyValue = m_Any;
             return !IsValueEmpty(m_Any);
         }
 
         /// <inheritdoc/>
-        void ISearchCriteria.Include(object value) => Include(TransformValue(value));
+        protected override void Include(object value) => Include(TransformValue(value));
 
         /// <inheritdoc/>
-        void ISearchCriteria.Include(Dictionary<string, object> includedValues, string prefix)
-        {
-            if (this.TryGetIncluded(out var value))
-            {
-                includedValues.Add(m_SearchKey.BuildSearchKey(prefix), value);
-            }
-        }
+        protected override void Exclude(object value) => Exclude(TransformValue(value));
 
         /// <inheritdoc/>
-        void ISearchCriteria.Exclude(object value) => Exclude(TransformValue(value));
+        protected override void ForAny(object value) => ForAny(TransformValue(value));
 
         /// <inheritdoc/>
-        void ISearchCriteria.Exclude(Dictionary<string, object> excludedValues, string prefix)
-        {
-            if (this.TryGetExcluded(out var value))
-            {
-                excludedValues.Add(m_SearchKey.BuildSearchKey(prefix), value);
-            }
-        }
-
-        /// <inheritdoc/>
-        void ISearchCriteria.ForAny(object value) => ForAny(TransformValue(value));
-
-        /// <inheritdoc/>
-        void ISearchCriteria.ForAny(Dictionary<string, object> forAnyValues, string prefix)
-        {
-            if (this.TryGetAny(out var value))
-            {
-                forAnyValues.Add(m_SearchKey.BuildSearchKey(prefix), value);
-            }
-        }
-
-        /// <inheritdoc/>
-        bool ISearchCriteria.IsMatch(object input)
-        {
-            return (IsValueEmpty(m_Included) || m_Included.SatisfiesConditions(input))
-                && (IsValueEmpty(m_Excluded) || !m_Excluded.SatisfiesConditions(input));
-        }
-
-        /// <inheritdoc/>
-        bool ISearchCriteria.IsAny(object input)
-        {
-            return !IsValueEmpty(m_Any) && m_Any.SatisfiesConditions(input);
-        }
-
-        /// <inheritdoc/>
-        bool ISearchCriteria.IsEmpty()
+        protected override bool IsEmpty()
         {
             return IsValueEmpty(m_Included) && IsValueEmpty(m_Excluded) && IsValueEmpty(m_Any);
         }
 
         /// <inheritdoc/>
-        public void Clear()
+        public override void Clear()
         {
             m_Included.Conditions.Clear();
             m_Excluded.Conditions.Clear();
             m_Any.Conditions.Clear();
+        }
+
+        /// <inheritdoc/>
+        protected override bool SatisfiesMatch(object input)
+        {
+            return (IsValueEmpty(m_Included) || m_Included.SatisfiesAllConditions(input))
+                && (IsValueEmpty(m_Excluded) || !m_Excluded.SatisfiesAllConditions(input));
+        }
+
+        protected override bool IsValidType(object input)
+        {
+            return true; // Each condition will determine validity.
+        }
+
+        /// <inheritdoc/>
+        protected override bool SatisfiesAny(object input)
+        {
+            return !IsValueEmpty(m_Any) && m_Any.SatistiesAnyCondition(input);
         }
 
         void Include(SearchConditionValue value)
@@ -157,7 +125,7 @@ namespace Unity.Cloud.Assets
                 T tValue => new SearchConditionValue(SearchConditionType.GreaterThanOrEqual, tValue),
                 SearchConditionValue scv => scv,
                 string s => IsolatedSerialization.Deserialize<SearchConditionValue>(s, IsolatedSerialization.defaultSettings),
-                _ => throw new InvalidArgumentException($"ConditionalSearchCriteria can only filter SearchConditionValue or string.")
+                _ => throw new InvalidArgumentException($"ConditionalSearchCriteria can only filter {nameof(SearchConditionValue)} or string.")
             };
         }
     }

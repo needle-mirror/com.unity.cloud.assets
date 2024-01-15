@@ -9,7 +9,7 @@ using Unity.Cloud.Common;
 namespace Unity.Cloud.Assets
 {
     /// <summary>
-    /// This is a base class containing the information about an asset.
+    /// This is a class containing the information about an asset.
     /// </summary>
     sealed class Asset : IAsset
     {
@@ -52,14 +52,15 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc />
         public AssetType Type { get; set; } = AssetType.Other;
 
-        /// <inheritdoc />
-        public IDeserializable PortalMetadata { get; set; }
+        /// <summary>
+        /// The user metadata of the asset.
+        /// </summary>
+        public IMetadataContainer Metadata => MetadataEntity;
 
-        /// <inheritdoc />
-        public IDeserializable Metadata { get; set; }
-
-        /// <inheritdoc />
-        public IDeserializable SystemMetadata { get; set; }
+        /// <summary>
+        /// The system metadata of the asset.
+        /// </summary>
+        public IMetadataContainer SystemMetadata => SystemMetadataEntity;
 
         /// <inheritdoc />
         public string PreviewFile { get; set; }
@@ -84,6 +85,8 @@ namespace Unity.Cloud.Assets
 
         internal DatasetEntity[] Datasets { get; set; }
         internal FileEntity[] Files { get; set; }
+        internal MetadataContainerEntity MetadataEntity { get; }
+        internal MetadataContainerEntity SystemMetadataEntity { get; }
 
         internal Asset(IAssetDataSource dataSource, AssetDescriptor assetDescriptor, ProjectId sourceProjectId, IEnumerable<ProjectId> linkedProjectIds)
         {
@@ -94,12 +97,18 @@ namespace Unity.Cloud.Assets
                 m_LinkedProjects = linkedProjectIds.Select(projectId => new ProjectDescriptor(assetDescriptor.OrganizationGenesisId, projectId)).ToArray();
             }
             SourceProject = new ProjectDescriptor(assetDescriptor.OrganizationGenesisId, sourceProjectId);
+
+            MetadataEntity = new AssetMetadataContainer(Descriptor, AssetFields.metadata, m_DataSource);
+            SystemMetadataEntity = new AssetMetadataContainer(Descriptor, AssetFields.systemMetadata, m_DataSource);
         }
 
         internal Asset(string id, int version = 1)
         {
             var projectDescriptor = new ProjectDescriptor(OrganizationId.None, ProjectId.None);
             Descriptor = new AssetDescriptor(projectDescriptor, new AssetId(id), new AssetVersion(version));
+
+            MetadataEntity = new AssetMetadataContainer(Descriptor, AssetFields.metadata, null);
+            SystemMetadataEntity = new AssetMetadataContainer(Descriptor, AssetFields.systemMetadata, null);
         }
 
         public IAsset WithProject(ProjectDescriptor projectDescriptor)
@@ -118,9 +127,6 @@ namespace Unity.Cloud.Assets
                 SystemTags = SystemTags?.ToArray(),
                 Labels = Labels?.ToArray(),
                 Type = Type,
-                PortalMetadata = PortalMetadata, // Find a better way of copying IDeserializable
-                Metadata = Metadata, // Find a better way of copying IDeserializable
-                SystemMetadata = SystemMetadata, // Find a better way of copying IDeserializable
                 PreviewFile = PreviewFile,
                 Collections = Collections?.ToArray(),
                 Status = Status,
@@ -129,6 +135,8 @@ namespace Unity.Cloud.Assets
                 StorageId = StorageId,
                 Datasets = Datasets?.ToArray(),
                 Files = Files?.ToArray(),
+                MetadataEntity = {Properties = MetadataEntity.Properties},
+                SystemMetadataEntity = {Properties = SystemMetadataEntity.Properties}
             };
         }
 
@@ -142,18 +150,7 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc />
         public Task UpdateAsync(IAssetUpdate assetUpdate, CancellationToken cancellationToken)
         {
-            var data = new AssetUpdateData
-            {
-                Name = assetUpdate.Name,
-                Description = assetUpdate.Description,
-                Tags = assetUpdate.Tags,
-                Type = assetUpdate.Type,
-                PreviewFile = assetUpdate.PreviewFile,
-                PortalMetadata = assetUpdate.PortalMetadata,
-                Metadata = assetUpdate.Metadata,
-                SystemMetadata = assetUpdate.SystemMetadata
-            };
-            return m_DataSource.UpdateAssetAsync(Descriptor, data, cancellationToken);
+            return m_DataSource.UpdateAssetAsync(Descriptor, assetUpdate.From(), cancellationToken);
         }
 
         /// <inheritdoc />
@@ -253,6 +250,11 @@ namespace Unity.Cloud.Assets
                 collection = m_Collections.FirstOrDefault(x => x.GetFullCollectionPath() == collectionPath);
             }
 
+            if (collection == null)
+            {
+                throw new NotFoundException($"No such collection with name \"{collectionPath}\" at that location.");
+            }
+
             return collection;
         }
 
@@ -273,7 +275,13 @@ namespace Unity.Cloud.Assets
         {
             if (Datasets == null) await RefreshDatasets(cancellationToken);
 
-            return Datasets?.FirstOrDefault(x => x.Descriptor.DatasetId == datasetId);
+            var dataset = Datasets?.FirstOrDefault(x => x.Descriptor.DatasetId == datasetId);
+            if (dataset == null)
+            {
+                throw new NotFoundException($"Dataset {datasetId} not found.");
+            }
+
+            return dataset;
         }
 
         /// <inheritdoc />
@@ -296,7 +304,13 @@ namespace Unity.Cloud.Assets
         {
             if (Files == null) await RefreshFiles(cancellationToken);
 
-            return Files?.FirstOrDefault(x => x.Descriptor.Path == filePath);
+            var file = Files?.FirstOrDefault(x => x.Descriptor.Path == filePath);
+            if (file == null)
+            {
+                throw new NotFoundException($"File {filePath} not found.");
+            }
+
+            return file;
         }
 
         /// <inheritdoc />
@@ -312,34 +326,6 @@ namespace Unity.Cloud.Assets
                     yield return await Task.FromResult(Files[i]);
                 }
             }
-        }
-
-        /// <inheritdoc />
-        public async Task RemoveUserMetadataAsync(IEnumerable<string> keys, CancellationToken cancellationToken)
-        {
-            await m_DataSource.RemoveAssetMetadataAsync(Descriptor, "metadata", keys, cancellationToken);
-
-            var filter = new FieldsFilter
-            {
-                AssetFields = AssetFields.metadata,
-                DatasetFields = DatasetFields.none,
-                FileFields = FileFields.none
-            };
-            await RefreshAsync(filter, cancellationToken);
-        }
-
-        /// <inheritdoc />
-        public async Task RemoveSystemMetadataAsync(IEnumerable<string> keys, CancellationToken cancellationToken)
-        {
-            await m_DataSource.RemoveAssetMetadataAsync(Descriptor, "systemMetadata", keys, cancellationToken);
-
-            var filter = new FieldsFilter
-            {
-                AssetFields = AssetFields.systemMetadata,
-                DatasetFields = DatasetFields.none,
-                FileFields = FileFields.none
-            };
-            await RefreshAsync(filter, cancellationToken);
         }
 
         /// <inheritdoc />

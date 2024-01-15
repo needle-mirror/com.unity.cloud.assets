@@ -7,7 +7,7 @@ The sample use the management endpoints that requires a minimum role of:
 
 * [`Asset Management Contributor`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles). <br/>
   OR
-* [`Asset Management Owner`](https://docs.unity.com/cloud/en-us/accounts/roles-and-permissions).
+* [`Organization Owner`](https://docs.unity.com/cloud/en-us/accounts/roles-and-permissions).
 
 ## Before you start
 

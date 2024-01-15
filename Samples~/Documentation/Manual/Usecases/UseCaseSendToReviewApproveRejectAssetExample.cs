@@ -1,14 +1,15 @@
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-using UnityEngine;
-
-namespace Unity.Cloud.Assets.Documentation
+namespace Unity.Cloud.Documentation.Assets
 {
 #pragma warning disable S4487 // Unread "private" fields should be removed
 #pragma warning disable S1186 // Methods should not be empty
 
     #region Example_UIClass
+
+    using System;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using Unity.Cloud.Assets;
+    using UnityEngine;
 
     public class UseCaseSendToReviewApproveRejectAssetExampleUI : IAssetManagementUI
     {

@@ -4,7 +4,14 @@ namespace Unity.Cloud.Assets
 {
     public interface IDatasetUpdate : IDatasetInfo
     {
+        /// <summary>
+        /// The order the files should be accessed in.
+        /// </summary>
         IReadOnlyList<string> FileOrder { get; }
-        bool IsVisible { get; set; }
+
+        /// <summary>
+        /// Whether the dataset is visible.
+        /// </summary>
+        bool IsVisible { get; }
     }
 }

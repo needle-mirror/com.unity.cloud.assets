@@ -64,13 +64,9 @@ namespace Unity.Cloud.Assets.Samples
             {
                 m_Authenticator?.LoginAsync();
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                if (ex is InvalidOperationException
-                    or AuthenticationFailedException)
-                {
-                    Debug.LogError(ex.Message);
-                }
+                e.LogException();
                 throw;
             }
         }
@@ -81,13 +77,9 @@ namespace Unity.Cloud.Assets.Samples
             {
                 m_Authenticator?.LogoutAsync();
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                if (ex is InvalidOperationException
-                    or AuthenticationFailedException)
-                {
-                    Debug.LogError(ex.Message);
-                }
+                e.LogException();
                 throw;
             }
         }

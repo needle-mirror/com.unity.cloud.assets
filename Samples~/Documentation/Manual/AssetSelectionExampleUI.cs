@@ -1,4 +1,4 @@
-namespace Unity.Cloud.Assets.Documentation
+namespace Unity.Cloud.Documentation.Assets
 {
     #region Example
 
@@ -41,6 +41,8 @@ namespace Unity.Cloud.Assets.Documentation
 
         void SelectAnAsset()
         {
+            var width = Screen.width * 0.25f;
+
             GUILayout.Label("Available Assets:");
             GUILayout.Space(5f);
 
@@ -51,7 +53,7 @@ namespace Unity.Cloud.Assets.Documentation
 
                 for (var i = 0; i < assets.Count; ++i)
                 {
-                    if (GUILayout.Button(assets[i].Name))
+                    if (GUILayout.Button(assets[i].Name, GUILayout.Width(width)))
                     {
                         m_Behaviour.CurrentAsset = assets[i];
                         Debug.Log($"Selected: {assets[i].Descriptor.AssetId}");

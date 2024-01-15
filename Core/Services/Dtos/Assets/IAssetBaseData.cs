@@ -31,6 +31,6 @@ namespace Unity.Cloud.Assets
         /// The type of the asset.
         /// </summary>
         [DataMember(Name = "primaryType")]
-        AssetType Type { get; }
+        AssetType? Type { get; }
     }
 }

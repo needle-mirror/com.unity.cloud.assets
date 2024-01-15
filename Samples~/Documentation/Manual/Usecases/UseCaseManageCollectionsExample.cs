@@ -1,17 +1,18 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using UnityEngine;
-using Task = System.Threading.Tasks.Task;
-
-namespace Unity.Cloud.Assets.Documentation
+namespace Unity.Cloud.Documentation.Assets
 {
 #pragma warning disable S4487 // Unread "private" fields should be removed
 #pragma warning disable S1186 // Methods should not be empty
 
     #region Example_UIClass
+
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using Unity.Cloud.Assets;
+    using UnityEngine;
 
     public class UseCaseManageCollectionsExampleUI : IAssetManagementUI
     {

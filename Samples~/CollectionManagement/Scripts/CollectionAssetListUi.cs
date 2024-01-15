@@ -43,14 +43,20 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
         {
             Show();
 
-            var currentCollection = collection;
-
-            SetDisplayMessage(currentCollection == null ? k_NoCollectionMessage : k_FetchingMessage);
+            SetDisplayMessage(collection == null ? k_NoCollectionMessage : k_FetchingMessage);
         }
 
         public void Populate(IEnumerable<IAsset> assets)
         {
-            UpdateList(assets, true);
+            m_ListController.ClearList();
+            m_ListController.ClearSelection();
+
+            UpdateList(assets);
+
+            if (SelectedAsset != null && assets.All(x => x.Descriptor.AssetId != SelectedAsset.Descriptor.AssetId))
+            {
+                SelectedAsset = null;
+            }
         }
 
         protected override void OnSelectionChange(IEnumerable<object> selectedItems)

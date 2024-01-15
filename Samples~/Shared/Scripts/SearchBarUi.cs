@@ -18,6 +18,12 @@ namespace Unity.Cloud.Assets.Samples
 
         readonly SearchBarController m_SearchBarController = new();
 
+        public FieldsFilter FieldsToInclude
+        {
+            get => m_SearchBarController.FieldsToInclude;
+            set => m_SearchBarController.FieldsToInclude = value;
+        }
+
         public event Action<IAsyncEnumerable<IAsset>> AddSearchQuery
         {
             add => m_SearchBarController.addSearchQuery += value;
@@ -51,9 +57,7 @@ namespace Unity.Cloud.Assets.Samples
 
             if (project != null)
             {
-                _ = UpdateSearchBarValuesAsync(SearchBarController.SearchCriterion.Type, project);
-                _ = UpdateSearchBarValuesAsync(SearchBarController.SearchCriterion.Name, project);
-                _ = UpdateSearchBarValuesAsync(SearchBarController.SearchCriterion.Tags, project);
+                UpdateSearchBarValues(project);
             }
         }
 
@@ -64,33 +68,37 @@ namespace Unity.Cloud.Assets.Samples
             m_SearchBarController.DisplaySearchBar();
             m_SearchBarController.UpdateSearchBarProjectsLabel(assetRepository, organizationId, projectIds);
 
+            UpdateSearchBarValues(assetRepository, organizationId, projectIds);
+        }
+
+        public void UpdateSearchBarValues(IAssetProject project)
+        {
+            _ = UpdateSearchBarValuesAsync(SearchBarController.SearchCriterion.Type, project);
+            _ = UpdateSearchBarValuesAsync(SearchBarController.SearchCriterion.Name, project);
+            _ = UpdateSearchBarValuesAsync(SearchBarController.SearchCriterion.Tags, project);
+            _ = UpdateSearchBarValuesAsync(SearchBarController.SearchCriterion.Status, project);
+        }
+
+        public void UpdateSearchBarValues(IAssetRepository assetRepository, OrganizationId organizationId, IEnumerable<ProjectId> projectIds)
+        {
             _ = UpdateSearchBarValuesAsync(SearchBarController.SearchCriterion.Type, assetRepository, organizationId, projectIds);
             _ = UpdateSearchBarValuesAsync(SearchBarController.SearchCriterion.Name, assetRepository, organizationId, projectIds);
             _ = UpdateSearchBarValuesAsync(SearchBarController.SearchCriterion.Tags, assetRepository, organizationId, projectIds);
+            _ = UpdateSearchBarValuesAsync(SearchBarController.SearchCriterion.Status, assetRepository, organizationId, projectIds);
         }
 
         async Task UpdateSearchBarValuesAsync(SearchBarController.SearchCriterion criterion, IAssetProject project)
         {
             try
             {
-                var parameters = new AggregationParameters(GetCriterionSearchKey(criterion));
+                var parameters = new AggregationParameters(GetCriterionSearchKey(criterion), 10000);
                 var  aggregation = await project.CountAssetsAsync(new AssetSearchFilter(), parameters, CancellationToken.None);
 
                 m_SearchBarController.UpdateSearchValues(criterion, aggregation.Values.ToArray());
             }
-            catch (OperationCanceledException oe)
-            {
-                Debug.Log(oe);
-            }
-            catch (AggregateException e)
-            {
-                Debug.LogException(e.InnerException);
-                throw;
-            }
             catch (Exception e)
             {
-                Debug.LogException(e);
-                throw;
+                e.LogException();
             }
         }
 
@@ -98,24 +106,14 @@ namespace Unity.Cloud.Assets.Samples
         {
             try
             {
-                var parameters = new AggregationParameters(GetCriterionSearchKey(criterion));
+                var parameters = new AggregationParameters(GetCriterionSearchKey(criterion), 10000);
                 var aggregation = await assetRepository.CountAssetsAsync(organizationId, projects, new AssetSearchFilter(), parameters, CancellationToken.None);
 
                 m_SearchBarController.UpdateSearchValues(criterion, aggregation.Values.ToArray());
             }
-            catch (OperationCanceledException oe)
-            {
-                Debug.Log(oe);
-            }
-            catch (AggregateException e)
-            {
-                Debug.LogException(e.InnerException);
-                throw;
-            }
             catch (Exception e)
             {
-                Debug.LogException(e);
-                throw;
+                e.LogException();
             }
         }
 
@@ -126,6 +124,7 @@ namespace Unity.Cloud.Assets.Samples
                 SearchBarController.SearchCriterion.Type => AssetTypeSearchCriteria.SearchKey,
                 SearchBarController.SearchCriterion.Name => "name",
                 SearchBarController.SearchCriterion.Tags => "tags",
+                SearchBarController.SearchCriterion.Status => "status",
                 _ => throw new ArgumentOutOfRangeException(nameof(criterion), criterion, null)
             };
         }

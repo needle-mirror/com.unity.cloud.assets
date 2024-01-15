@@ -133,6 +133,7 @@ GameObject:
   m_Component:
   - component: {fileID: 374964114}
   - component: {fileID: 374964115}
+  - component: {fileID: 374964116}
   m_Layer: 0
   m_Name: PlatformServices
   m_TagString: Untagged
@@ -165,6 +166,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6f19410fae5f44d7b850a2da40eba010, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &374964116
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 374964111}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dfa1c268361e4adba91428c70adae63d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1 &472770734
@@ -245,7 +258,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_UiDocument: {fileID: 472770735}
-  m_UserController: {fileID: 472770739}
+  m_ProjectController: {fileID: 472770739}
   m_LayoutTemplate: {fileID: 9197481963319205126, guid: 350b59751bc604591872d3a16b858b80, type: 3}
   m_CollectionListItemTemplate: {fileID: 9197481963319205126, guid: 170c22319e5524cafb0bce78c15a35a7, type: 3}
   m_AssetPanelUi:
@@ -279,7 +292,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9fe7246f2d084e0fa132db197deb5e54, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_UserController: {fileID: 472770739}
+  m_OrganizationController: {fileID: 472770739}
 --- !u!1 &1866004488
 GameObject:
   m_ObjectHideFlags: 0

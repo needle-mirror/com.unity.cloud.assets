@@ -20,9 +20,6 @@ namespace Unity.Cloud.Assets
             Description = asset.Description;
             Tags = asset.Tags?.ToList() ?? new List<string>();
             Type = asset.Type;
-            PortalMetadata = asset.PortalMetadata;
-            Metadata = asset.Metadata;
-            SystemMetadata = asset.SystemMetadata;
             PreviewFile = asset.PreviewFile;
         }
     }

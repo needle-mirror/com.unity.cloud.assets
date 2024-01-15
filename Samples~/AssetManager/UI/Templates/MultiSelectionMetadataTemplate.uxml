@@ -1,0 +1,4 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="../StyleSheets/AssetCreationPanelStyleSheet.uss?fileID=7433441132597879392&amp;guid=2a9d0e7b4e75049048525c21e638987e&amp;type=3#AssetCreationPanelStyleSheet" />
+    <ui:Toggle name="MultiSelection" label="Value" style="flex-direction: row-reverse; align-self: flex-start;" />
+</ui:UXML>

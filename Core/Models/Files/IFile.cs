@@ -26,6 +26,9 @@ namespace Unity.Cloud.Assets
 
         /// <summary>
         /// The status of the file.
+        /// Possible values are:
+        /// 'Draft' - The file is created, upload may be in progress.
+        /// 'Uploaded' - All bytes have been uploaded and the file is finalized.
         /// </summary>
         string Status { get; }
 
@@ -55,24 +58,19 @@ namespace Unity.Cloud.Assets
         IEnumerable<string> SystemTags { get; }
 
         /// <summary>
-        /// The portal metadata of the file.
-        /// </summary>
-        IDeserializable PortalMetadata { get; }
-
-        /// <summary>
-        /// The metadata of the file.
-        /// </summary>
-        IDeserializable Metadata { get; }
-
-        /// <summary>
-        /// The system metadata of the file.
-        /// </summary>
-        IDeserializable SystemMetadata { get; }
-
-        /// <summary>
         /// The datasets the file is linked to.
         /// </summary>
         public IEnumerable<DatasetDescriptor> LinkedDatasets { get; }
+
+        /// <summary>
+        /// The searchable metadata of the asset.
+        /// </summary>
+        IMetadataContainer Metadata { get; }
+
+        /// <summary>
+        /// The non-searchable metadata of the asset.
+        /// </summary>
+        IMetadataContainer SystemMetadata { get; }
 
         /// <summary>
         /// Invalidates the download and upload urls of the file.
@@ -85,7 +83,7 @@ namespace Unity.Cloud.Assets
         /// <param name="includeFields">The fields to refresh. </param>
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task with no result. </returns>
-        // Task RefreshAsync(FileFields includeFields, CancellationToken cancellationToken);
+        // Task RefreshAsync(FileFields includeFields, CancellationToken cancellationToken)
 
         /// <summary>
         /// Returns a file in the context of the specified dataset.
@@ -123,7 +121,7 @@ namespace Unity.Cloud.Assets
         /// </summary>
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task whose result is the upload url of the file. </returns>
-        // Task<Uri> GetUploadUrlAsync(CancellationToken cancellationToken);
+        // Task<Uri> GetUploadUrlAsync(CancellationToken cancellationToken)
 
         /// <summary>
         /// Uploads the file from the specified stream.
@@ -132,7 +130,7 @@ namespace Unity.Cloud.Assets
         /// <param name="progress">The progress of the upload. </param>
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task with no result. </returns>
-        // Task UploadAsync(Stream sourceStream, IProgress<HttpProgress> progress, CancellationToken cancellationToken);
+        // Task UploadAsync(Stream sourceStream, IProgress<HttpProgress> progress, CancellationToken cancellationToken)
 
         /// <summary>
         /// Updates the file.
@@ -141,21 +139,5 @@ namespace Unity.Cloud.Assets
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task with no result. </returns>
         Task UpdateAsync(IFileUpdate fileUpdate, CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Removes the specified user metadata fields from the file.
-        /// </summary>
-        /// <param name="keys">The metadata fields to remove. </param>
-        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
-        /// <returns>A task with no result. </returns>
-        Task RemoveUserMetadataAsync(string[] keys, CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Removes the specified system metadata fields from the file.
-        /// </summary>
-        /// <param name="keys">The metadata fields to remove. </param>
-        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
-        /// <returns>A task with no result. </returns>
-        Task RemoveSystemMetadataAsync(string[] keys, CancellationToken cancellationToken);
     }
 }

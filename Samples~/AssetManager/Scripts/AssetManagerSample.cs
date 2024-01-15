@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Unity.Cloud.Common;
@@ -10,20 +9,15 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 {
     public class AssetManagerSample : MonoBehaviour
     {
-        readonly AssetListController m_AssetListController = new();
+        readonly AssetPanelController m_AssetPanelController = new();
+        readonly DatasetPanelController m_DatasetPanelController = new();
+        readonly FileController m_FileController = new();
         readonly AssetCreationController m_AssetCreationController = new();
-        readonly DatasetCreationController m_DatasetCreationController = new();
+
+        AddMetadataPopupController m_AddMetadataPopupController;
 
         [SerializeField]
-        UIDocument m_AssetManagerUiDocument;
-        [SerializeField]
-        UserController m_UserController;
-        [SerializeField]
-        SearchBarUi m_SearchBarUi;
-        [SerializeField]
-        DialogUi m_MessageDialogUi;
-        [SerializeField]
-        DialogUi m_AssetFilePathDialogUi;
+        AssetController m_AssetController;
 
         [SerializeField]
         VisualTreeAsset m_AssetCreationPanelTemplate;
@@ -34,257 +28,216 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
         [SerializeField]
         VisualTreeAsset m_DatasetListItemTemplate;
         [SerializeField]
-        VisualTreeAsset m_AssetListTemplate;
-        [SerializeField]
-        VisualTreeAsset m_AssetListItemTemplate;
-        [SerializeField]
         VisualTreeAsset m_TagsTemplate;
+        [SerializeField]
+        VisualTreeAsset m_PopupTemplate;
 
-        VisualElement m_AssetManagerUiDocumentRoot;
         VisualElement m_ContentPanel;
-        VisualElement m_AssetCreationPanel;
-        VisualElement m_DatasetCreationPanel;
-        VisualElement m_AssetListPanel;
-
-        readonly List<IAsset> m_ProjectAssetsList = new();
-
-        CancellationTokenSource m_NewListCancellationTokenSource = new();
-        CancellationTokenSource m_UpdateListCancellationTokenSource = new();
-        OrganizationId m_OrganizationId;
+        VisualElement m_AssetPanel;
+        VisualElement m_DatasetPanel;
 
         void Start()
         {
-            if (m_AssetManagerUiDocument)
-                m_AssetManagerUiDocumentRoot = m_AssetManagerUiDocument.rootVisualElement;
+            var rootVisualElement = m_AssetController.RootVisualElement;
 
-            var editingContainer = m_AssetManagerUiDocumentRoot.Q<VisualElement>("EditingContainer");
-            var dialogContainer = m_AssetManagerUiDocumentRoot.Q<VisualElement>("DialogContainer");
-            var searchBarPanel= m_AssetManagerUiDocumentRoot.Q<VisualElement>("SearchBarContainer");
-            m_ContentPanel = m_AssetManagerUiDocumentRoot.Q<VisualElement>("ContentPanel");
+            m_ContentPanel = rootVisualElement.Q<VisualElement>("ContentPanel");
 
-            m_SearchBarUi.Initialize(m_AssetManagerUiDocumentRoot, searchBarPanel);
-            m_SearchBarUi.DeleteSearchQuery += OnSearchQueryChanged;
-            m_SearchBarUi.AddSearchQuery += OnSearchQueryChanged;
-            m_SearchBarUi.ClearSearchQuery += OnClearSearchQuery;
+            var popupContainer = rootVisualElement.Q("PopupContainer");
 
             // Keep order to ensure correct display overlay
+            var popups = m_PopupTemplate.Instantiate();
+            popupContainer.Add(popups);
+            m_AddMetadataPopupController = new AddMetadataPopupController(popups);
+
             InstantiateDatasetCreationPanel();
             InstantiateAssetCreationPanel();
-            InstantiateAssetList();
-            m_AssetFilePathDialogUi.Initialize(editingContainer, dialogContainer, "Asset File Path");
-            m_MessageDialogUi.Initialize(editingContainer, dialogContainer, "Message");
 
-            // Init controllers
-            m_AssetListController.Init(m_AssetManagerUiDocumentRoot, m_AssetListItemTemplate);
-
-            m_UserController.HideContent += HideContent;
-            m_UserController.OrganizationSelected += OnOrganizationSelected;
-            m_UserController.ProjectSelected += OnProjectSelected;
-
-            m_AssetListController.AssetSelected += OnAssetOpen;
-            m_AssetListController.AssetCreated += OnAssetCreated;
+            m_AssetController.HideContent += HideContent;
+            m_AssetController.OrganizationSelected += OnOrganizationSelected;
+            m_AssetController.ProjectSelected += OnProjectSelected;
+            m_AssetController.AssetSelected += OnAssetSelected;
+            m_AssetController.CreateAsset += CreateAsset;
         }
 
         void OnDestroy()
         {
-            m_SearchBarUi.DeleteSearchQuery -= OnSearchQueryChanged;
-            m_SearchBarUi.AddSearchQuery -= OnSearchQueryChanged;
-            m_SearchBarUi.ClearSearchQuery -= OnClearSearchQuery;
+            m_AssetController.HideContent -= HideContent;
+            m_AssetController.OrganizationSelected -= OnOrganizationSelected;
+            m_AssetController.ProjectSelected -= OnProjectSelected;
+            m_AssetController.AssetSelected -= OnAssetSelected;
+            m_AssetController.CreateAsset -= CreateAsset;
 
-            m_UserController.HideContent -= HideContent;
-            m_UserController.OrganizationSelected -= OnOrganizationSelected;
-            m_UserController.ProjectSelected -= OnProjectSelected;
+            m_AssetPanelController.OnAssetUpdated -= OnAssetUpdated;
+            m_AssetPanelController.OnDatasetOpen -= OnDatasetPanelOpen;
+            m_AssetPanelController.PrepareAssetUpdateAsync -= m_DatasetPanelController.UpdateDatasetAsync;
 
-            m_AssetListController.AssetSelected -= OnAssetOpen;
-            m_AssetListController.AssetCreated -= OnAssetCreated;
+            m_DatasetPanelController.PanelClosed -= OnDatasetPanelClosed;
+            m_DatasetPanelController.Cleanup();
+
+            m_AssetCreationController.AssetCreated -= m_DatasetPanelController.OnAssetCreated;
+            m_AssetCreationController.ChangeButtonEnabledState -= m_DatasetPanelController.ChangeButtonEnabledState;
+            m_AssetCreationController.Cleanup();
+
+            m_FileController.Cleanup();
+
+            m_AssetPanel.Q<Button>("BackBtn").UnregisterCallback<ClickEvent>(OnBackButtonClicked);
         }
 
         void InstantiateAssetCreationPanel()
         {
-            m_AssetCreationPanel = m_AssetCreationPanelTemplate.Instantiate();
-            m_AssetCreationPanel.style.height = Length.Percent(100);
-            m_AssetCreationPanel.style.width = Length.Percent(100);
-            HideElement(m_AssetCreationPanel);
+            m_AssetPanel = m_AssetCreationPanelTemplate.Instantiate();
+            m_AssetPanel.style.height = Length.Percent(100);
+            m_AssetPanel.style.width = Length.Percent(100);
+            m_AssetPanel.Hide();
 
-            m_ContentPanel.Add(m_AssetCreationPanel);
+            m_ContentPanel.Add(m_AssetPanel);
 
-            m_AssetCreationController.Init
+            m_AssetPanelController.Init
             (
-                m_AssetCreationPanel,
-                m_DatasetCreationController,
+                m_AssetPanel,
                 m_DatasetListItemTemplate,
                 m_TagsTemplate,
-                RefreshAsset,
-                m_MessageDialogUi.dialogController
+                m_AddMetadataPopupController
             );
+            m_AssetPanelController.OnAssetUpdated += OnAssetUpdated;
+            m_AssetPanelController.OnDatasetOpen += OnDatasetPanelOpen;
 
-            m_AssetCreationPanel.Q<Button>("BackBtn").RegisterCallback<ClickEvent>(_ =>
-            {
-                HideElement(m_AssetCreationPanel);
-                DisplayElement(m_AssetListPanel);
-            });
+            m_AssetPanel.Q<Button>("BackBtn").RegisterCallback<ClickEvent>(OnBackButtonClicked);
         }
 
         void InstantiateDatasetCreationPanel()
         {
-            m_DatasetCreationPanel = m_DatasetCreationTemplate.Instantiate();
-            m_DatasetCreationPanel.style.height = Length.Percent(100);
-            m_DatasetCreationPanel.style.width = Length.Percent(100);
-            HideElement(m_DatasetCreationPanel);
+            m_DatasetPanel = m_DatasetCreationTemplate.Instantiate();
+            m_DatasetPanel.style.height = Length.Percent(100);
+            m_DatasetPanel.style.width = Length.Percent(100);
+            m_DatasetPanel.Hide();
 
-            m_ContentPanel.Add(m_DatasetCreationPanel);
+            m_ContentPanel.Add(m_DatasetPanel);
 
-            m_DatasetCreationController.Init
+            m_DatasetPanelController.Init
             (
-                m_DatasetCreationPanel,
-                m_FileListItemTemplate,
+                m_DatasetPanel,
                 m_TagsTemplate,
-                m_MessageDialogUi.dialogController,
-                m_AssetFilePathDialogUi.dialogController
+                m_FileController,
+                m_AddMetadataPopupController
             );
-        }
+            m_DatasetPanelController.PanelClosed += OnDatasetPanelClosed;
 
-        void InstantiateAssetList()
-        {
-            m_AssetListPanel = m_AssetListTemplate.Instantiate();
-            m_AssetListPanel.style.height = Length.Percent(100);
-            m_AssetListPanel.style.width = Length.Percent(100);
-            HideElement(m_AssetListPanel);
+            m_FileController.Init
+            (
+                m_DatasetPanel,
+                m_FileListItemTemplate
+            );
 
-            m_ContentPanel.Add(m_AssetListPanel);
-        }
+            m_AssetCreationController.Initialize
+            (
+                m_DatasetPanel,
+                m_FileController
+            );
+            m_AssetCreationController.AssetCreated += m_DatasetPanelController.OnAssetCreated;
+            m_AssetCreationController.ChangeButtonEnabledState += m_DatasetPanelController.ChangeButtonEnabledState;
 
-        async void OnProjectSelected()
-        {
-            // Handle 'All' selection
-            if (m_UserController.IsAllProjectSelected) return;
-
-            m_SearchBarUi.DisplaySearchBar(m_UserController.SelectedProject);
-
-            m_NewListCancellationTokenSource.Cancel();
-            m_NewListCancellationTokenSource.Dispose();
-            m_NewListCancellationTokenSource = new CancellationTokenSource();
-
-            var newListToken = m_NewListCancellationTokenSource.Token;
-
-            m_ProjectAssetsList.Clear();
-            RefreshAssetList(m_ProjectAssetsList);
-            m_ContentPanel.style.display = DisplayStyle.Flex;
-
-            if(m_UserController.SelectedProject == null) return;
-
-            var token = GetCancellationToken();
-
-            var assets = m_UserController.GetAssetsAsync(newListToken);
-            await foreach (var asset in assets.WithCancellation(token))
-            {
-                m_ProjectAssetsList.Add(asset);
-            }
-
-            if (!token.IsCancellationRequested)
-            {
-                RefreshAssetList(m_ProjectAssetsList);
-            }
-        }
-
-        void OnOrganizationSelected(OrganizationId orgId)
-        {
-            m_OrganizationId = orgId;
-            HideContent();
+            m_AssetPanelController.PrepareAssetUpdateAsync += m_DatasetPanelController.UpdateDatasetAsync;
         }
 
         void HideContent()
         {
             m_ContentPanel.style.display = DisplayStyle.None;
-            HideElement(m_AssetListPanel);
-            HideElement(m_AssetCreationPanel);
-            HideElement(m_DatasetCreationPanel);
+            m_AssetController.AssetListPanel?.Hide();
+            m_AssetPanel?.Hide();
+            m_DatasetPanel?.Hide();
+            m_AddMetadataPopupController?.Hide();
+            DialogService.Hide();
         }
 
-        async void OnSearchQueryChanged(IAsyncEnumerable<IAsset> assets)
+        void OnProjectSelected()
         {
-            var token = GetCancellationToken();
+            m_AssetController.ClearSelection();
 
-            var startTime = DateTime.UtcNow;
-            var assetList = new List<IAsset>();
-            await foreach (var asset in assets.WithCancellation(token))
+            m_AssetController.AssetListPanel?.Show();
+            m_ContentPanel.style.display = DisplayStyle.Flex;
+        }
+
+        void OnOrganizationSelected(OrganizationId orgId)
+        {
+            HideContent();
+
+            m_AddMetadataPopupController.ListFieldDefinitions(orgId);
+        }
+
+        void OnAssetSelected(IAsset asset)
+        {
+            m_AssetController.AssetListPanel?.Hide();
+            m_DatasetPanel?.Hide();
+            m_DatasetPanelController.Clear();
+
+            if (asset == null)
             {
-                assetList.Add(asset);
-
-                if (DateTime.UtcNow - startTime > TimeSpan.FromSeconds(0.6f))
-                {
-                    startTime = DateTime.UtcNow;
-                    RefreshAssetList(assetList);
-                }
+                m_AssetPanel?.Hide();
+                m_AssetPanelController.Clear();
             }
-
-            // Attempt final refresh
-            if (!token.IsCancellationRequested)
+            else
             {
-                RefreshAssetList(assetList);
+                m_AssetPanelController.OpenAsset(asset);
+                m_AssetPanel?.Show();
             }
         }
 
-        void OnClearSearchQuery()
+        void OnBackButtonClicked(ClickEvent evt)
         {
-            _ = GetCancellationToken();
+            m_AssetController.ClearSelection();
 
-            RefreshAssetList(m_ProjectAssetsList);
+            m_AssetController.AssetListPanel?.Show();
         }
 
-        void RefreshAssetList(List<IAsset> assetsList)
+        void CreateAsset()
         {
-            HideElement(m_DatasetCreationPanel);
-            HideElement(m_AssetCreationPanel);
+            m_AssetController.AssetListPanel?.Hide();
+            m_AssetPanel?.Hide();
+            m_AssetPanelController.Clear();
+            m_DatasetPanelController.Clear();
 
-            m_AssetListController.ClearAssetList();
-            m_AssetListController.PopulateAssetsList(assetsList);
-            DisplayElement(m_AssetListPanel);
+            m_DatasetPanel?.Show();
+            m_AssetCreationController.Show(m_AssetController.SelectedProject);
         }
 
-        void OnAssetOpen(IAsset asset)
+        void OnAssetUpdated(IAsset asset)
         {
-            HideElement(m_AssetListPanel);
-            HideElement(m_DatasetCreationPanel);
-            m_AssetCreationController.OpenAsset(asset);
-            DisplayElement(m_AssetCreationPanel);
+            _ = OnAssetUpdatedAsync(asset);
         }
 
-        void OnAssetCreated()
+        async Task OnAssetUpdatedAsync(IAsset asset)
         {
-            HideElement(m_AssetListPanel);
-            HideElement(m_AssetCreationPanel);
-            m_AssetCreationController.CreateNewAsset(m_UserController.SelectedProject);
+            await asset.RefreshAsync(m_AssetController.FieldsToInclude, CancellationToken.None);
+
+            m_AssetPanelController.OpenAsset(asset);
+            m_AssetController.OnAssetUpdated(asset);
         }
 
-        async Task<IAsset> RefreshAsset(IAsset asset)
+        void OnDatasetPanelOpen(IDataset dataset)
         {
-            return await m_UserController.SelectedProject.GetAssetAsync(asset.Descriptor.AssetId, asset.Descriptor.AssetVersion, null, CancellationToken.None);
+            m_AssetPanel?.Hide();
+            m_AssetCreationController.Hide();
+            m_DatasetPanelController.OpenDataset(dataset);
+            m_DatasetPanel?.Show();
         }
 
-        static void DisplayElement(VisualElement element)
+        void OnDatasetPanelClosed(IAsset asset)
         {
-            if(element == null)
-                return;
+            m_DatasetPanel?.Hide();
 
-            element.style.display = DisplayStyle.Flex;
-        }
-
-        static void HideElement(VisualElement element)
-        {
-            if(element == null)
-                return;
-
-            element.style.display = DisplayStyle.None;
-        }
-
-        CancellationToken GetCancellationToken()
-        {
-            m_UpdateListCancellationTokenSource.Cancel();
-            m_UpdateListCancellationTokenSource.Dispose();
-
-            m_UpdateListCancellationTokenSource = new CancellationTokenSource();
-            return m_UpdateListCancellationTokenSource.Token;
+            if (asset != null)
+            {
+                m_AssetController.OnAssetCreated(asset);
+            }
+            else if (m_AssetPanelController.CurrentAsset == null)
+            {
+                m_AssetController.AssetListPanel?.Show();
+            }
+            else
+            {
+                m_AssetPanel?.Show();
+            }
         }
     }
 }

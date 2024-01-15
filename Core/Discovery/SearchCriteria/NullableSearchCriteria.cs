@@ -1,110 +1,75 @@
 #nullable enable
 using System;
-using System.Collections.Generic;
 
 namespace Unity.Cloud.Assets
 {
-    public class NullableSearchCriteria<T> : ISearchCriteria<T?> where T : struct
+    public class NullableSearchCriteria<T> : SearchCriteriaBase, ISearchCriteria<T?> where T : struct
     {
-        readonly string m_PropertyName;
-        readonly string m_SearchKey;
         T? m_Included;
         T? m_Excluded;
         T? m_Any;
 
-        /// <inheritdoc/>
-        string ISearchCriteria.PropertyName => m_PropertyName;
-
-        /// <inheritdoc/>
-        Type ISearchCriteria.SearchFieldType => typeof(T?);
-
         internal NullableSearchCriteria(string propertyName, string searchKey)
-        {
-            m_PropertyName = propertyName;
-            m_SearchKey = searchKey;
-        }
+            : base(propertyName, searchKey, typeof(T?)) { }
 
         /// <inheritdoc/>
-        bool ISearchCriteria.TryGetIncluded(out object includedValue)
+        protected override bool TryGetIncluded(out object includedValue)
         {
             includedValue = TransformValue(m_Included);
             return m_Included.HasValue;
         }
 
         /// <inheritdoc/>
-        bool ISearchCriteria.TryGetExcluded(out object excludedValue)
+        protected override bool TryGetExcluded(out object excludedValue)
         {
             excludedValue = TransformValue(m_Excluded);
             return m_Excluded.HasValue;
         }
 
         /// <inheritdoc/>
-        bool ISearchCriteria.TryGetAny(out object anyValue)
+        protected override bool TryGetAny(out object anyValue)
         {
             anyValue = TransformValue(m_Any);
             return m_Any.HasValue;
         }
 
         /// <inheritdoc/>
-        void ISearchCriteria.Include(object value) => Include(TransformValue(value));
+        protected override void Include(object value) => Include(TransformValue(value));
 
         /// <inheritdoc/>
-        void ISearchCriteria.Include(Dictionary<string, object> includedValues, string prefix)
-        {
-            if (this.TryGetIncluded(out var value))
-            {
-                includedValues.Add(m_SearchKey.BuildSearchKey(prefix), value);
-            }
-        }
+        protected override void Exclude(object value) => Exclude(TransformValue(value));
 
         /// <inheritdoc/>
-        void ISearchCriteria.Exclude(object value) => Exclude(TransformValue(value));
+        protected override void ForAny(object value) => ForAny(TransformValue(value));
 
         /// <inheritdoc/>
-        void ISearchCriteria.Exclude(Dictionary<string, object> excludedValues, string prefix)
-        {
-            if (this.TryGetExcluded(out var value))
-            {
-                excludedValues.Add(m_SearchKey.BuildSearchKey(prefix), value);
-            }
-        }
-
-        /// <inheritdoc/>
-        void ISearchCriteria.ForAny(Dictionary<string, object> forAnyValues, string prefix)
-        {
-            if (this.TryGetAny(out var value))
-            {
-                forAnyValues.Add(m_SearchKey.BuildSearchKey(prefix), value);
-            }
-        }
-
-        /// <inheritdoc/>
-        void ISearchCriteria.ForAny(object value) => ForAny(TransformValue(value));
-
-        /// <inheritdoc/>
-        bool ISearchCriteria.IsMatch(object input)
-        {
-            return IsValidType(input) && SatisfiesMatch(input);
-        }
-
-        /// <inheritdoc/>
-        bool ISearchCriteria.IsAny(object input)
-        {
-            return IsValidType(input) && SatisfiesAny(input);
-        }
-
-        /// <inheritdoc/>
-        bool ISearchCriteria.IsEmpty()
+        protected override bool IsEmpty()
         {
             return !m_Included.HasValue && !m_Excluded.HasValue && !m_Any.HasValue;
         }
 
         /// <inheritdoc/>
-        public void Clear()
+        public override void Clear()
         {
             m_Included = null;
             m_Excluded = null;
             m_Any = null;
+        }
+
+        protected override bool IsValidType(object input)
+        {
+            return input is null or T;
+        }
+
+        protected override bool SatisfiesMatch(object input)
+        {
+            return (!m_Included.HasValue || m_Included.Equals(input))
+                && (!m_Excluded.HasValue || !m_Excluded.Equals(input));
+        }
+
+        protected override bool SatisfiesAny(object input)
+        {
+            return m_Any.HasValue && m_Any.Equals(input);
         }
 
         /// <inheritdoc/>
@@ -125,11 +90,6 @@ namespace Unity.Cloud.Assets
             m_Any = value;
         }
 
-        protected virtual bool IsValidType(object input)
-        {
-            return input is null or T;
-        }
-
         protected virtual object TransformValue(T? value)
         {
             return value ?? default(T);
@@ -138,17 +98,6 @@ namespace Unity.Cloud.Assets
         protected virtual T? TransformValue(object value)
         {
             return (T) value;
-        }
-
-        protected virtual bool SatisfiesMatch(object input)
-        {
-            return (!m_Included.HasValue || m_Included.Equals(input))
-                && (!m_Excluded.HasValue || !m_Excluded.Equals(input));
-        }
-
-        protected virtual bool SatisfiesAny(object input)
-        {
-            return m_Any.HasValue && m_Any.Equals(input);
         }
     }
 }

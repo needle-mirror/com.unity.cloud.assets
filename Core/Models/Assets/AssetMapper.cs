@@ -14,7 +14,7 @@ namespace Unity.Cloud.Assets
             asset.Name = assetData.Name;
             asset.Description = assetData.Description;
             asset.Tags = assetData.Tags ?? Array.Empty<string>();
-            asset.Type = assetData.Type;
+            asset.Type = assetData.Type ?? AssetType.Other;
             asset.Status = assetData.Status;
             asset.StorageId = assetData.StorageId;
             asset.SystemTags = assetData.SystemTags;
@@ -53,14 +53,11 @@ namespace Unity.Cloud.Assets
             if (includeFields.AssetFields.HasFlag(AssetFields.authoring))
                 asset.AuthoringInfo = new AuthoringInfo(assetData.CreatedBy, assetData.Created, assetData.UpdatedBy, assetData.Updated);
 
-            if (includeFields.AssetFields.HasFlag(AssetFields.portalMetadata))
-                asset.PortalMetadata = assetData.PortalMetadata;
-
             if (includeFields.AssetFields.HasFlag(AssetFields.metadata))
-                asset.Metadata = assetData.Metadata;
+                asset.MetadataEntity.Properties = assetData.Metadata?.From(assetDataSource, asset.Descriptor.OrganizationGenesisId);
 
             if (includeFields.AssetFields.HasFlag(AssetFields.systemMetadata))
-                asset.SystemMetadata = assetData.SystemMetadata;
+                asset.SystemMetadataEntity.Properties = assetData.SystemMetadata?.From(assetDataSource, asset.Descriptor.OrganizationGenesisId);
         }
 
         internal static AssetCreateData From(this IAssetCreation assetCreation)
@@ -71,10 +68,21 @@ namespace Unity.Cloud.Assets
                 Description = assetCreation.Description,
                 Tags = assetCreation.Tags,
                 Type = assetCreation.Type,
-                PortalMetadata = assetCreation.PortalMetadata,
-                Metadata = assetCreation.Metadata,
-                SystemMetadata = assetCreation.SystemMetadata,
+                Metadata = assetCreation.Metadata ?? new Dictionary<string, object>(),
+                SystemMetadata = assetCreation.SystemMetadata ?? new Dictionary<string, object>(),
                 Collections = assetCreation.Collections,
+            };
+        }
+
+        internal static IAssetUpdateData From(this IAssetUpdate assetUpdate)
+        {
+            return new AssetUpdateData
+            {
+                Name = assetUpdate.Name,
+                Description = assetUpdate.Description,
+                Tags = assetUpdate.Tags,
+                Type = assetUpdate.Type,
+                PreviewFile = assetUpdate.PreviewFile,
             };
         }
 
@@ -134,9 +142,8 @@ namespace Unity.Cloud.Assets
                 Datasets = asset.Datasets?.Select(dataset => dataset.From()),
                 SourceProjectId = asset.SourceProject.ProjectId,
                 LinkedProjectIds = asset.LinkedProjects.Select(project => project.ProjectId).ToList(),
-                PortalMetadata = asset.PortalMetadata,
-                Metadata = asset.Metadata,
-                SystemMetadata = asset.SystemMetadata,
+                Metadata = asset.MetadataEntity.From(),
+                SystemMetadata = asset.SystemMetadataEntity.From(),
                 SystemTags = asset.SystemTags,
                 Labels = asset.Labels,
             };

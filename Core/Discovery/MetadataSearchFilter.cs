@@ -17,7 +17,7 @@ namespace Unity.Cloud.Assets
         string ISearchCriteria.PropertyName => m_PropertyName;
 
         /// <inheritdoc/>
-        Type ISearchCriteria.SearchFieldType => typeof(IDeserializable);
+        Type ISearchCriteria.SearchFieldType => typeof(IMetadataValue);
 
         public MetadataSearchFilter(string propertyName, string searchKey)
         {
@@ -64,23 +64,7 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc/>
         void ISearchCriteria.Include(object value)
         {
-            switch (value)
-            {
-                case null:
-                    break;
-                case KeyValuePair<string, object> kvp:
-                    Include(kvp.Key, kvp.Value);
-                    break;
-                case IDeserializable deserializable:
-                    var valueDictionary = deserializable.GetAs<Dictionary<string,object>>();
-                    foreach (var kvp in valueDictionary)
-                    {
-                        Include(kvp.Key, kvp.Value);
-                    }
-                    break;
-                default:
-                    throw new InvalidArgumentException("MetadataSearchFilter can only filter KeyValuePair<string, object> or IDeserializable.");
-            }
+            TryAdd(value, Include);
         }
 
         /// <inheritdoc/>
@@ -93,23 +77,7 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc/>
         void ISearchCriteria.Exclude(object value)
         {
-            switch (value)
-            {
-                case null:
-                    break;
-                case KeyValuePair<string, object> kvp:
-                    Exclude(kvp.Key, kvp.Value);
-                    break;
-                case IDeserializable deserializable:
-                    var valueDictionary = deserializable.GetAs<Dictionary<string,object>>();
-                    foreach (var kvp in valueDictionary)
-                    {
-                        Exclude(kvp.Key, kvp.Value);
-                    }
-                    break;
-                default:
-                    throw new InvalidArgumentException("MetadataSearchFilter can only filter KeyValuePair<string, object> or IDeserializable.");
-            }
+            TryAdd(value, Exclude);
         }
 
         /// <inheritdoc/>
@@ -122,23 +90,7 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc/>
         void ISearchCriteria.ForAny(object value)
         {
-            switch (value)
-            {
-                case null:
-                    break;
-                case KeyValuePair<string, object> kvp:
-                    ForAny(kvp.Key, kvp.Value);
-                    break;
-                case IDeserializable deserializable:
-                    var valueDictionary = deserializable.GetAs<Dictionary<string,object>>();
-                    foreach (var kvp in valueDictionary)
-                    {
-                        ForAny(kvp.Key, kvp.Value);
-                    }
-                    break;
-                default:
-                    throw new InvalidArgumentException("MetadataSearchFilter can only filter KeyValuePair<string, object> or IDeserializable.");
-            }
+            TryAdd(value, ForAny);
         }
 
         /// <inheritdoc/>
@@ -148,6 +100,35 @@ namespace Unity.Cloud.Assets
                 (ISearchCriteria criterion, out object value) => criterion.TryGetAny(out value));
         }
 
+        static void TryAdd(object value, Action<string, object> add)
+        {
+            switch (value)
+            {
+                case null:
+                    break;
+                case KeyValuePair<string, object> kvp:
+                    add(kvp.Key, kvp.Value);
+                    break;
+                case KeyValuePair<string, IMetadataValue> metadataKvp:
+                    add(metadataKvp.Key, metadataKvp.Value.ToObject());
+                    break;
+                case IEnumerable<KeyValuePair<string, object>> kvps:
+                    foreach (var kvp in kvps)
+                    {
+                        add(kvp.Key, kvp.Value);
+                    }
+                    break;
+                case IEnumerable<KeyValuePair<string, IMetadataValue>> metadataKvps:
+                    foreach (var kvp in metadataKvps)
+                    {
+                        add(kvp.Key, kvp.Value.ToObject());
+                    }
+                    break;
+                default:
+                    throw new InvalidArgumentException($"{nameof(MetadataSearchFilter)} can only filter KeyValuePairs of string and object/IMetadata .");
+            }
+        }
+
         void AddValues(IDictionary<string, object> values, string prefix, TryGetValueDelegate getValue)
         {
             var searchKey = m_SearchKey.BuildSearchKey(prefix);
@@ -155,7 +136,7 @@ namespace Unity.Cloud.Assets
             {
                 if (getValue(kvp.Value, out var value))
                 {
-                    values.Add($"{searchKey}.{kvp.Key}", value.ToString());
+                    values.Add($"{searchKey}.{kvp.Key}", value);
                 }
             }
         }
@@ -163,10 +144,15 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc/>
         bool ISearchCriteria.IsMatch(object input)
         {
+            if (IsEmpty()) return true;
+
             return input switch
             {
                 null => IsEmpty(),
                 KeyValuePair<string, object> kvp when m_Values.TryGetValue(kvp.Key, out var value) => value.IsMatch(kvp.Value),
+                KeyValuePair<string, IMetadataValue> metadataKvp when m_Values.TryGetValue(metadataKvp.Key, out var value) => value.IsMatch(metadataKvp.Value.ToObject()),
+                IEnumerable<KeyValuePair<string, object>> kvps => !kvps.Any() || kvps.All(x => (this as ISearchCriteria).IsMatch(x)),
+                IEnumerable<KeyValuePair<string, IMetadataValue>> metadataKvps => !metadataKvps.Any() || metadataKvps.All(x => (this as ISearchCriteria).IsMatch(x)),
                 _ => IsEmpty()
             };
         }
@@ -174,12 +160,14 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc/>
         bool ISearchCriteria.IsAny(object input)
         {
-            if (input is KeyValuePair<string, object> kvp && m_Values.TryGetValue(kvp.Key, out var value))
+            return input switch
             {
-                return value.IsAny(kvp.Value);
-            }
-
-            return false;
+                KeyValuePair<string, object> kvp when m_Values.TryGetValue(kvp.Key, out var value) => value.IsAny(kvp.Value),
+                KeyValuePair<string, IMetadataValue> metadataKvp when m_Values.TryGetValue(metadataKvp.Key, out var value) => value.IsAny(metadataKvp.Value.ToObject()),
+                IEnumerable<KeyValuePair<string, object>> kvps => kvps.Any(x => (this as ISearchCriteria).IsAny(x)),
+                IEnumerable<KeyValuePair<string, IMetadataValue>> metadataKvps => metadataKvps.Any(x => (this as ISearchCriteria).IsAny(x)),
+                _ => false
+            };
         }
 
         /// <inheritdoc/>
@@ -213,7 +201,7 @@ namespace Unity.Cloud.Assets
         {
             if (!m_Values.TryGetValue(key, out var criterion))
             {
-                criterion = new SearchCriteria<string>(key, key);
+                criterion = new SearchCriteria<object>(key, key);
                 m_Values.Add(key, criterion);
             }
 

@@ -8,7 +8,7 @@ namespace Unity.Cloud.Assets
     public interface IAssetUpdate : IAssetInfo
     {
         /// <summary>
-        /// The preview file ID of the asset.
+        /// The preview file path of the asset.
         /// </summary>
         string PreviewFile { get; set; }
     }

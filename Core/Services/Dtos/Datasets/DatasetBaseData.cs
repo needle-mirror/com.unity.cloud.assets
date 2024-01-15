@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
-using Unity.Cloud.Common;
 
 namespace Unity.Cloud.Assets
 {
@@ -18,12 +17,9 @@ namespace Unity.Cloud.Assets
         public List<string> Tags { get; set; } = new List<string>();// For now initialize list
 
         /// <inheritdoc />
-        public IDeserializable PortalMetadata { get; set; }
+        public Dictionary<string, object> Metadata { get; set; }
 
         /// <inheritdoc />
-        public IDeserializable Metadata { get; set; }
-
-        /// <inheritdoc />
-        public IDeserializable SystemMetadata { get; set; }
+        public Dictionary<string, object> SystemMetadata { get; set; }
     }
 }

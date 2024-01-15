@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Reflection;
 using Unity.Cloud.Common;
 
@@ -8,54 +7,35 @@ namespace Unity.Cloud.Assets
     static class SearchCriteriaExtensions
     {
         static readonly Type k_AssetType = typeof(Asset);
-        static readonly Dictionary<string, object> k_EmptyValue = new()
-        {
-            {nameof(AssetDescriptor.AssetVersion), 0u},
-        };
 
-        public static object GetPropertyValue(this IAsset asset, string propertyName)
+        internal static bool TryGetPropertyValue(this IAsset asset, string propertyName, out object value)
+        {
+            value = asset.GetPropertyValue(propertyName);
+            return value != null // works for non-ValueType
+                && (value is not string s || !string.IsNullOrWhiteSpace(s)); // special check for strings
+        }
+
+        internal static object GetPropertyValue(this IAsset asset, string propertyName)
         {
             return propertyName switch
             {
                 nameof(AssetDescriptor.AssetId) => asset.Descriptor.AssetId,
                 nameof(AssetDescriptor.AssetVersion) => asset.Descriptor.AssetVersion,
                 nameof(IAsset.SourceProject) => asset.SourceProject.ProjectId,
+                nameof(IAsset.Metadata) => asset.Metadata is MetadataContainerEntity metadataContainer ? metadataContainer.Properties.ToEnumeration() : null,
                 _ => k_AssetType.GetProperty(propertyName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)?.GetValue(asset)
             };
         }
 
-        public static bool TryGetPropertyValue(this IAsset asset, string propertyName, out object value)
-        {
-            value = asset.GetPropertyValue(propertyName);
-            var emptyValueDefined = k_EmptyValue.TryGetValue(propertyName, out var emptyValue);
-            return value != null // works for non-ValueType
-                && (value is not string s || !string.IsNullOrWhiteSpace(s)) // special check for strings
-                && (!emptyValueDefined || !value.Equals(emptyValue)); // check for specific ValueType
-        }
-
         internal static object GetPropertyValue(this object input, string propertyName)
         {
-            if (nameof(FileDescriptor.Path) == propertyName && input is IFile file)
+            return propertyName switch
             {
-                return file.Descriptor.Path;
-            }
-
-            return input.GetType().GetProperty(propertyName)?.GetValue(input);
-        }
-
-        internal static bool TryGetIncluded(this ISearchCriteria input, out object includedValue)
-        {
-            return input.TryGetIncluded(out includedValue);
-        }
-
-        internal static bool TryGetExcluded(this ISearchCriteria input, out object excludedValue)
-        {
-            return input.TryGetExcluded(out excludedValue);
-        }
-
-        internal static bool TryGetAny(this ISearchCriteria input, out object anyValue)
-        {
-            return input.TryGetAny(out anyValue);
+                nameof(FileDescriptor.Path) when input is IFile file => file.Descriptor.Path,
+                nameof(IDataset.Metadata) when input is DatasetEntity datasetEntity => datasetEntity.MetadataEntity.Properties.ToEnumeration(),
+                nameof(IFile.Metadata) when input is FileEntity fileEntity => fileEntity.MetadataEntity.Properties.ToEnumeration(),
+                _ => input.GetType().GetProperty(propertyName)?.GetValue(input)
+            };
         }
 
         internal static bool IsMatch(this ISearchCriteria input, object value)

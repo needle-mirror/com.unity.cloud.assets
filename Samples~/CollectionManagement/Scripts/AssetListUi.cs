@@ -55,7 +55,7 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                e.LogException();
             }
         }
 
@@ -67,17 +67,12 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
             }
             catch (OperationCanceledException oe)
             {
-                Debug.Log(oe);
+                oe.LogException();
                 return null;
-            }
-            catch (AggregateException e)
-            {
-                Debug.LogException(e.InnerException);
-                throw;
             }
             catch (Exception e)
             {
-                Debug.LogException(e);
+                e.LogException();
                 throw;
             }
         }

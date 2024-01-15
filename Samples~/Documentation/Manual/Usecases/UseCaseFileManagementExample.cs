@@ -1,17 +1,18 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
-using Unity.Cloud.Common;
-using UnityEngine;
-
-namespace Unity.Cloud.Assets.Documentation
+namespace Unity.Cloud.Documentation.Assets
 {
 #pragma warning disable S4487 // Unread "private" fields should be removed
 #pragma warning disable S1186 // Methods should not be empty
 
     #region Example_UIClass
+
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using Unity.Cloud.Assets;
+    using Unity.Cloud.Common;
+    using UnityEngine;
 
     public class UseCaseFileManagementExampleUI : IAssetManagementUI
     {
@@ -67,11 +68,9 @@ namespace Unity.Cloud.Assets.Documentation
                 _ = m_Behaviour.GetAssetFiles();
             }
 
-            GUILayout.Label("Files:");
-
             GUILayout.Space(5f);
 
-            m_FilesScrollPosition = GUILayout.BeginScrollView(m_FilesScrollPosition, GUILayout.MaxHeight(Screen.height * 0.8f));
+            m_FilesScrollPosition = GUILayout.BeginScrollView(m_FilesScrollPosition, GUILayout.MaxHeight(Screen.height * 0.8f), GUILayout.Width(Screen.width * 0.3f));
 
             // Get a local copy of the list of asset files to avoid concurrent modification exceptions.
             var assetFiles = m_Behaviour.Files?.ToArray() ?? Array.Empty<IFile>();
@@ -90,7 +89,17 @@ namespace Unity.Cloud.Assets.Documentation
             GUILayout.BeginVertical(GUI.skin.box);
 
             GUILayout.Label($"{assetFile.Descriptor.Path}");
-            GUILayout.Label($"{assetFile.Description}");
+            if (!string.IsNullOrEmpty(assetFile.Description))
+            {
+                GUILayout.Label($"{assetFile.Description}");
+            }
+
+            GUILayout.Label($"Status: {assetFile.Status}");
+
+            var createdDate = assetFile.AuthoringInfo?.Created.ToString("d") ?? "unknown";
+            GUILayout.Label($"Created on: {createdDate}");
+
+            GUILayout.Label($"Size: {assetFile.SizeBytes} bytes");
             GUILayout.Space(5f);
 
             GUILayout.BeginHorizontal();
@@ -133,10 +142,18 @@ namespace Unity.Cloud.Assets.Documentation
         {
             Files = new List<IFile>();
 
-            var fileList = CurrentAsset.ListFilesAsync(Range.All, CancellationToken.None);
-            await foreach (var file in fileList)
+            try
             {
-                Files.Add(file);
+                var fileList = CurrentAsset.ListFilesAsync(Range.All, CancellationToken.None);
+                await foreach (var file in fileList)
+                {
+                    Files.Add(file);
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.LogError(e);
+                throw;
             }
         }
 

@@ -59,30 +59,10 @@ namespace Unity.Cloud.Assets
             var (offset, length) = await pagination.Range.GetOffsetAndLengthAsync(token => GetTotalCount(projectDescriptor, token), cancellationToken);
             if (length == 0) yield break;
 
-            const int maxPageSize = 99;
-
-            var lastIndex = offset + length;
-            var pageSize = Math.Min(maxPageSize, lastIndex);
-            request.Parameters.Pagination.Limit = pageSize;
-
-            var startPage = offset / pageSize;
-            var index = offset % pageSize;
-
-            var enumerator = GetNextAssetFirstPage(request, searchPagination, startPage, index, cancellationToken);
-            while (await enumerator.MoveNextAsync())
+            var results = ListAssetsAsync(request, requestParams, searchPagination, offset, length, cancellationToken);
+            await foreach (var asset in results)
             {
-                yield return enumerator.Current;
-
-                if (++index >= lastIndex) break;
-            }
-
-            pageSize = Math.Min(maxPageSize, length);
-            searchPagination.Limit = pageSize;
-
-            enumerator = GetNextAsset(request, searchPagination, index, offset, length, cancellationToken);
-            while (await enumerator.MoveNextAsync())
-            {
-                yield return enumerator.Current;
+                yield return asset;
             }
         }
 
@@ -106,30 +86,10 @@ namespace Unity.Cloud.Assets
             var (offset, length) = await pagination.Range.GetOffsetAndLengthAsync(token => GetAcrossProjectsTotalCount(organizationId, enumerable, token), cancellationToken);
             if (length == 0) yield break;
 
-            const int maxPageSize = 99;
-
-            var lastIndex = offset + length;
-            var pageSize = Math.Min(maxPageSize, lastIndex);
-            request.Parameters.Pagination.Limit = pageSize;
-
-            var startPage = offset / pageSize;
-            var index = offset % pageSize;
-
-            var enumerator = GetNextAssetFirstPage(request, searchPagination, startPage, index, cancellationToken);
-            while (await enumerator.MoveNextAsync())
+            var results = ListAssetsAsync(request, requestParams, searchPagination, offset, length, cancellationToken);
+            await foreach (var asset in results)
             {
-                yield return enumerator.Current;
-
-                if (++index >= lastIndex) break;
-            }
-
-            pageSize = Math.Min(maxPageSize, length);
-            searchPagination.Limit = pageSize;
-
-            enumerator = GetNextAsset(request, searchPagination, index, offset, length, cancellationToken);
-            while (await enumerator.MoveNextAsync())
-            {
-                yield return enumerator.Current;
+                yield return asset;
             }
         }
 
@@ -176,10 +136,9 @@ namespace Unity.Cloud.Assets
         }
 
         /// <inheritdoc />
-        public async Task<IAssetData> CreateAssetAsync(ProjectDescriptor projectDescriptor, IAssetCreation assetCreation, CancellationToken cancellationToken)
+        public async Task<IAssetData> CreateAssetAsync(ProjectDescriptor projectDescriptor, IAssetCreateData assetCreation, CancellationToken cancellationToken)
         {
-            var assetData = assetCreation.From();
-            var request = new CreateAssetRequest(projectDescriptor.ProjectId, assetData);
+            var request = new CreateAssetRequest(projectDescriptor.ProjectId, assetCreation);
             var response = await m_ServiceHttpClient.PostAsync(GetPublicRequestUri(request), request.ConstructBody(),
                 ServiceHttpClientOptions.Default(), cancellationToken);
             var jsonContent = await response.GetContentAsString();
@@ -401,6 +360,38 @@ namespace Unity.Cloud.Assets
             return new Uri(m_PublicServiceHostResolver.GetResolvedAddress());
         }
 
+        async IAsyncEnumerable<IAssetData> ListAssetsAsync(ApiRequest request, SearchRequestParameters parameters, SearchRequestPagination pagination, int offset, int length, [EnumeratorCancellation] CancellationToken cancellationToken)
+        {
+            const int maxPageSize = 99;
+
+            var lastIndex = offset + length;
+            var pageSize = Math.Min(maxPageSize, lastIndex);
+            parameters.Pagination.Limit = pageSize;
+
+            var startPage = offset / pageSize;
+            var currentIndex = offset;
+
+            var firstPage = await AdvanceTokenToFirstPageAsync(request, pagination, startPage, cancellationToken);
+
+            for (var i = offset % pageSize; i < firstPage.Assets.Length; ++i)
+            {
+                if (currentIndex++ >= lastIndex) break;
+
+                yield return firstPage.Assets[i];
+            }
+
+            pagination.Token = firstPage.Token;
+
+            pageSize = Math.Min(maxPageSize, length);
+            pagination.Limit = pageSize;
+
+            var enumerator = GetNextAsset(request, pagination, currentIndex, offset, length, cancellationToken);
+            while (await enumerator.MoveNextAsync())
+            {
+                yield return enumerator.Current;
+            }
+        }
+
         async Task<AssetPageDto> AdvanceTokenToFirstPageAsync(ApiRequest request, SearchRequestPagination pagination, int startPage, CancellationToken cancellationToken)
         {
             var requestUri = GetPublicRequestUri(request);
@@ -423,18 +414,6 @@ namespace Unity.Cloud.Assets
 
             jsonContent = await response.GetContentAsString();
             return IsolatedSerialization.DeserializeWithDefaultConverters<AssetPageDto>(jsonContent);
-        }
-
-        async IAsyncEnumerator<IAssetData> GetNextAssetFirstPage(ApiRequest request, SearchRequestPagination pagination, int startPage, int index, CancellationToken cancellationToken)
-        {
-            var firstPage = await AdvanceTokenToFirstPageAsync(request, pagination, startPage, cancellationToken);
-
-            while (index < firstPage.Assets.Length)
-            {
-                yield return firstPage.Assets[index++];
-            }
-
-            pagination.Token = firstPage.Token;
         }
 
         async IAsyncEnumerator<IAssetData> GetNextAsset(ApiRequest request, SearchRequestPagination pagination, int index, int offset, int length, CancellationToken cancellationToken)

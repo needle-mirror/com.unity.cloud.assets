@@ -10,6 +10,6 @@ namespace Unity.Cloud.Assets
         public IEnumerable<string> FileOrder { get; set; }
 
         /// <inheritdoc />
-        public bool IsVisible { get; set; }
+        public bool? IsVisible { get; set; }
     }
 }

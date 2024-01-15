@@ -2,14 +2,12 @@
 
 You can use the Collection Management sample to list and manage the collections of asset in your Projects.
 
-The SDK supports different workflows for users with different roles.
-
-| Asset Manager Project role                                                                           | List an asset's collections | Add/remove assets in collections |
+| Organization or Asset Manager Project role                                                                           | List an asset's collections | Add/remove assets in collections |
 |:-----------------------------------------------------------------------------------------------------|:----------------------------|:---------------------------------|
 | [`Asset Management Viewer`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles)      | yes                         | no                               |
 | [`Asset Management Consumer`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles)    | yes                         | no                               |
 | [`Asset Management Contributor`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles) | yes                         | yes                              |
-| [`Asset Management Owner`](https://docs.unity.com/cloud/en-us/accounts/roles-and-permissions)        | yes                         | yes                              |
+| [`Organization Owner`](https://docs.unity.com/cloud/en-us/accounts/roles-and-permissions)        | yes                         | yes                              |
 
 ## Before you start
 
@@ -140,17 +138,19 @@ To open the platform services script, go to your `Assets/Samples/Unity Cloud Ass
 
 The `PlatformServices` class has two accompanying classes called `PlatformServicesInitialization` and `PlatformServicesShutdown` that call the initialization and shutdown methods through Unity's standard `Monobehaviour` methods `Awake()`, `Start()` and `OnDestroy()`.
 
-### User Controller script
+### Project controller script
 
-The `UserController` class makes it so you can sign into your application and uses your ID to grant access to the Collection Management sample. For more information on authentication, see the **Get user information** use case in the  [Identity package documentation](https://docs.unity3d.com/Packages/com.unity.cloud.identity@latest).
+The `ProjectController` class inherits from the `OrganizationController` class which makes it so you can sign into your application and uses your ID to grant access to the Collection Management sample. For more information on authentication, see the **Get user information** use case in the  [Identity package documentation](https://docs.unity3d.com/Packages/com.unity.cloud.identity@latest).
+The `ProjectController` class uses the `IOrganizationRepository` of the `PlatformServices` to retrieve the list of organizations you have access to.
+The `ProjectController` class also uses the `IAssetRepository` of the `PlatformServices` to retrieve the list of projects you have access to for the selected organization.
 
-To open the UserController script, go to your `Assets/Samples/Unity Cloud Assets/<package-version>/Shared/Scripts/Controllers/UserController.cs` file.
+To open the project controller script, go to your `Assets/Samples/Unity Cloud Assets/<package-version>/Shared/Scripts/Controllers/ProjectController.cs` file.
 
 ### Asset collection management sample script
 
 The `CollectionManagementSample` shows you how to do the following:
 
-* Integrate the login flow with the `UserController` class
+* Integrate the login flow with the `ProjectController` class
 * Retrieve Organizations and Projects from the Asset Manager service
 * Retrieve published assets from the Asset Manager service
 * Search for assets by tag or name

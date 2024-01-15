@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Unity.Cloud.Assets;
 using Unity.Cloud.Common;
+using UnityEngine;
 
-namespace Unity.Cloud.Assets.Documentation.Manual
+namespace Unity.Cloud.Documentation.Assets
 {
 #pragma warning disable S1144 // Remove unused private method
     public class UseCaseSearchAcrossProjectsAssetsExample
@@ -36,7 +38,7 @@ async Task DisplayResultsIndividually(OrganizationId organizationId, IEnumerable
 
     await foreach (var asset in assets)
     {
-        Console.WriteLine(asset.Name + " is available for use.");
+        Debug.Log(asset.Name + " is available for use.");
 
         // Do something with each `asset` as it becomes available.
     }

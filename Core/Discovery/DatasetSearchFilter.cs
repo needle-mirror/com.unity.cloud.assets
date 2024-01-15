@@ -26,14 +26,8 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc cref="IDataset.AuthoringInfo"/>
         public AuthoringInfoSearchFilter AuthoringInfo { get; } = new(nameof(IDataset.AuthoringInfo), string.Empty);
 
-        /// <inheritdoc cref="IDataset.PortalMetadata"/>
-        public DeserializableSearchCriteria PortalMetadata { get; } = new(nameof(IDataset.PortalMetadata), "portalMetadata");
-
-        /// <inheritdoc cref="IDataset.Metadata"/>
-        public MetadataSearchFilter Metadata { get; } = new(nameof(IDataset.Metadata), "metadata");
-
-        /// <inheritdoc cref="IDataset.SystemMetadata"/>
-        public MetadataSearchFilter SystemMetadata { get; } = new(nameof(IDataset.SystemMetadata), "systemMetadata");
+        /// <inheritdoc cref="DatasetEntity.Metadata"/>
+        public MetadataSearchFilter Metadata { get; } = new(nameof(DatasetEntity.Metadata), "metadata");
 
         /// <inheritdoc cref="IDataset.IsVisible"/>
         public NullableSearchCriteria<bool> IsVisible { get; } = new(nameof(IDataset.IsVisible), "isVisible");

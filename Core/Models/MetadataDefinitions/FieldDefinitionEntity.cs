@@ -1,0 +1,47 @@
+using System.Threading;
+using System.Threading.Tasks;
+using Unity.Cloud.Common;
+
+namespace Unity.Cloud.Assets
+{
+    class FieldDefinitionEntity : IFieldDefinition
+    {
+        private protected readonly IAssetDataSource m_DataSource;
+
+        /// <inheritdoc/>
+        public FieldDefinitionDescriptor Descriptor { get; }
+
+        /// <inheritdoc/>
+        public FieldDefinitionType Type { get; set; }
+
+        /// <inheritdoc/>
+        public string Status { get; set; }
+
+        /// <inheritdoc/>
+        public string DisplayName { get; set; }
+
+        /// <inheritdoc/>
+        public AuthoringInfo AuthoringInfo { get; set; }
+
+        internal FieldDefinitionEntity(IAssetDataSource dataSource, FieldDefinitionDescriptor descriptor)
+        {
+            m_DataSource = dataSource;
+            Descriptor = descriptor;
+        }
+
+        /// <inheritdoc/>
+        public async Task RefreshAsync(CancellationToken cancellationToken)
+        {
+            var data = await m_DataSource.GetFieldDefinitionAsync(Descriptor, cancellationToken);
+            this.MapFrom(data);
+        }
+
+        /// <inheritdoc/>
+        public async Task UpdateAsync(IFieldDefinitionUpdate definitionUpdate, CancellationToken cancellationToken)
+        {
+            await m_DataSource.UpdateFieldDefinitionAsync(Descriptor, definitionUpdate.From(), cancellationToken);
+            if (cancellationToken.IsCancellationRequested) return;
+            await RefreshAsync(cancellationToken);
+        }
+    }
+}

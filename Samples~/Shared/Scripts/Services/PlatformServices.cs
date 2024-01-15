@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using Unity.Cloud.AppLinking.Runtime;
 using Unity.Cloud.Common;
 using Unity.Cloud.Common.Runtime;
 using Unity.Cloud.Identity;
@@ -49,7 +50,7 @@ namespace Unity.Cloud.Assets.Samples
             var platformSupport = PlatformSupportFactory.GetAuthenticationPlatformSupport();
 
             var compositeAuthenticatorSettings = new CompositeAuthenticatorSettingsBuilder(HttpClient, platformSupport, serviceHostResolver, playerSettings)
-                .AddDefaultPkceAuthenticator(playerSettings, playerSettings)
+                .AddDefaultPkceAuthenticator(playerSettings)
                 .Build();
 
             s_CompositeAuthenticator = new CompositeAuthenticator(compositeAuthenticatorSettings);

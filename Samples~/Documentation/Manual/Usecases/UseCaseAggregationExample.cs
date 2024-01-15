@@ -1,13 +1,14 @@
-using System.Threading;
-using System.Threading.Tasks;
-using UnityEngine;
-
-namespace Unity.Cloud.Assets.Documentation
+namespace Unity.Cloud.Documentation.Assets
 {
 #pragma warning disable S4487 // Unread "private" fields should be removed
 #pragma warning disable S1186 // Methods should not be empty
 
     #region Example_UIClass
+
+    using System.Threading;
+    using System.Threading.Tasks;
+    using Unity.Cloud.Assets;
+    using UnityEngine;
 
     public class UseCaseAggregationExampleUI : IAssetManagementUI
     {
@@ -109,7 +110,7 @@ namespace Unity.Cloud.Assets.Documentation
         readonly AssetManagementBehaviour m_Behaviour;
 
         public bool IsProjectSelected => m_Behaviour.IsProjectSelected;
-        public IAssetProject CurrentProject => m_Behaviour.CurrentProject;
+        IAssetProject CurrentProject => m_Behaviour.CurrentProject;
 
         public UseCaseAggregationExampleBehaviour(AssetManagementBehaviour behaviour)
         {
@@ -125,7 +126,7 @@ namespace Unity.Cloud.Assets.Documentation
         public async Task AggregateByField(string aggregationField)
         {
             var assetSearchFilter = new AssetSearchFilter();
-            var aggregationParameters = new AggregationParameters(aggregationField);
+            var aggregationParameters = new AggregationParameters(aggregationField, int.MaxValue);
 
             var cancellationTokenSrc = new CancellationTokenSource();
             Aggregation = await CurrentProject.CountAssetsAsync(assetSearchFilter, aggregationParameters, cancellationTokenSrc.Token);

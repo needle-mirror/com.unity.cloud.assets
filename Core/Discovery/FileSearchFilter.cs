@@ -30,14 +30,8 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc cref="IFile.SizeBytes"/>
         public SearchCriteria<long> SizeBytes { get; } = new(nameof(IFile.SizeBytes), "sizeBytes");
 
-        /// <inheritdoc cref="IFile.PortalMetadata"/>
-        public DeserializableSearchCriteria PortalMetadata { get; } = new(nameof(IFile.PortalMetadata), "portalMetadata");
-
-        /// <inheritdoc cref="IFile.Metadata"/>
-        public MetadataSearchFilter Metadata { get; } = new(nameof(IFile.Metadata), "metadata");
-
-        /// <inheritdoc cref="IFile.SystemMetadata"/>
-        public MetadataSearchFilter SystemMetadata { get; } = new(nameof(IFile.SystemMetadata), "systemMetadata");
+        /// <inheritdoc cref="FileEntity.Metadata"/>
+        public MetadataSearchFilter Metadata { get; } = new(nameof(FileEntity.Metadata), "metadata");
 
         private protected override Type InstantiatedType => typeof(FileEntity);
 

@@ -1,0 +1,8 @@
+.unity-label {
+    color: rgb(210, 210, 210);
+}
+
+.unity-text-field__input {
+    color: rgb(0, 0, 0);
+    padding: 0 10px;
+}

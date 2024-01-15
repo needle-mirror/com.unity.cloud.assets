@@ -2,12 +2,12 @@
 
 You can use the Unity Cloud Assets package to publish assets so they are available to viewers, or withdraw assets so they are open for modification.
 
-| Asset Manager Project role                                                                           | Publish/withdraw |
+| Organization or Asset Manager Project role                                                           | Publish/withdraw |
 |:-----------------------------------------------------------------------------------------------------|:-----------------|
 | [`Asset Management Viewer`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles)      | no               |
 | [`Asset Management Consumer`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles)    | no               |
 | [`Asset Management Contributor`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles) | yes              |
-| [`Asset Management Owner`](https://docs.unity.com/cloud/en-us/accounts/roles-and-permissions)        | yes              |
+| [`Organization Owner`](https://docs.unity.com/cloud/en-us/accounts/roles-and-permissions)            | yes              |
 
 >[!NOTE]
 >Asset management requires users have the role of [`Asset Management Contributor`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles) OR a minimum role of [`Manager`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles) in the Organization.

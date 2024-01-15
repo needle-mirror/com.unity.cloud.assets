@@ -12,7 +12,7 @@ namespace Unity.Cloud.Assets
         none = 0,
         all = ~none,
         authoring = 1,
-        portalMetadata = 2,
+        // portalMetadata = 2, Deprecated
         metadata = 4,
         systemMetadata = 8,
         previewFile = 16,
@@ -37,7 +37,7 @@ namespace Unity.Cloud.Assets
         all = ~none,
         description = 1,
         authoring = 2,
-        portalMetadata = 4,
+        // portalMetadata = 4, Deprecated
         metadata = 8,
         systemMetadata = 16,
         files = 32,
@@ -55,7 +55,7 @@ namespace Unity.Cloud.Assets
         description = 1,
         authoring = 2,
         downloadUrl = 4,
-        portalMetadata = 8,
+        // portalMetadata = 8, deprecated
         metadata = 16,
         systemMetadata = 32,
         userChecksum = 64,
@@ -84,5 +84,17 @@ namespace Unity.Cloud.Assets
             DatasetFields = DatasetFields.all,
             FileFields = FileFields.all,
         };
+
+        public FieldsFilter WithMetadataFields(params string[] metadataFields)
+        {
+            MetadataFields.AddRange(metadataFields);
+            return this;
+        }
+
+        public FieldsFilter WithSystemMetadataFields(params string[] systemMetadataFields)
+        {
+            SystemMetadataFields.AddRange(systemMetadataFields);
+            return this;
+        }
     }
 }

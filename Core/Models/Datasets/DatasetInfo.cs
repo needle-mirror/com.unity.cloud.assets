@@ -9,9 +9,6 @@ namespace Unity.Cloud.Assets
         public string Name { get; set; }
         public string Description { get; set; }
         public List<string> Tags { get; set; }
-        public IDeserializable PortalMetadata { get; set; }
-        public IDeserializable Metadata { get; set; }
-        public IDeserializable SystemMetadata { get; set; }
 
         protected DatasetInfo(string name)
         {
@@ -28,9 +25,6 @@ namespace Unity.Cloud.Assets
         {
             Description = dataset.Description;
             Tags = dataset.Tags?.ToList();
-            PortalMetadata = dataset.PortalMetadata;
-            Metadata = dataset.Metadata;
-            SystemMetadata = dataset.SystemMetadata;
         }
     }
 }

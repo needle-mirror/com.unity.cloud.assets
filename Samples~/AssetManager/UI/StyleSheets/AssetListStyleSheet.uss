@@ -1,3 +1,7 @@
+.unity-button {
+    border-radius: 4px;
+}
+
 #ListContainer {
     background-color: rgb(19, 19, 19);
     width: 100%;
@@ -7,6 +11,17 @@
 #AssetListLabel {
     color: rgb(210, 210, 210);
     font-size: 20px;
+}
+
+#AssetListBottomBar {
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+}
+
+#LeftTopPanel {
+    width: 95%;
+    border-right-color: rgba(0, 0, 0, 0);
+    border-top-left-radius: 4px;
 }
 
 #AddAssetButton {
@@ -23,45 +38,7 @@
     border-color: rgb(76, 176, 255);
 }
 
-.AssetListLeftBar {
-    height: 100%;
-    background-color: rgb(28, 28, 28);
-    border-color: rgb(81, 81, 81);
-    border-width: 0.5px;
-}
-
-.AssetListRightBar {
-    width: 5%;
-    height: 100%;
-    border-color: rgb(81, 81, 81);
-    border-width: 0.5px;
-    background-color: rgb(36, 36, 36);
-    border-left-color: rgba(81, 81, 81, 0);
-    border-top-right-radius: 4px;
-    border-bottom-right-radius: 4px;
-}
-
-.LeftPanel {
-    flex-direction: row;
-    color: rgb(210, 210, 210);
-    font-size: 13px;
-    -unity-text-align: middle-left;
-    justify-content: space-around;
-}
-
-#LeftTopPanel {
-    width: 95%;
-    border-right-color: rgba(0, 0, 0, 0);
-    border-top-left-radius: 4px;
-}
-
-#LeftBottomPanel {
-    border-bottom-left-radius: 4px;
-    border-bottom-right-radius: 4px;
-}
-
 #ExpandButton {
-    width: 20%;
     border-left-color: rgba(0, 0, 0, 0);
     border-right-color: rgba(0, 0, 0, 0);
     border-top-color: rgba(0, 0, 0, 0);
@@ -72,18 +49,58 @@
 }
 
 #ExpandButton:hover {
-    background-color: rgb(40, 40, 40);
+    background-color: rgb(48, 48, 48);
+}
+
+#OpenButton {
+    color: rgb(210, 210, 210);
+    border-radius: 4px;
+    transition-duration: 0.25s;
+    transition-timing-function: ease-out-back;
+    border-left-color: rgba(0, 0, 0, 0);
+    border-right-color: rgba(0, 0, 0, 0);
+    border-top-color: rgba(0, 0, 0, 0);
+    border-bottom-color: rgba(0, 0, 0, 0);
+    background-color: rgba(48, 48, 48, 0);
+}
+
+#OpenButton:hover {
+    background-color: rgb(48, 48, 48);
+}
+
+.AssetListLeftBar {
+    background-color: rgb(28, 28, 28);
+    border-color: rgb(81, 81, 81);
+    border-width: 0.5px;
+    height: 100%;
+    -unity-text-align: middle-left;
+    font-size: 13px;
+    color: rgb(210, 210, 210);
+    flex-direction: row;
+    justify-content: space-around;
+    flex-grow: 1;
+    overflow: hidden;
+}
+
+.AssetListRightBar {
+    width: 40px;
+    height: 100%;
+    border-color: rgb(81, 81, 81);
+    border-width: 0.5px;
+    background-color: rgb(36, 36, 36);
+    border-left-color: rgba(81, 81, 81, 0);
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 4px;
+    flex-shrink: 0;
 }
 
 .AssetListItem {
-    width: 12.5%;
     -unity-text-align: middle-center;
-    flex-wrap: wrap;
-    max-width: 12.5%;
     flex-direction: row;
     justify-content: center;
     padding-top: 5px;
     padding-bottom: 5px;
+    flex-shrink: 0;
 }
 
 .AssetListItemLeftBar {
@@ -93,30 +110,5 @@
     border-top-color: rgba(81, 81, 81, 0);
 }
 
-#MenuPopup {
-    position: absolute;
-    background-color: rgb(28, 28, 28);
-    border-color: rgb(28, 28, 28);
-    border-radius: 8px;
-    padding: 5px 8px;
-    width: 100px;
-    left: -80px;
-    transition-duration: 0.25s;
-    transition-timing-function: ease-out-back;
-}
-
-.MenuPopupButton {
-    color: rgb(210, 210, 210);
-    background-color: rgba(0, 0, 0, 0);
-    border-radius: 4px;
-    border-left-color: rgba(0, 0, 0, 0);
-    border-right-color: rgba(0, 0, 0, 0);
-    border-top-color: rgba(0, 0, 0, 0);
-    border-bottom-color: rgba(0, 0, 0, 0);
-    transition-duration: 0.25s;
-    transition-timing-function: ease-out-back;
-}
-
-.MenuPopupButton:hover {
-    background-color: rgb(56, 56, 56);
+.AssetListItemLabel {
 }

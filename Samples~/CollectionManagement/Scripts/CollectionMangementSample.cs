@@ -14,7 +14,7 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
         [SerializeField]
         UIDocument m_UiDocument;
         [SerializeField]
-        UserController m_UserController;
+        ProjectController m_ProjectController;
         [SerializeField]
         VisualTreeAsset m_LayoutTemplate;
         [SerializeField]
@@ -28,7 +28,7 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
         CollectionsContextMenuController m_ContextMenu;
         MessagePopupController m_MessagePopupController;
 
-        IAssetProject SelectedProject => m_UserController.SelectedProject;
+        IAssetProject SelectedProject => m_ProjectController.SelectedProject;
         IAssetCollection SelectedCollection => m_CollectionListUi.SelectedCollection;
 
         void Start()
@@ -53,9 +53,9 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
             m_AssetPanelUi.AssetAddedToCollection += OnAssetAddedToCollection;
             m_AssetPanelUi.RemoveAssetFromCollection += OnRemoveAssetFromCollection;
 
-            m_UserController.HideContent += HideContent;
-            m_UserController.OrganizationSelected += OnOrganizationSelected;
-            m_UserController.ProjectSelected += OnProjectSelected;
+            m_ProjectController.HideContent += HideContent;
+            m_ProjectController.OrganizationSelected += OnOrganizationSelected;
+            m_ProjectController.ProjectSelected += OnProjectSelected;
 
             m_MessagePopupController = new MessagePopupController(uiDocumentRoot);
 
@@ -64,9 +64,9 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
 
         void OnDestroy()
         {
-            m_UserController.HideContent -= HideContent;
-            m_UserController.OrganizationSelected -= OnOrganizationSelected;
-            m_UserController.ProjectSelected -= OnProjectSelected;
+            m_ProjectController.HideContent -= HideContent;
+            m_ProjectController.OrganizationSelected -= OnOrganizationSelected;
+            m_ProjectController.ProjectSelected -= OnProjectSelected;
 
             if (m_ContextMenu != null)
             {

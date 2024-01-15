@@ -8,11 +8,11 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
     public class PlatformServicesInstaller : MonoBehaviour
     {
         [SerializeField]
-        UserController m_UserController;
+        OrganizationController m_OrganizationController;
 
         void Awake()
         {
-            m_UserController.SetServices(PlatformServices.Authenticator, PlatformServices.AssetRepository, PlatformServices.OrganizationRepository);
+            m_OrganizationController.SetServices(PlatformServices.Authenticator, PlatformServices.AssetRepository, PlatformServices.OrganizationRepository);
         }
     }
 }

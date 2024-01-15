@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace Unity.Cloud.Assets
 {
@@ -22,15 +23,15 @@ namespace Unity.Cloud.Assets
             fieldsFilter.DatasetFields.Parse(select);
             fieldsFilter.FileFields.Parse(select);
 
-            foreach (var field in fieldsFilter.MetadataFields)
-            {
-                select($"metadata.{field}");
-            }
+            fieldsFilter.MetadataFields.Select(select, "metadata",
+                fieldsFilter.AssetFields.HasFlag(AssetFields.metadata),
+                fieldsFilter.DatasetFields.HasFlag(DatasetFields.metadata),
+                fieldsFilter.FileFields.HasFlag(FileFields.metadata));
 
-            foreach (var field in fieldsFilter.SystemMetadataFields)
-            {
-                select($"systemMetadata.{field}");
-            }
+            fieldsFilter.SystemMetadataFields.Select(select, "systemMetadata",
+                fieldsFilter.AssetFields.HasFlag(AssetFields.systemMetadata),
+                fieldsFilter.DatasetFields.HasFlag(DatasetFields.systemMetadata),
+                fieldsFilter.FileFields.HasFlag(FileFields.systemMetadata));
         }
 
         static void Parse(this FileFields fileFields, OnFieldFilterSelected select)
@@ -38,6 +39,9 @@ namespace Unity.Cloud.Assets
             if (fileFields.HasFlag(FileFields.all))
             {
                 select("files.*");
+                // Explicitly include these as they fail to be returned when using the wildcard.
+                select("files.downloadURL");
+                select("files.previewURL");
                 return;
             }
 
@@ -49,6 +53,14 @@ namespace Unity.Cloud.Assets
                     if (value == FileFields.authoring)
                     {
                         IncludeAuthoringFields("files.", select);
+                    }
+                    else if (value == FileFields.downloadUrl)
+                    {
+                        select("files.downloadURL");
+                    }
+                    else if (value == FileFields.previewUrl)
+                    {
+                        select("files.previewURL");
                     }
                     else
                     {
@@ -108,6 +120,16 @@ namespace Unity.Cloud.Assets
             action(prefix + "createdBy");
             action(prefix + "updated");
             action(prefix + "updatedBy");
+        }
+
+        static void Select(this IEnumerable<string> metadataKeys, OnFieldFilterSelected select, string metadataprefix, bool hasAssetFlag, bool hasDatasetFlag, bool hasFileFlag)
+        {
+            foreach (var field in metadataKeys)
+            {
+                if (hasAssetFlag) select($"{metadataprefix}.{field}");
+                if (hasDatasetFlag) select($"datasets.{metadataprefix}.{field}");
+                if (hasFileFlag) select($"files.{metadataprefix}.{field}");
+            }
         }
     }
 }

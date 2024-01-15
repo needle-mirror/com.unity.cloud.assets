@@ -3,12 +3,12 @@
 You can use the Unity Cloud Assets package to create, delete, and edit an asset collection in a project.
 
 
-| Asset Manager Project role                                                                             | Getting collections | Create/delete/edit collections | Add/remove assets in collections |
-|:-------------------------------------------------------------------------------------------------------|:--------------------|--------------------------------|:---------------------------------|
+| Organization or Asset Manager Project role                                                           | Getting collections | Create/delete/edit collections | Add/remove assets in collections |
+|:-----------------------------------------------------------------------------------------------------|:--------------------|--------------------------------|:---------------------------------|
 | [`Asset Management Viewer`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles)      | yes                 | no                             | no                               |
 | [`Asset Management Consumer`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles)    | yes                 | no                             | no                               |
 | [`Asset Management Contributor`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles) | yes                 | no                             | no                               |
-| [`Asset Management Owner`](https://docs.unity.com/cloud/en-us/accounts/roles-and-permissions)       | yes                 | yes                            | yes                              |
+| [`Organization Owner`](https://docs.unity.com/cloud/en-us/accounts/roles-and-permissions)            | yes                 | yes                            | yes                              |
 
 ## Before you start
 

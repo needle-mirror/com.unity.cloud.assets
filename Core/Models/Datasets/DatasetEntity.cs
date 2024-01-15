@@ -37,22 +37,25 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc />
         public AuthoringInfo AuthoringInfo { get; set; }
 
-        /// <inheritdoc />
-        public IDeserializable PortalMetadata { get; set; }
+        /// <summary>
+        /// The user metadata of the dataset.
+        /// </summary>
+        public IMetadataContainer Metadata => MetadataEntity;
 
-        /// <inheritdoc />
-        public IDeserializable Metadata { get; set; }
-
-        /// <inheritdoc />
-        public IDeserializable SystemMetadata { get; set; }
+        /// <summary>
+        /// The system metadata of the dataset.
+        /// </summary>
+        public IMetadataContainer SystemMetadata => SystemMetadataEntity;
 
         /// <inheritdoc />
         public IEnumerable<string> FileOrder { get; set; }
 
-        internal FileEntity[] Files { get; set; }
-
         /// <inheritdoc />
         public bool IsVisible { get; set; }
+
+        internal FileEntity[] Files { get; set; }
+        internal MetadataContainerEntity MetadataEntity { get; }
+        internal MetadataContainerEntity SystemMetadataEntity { get; }
 
         /// <summary>
         /// The name of the workflow.
@@ -68,11 +71,17 @@ namespace Unity.Cloud.Assets
             {
                 Files = files.ToArray();
             }
+
+            MetadataEntity = new DatasetMetadataContainer(Descriptor, DatasetFields.metadata, m_DataSource);
+            SystemMetadataEntity = new DatasetMetadataContainer(Descriptor, DatasetFields.systemMetadata, m_DataSource);
         }
 
         internal DatasetEntity(DatasetDescriptor datasetDescriptor)
         {
             Descriptor = datasetDescriptor;
+
+            MetadataEntity = new DatasetMetadataContainer(Descriptor, DatasetFields.metadata, null);
+            SystemMetadataEntity = new DatasetMetadataContainer(Descriptor, DatasetFields.systemMetadata, null);
         }
 
         /// <inheritdoc />
@@ -85,7 +94,7 @@ namespace Unity.Cloud.Assets
                 FileFields = FileFields.none
             };
             var data = await m_DataSource.GetDatasetAsync(Descriptor, filter, cancellationToken);
-            this.MapFrom(data, datasetFields);
+            this.MapFrom(m_DataSource, data, datasetFields);
             if (datasetFields.HasFlag(DatasetFields.files))
             {
                 await RefreshFiles(cancellationToken);
@@ -128,7 +137,13 @@ namespace Unity.Cloud.Assets
         {
             if (Files == null) await RefreshFiles(cancellationToken);
 
-            return Files?.FirstOrDefault(x => x.Descriptor.Path == filePath);
+            var file = Files?.FirstOrDefault(x => x.Descriptor.Path == filePath);
+            if (file == null)
+            {
+                throw new NotFoundException($"File with path \"{filePath}\" not found at that location.");
+            }
+
+            return file;
         }
 
         /// <inheritdoc />
@@ -158,20 +173,6 @@ namespace Unity.Cloud.Assets
         }
 
         /// <inheritdoc />
-        public async Task RemoveUserMetadataAsync(IEnumerable<string> keys, CancellationToken cancellationToken)
-        {
-            await m_DataSource.RemoveDatasetMetadataAsync(Descriptor, "metadata", keys, cancellationToken);
-            await RefreshAsync(DatasetFields.metadata, default);
-        }
-
-        /// <inheritdoc />
-        public async Task RemoveSystemMetadataAsync(IEnumerable<string> keys, CancellationToken cancellationToken)
-        {
-            await m_DataSource.RemoveDatasetMetadataAsync(Descriptor, "systemMetadata", keys, cancellationToken);
-            await RefreshAsync(DatasetFields.systemMetadata, default);
-        }
-
-        /// <inheritdoc />
         public Uri GetFileUrl(string filePath)
         {
             filePath = Uri.EscapeDataString(filePath);
@@ -190,13 +191,12 @@ namespace Unity.Cloud.Assets
 
             var checksum = await CalculateMD5ChecksumAsync(sourceStream, cancellationToken);
             cancellationToken.ThrowIfCancellationRequested();
-            var createInternal = new FileCreateData()
+            var createInternal = new FileCreateData
             {
                 Path = fileCreation.Path,
                 Description = fileCreation.Description,
-                Metadata = fileCreation.Metadata ?? new JsonObject(new Dictionary<string, string>()), // WORKAROUND until backend supports null metadata
-                PortalMetadata = fileCreation.PortalMetadata,
-                SystemMetadata = fileCreation.SystemMetadata ?? new JsonObject(new Dictionary<string, string>()), // WORKAROUND until backend supports null system metadata
+                Metadata = fileCreation.Metadata ?? new Dictionary<string, object>(),
+                SystemMetadata = fileCreation.SystemMetadata ?? new Dictionary<string, object>(),
                 UserChecksum = checksum,
                 SizeBytes = sourceStream.Length,
                 Tags = fileCreation.Tags?.ToList() ?? new List<string>(), // WORKAROUND until backend supports null tags
@@ -224,6 +224,31 @@ namespace Unity.Cloud.Assets
 
             await RefreshFiles(cancellationToken);
             return Files?.FirstOrDefault(x => x.Descriptor.Path == path);
+        }
+
+        /// <inheritdoc />
+        public async Task<ITransformation> StartTransformationAsync(WorkflowType type, CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var transformationId = await m_DataSource.StartTransformationAsync(Descriptor, type, cancellationToken);
+            var transformation = await GetTransformationAsync(transformationId, cancellationToken);
+
+            return transformation;
+        }
+
+        /// <inheritdoc />
+        public async Task<ITransformation> GetTransformationAsync(TransformationId transformationId, CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var descriptor = new TransformationDescriptor(Descriptor, transformationId);
+            var transformation = new TransformationEntity(descriptor);
+
+            var data = await m_DataSource.GetTransformationAsync(descriptor, cancellationToken);
+
+            transformation.MapFrom(data);
+            return transformation;
         }
 
         static async Task<string> CalculateMD5ChecksumAsync(Stream stream, CancellationToken cancellationToken)

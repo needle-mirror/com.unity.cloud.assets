@@ -11,6 +11,9 @@
     },
     {
       "Path": "CollectionManagement"
+    },
+    {
+      "Path": "MetadataManagement"
     }
   ]
 }

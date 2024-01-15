@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Net.Http;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using System.Threading;
 using UnityEngine;
 using UnityEngine.Networking;
 
@@ -15,12 +13,10 @@ namespace Unity.Cloud.Assets.Samples
             public Texture2D Texture2D;
             public readonly List<Action<Texture2D>> Listeners = new();
 
-            public async Task DownloadThumbnail(string url)
+            public async Task DownloadThumbnail(Uri uri)
             {
 #if USE_WEBTEXTURE
-                using var requestMessage = new HttpRequestMessage(HttpMethod.Get, new Uri(url));
-
-                using var uwr = new UnityWebRequest(url, UnityWebRequest.kHttpVerbGET);
+                using var uwr = new UnityWebRequest(uri, UnityWebRequest.kHttpVerbGET);
                 uwr.downloadHandler = new DownloadHandlerTexture();
 
                 var operation = uwr.SendWebRequest();
@@ -48,26 +44,24 @@ namespace Unity.Cloud.Assets.Samples
             }
         }
 
-        static Dictionary<string, ThumbnailDownloadEntry> m_ThumbnailCache = new();
+        static Dictionary<Uri, ThumbnailDownloadEntry> m_ThumbnailCache = new();
 
-        public static void GetThumbnail(IAsset asset, Action<Texture2D> thumbnailReadyCallback, int width)
+        public static void GetThumbnail(IAsset asset, Action<Texture2D> thumbnailReadyCallback)
         {
             if (asset.PreviewFileUrl == null) return;
 
-            var resizedUrl = $"https://transformation.unity.com/api/images?url={Uri.EscapeDataString(asset.PreviewFileUrl.ToString())}&width={width}";
-
-            if (!m_ThumbnailCache.TryGetValue(asset.PreviewFile, out var entry))
+            if (!m_ThumbnailCache.TryGetValue(asset.PreviewFileUrl, out var entry))
             {
                 // Create new download request
                 entry = new ThumbnailDownloadEntry();
-                _ = entry.DownloadThumbnail(resizedUrl);
+                _ = entry.DownloadThumbnail(asset.PreviewFileUrl);
 
                 lock (entry.Listeners)
                 {
                     entry.Listeners.Add(thumbnailReadyCallback);
                 }
 
-                m_ThumbnailCache.Add(asset.PreviewFile, entry);
+                m_ThumbnailCache.Add(asset.PreviewFileUrl, entry);
             }
             else
             {

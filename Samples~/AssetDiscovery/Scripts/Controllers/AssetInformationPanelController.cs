@@ -30,18 +30,16 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
             nameof(IAsset.Name),
             nameof(IAsset.PreviewFileUrl),
             nameof(IAsset.Metadata),
-            nameof(IAsset.PortalMetadata),
-            nameof(IAsset.SystemMetadata),
+            nameof(IAsset.SystemMetadata)
         };
 
         static readonly Type k_DatasetType = typeof(IDataset);
         static readonly HashSet<string> k_DatasetPropertiesToHide = new()
         {
             nameof(IDataset.Name),
+            nameof(IDataset.FileOrder),
             nameof(IDataset.Metadata),
-            nameof(IDataset.PortalMetadata),
-            nameof(IDataset.SystemMetadata),
-            nameof(IDataset.FileOrder)
+            nameof(IDataset.SystemMetadata)
         };
 
         const string k_NoneLabel = "None";
@@ -65,7 +63,9 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
         ScrollView m_DatasetScrollView;
         Button m_AssetDownloadButton;
 
-        readonly HashSet<IAsset> m_InProgressDownloads = new();
+        readonly HashSet<string> m_InProgressDownloads = new();
+
+        CancellationTokenSource m_CancelPopulateAsset;
 
         public void Init(VisualElement root, VisualTreeAsset informationItemTemplate, VisualTreeAsset tagsTemplate, VisualTreeAsset dataSetItemTemplate, MonoBehaviour coroutineHandler)
         {
@@ -110,6 +110,14 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
 
         public void PopulateAssetPanel(IAsset asset)
         {
+            if (m_CancelPopulateAsset != null)
+            {
+                m_CancelPopulateAsset.Cancel();
+                m_CancelPopulateAsset.Dispose();
+            }
+
+            m_CancelPopulateAsset = new CancellationTokenSource();
+
             m_AssetInformationContainer.Q<Label>("AssetInformationLabel").text = asset.Name;
 
             m_AssetInformationPanelScrollView.Clear();
@@ -137,9 +145,11 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
                 }
             }
 
+            _ = PopulateMetadata(asset.Metadata, asset.SystemMetadata, m_CancelPopulateAsset.Token);
+
             m_AssetDownloadButton.tooltip = "";
 
-            UpdateDownloadButton(m_AssetDownloadButton, !m_InProgressDownloads.Contains(m_SelectedAsset));
+            UpdateDownloadButton(m_AssetDownloadButton, !m_InProgressDownloads.Contains(m_SelectedAsset.Descriptor.AssetId.ToString()));
         }
 
         public async Task PopulateDatasetsPanel(IAsyncEnumerable<IDataset> datasets)
@@ -180,14 +190,13 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
                     }
                 }
 
+                _ = PopulateMetadata(dataset.Metadata, dataset.SystemMetadata, m_CancelPopulateAsset.Token);
+
                 var datasetDownloadButton = item.Q<Button>("DatasetDownloadButton");
                 datasetDownloadButton.clickable.clicked += () =>
                 {
                     OnDatasetDownloadButtonClicked(dataset, datasetDownloadButton);
                 };
-
-                // Disable dataset download button for now
-                datasetDownloadButton.SetEnabled(false);
 
                 m_DatasetScrollView.Add(item);
             }
@@ -217,8 +226,7 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
                     _ = ListAssetCollections(collectionEntry);
                     break;
                 case IEnumerable<string> enumerable:
-                    var tagsEntry = AddItem(items, propertyName, string.Empty);
-                    PopulateTags(tagsEntry, enumerable);
+                    AddItemList(items, propertyName, enumerable);
                     break;
                 default:
                     AddItem(items, propertyName, propertyValue.ToString());
@@ -226,6 +234,66 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
             }
 
             return items;
+        }
+
+        async Task PopulateMetadata(IMetadataContainer metadataContainer, IMetadataContainer systemMetadataContainer, CancellationToken cancellationToken)
+        {
+            if (cancellationToken.IsCancellationRequested) return;
+
+            var metadata = await metadataContainer.Query().ExecuteAsync(cancellationToken);
+
+            PopulateMetadata(metadata, "Metadata");
+
+            if (cancellationToken.IsCancellationRequested) return;
+
+            var systemMetadata = await systemMetadataContainer.Query().ExecuteAsync(cancellationToken);
+
+            PopulateMetadata(systemMetadata, "System Metadata");
+        }
+
+        void PopulateMetadata(IReadOnlyDictionary<string, IMetadataValue> metadata, string sectionTitle)
+        {
+            var properties = new List<TemplateContainer>();
+
+            foreach (var kvp in metadata)
+            {
+                switch (kvp.Value.ValueType)
+                {
+                    case MetadataValueType.MultiSelection:
+                        var multiSelectionEntry = kvp.Value.AsMultiSelection();
+                        AddItemList(properties, kvp.Key, multiSelectionEntry.SelectedValues);
+                        break;
+                    case MetadataValueType.Url:
+                        var urlEntry = kvp.Value.AsUrl();
+                        var label = string.IsNullOrEmpty(urlEntry.Label) ? urlEntry.Uri.ToString() : urlEntry.Label;
+                        var urlString = $"<a href=\"{urlEntry.Uri}\">{label}</a>";
+                        AddItem(properties, kvp.Key, urlString);
+                        break;
+                    default:
+                        AddItem(properties, kvp.Key, kvp.Value.ToString());
+                        break;
+                }
+            }
+
+            if (properties.Any())
+            {
+                m_AssetInformationPanelScrollView.Add(CreateLabel(sectionTitle));
+            }
+
+            foreach (var property in properties)
+            {
+                m_AssetInformationPanelScrollView.Add(property);
+            }
+        }
+
+        TemplateContainer CreateLabel(string key)
+        {
+            var item = m_InformationItemTemplate.Instantiate();
+            var label = item.Q<Label>("InformationPropertyLabel");
+            label.parent.style.flexGrow = 1;
+            label.text = key;
+            item.Q("InformationValueLabel").style.display = DisplayStyle.None;
+            return item;
         }
 
         TemplateContainer AddItem(ICollection<TemplateContainer> items, string key, string value)
@@ -237,17 +305,19 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
             return item;
         }
 
-        void PopulateTags(VisualElement item, IEnumerable<string> propertyValueTags)
+        void AddItemList(ICollection<TemplateContainer> items, string key, IEnumerable<string> values)
         {
+            var item = AddItem(items, key, string.Empty);
+
             var label = item.Q<Label>("InformationValueLabel");
-            var valueTags = propertyValueTags.ToList();
-            if (valueTags.Count != 0)
+            var valueList = values.ToList();
+            if (valueList.Count != 0)
             {
                 label.style.display = DisplayStyle.None;
-                foreach (var tag in valueTags)
+                foreach (var value in valueList)
                 {
                     var tagItem = m_InformationTagsTemplate.Instantiate();
-                    tagItem.Q<Button>("TagContainer").text = tag;
+                    tagItem.Q<Button>("TagContainer").text = value;
                     item.Q<VisualElement>("InformationValue").Add(tagItem);
                 }
             }
@@ -277,7 +347,7 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
 
             var path = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
             var assetToDownload = m_SelectedAsset;
-            m_InProgressDownloads.Add(assetToDownload);
+            m_InProgressDownloads.Add(assetToDownload.Descriptor.AssetId.ToString());
 
             try
             {
@@ -295,11 +365,11 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
             }
             catch (Exception e)
             {
-                Debug.LogError(e);
+                e.LogException();
             }
             finally
             {
-                m_InProgressDownloads.Remove(assetToDownload);
+                m_InProgressDownloads.Remove(assetToDownload.Descriptor.AssetId.ToString());
                 if (m_SelectedAsset == assetToDownload)
                 {
                     UpdateDownloadButton(m_AssetDownloadButton, true);
@@ -311,42 +381,33 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
         {
             UpdateDownloadButton(button, false);
 
-            await Task.CompletedTask;
+            var path = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+            m_InProgressDownloads.Add(dataset.Descriptor.DatasetId.ToString());
 
-            // TODO once the endpoint becomes available
-            // var path = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-            // var assetToDownload = m_SelectedAsset;
-            // m_InProgressDownloads.Add(assetToDownload);
-            //
-            // try
-            // {
-            //     await assetToDownload.GetAssetDownloadUrlsAsync(CancellationToken.None);
-            //
-            //     await foreach (var file in assetToDownload.ListFilesAsync(Range.All, CancellationToken.None))
-            //     {
-            //         await using var destination = File.OpenWrite(Path.Combine(path, file.Path));
-            //
-            //         // Evaluate the need of having a UI progress bar corresponding to the download progress.
-            //         await file.DownloadAsync(destination, null, CancellationToken.None);
-            //     }
-            //
-            //     m_CoroutineHandler.StartCoroutine(ShowSuccessfulDownload());
-            // }
-            // catch (Exception e)
-            // {
-            //     Debug.LogError(e);
-            // }
-            // finally
-            // {
-            //     m_InProgressDownloads.Remove(assetToDownload);
-            //     if (m_SelectedAsset == assetToDownload)
-            //     {
-            //         UpdateDownloadButton(m_DatasetDownloadButton, true);
-            //     }
-            // }
+            try
+            {
+                await foreach (var file in dataset.ListFilesAsync(Range.All, CancellationToken.None))
+                {
+                    await using var destination = File.OpenWrite(Path.Combine(path, file.Descriptor.Path));
+
+                    // Evaluate the need of having a UI progress bar corresponding to the download progress.
+                    await file.DownloadAsync(destination, null, CancellationToken.None);
+                }
+
+                m_CoroutineHandler.StartCoroutine(ShowSuccessfulDownload());
+            }
+            catch (Exception e)
+            {
+                e.LogException();
+            }
+            finally
+            {
+                m_InProgressDownloads.Remove(dataset.Descriptor.DatasetId.ToString());
+                UpdateDownloadButton(button, true);
+            }
         }
 
-        void UpdateDownloadButton(Button button, bool enable)
+        static void UpdateDownloadButton(Button button, bool enable)
         {
             button.SetEnabled(enable);
             button.text = enable ? "Download" : "Downloading...";
@@ -371,7 +432,7 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
             }
             catch (Exception e)
             {
-                Debug.LogError(e);
+                e.LogException();
             }
             finally
             {

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -25,7 +24,6 @@ namespace Unity.Cloud.Assets
                 Path = fileCreation.Path,
                 Description = fileCreation.Description,
                 Metadata = fileCreation.Metadata,
-                PortalMetadata = fileCreation.PortalMetadata,
                 SystemMetadata = fileCreation.SystemMetadata,
                 Tags = fileCreation.Tags != null ? new List<string>(fileCreation.Tags) : new List<string>(),
                 UserChecksum = fileCreation.UserChecksum,
@@ -37,7 +35,13 @@ namespace Unity.Cloud.Assets
         public async Task<IFileData> GetFileAsync(FileDescriptor fileDescriptor, FieldsFilter includedFieldsFilter, CancellationToken token)
         {
             var assetData = await GetAssetAsync(fileDescriptor.DatasetDescriptor.AssetDescriptor, includedFieldsFilter, token);
-            return assetData.Files.FirstOrDefault(f => f.Path == fileDescriptor.Path);
+            var file = assetData.Files.FirstOrDefault(f => f.Path == fileDescriptor.Path);
+            if (file == null)
+            {
+                throw new NotFoundException($"File with path \"{fileDescriptor.Path}\" not found at that location.");
+            }
+
+            return file;
         }
 
         /// <inheritdoc />

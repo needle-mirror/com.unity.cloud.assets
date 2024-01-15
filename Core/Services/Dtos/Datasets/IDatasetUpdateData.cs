@@ -10,6 +10,6 @@ namespace Unity.Cloud.Assets
         IEnumerable<string> FileOrder { get; }
 
         [DataMember(Name = "isVisible")]
-        bool IsVisible { get; }
+        bool? IsVisible { get; }
     }
 }
