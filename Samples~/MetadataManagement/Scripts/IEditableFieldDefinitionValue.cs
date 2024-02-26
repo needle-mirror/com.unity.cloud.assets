@@ -30,7 +30,7 @@ namespace Samples.MetadataManagement.Scripts
 
         public void Initialize(IFieldDefinition fieldDefinition)
         {
-            var deletedTag = fieldDefinition.Status == "Deleted" ? " (Deleted)" : "";
+            var deletedTag = fieldDefinition.IsDeleted ? " (Deleted)" : "";
             m_DisplayName.text = $"{fieldDefinition.DisplayName}{deletedTag}";
             m_EditableDisplayName.value = fieldDefinition.DisplayName;
         }

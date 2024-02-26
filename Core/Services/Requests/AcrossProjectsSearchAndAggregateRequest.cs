@@ -23,7 +23,7 @@ namespace Unity.Cloud.Assets
             AcrossProjectsSearchAndAggregateRequestParameters parameters = default)
             : base(organizationId)
         {
-            m_PathAndQueryParams += $"/assets/aggregations/search";
+            m_RequestUrl += $"/assets/aggregations/search";
 
             Parameters = parameters;
         }

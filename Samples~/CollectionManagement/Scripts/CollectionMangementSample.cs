@@ -50,8 +50,8 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
             m_CollectionListUi.CollectionSelected += OnCollectionSelected;
 
             m_AssetPanelUi.Initialize(uiDocumentRoot);
-            m_AssetPanelUi.AssetAddedToCollection += OnAssetAddedToCollection;
-            m_AssetPanelUi.RemoveAssetFromCollection += OnRemoveAssetFromCollection;
+            m_AssetPanelUi.AddAssetsToCollection += AddAssetsToCollection;
+            m_AssetPanelUi.RemoveAssetFromCollection += RemoveAssetFromCollection;
 
             m_ProjectController.HideContent += HideContent;
             m_ProjectController.OrganizationSelected += OnOrganizationSelected;
@@ -77,8 +77,8 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
 
             m_CollectionListUi.CollectionSelected -= OnCollectionSelected;
             m_AssetPanelUi.Cleanup();
-            m_AssetPanelUi.AssetAddedToCollection -= OnAssetAddedToCollection;
-            m_AssetPanelUi.RemoveAssetFromCollection -= OnRemoveAssetFromCollection;
+            m_AssetPanelUi.AddAssetsToCollection -= AddAssetsToCollection;
+            m_AssetPanelUi.RemoveAssetFromCollection -= RemoveAssetFromCollection;
         }
 
         async void OnProjectSelected()
@@ -132,9 +132,9 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
             m_AssetPanelUi.OnCollectionSelected(SelectedCollection);
         }
 
-        async void OnCollectionUpdated(IAssetCollection assetCollection)
+        async void OnCollectionUpdated(IAssetCollection assetCollection, IAssetCollectionUpdate assetCollectionUpdate)
         {
-            await assetCollection.UpdateAsync(CancellationToken.None);
+            await assetCollection.UpdateAsync(assetCollectionUpdate, CancellationToken.None);
 
             // Force refresh the list of collections
             OnProjectSelected();
@@ -148,26 +148,28 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
             OnProjectSelected();
         }
 
-        async void OnRemoveAssetFromCollection(IAsset asset)
+        async void RemoveAssetFromCollection(IAsset asset)
         {
-            await SelectedCollection.RemoveAssetsAsync(new[] {asset},
+            await SelectedCollection.UnlinkAssetsAsync(new[] {asset},
                 CancellationToken.None);
 
-            // Refresh the list of collections for the asset
-            await asset.RefreshAssetCollectionsAsync(CancellationToken.None);
+            // Refresh the asset
+            _ = asset.RefreshAsync(default);
 
-            await Task.Delay(1000);
             // Refresh the list of assets in the collection
             OnCollectionSelected();
         }
 
-        async void OnAssetAddedToCollection(IEnumerable<IAsset> assets)
+        async void AddAssetsToCollection(IEnumerable<IAsset> assets)
         {
             var enumerable = assets as IAsset[] ?? assets.ToArray();
-            await SelectedCollection.AddAssetsAsync(enumerable,
-                CancellationToken.None);
+            await SelectedCollection.LinkAssetsAsync(enumerable, CancellationToken.None);
 
-            await Task.Delay(1000);
+            foreach (var asset in enumerable)
+            {
+                _ = asset.RefreshAsync(default);
+            }
+
             // Refresh the list of assets in the collection
             OnCollectionSelected();
         }

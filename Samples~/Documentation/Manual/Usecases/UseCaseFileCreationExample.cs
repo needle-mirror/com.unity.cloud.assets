@@ -228,7 +228,7 @@ namespace Unity.Cloud.Documentation.Assets
         {
             Datasets = new List<IDataset>();
 
-            await CurrentAsset.RefreshAsync(new FieldsFilter {AssetFields = AssetFields.datasets}, CancellationToken.None);
+            await CurrentAsset.RefreshAsync(CancellationToken.None);
             var asyncList = CurrentAsset.ListDatasetsAsync(Range.All, CancellationToken.None);
             await foreach (var dataset in asyncList)
             {
@@ -246,7 +246,7 @@ namespace Unity.Cloud.Documentation.Assets
         {
             Files = new List<IFile>();
 
-            await CurrentAsset.RefreshAsync(new FieldsFilter {AssetFields = AssetFields.files, FileFields = FileFields.fileSize}, CancellationToken.None);
+            await CurrentAsset.RefreshAsync(CancellationToken.None);
             var asyncList = CurrentAsset.ListFilesAsync(Range.All, CancellationToken.None);
             await foreach (var file in asyncList)
             {

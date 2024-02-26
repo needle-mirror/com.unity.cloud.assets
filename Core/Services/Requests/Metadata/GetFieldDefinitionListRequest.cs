@@ -7,12 +7,12 @@ namespace Unity.Cloud.Assets
         public GetFieldDefinitionListRequest(OrganizationId organizationId, int limit, SortingOrder sortingOrder, string nextToken, bool includeDeleted)
             : base(organizationId)
         {
-            m_PathAndQueryParams += "/templates/fields";
+            m_RequestUrl += "/templates/fields";
 
-            AddParamToQueryParams("IncludeDeleted", includeDeleted.ToString());
-            AddParamToQueryParams("SortingOrder", sortingOrder.ToString());
-            AddParamToQueryParams("Limit", limit.ToString());
-            AddParamToQueryParams("Next", nextToken);
+            AddParamToQuery("IncludeDeleted", includeDeleted.ToString());
+            AddParamToQuery("SortingOrder", sortingOrder.ToString());
+            AddParamToQuery("Limit", limit.ToString());
+            AddParamToQuery("Next", nextToken);
         }
     }
 }

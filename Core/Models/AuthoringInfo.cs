@@ -1,4 +1,5 @@
 using System;
+using Unity.Cloud.Common;
 
 namespace Unity.Cloud.Assets
 {
@@ -7,7 +8,7 @@ namespace Unity.Cloud.Assets
         /// <summary>
         /// The id of the user who created.
         /// </summary>
-        public string CreatedBy { get; }
+        public UserId CreatedBy { get; }
 
         /// <summary>
         /// The date and time of creation.
@@ -17,7 +18,7 @@ namespace Unity.Cloud.Assets
         /// <summary>
         /// The id of the user who updated.
         /// </summary>
-        public string UpdatedBy { get; }
+        public UserId UpdatedBy { get; }
 
         /// <summary>
         /// The date and time of update.
@@ -26,9 +27,9 @@ namespace Unity.Cloud.Assets
 
         internal AuthoringInfo(string createdBy, DateTime? created, string updatedBy, DateTime? updated)
         {
-            CreatedBy = createdBy;
+            CreatedBy = new UserId(createdBy);
             Created = created ?? default;
-            UpdatedBy = updatedBy;
+            UpdatedBy = new UserId(updatedBy);
             Updated = updated ?? default;
         }
     }

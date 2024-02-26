@@ -1,5 +1,5 @@
 using System;
-using Unity.Cloud.Common;
+using System.Threading.Tasks;
 using Unity.Cloud.Identity;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -11,7 +11,7 @@ namespace Unity.Cloud.Assets.Samples
         const string k_AwaitingLoginText = "Logging in...";
 
         ICompositeAuthenticator m_Authenticator;
-        IAuthenticatedUserInfoProvider m_UserInfoProvider;
+        IUserInfoProvider m_UserInfoProvider => m_Authenticator;
 
         [SerializeField] UIDocument m_LoginUiDocument;
 
@@ -36,7 +36,6 @@ namespace Unity.Cloud.Assets.Samples
             RegisterButtons();
 
             m_Authenticator = PlatformServices.Authenticator;
-            m_UserInfoProvider = PlatformServices.AuthenticatedUserInfoProvider;
 
             if (m_Authenticator.RequiresGUI)
             {
@@ -58,7 +57,7 @@ namespace Unity.Cloud.Assets.Samples
             UnregisterButtons();
         }
 
-        void Login()
+        void Login(EventBase _)
         {
             try
             {
@@ -71,7 +70,7 @@ namespace Unity.Cloud.Assets.Samples
             }
         }
 
-        void Logout()
+        void Logout(EventBase _)
         {
             try
             {
@@ -84,12 +83,12 @@ namespace Unity.Cloud.Assets.Samples
             }
         }
 
-        void OnAuthenticationChanged(AuthenticationState newAuthenticationState)
+        async void OnAuthenticationChanged(AuthenticationState newAuthenticationState)
         {
-            ApplyAuthenticationState(newAuthenticationState);
+            await ApplyAuthenticationState(newAuthenticationState);
         }
 
-        void ApplyAuthenticationState(AuthenticationState state)
+        async Task ApplyAuthenticationState(AuthenticationState state)
         {
             switch (state)
             {
@@ -101,7 +100,8 @@ namespace Unity.Cloud.Assets.Samples
                     UpdateLogout();
                     break;
                 case AuthenticationState.LoggedIn:
-                    m_LoginUiDocumentRoot.Q<Label>("UserName").text = GetUserName();
+                    var userInfo = await m_UserInfoProvider.GetUserInfoAsync();
+                    m_LoginUiDocumentRoot.Q<Label>("UserName").text =  userInfo.Name;
                     UpdateLogin();
                     break;
                 case AuthenticationState.LoggedOut:
@@ -135,25 +135,16 @@ namespace Unity.Cloud.Assets.Samples
             m_LoginBarContainer.style.justifyContent = Justify.FlexEnd;
         }
 
-        string GetUserName()
-        {
-            return m_UserInfoProvider.GetUserInfo(AuthenticatedUserInfoClaims.Name);
-        }
-
         void RegisterButtons()
         {
-            m_LoginButton.clickable.clickedWithEventInfo +=
-                (evt => Login());
-            m_LogoutButton.clickable.clickedWithEventInfo +=
-                (evt => Logout());
+            m_LoginButton.clickable.clickedWithEventInfo += Login;
+            m_LogoutButton.clickable.clickedWithEventInfo += Logout;
         }
 
         void UnregisterButtons()
         {
-            m_LoginButton.clickable.clickedWithEventInfo -=
-                (evt => Login());
-            m_LogoutButton.clickable.clickedWithEventInfo -=
-                (evt => Logout());
+            m_LoginButton.clickable.clickedWithEventInfo -= Login;
+            m_LogoutButton.clickable.clickedWithEventInfo -= Logout;
         }
     }
 }

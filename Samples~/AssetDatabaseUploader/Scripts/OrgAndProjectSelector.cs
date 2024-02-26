@@ -16,8 +16,6 @@ namespace Unity.Cloud.Assets.Samples.AssetDatabaseUploader
     {
         public event Action OnOrgOrProjectChanged;
 
-        static readonly Pagination k_ProjectPagination = new(nameof(IAssetProject.Name), Range.All);
-
         IOrganizationRepository m_OrganizationRepository;
         IAssetRepository m_AssetRepository;
         AssetDatabaseUploaderSample m_AssetDatabaseUploaderSample;
@@ -74,9 +72,14 @@ namespace Unity.Cloud.Assets.Samples.AssetDatabaseUploader
         {
             try
             {
-                var orgsArray = await m_OrganizationRepository.ListOrganizationsAsync();
+                var organizations = new List<IOrganization>();
+                var organizationsAsyncEnumerable = m_OrganizationRepository.ListOrganizationsAsync(Range.All);
+                await foreach (var organization in organizationsAsyncEnumerable)
+                {
+                    organizations.Add(organization);
+                }
 
-                m_Organizations = orgsArray?.ToList();
+                m_Organizations = organizations?.ToList();
                 if (m_Organizations?.Count > 0)
                 {
                     var selectedOrg = m_Organizations.FirstOrDefault(org => org.Id.ToString() == m_SelectedOrganizationId);
@@ -113,7 +116,7 @@ namespace Unity.Cloud.Assets.Samples.AssetDatabaseUploader
 
             try
             {
-                var projects = m_AssetRepository.ListAssetProjectsAsync(m_SelectedOrganization.Id, k_ProjectPagination, cancellationTokenSource.Token);
+                var projects = m_AssetRepository.ListAssetProjectsAsync(m_SelectedOrganization.Id, Range.All, cancellationTokenSource.Token);
                 m_Projects = new List<IAssetProject>();
                 await foreach (var project in projects)
                 {

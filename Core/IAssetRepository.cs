@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -6,18 +7,16 @@ using Unity.Cloud.Common;
 namespace Unity.Cloud.Assets
 {
     /// <summary>
-    /// An interface that provides all the methods to interact with an <see cref="IProjectData"/>.
+    /// An interface that provides all the methods to interact with asset entities.
     /// </summary>
     public interface IAssetRepository
     {
         /// <summary>
-        /// Lists an organization's <see cref="IAssetProject"/> for current user.
+        /// Returns a builder to create a query to search an organization's <see cref="IAssetProject"/>.
         /// </summary>
         /// <param name="organizationId">The id of the organization. </param>
-        /// <param name="pagination">The pagination parameters. </param>
-        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
-        /// <returns>A task whose result is an async enumeration of <see cref="IAssetProject"/>. </returns>
-        IAsyncEnumerable<IAssetProject> ListAssetProjectsAsync(OrganizationId organizationId, Pagination pagination, CancellationToken cancellationToken);
+        /// <returns>An <see cref="AssetProjectQueryBuilder"/>. </returns>
+        AssetProjectQueryBuilder QueryAssetProjects(OrganizationId organizationId);
 
         /// <summary>
         /// Gets an organization's <see cref="IAssetProject"/> for current user.
@@ -37,14 +36,6 @@ namespace Unity.Cloud.Assets
         Task<IAssetProject> CreateAssetProjectAsync(OrganizationId organizationId, IAssetProjectCreation projectCreation, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Lists a project's <see cref="IAssetCollection"/>.
-        /// </summary>
-        /// <param name="projectDescriptor">The object containing the necessary information for identifying the project. </param>
-        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
-        /// <returns>A task whose result is an async enumeration of <see cref="IAssetCollection"/>. </returns>
-        IAsyncEnumerable<IAssetCollection> ListAssetCollectionsAsync(ProjectDescriptor projectDescriptor, CancellationToken cancellationToken);
-
-        /// <summary>
         /// Gets an <see cref="IAssetCollection"/>.
         /// </summary>
         /// <param name="collectionDescriptor">The object containing the necessary information for identifying the collection. </param>
@@ -53,73 +44,57 @@ namespace Unity.Cloud.Assets
         Task<IAssetCollection> GetAssetCollectionAsync(CollectionDescriptor collectionDescriptor, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Lists an organization's <see cref="Asset"/> for current user.
+        /// Returns a builder to create a query to search an organization's <see cref="IAsset"/>.
         /// </summary>
-        /// <param name="organizationId">The id of the organization. </param>
-        /// <param name="projectIds">A list of project ids. </param>
-        /// <param name="assetSearchFilter">The search filter. </param>
-        /// <param name="pagination">The pagination parameters. </param>
-        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
-        /// <returns>A task whose result is an async enumeration of <see cref="Asset"/>. </returns>
-        IAsyncEnumerable<IAsset> SearchAssetsAsync(OrganizationId organizationId, IEnumerable<ProjectId> projectIds, IAssetSearchFilter assetSearchFilter, Pagination pagination, CancellationToken cancellationToken);
+        /// <param name="projectDescriptors">The projects to search. They must all belong to the same organization. </param>
+        /// <returns>An <see cref="AssetQueryBuilder"/>. </returns>
+        AssetQueryBuilder QueryAssets(IEnumerable<ProjectDescriptor> projectDescriptors);
 
         /// <summary>
-        /// Lists an organization's <see cref="Asset"/> for a user.
+        /// Returns a builder to create a query to count an organization's <see cref="IAsset"/>.
         /// </summary>
-        /// <param name="organizationId">The id of the organization. </param>
-        /// <param name="projectIds">A list of project ids. </param>
-        /// <param name="assetSearchFilter">The search filter. </param>
-        /// <param name="parameters">The aggregation parameters. </param>
-        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
-        /// <returns>A task whose result is an aggregation. </returns>
-        Task<Aggregation> CountAssetsAsync(OrganizationId organizationId, IEnumerable<ProjectId> projectIds, IAssetSearchFilter assetSearchFilter, AggregationParameters parameters, CancellationToken cancellationToken);
+        /// <param name="projectDescriptors">The projects to search. They must all belong to the same organization. </param>
+        /// <returns>An <see cref="GroupAndCountAssetsQueryBuilder"/>. </returns>
+        GroupAndCountAssetsQueryBuilder GroupAndCountAssets(IEnumerable<ProjectDescriptor> projectDescriptors);
 
         /// <summary>
         /// Retrieves an <see cref="IAsset"/> by its id and version.
         /// </summary>
         /// <param name="assetDescriptor">The descriptor containing identifiers for the asset. </param>
-        /// <param name="includedFieldsFilter">The filter describing which fields to return populated. </param>
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task whose result is an <see cref="IAsset"/>. </returns>
-        Task<IAsset> GetAssetAsync(AssetDescriptor assetDescriptor, FieldsFilter includedFieldsFilter, CancellationToken cancellationToken);
+        Task<IAsset> GetAssetAsync(AssetDescriptor assetDescriptor, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Retrieves an <see cref="IDataset"/> from a specified asset version.
+        /// Retrieves an <see cref="IDataset"/> from an asset version.
         /// </summary>
         /// <param name="datasetDescriptor">The descriptor containing identifiers for the dataset. </param>
-        /// <param name="includedFields">The filter describing which fields to return populated. </param>
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
-        /// <returns>A task whose result is a <see cref="IDataset"/>. </returns>
-        Task<IDataset> GetDatasetAsync(DatasetDescriptor datasetDescriptor, DatasetFields includedFields, CancellationToken cancellationToken);
+        /// <returns>A task whose result is an <see cref="IDataset"/>. </returns>
+        Task<IDataset> GetDatasetAsync(DatasetDescriptor datasetDescriptor, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Retrieves an <see cref="IDataset"/> with a specified tag from a specified asset version.
+        /// Retrieves an <see cref="ITransformation"/> from a dataset.
         /// </summary>
-        /// <param name="assetDescriptor">The descriptor containing identifiers for the dataset. </param>
-        /// <param name="systemTag">The id of the dataset to get. </param>
-        /// <param name="includedFields">The filter describing which fields to return populated. </param>
+        /// <param name="transformationDescriptor">The descriptor containing identifiers for the transformation. </param>
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
-        /// <returns>A task whose result is a <see cref="IDataset"/>. </returns>
-        Task<IDataset> GetDatasetBySystemTagAsync(AssetDescriptor assetDescriptor, string systemTag, DatasetFields includedFields, CancellationToken cancellationToken);
+        /// <returns>A task whose result is an <see cref="ITransformation"/>. </returns>
+        Task<ITransformation> GetTransformationAsync(TransformationDescriptor transformationDescriptor, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Retrieves an <see cref="IFile"/> from a specified dataset.
+        /// Retrieves an <see cref="IFile"/> from a dataset.
         /// </summary>
         /// <param name="fileDescriptor">The descriptor containing identifiers for the file. </param>
-        /// <param name="includedFields">The filter describing which fields to return populated. </param>
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
-        /// <returns>A task whose result is a <see cref="IFile"/>. </returns>
-        Task<IFile> GetFileAsync(FileDescriptor fileDescriptor, FileFields includedFields, CancellationToken cancellationToken);
+        /// <returns>A task whose result is an <see cref="IFile"/>. </returns>
+        Task<IFile> GetFileAsync(FileDescriptor fileDescriptor, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Lists an organization's existing <see cref="IFieldDefinition"/>.
+        /// Returns a builder to create a query to search an organization's <see cref="IFieldDefinition"/>.
         /// </summary>
         /// <param name="organizationId">The id of the organization. </param>
-        /// <param name="pagination">The pagination parameters. </param>
-        /// <param name="includeDeleted">Whether to include deleted fields. </param>
-        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
-        /// <returns>A task whose result is an async enumeration of <see cref="IFieldDefinition"/>. </returns>
-        IAsyncEnumerable<IFieldDefinition> ListFieldDefinitionsAsync(OrganizationId organizationId, Pagination pagination, bool includeDeleted, CancellationToken cancellationToken);
+        /// <returns>A <see cref="FieldDefinitionQueryBuilder"/>. </returns>
+        FieldDefinitionQueryBuilder QueryFieldDefinitions(OrganizationId organizationId);
 
         /// <summary>
         /// Retrieves an <see cref="IFieldDefinition"/>.

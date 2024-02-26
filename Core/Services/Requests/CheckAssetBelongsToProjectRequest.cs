@@ -15,7 +15,7 @@ namespace Unity.Cloud.Assets
         public CheckAssetBelongsToProjectRequest(ProjectId projectId, AssetId assetId)
             : base(projectId)
         {
-            m_PathAndQueryParams += $"/assets/{assetId}/check";
+            m_RequestUrl += $"/assets/{assetId}/check";
         }
     }
 }

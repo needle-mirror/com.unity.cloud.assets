@@ -208,7 +208,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
         async Task OnAssetUpdatedAsync(IAsset asset)
         {
-            await asset.RefreshAsync(m_AssetController.FieldsToInclude, CancellationToken.None);
+            await asset.RefreshAsync(CancellationToken.None);
 
             m_AssetPanelController.OpenAsset(asset);
             m_AssetController.OnAssetUpdated(asset);

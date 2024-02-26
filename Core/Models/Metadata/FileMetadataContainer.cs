@@ -9,10 +9,10 @@ namespace Unity.Cloud.Assets
     {
         readonly FileDescriptor m_Descriptor;
 
-        protected override OrganizationId OrganizationId => m_Descriptor.OrganizationGenesisId;
+        protected override OrganizationId OrganizationId => m_Descriptor.OrganizationId;
 
-        internal FileMetadataContainer(FileDescriptor fileDescriptor, FileFields field, IAssetDataSource assetDataSource, Dictionary<string, MetadataValue> properties = null)
-            : base(assetDataSource, field == FileFields.metadata ? MetadataContainerSpecification.metadata : MetadataContainerSpecification.systemMetadata, properties)
+        internal FileMetadataContainer(FileDescriptor fileDescriptor, FileFields field, IAssetDataSource assetDataSource)
+            : base(assetDataSource, MetadataContainerSpecification.metadata)
         {
             m_Descriptor = fileDescriptor;
             m_BuildFieldsFilter = () => new FieldsFilter
@@ -34,9 +34,6 @@ namespace Unity.Cloud.Assets
             {
                 case MetadataContainerSpecification.metadata:
                     data.Metadata = properties;
-                    break;
-                case MetadataContainerSpecification.systemMetadata:
-                    data.SystemMetadata = properties;
                     break;
             }
             return m_AssetDataSource.UpdateFileAsync(m_Descriptor, data, cancellationToken);

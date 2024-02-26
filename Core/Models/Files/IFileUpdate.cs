@@ -3,18 +3,14 @@ using System.Collections.Generic;
 namespace Unity.Cloud.Assets
 {
     /// <summary>
-    /// File properties that are common across all the file-entities: creation, update, pending, and uploaded.
+    /// File properties for updating.
     /// </summary>
     public interface IFileUpdate
     {
-        /// <summary>
-        /// The description of the file.
-        /// </summary>
+        /// <inheritdoc cref="IFile.Description"/>
         string Description { get; }
 
-        /// <summary>
-        /// The tags of the file.
-        /// </summary>
+        /// <inheritdoc cref="IFile.Tags"/>
         IEnumerable<string> Tags { get; }
     }
 }

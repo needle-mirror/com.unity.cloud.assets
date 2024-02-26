@@ -11,7 +11,7 @@ namespace Unity.Cloud.Assets
     /// </summary>
     abstract class ApiRequest
     {
-        protected string m_PathAndQueryParams;
+        protected string m_RequestUrl;
         readonly List<string> m_QueryParams = new();
 
         /// <summary>
@@ -21,7 +21,7 @@ namespace Unity.Cloud.Assets
         /// <returns>The full request url. </returns>
         public string ConstructUrl(string requestBasePath)
         {
-            var url = requestBasePath + m_PathAndQueryParams;
+            var url = requestBasePath + m_RequestUrl;
             if (m_QueryParams.Count > 0)
             {
                 url += $"?{string.Join("&", m_QueryParams)}";
@@ -45,7 +45,7 @@ namespace Unity.Cloud.Assets
         /// </summary>
         /// <param name="key">The key to be added.</param>
         /// <param name="value">The value to be added.</param>
-        protected void AddParamToQueryParams(string key, string value)
+        protected void AddParamToQuery(string key, string value)
         {
             if (string.IsNullOrEmpty(value)) return;
 
@@ -56,14 +56,17 @@ namespace Unity.Cloud.Assets
         /// Constructs a string representing an array path parameter and adds it to the query params.
         /// </summary>
         /// <param name="key">The key to be added.</param>
-        /// <param name="pathParam">The list of values to convert to string.</param>
-        protected void AddParamToQueryParams(string key, IEnumerable<string> pathParam)
+        /// <param name="pathParams">The list of values to convert to string.</param>
+        protected void AddParamToQuery(string key, IEnumerable<string> pathParams)
         {
-            var enumerable = pathParam?.Where(x => !string.IsNullOrEmpty(x)).Select(Uri.EscapeDataString).ToArray();
+            var enumerable = pathParams?.ToArray();
 
             if (enumerable == null || enumerable.Length == 0) return;
 
-            m_QueryParams.Add($"{key}={string.Join(",", enumerable)}");
+            foreach (var value in enumerable)
+            {
+                AddParamToQuery(key, value);
+            }
         }
     }
 }

@@ -6,20 +6,15 @@ namespace Unity.Cloud.Assets
 {
     public class DatasetUpdate : DatasetInfo, IDatasetUpdate
     {
+        /// <inheritdoc />
         public IReadOnlyList<string> FileOrder { get; set; }
 
-        public bool IsVisible { get; set; }
-
         public DatasetUpdate(string name)
-            : base(name)
-        {
-            Tags ??= new List<string>();
-        }
+            : base(name) { }
 
         public DatasetUpdate(IDataset dataset)
             : base(dataset)
         {
-            Tags ??= new List<string>();
             FileOrder = dataset.FileOrder?.ToList();
             IsVisible = dataset.IsVisible;
         }

@@ -19,7 +19,7 @@ namespace Unity.Cloud.Assets.Samples.MetadataManagement
                 label.enableRichText = true;
 
                 var fieldDefinition = m_List[i];
-                var isDeleted = fieldDefinition.Status == "Deleted";
+                var isDeleted = fieldDefinition.IsDeleted;
                 var strikethroughTag = isDeleted ? "<s>" : string.Empty;
                 var strikethroughEndTag = isDeleted ? "</s>" : string.Empty;
                 label.text = $"{strikethroughTag}{fieldDefinition.DisplayName}{strikethroughEndTag}";
@@ -79,10 +79,8 @@ namespace Unity.Cloud.Assets.Samples.MetadataManagement
         {
             try
             {
-                var pagination = new Pagination(Range.All);
-
                 var cancellationTokenSource = new CancellationTokenSource();
-                return assetRepository.ListFieldDefinitionsAsync(organizationId, pagination, true, cancellationTokenSource.Token);
+                return assetRepository.ListFieldDefinitionsAsync(organizationId, Range.All, cancellationTokenSource.Token);
             }
             catch (OperationCanceledException oe)
             {

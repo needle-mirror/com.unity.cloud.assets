@@ -1,4 +1,5 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <ui:Template name="AssetListItemMenuPopup" src="../Templates/AssetListItemMenuPopup.uxml?fileID=9197481963319205126&amp;guid=e897434ae87a74dfd979782968472e93&amp;type=3#AssetListItemMenuPopup" />
     <Style src="../StyleSheets/AssetListStyleSheet.uss?fileID=7433441132597879392&amp;guid=5d7fd9da907ac410c98b37643d5cf632&amp;type=3#AssetListStyleSheet" />
     <ui:VisualElement name="ListContainer">
         <ui:VisualElement name="AssetListTopBar" style="height: 10%; flex-direction: row; align-items: center; justify-content: center;">
@@ -39,6 +40,7 @@
                 </ui:VisualElement>
                 <ui:VisualElement style="flex-direction: row;">
                     <ui:ListView focusable="true" selection-type="None" show-bound-collection-size="false" fixed-item-height="50" virtualization-method="DynamicHeight" style="flex-grow: 1; min-height: 0; max-height: none;" />
+                    <ui:Instance template="AssetListItemMenuPopup" name="AssetListItemMenuPopup" style="display: none;" />
                 </ui:VisualElement>
                 <ui:VisualElement name="AssetListBottomBar" class="AssetListLeftBar" style="min-height: 30px; max-height: 30px;">
                     <ui:VisualElement name="DisplayMessageContainer" style="align-self: center; align-items: center; width: 100%;">

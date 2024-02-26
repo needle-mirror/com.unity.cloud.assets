@@ -32,9 +32,8 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
         ScrollView m_DatasetScrollView;
 
         IAsset m_CurrentAsset;
-        IAssetUpdate m_AssetUpdate;
+        AssetUpdate m_AssetUpdate;
         MetadataController m_MetadataController;
-        MetadataController m_SystemMetadataController;
 
         CancellationTokenSource m_GetDatasetsCancellationTokenSource;
 
@@ -73,10 +72,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             var metadataTemplate = assetCreationPanel.Q<TemplateContainer>("MetadataItemTemplate");
 
             var metadataContainer = assetCreationPanel.Q("MetadataContainer");
-            m_MetadataController = new MetadataController(metadataContainer, false, metadataTemplate.templateSource, addMetadataPopup);
-
-            metadataContainer = assetCreationPanel.Q("SystemMetadataContainer");
-            m_SystemMetadataController = new MetadataController(metadataContainer, true, metadataTemplate.templateSource, addMetadataPopup);
+            m_MetadataController = new MetadataController(metadataContainer, metadataTemplate.templateSource, addMetadataPopup);
 
             m_AssetPublishButton = assetCreationPanel.Q<Button>("AssetPublishButton");
             m_AssetPublishButton.visible = false;
@@ -135,7 +131,6 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             UpdateStatus();
 
             _ = m_MetadataController.PopulateMetadataAsync(asset);
-            _ = m_SystemMetadataController.PopulateMetadataAsync(asset);
         }
 
         public void Clear()
@@ -184,7 +179,6 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             m_AssetTagsContainer.Clear();
             m_DatasetScrollView.Clear();
             m_MetadataController.Clear();
-            m_SystemMetadataController.Clear();
         }
 
         void UpdateAssetInformation()
@@ -209,14 +203,14 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             {
                 m_CurrentAsset.UpdateAsync(m_AssetUpdate, cancellationTokenSource.Token),
                 m_MetadataController.UpdateMetadataAsync(cancellationTokenSource.Token),
-                m_SystemMetadataController.UpdateMetadataAsync(cancellationTokenSource.Token)
             };
 
             try
             {
                 await Task.WhenAll(updateTasks);
 
-                DialogService.ShowMessage("Success", "The asset has been saved successfully.");
+                if (updateTasks.TrueForAll(x => x.IsCompletedSuccessfully))
+                    DialogService.ShowMessage("Success", "The asset has been saved successfully.");
 
                 OnAssetUpdated?.Invoke(m_CurrentAsset);
             }
@@ -255,16 +249,16 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
                 switch (m_CurrentAsset.Status)
                 {
                     case "Draft":
-                        await m_CurrentAsset.SendToReviewAsync(cancellationTokenSource.Token);
-                        await m_CurrentAsset.ApproveAsync(cancellationTokenSource.Token);
-                        await m_CurrentAsset.PublishAsync(cancellationTokenSource.Token);
+                        await m_CurrentAsset.UpdateStatusAsync(AssetStatusAction.SendForReview, cancellationTokenSource.Token);
+                        await m_CurrentAsset.UpdateStatusAsync(AssetStatusAction.Approve, cancellationTokenSource.Token);
+                        await m_CurrentAsset.UpdateStatusAsync(AssetStatusAction.Publish, cancellationTokenSource.Token);
                         break;
                     case "Ingestion": // Status when asset is in review
-                        await m_CurrentAsset.ApproveAsync(cancellationTokenSource.Token);
-                        await m_CurrentAsset.PublishAsync(cancellationTokenSource.Token);
+                        await m_CurrentAsset.UpdateStatusAsync(AssetStatusAction.Approve, cancellationTokenSource.Token);
+                        await m_CurrentAsset.UpdateStatusAsync(AssetStatusAction.Publish, cancellationTokenSource.Token);
                         break;
                     case "Approved":
-                        await m_CurrentAsset.PublishAsync(cancellationTokenSource.Token);
+                        await m_CurrentAsset.UpdateStatusAsync(AssetStatusAction.Publish, cancellationTokenSource.Token);
                         break;
                 }
 

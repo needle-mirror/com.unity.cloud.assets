@@ -1,8 +1,11 @@
 using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Unity.Cloud.Common;
 using Unity.Cloud.Identity;
 using UnityEngine;
 using UnityEngine.UIElements;
+using UserId = Unity.Cloud.Common.UserId;
 
 namespace Unity.Cloud.Assets.Samples
 {
@@ -17,6 +20,8 @@ namespace Unity.Cloud.Assets.Samples
         IAssetRepository m_AssetRepository;
         ICompositeAuthenticator m_Authenticator;
         IOrganizationRepository m_OrganizationRepository;
+
+        public Dictionary<UserId, IMemberInfo> OrganizationMembersInfo { get; } = new();
 
         public VisualElement RootVisualElement => m_RootVisualElement ??= m_OrganizationListUiDocument.rootVisualElement;
         public IAssetRepository AssetRepository => m_AssetRepository;
@@ -91,6 +96,18 @@ namespace Unity.Cloud.Assets.Samples
         void OnOrganizationSelected()
         {
             OrganizationSelected?.Invoke(m_OrganizationListUi.SelectedOrganization.Id);
+            _ = GetOrganizationMembersInfo(m_OrganizationListUi.SelectedOrganization.Id);
+        }
+
+        async Task GetOrganizationMembersInfo(OrganizationId organizationId)
+        {
+            OrganizationMembersInfo.Clear();
+            var datasetOrganization = await m_OrganizationRepository.GetOrganizationAsync(organizationId);
+            var organizationMembersInfo = datasetOrganization.ListMembersAsync(Range.All);
+            await foreach (var memberInfo in organizationMembersInfo)
+            {
+                OrganizationMembersInfo.Add(memberInfo.UserId, memberInfo);
+            }
         }
     }
 }

@@ -55,7 +55,7 @@ namespace Unity.Cloud.Assets.Samples
             m_ListController.ClearSelection();
         }
 
-        protected async Task UpdateList(IEnumerable<U> existingEntries, IAsyncEnumerable<U> asyncEntries, CancellationToken token, OnEntryRetrieved onEntryRetrieved = null)
+        protected async Task UpdateList(IEnumerable<U> existingEntries, IAsyncEnumerable<U> asyncEntries, CancellationToken token)
         {
             if (token.IsCancellationRequested) return;
 
@@ -73,7 +73,6 @@ namespace Unity.Cloud.Assets.Samples
             await foreach (var entry in asyncEntries.WithCancellation(token))
             {
                 entries.Add(entry);
-                if (onEntryRetrieved != null) await onEntryRetrieved(entry);
 
                 if (DateTime.UtcNow - startTime > TimeSpan.FromSeconds(0.6f))
                 {

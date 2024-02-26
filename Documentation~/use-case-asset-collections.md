@@ -1,4 +1,4 @@
-# Use case: View the collections of an asset and manage its associations to these collections
+# Use case: Manage an asset's association to collections
 
 You can use the Unity Cloud Assets package to:
 

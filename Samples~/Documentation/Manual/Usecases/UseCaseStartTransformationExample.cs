@@ -14,7 +14,12 @@ namespace Unity.Cloud.Documentation.Assets
         {
             try
             {
-                var transformation = await dataset.StartTransformationAsync(workflowType, CancellationToken.None);
+                var creation = new TransformationCreation
+                {
+                    WorkflowType = workflowType
+                };
+
+                var transformation = await dataset.StartTransformationAsync(creation, CancellationToken.None);
                 Debug.Log($"Transformation started: {transformation.Descriptor.TransformationId}");
             }
             catch (Exception e)

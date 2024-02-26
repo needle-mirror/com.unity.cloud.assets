@@ -4,6 +4,8 @@ namespace Unity.Cloud.Documentation.Assets
 
     using System;
     using System.Linq;
+    using System.Threading;
+    using System.Threading.Tasks;
     using Unity.Cloud.Assets;
     using UnityEngine;
 
@@ -38,19 +40,33 @@ namespace Unity.Cloud.Documentation.Assets
                 if (m_Behaviour.CurrentAsset != m_CurrentAsset)
                 {
                     m_CurrentAsset = m_Behaviour.CurrentAsset;
-                    m_AssetUpdate = new AssetUpdate(m_CurrentAsset);
+                    m_AssetUpdate = null;
+                    _ = RefreshAssetAsync(m_CurrentAsset);
                 }
 
                 GUILayout.Label("Asset selected:");
                 GUILayout.Space(5f);
 
-                DisplayAsset(m_CurrentAsset, m_AssetUpdate);
+                if (m_AssetUpdate == null)
+                {
+                    GUILayout.Label("Loading...");
+                }
+                else
+                {
+                    DisplayAsset(m_CurrentAsset, m_AssetUpdate);
+                }
             }
 
             GUILayout.EndVertical();
         }
 
-        void DisplayAsset(IAsset asset, IAssetUpdate assetUpdate)
+        async Task RefreshAssetAsync(IAsset asset)
+        {
+            await asset.RefreshAsync(CancellationToken.None);
+            m_AssetUpdate = new AssetUpdate(asset);
+        }
+
+        void DisplayAsset(IAsset asset, AssetUpdate assetUpdate)
         {
             GUILayout.BeginHorizontal();
 
@@ -68,9 +84,10 @@ namespace Unity.Cloud.Documentation.Assets
 
             GUILayout.Label("Type: ");
 
-            var type = (int) assetUpdate.Type;
+            var type = assetUpdate.Type.HasValue ? (int) assetUpdate.Type.Value : -1;
             type = GUILayout.SelectionGrid(type, m_AssetTypeList, 4);
-            assetUpdate.Type = (AssetType) type;
+            if (type != -1)
+                assetUpdate.Type = (AssetType) type;
 
             GUILayout.EndHorizontal();
 

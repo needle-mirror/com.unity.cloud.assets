@@ -10,21 +10,21 @@ namespace Unity.Cloud.Assets
         /// <summary>
         /// Adds or updates the specified fields in the metadata dictionary.
         /// </summary>
-        /// <param name="metadataValues">A collection of <see cref="IMetadataValue"/> to add or update. </param>
+        /// <param name="metadataObjects">A collection of metadata values to add or update. </param>
         /// <param name="cancellationToken">A token that can be used to cancel the request.</param>
         /// <returns>A task with no result.</returns>
         /// <exception cref="ArgumentException">If the type of a dictionary value is not recognized as valid metadata type. </exception>
-        Task AddOrUpdateAsync(IDictionary<string, object> metadataValues, CancellationToken cancellationToken);
+        Task AddOrUpdateAsync(IReadOnlyDictionary<string, MetadataValue> metadataObjects, CancellationToken cancellationToken);
 
         /// <summary>
         /// Adds or updates the specified field in the metadata dictionary.
         /// </summary>
-        /// <param name="key">The key of an existing <see cref="IFieldDefinition"/>. </param>
+        /// <param name="key">The <see cref="FieldDefinitionDescriptor.FieldKey"/> of a corresponding <see cref="IFieldDefinition"/>. </param>
         /// <param name="metadataValue">The value of the field. </param>
         /// <param name="cancellationToken">A token that can be used to cancel the request.</param>
         /// <returns>A task with no result.</returns>
         /// <exception cref="ArgumentException">If <paramref name="metadataValue"/> type is not a valid metadata type. </exception>
-        Task AddOrUpdateAsync(string key, object metadataValue, CancellationToken cancellationToken);
+        Task AddOrUpdateAsync(string key, MetadataValue metadataValue, CancellationToken cancellationToken);
 
         /// <summary>
         /// Removes the specified fields from the metadata dictionary.

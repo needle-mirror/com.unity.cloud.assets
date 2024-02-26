@@ -1,25 +1,19 @@
 ﻿using System;
 using System.Runtime.Serialization;
+using Unity.Cloud.Common;
 
 namespace Unity.Cloud.Assets
 {
     [DataContract]
     struct CreatedAssetDto
     {
-        [DataMember(Name = "storageId")]
-        public string StorageId { get; set; }
-
         [DataMember(Name = "assetId")]
-        public string AssetId { get; set; }
+        public AssetId AssetId { get; set; }
 
         [DataMember(Name = "assetVersion")]
-        public int AssetVersion { get; set; }
+        public AssetVersion AssetVersion { get; set; }
 
-        public CreatedAssetDto(string storageId, string assetId, int assetVersion)
-        {
-            StorageId = storageId;
-            AssetId = assetId;
-            AssetVersion = assetVersion;
-        }
+        [DataMember(Name = "datasets")]
+        public DatasetData[] Datasets { get; set; }
     }
 }

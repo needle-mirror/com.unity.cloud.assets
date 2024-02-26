@@ -15,5 +15,10 @@
     {
       "Path": "MetadataManagement"
     }
-  ]
+  ],
+  "PackageDependencies": {
+    "com.unity.cloud.identity": "1.0.0-pre.6",
+    "com.unity.modules.uielements": "1.0.0",
+    "com.unity.modules.unitywebrequesttexture": "1.0.0"
+  }
 }

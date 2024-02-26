@@ -15,7 +15,6 @@ namespace Unity.Cloud.Assets.Samples.MetadataManagement
         [SerializeField]
         VisualTreeAsset m_LayoutTemplate;
 
-        MessagePopupController m_MessagePopup;
         CreateFieldDefinitionPopupController m_CreatePopup;
         FieldDefinitionPanelController m_FieldDefinitionPanel;
         ContextMenuController m_InfoPanelContextMenu;
@@ -47,8 +46,6 @@ namespace Unity.Cloud.Assets.Samples.MetadataManagement
             m_FieldDefinitionController.RegisterContextButton("Create", m_CreatePopup.Show);
             m_FieldDefinitionController.RegisterContextButton("Hide Deleted", m_FieldDefinitionController.HideDeletedFieldDefinitions, true);
             m_FieldDefinitionController.RegisterContextButton("Show Deleted", m_FieldDefinitionController.ShowDeletedFieldDefinitions, false);
-
-            m_MessagePopup = new MessagePopupController(uiDocumentRoot);
         }
 
         void OnDestroy()
@@ -77,7 +74,7 @@ namespace Unity.Cloud.Assets.Samples.MetadataManagement
             catch (Exception e)
             {
                 e.LogException();
-                m_MessagePopup.ShowMessage("Failed to create field definition", $"{e.Message}");
+                DialogService.ShowMessage("Creation failed", $"Failed to create field definition with reason: {e.Message}");
             }
 
             m_FieldDefinitionController.RefreshList();
@@ -86,7 +83,7 @@ namespace Unity.Cloud.Assets.Samples.MetadataManagement
         void OnFieldDefinitionSelected()
         {
             var selectedFieldDefinition = m_FieldDefinitionController.SelectedFieldDefinition;
-            m_InfoPanelContextMenu.SetEnabled(selectedFieldDefinition != null && selectedFieldDefinition.Status != "Deleted");
+            m_InfoPanelContextMenu.SetEnabled(selectedFieldDefinition is {IsDeleted: false});
             m_FieldDefinitionPanel.SetFieldDefinition(selectedFieldDefinition);
         }
 
@@ -108,7 +105,8 @@ namespace Unity.Cloud.Assets.Samples.MetadataManagement
             }
             catch (Exception e)
             {
-                m_MessagePopup.ShowMessage("Failed to updated field definition", $"{e.Message}");
+                e.LogException();
+                DialogService.ShowMessage("Update failed", $"Failed to update field definition with reason: {e.Message}");
             }
         }
 
@@ -122,7 +120,8 @@ namespace Unity.Cloud.Assets.Samples.MetadataManagement
             }
             catch (Exception e)
             {
-                m_MessagePopup.ShowMessage("Failed to delete field definition", $"{e.Message}");
+                e.LogException();
+                DialogService.ShowMessage("Deletion failed", $"Failed to delete field definition with reason: {e.Message}");
             }
         }
     }

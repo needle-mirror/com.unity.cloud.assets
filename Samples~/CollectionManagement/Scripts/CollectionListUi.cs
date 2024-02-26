@@ -77,8 +77,14 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
         {
             try
             {
-                var cancellationTokenSource = new CancellationTokenSource();
-                return await project.ListCollectionsAsync(cancellationTokenSource.Token);
+                var results = project.ListCollectionsAsync(Range.All, CancellationToken.None);
+                var collections = new List<IAssetCollection>();
+                await foreach (var collection in results)
+                {
+                    collections.Add(collection);
+                }
+
+                return collections;
             }
             catch (OperationCanceledException oe)
             {

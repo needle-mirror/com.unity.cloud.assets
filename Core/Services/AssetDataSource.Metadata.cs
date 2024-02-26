@@ -10,11 +10,15 @@ namespace Unity.Cloud.Assets
     partial class AssetDataSource
     {
         /// <inheritdoc/>
-        public async IAsyncEnumerable<IFieldDefinitionData> ListFieldDefinitionsAsync(OrganizationId organizationId, Pagination pagination, bool includeDeleted, [EnumeratorCancellation] CancellationToken cancellationToken)
+        public async IAsyncEnumerable<IFieldDefinitionData> ListFieldDefinitionsAsync(OrganizationId organizationId, PaginationData pagination, bool includeDeleted, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
             const int maxPageSize = 99;
 
-            var (offset, length) = await pagination.Range.GetOffsetAndLengthAsync(_ => Task.FromResult(int.MaxValue), cancellationToken);
+            var (offset, length) = await pagination.Range.GetOffsetAndLengthAsync(_cancellationToken =>
+            {
+                _cancellationToken.ThrowIfCancellationRequested();
+                return Task.FromResult(int.MaxValue);
+            }, cancellationToken);
             var pageSize = Math.Min(maxPageSize, Math.Max(offset, length));
             var nextPageToken = string.Empty;
 
@@ -22,10 +26,15 @@ namespace Unity.Cloud.Assets
             var count = 0;
             do
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 var request = new GetFieldDefinitionListRequest(organizationId, pageSize, pagination.SortingOrder, nextPageToken, includeDeleted);
                 var response = await m_ServiceHttpClient.GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(),
                     cancellationToken);
+
                 var jsonContent = await response.GetContentAsString();
+                cancellationToken.ThrowIfCancellationRequested();
+
                 var fieldDefinitionPage = IsolatedSerialization.DeserializeWithDefaultConverters<FieldDefinitionListDto>(jsonContent);
 
                 nextPageToken = fieldDefinitionPage.NextPageToken;
@@ -34,6 +43,8 @@ namespace Unity.Cloud.Assets
 
                 for (var i = 0; i < fieldDefinitionPage.FieldDefinitions.Length; ++i)
                 {
+                    cancellationToken.ThrowIfCancellationRequested();
+
                     if (count == 0 && i < startIndex) continue;
                     if (count >= length) break;
 
@@ -46,9 +57,13 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc/>
         public async Task<IFieldDefinitionData> GetFieldDefinitionAsync(FieldDefinitionDescriptor fieldDefinitionDescriptor, CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             var request = new FieldDefinitionRequest(fieldDefinitionDescriptor.OrganizationId, fieldDefinitionDescriptor.FieldKey);
             var response = await m_ServiceHttpClient.GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(), cancellationToken);
+
             var jsonContent = await response.GetContentAsString();
+            cancellationToken.ThrowIfCancellationRequested();
 
             return JsonSerialization.Deserialize<FieldDefinitionData>(jsonContent);
         }
@@ -56,6 +71,8 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc/>
         public async Task<IFieldDefinitionData> CreateFieldDefinitionAsync(OrganizationId organizationId, IFieldDefinitionCreateData fieldCreation, CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             var request = new CreateFieldDefinitionRequest(organizationId, fieldCreation);
             await m_ServiceHttpClient.PostAsync(GetPublicRequestUri(request), request.ConstructBody(),
                 ServiceHttpClientOptions.Default(), cancellationToken);

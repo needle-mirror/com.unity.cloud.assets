@@ -13,8 +13,10 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
 
         IAssetCollection m_AssetCollection;
 
-        public EditCollectionPopupController(VisualElement root, Action action, ValidateCollectionName validateCollectionName)
-            : base(root, "EditCollectionPopup", action)
+        public event Action<IAssetCollectionUpdate> UpdateCollection;
+
+        public EditCollectionPopupController(VisualElement root, ValidateCollectionName validateCollectionName)
+            : base(root, "EditCollectionPopup", null)
         {
             m_NameInput = m_PopupWindow.Q<TextField>("Name");
             m_NameInput.RegisterCallback<InputEvent>(OnInputChanged);
@@ -58,27 +60,18 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
             m_ErrorLabel.style.display = DisplayStyle.None;
             m_ErrorLabel.text = "Error: ";
 
-            try
+            var update = new AssetCollectionUpdate
             {
-                m_AssetCollection.SetName(m_NameInput.value.Trim());
-            }
-            catch
-            {
-                m_ErrorLabel.text += "\n\tName is required. ";
-                m_ErrorLabel.style.display = DisplayStyle.Flex;
-            }
+                Name = m_NameInput.value.Trim(),
+                Description = m_DescriptionInput.value
+            };
 
-            try
-            {
-                m_AssetCollection.SetDescription(m_DescriptionInput.value);
-            }
-            catch
-            {
-                m_ErrorLabel.text += "\n\tDescription is required. ";
-                m_ErrorLabel.style.display = DisplayStyle.Flex;
-            }
+            m_NameInput.value = string.Empty;
+            m_DescriptionInput.value = string.Empty;
 
-            if (m_ErrorLabel.style.display == DisplayStyle.None) base.OnClicked();
+            UpdateCollection?.Invoke(update);
+
+            base.OnClicked();
         }
     }
 }

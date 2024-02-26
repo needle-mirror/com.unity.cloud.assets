@@ -7,7 +7,7 @@ namespace Unity.Cloud.Assets
         public CheckDatasetBelongsToAssetRequest(ProjectId projectId, AssetId assetId, AssetVersion assetVersion, DatasetId datasetId)
             : base(projectId, assetId, assetVersion, datasetId)
         {
-            m_PathAndQueryParams += "/check";
+            m_RequestUrl += "/check";
         }
     }
 }

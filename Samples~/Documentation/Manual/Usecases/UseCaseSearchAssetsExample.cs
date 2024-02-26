@@ -27,32 +27,31 @@ var assetSearchFilter = new AssetSearchFilter();
 
 #region Example_NameInclude
 
-assetSearchFilter.Name.Include("my cool asset");
+assetSearchFilter.Include().Name.WithValue("my cool asset");
 
 #endregion
 
 #region Example_NameExclude
 
-assetSearchFilter.Name.Exclude("my mediocre asset");
+assetSearchFilter.Exclude().Name.WithValue("my mediocre asset");
 
 #endregion
 
 #region Example_NameAny
 
-assetSearchFilter.Name.ForAny("cool");
+assetSearchFilter.Any().Name.WithValue("cool");
 
 #endregion
 
 #region Example_TagsInclude
 
-assetSearchFilter.Tags.Include("tag1", "tag2", "tag3");
+assetSearchFilter.Include().Tags.WithValue("tag1", "tag2", "tag3");
 
 #endregion
 
 #region Example_Collections
 
-assetSearchFilter.Collections.Add("my awesome collection");
-assetSearchFilter.Collections.Add("my other awesome collection");
+assetSearchFilter.Collections.WhereContains("my awesome collection", "my other awesome collection");
 
 #endregion
 
@@ -62,19 +61,16 @@ assetSearchFilter.Collections.Add("my other awesome collection");
         {
 #region Example_Search
 
-Pagination pagination = new Pagination(nameof(IAsset.Name), new Range(0, 10), SortingOrder.Ascending);
-return project.SearchAssetsAsync(assetSearchFilter, pagination, CancellationToken.None);
+return project.QueryAssets().SelectWhereMatchesFilter(assetSearchFilter).LimitTo(new Range(0, 10)).ExecuteAsync(CancellationToken.None);
 
 #endregion
         }
 
         async Task DisplayResultsIndividually(IAssetSearchFilter assetSearchFilter)
         {
-            var pagination = new Pagination(nameof(IAsset.Name), Range.All);
-
 #region Example_Foreach
 
-var assets = project.SearchAssetsAsync(assetSearchFilter, pagination, CancellationToken.None);
+var assets = project.QueryAssets().SelectWhereMatchesFilter(assetSearchFilter).ExecuteAsync(CancellationToken.None);
 await foreach (var asset in assets)
 {
     Debug.Log(asset.Name + " is available for use.");
@@ -87,11 +83,9 @@ await foreach (var asset in assets)
 
         async Task DisplayResults(IAssetSearchFilter assetSearchFilter)
         {
-            var pagination = new Pagination(nameof(IAsset.Name), Range.All);
-
 #region Example_ToList
 
-var assets = project.SearchAssetsAsync(assetSearchFilter, pagination, CancellationToken.None);
+var assets = project.QueryAssets().SelectWhereMatchesFilter(assetSearchFilter).ExecuteAsync(CancellationToken.None);
 
 var assetList = new List<IAsset>();
 await foreach (var asset in assets)

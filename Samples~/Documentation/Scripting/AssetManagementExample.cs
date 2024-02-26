@@ -15,7 +15,7 @@ public class AssetManagementExample
 
     async Task<IAsset> GetAsset(IAssetProject project, AssetId assetId, AssetVersion assetVersion, CancellationToken cancellationToken)
     {
-        var asset = await project.GetAssetAsync(assetId, assetVersion, FieldsFilter.Default, cancellationToken);
+        var asset = await project.GetAssetAsync(assetId, assetVersion, cancellationToken);
         return asset;
     }
 
@@ -26,22 +26,18 @@ public class AssetManagementExample
     IAsyncEnumerable<IAsset> SearchForAssets(IAssetProject project, string assetName, CancellationToken cancellationToken)
     {
         var assetSearchFilter = new AssetSearchFilter();
-        assetSearchFilter.Name.Include(assetName);
+        assetSearchFilter.Include().Name.WithValue(assetName);
 
-        var pagination = new Pagination(Range.All);
-
-        var assets = project.SearchAssetsAsync(assetSearchFilter, pagination, cancellationToken);
+        var assets = project.QueryAssets().SelectWhereMatchesFilter(assetSearchFilter).ExecuteAsync(cancellationToken);
         return assets;
     }
 
-    IAsyncEnumerable<IAsset> SearchForAssets(IAssetRepository assetRepository, OrganizationId organizationId, IEnumerable<ProjectId> projects, string assetName, CancellationToken cancellationToken)
+    IAsyncEnumerable<IAsset> SearchForAssets(IAssetRepository assetRepository, IEnumerable<ProjectDescriptor> projectDescriptors, string assetName, CancellationToken cancellationToken)
     {
         var assetSearchFilter = new AssetSearchFilter();
-        assetSearchFilter.Name.Include(assetName);
+        assetSearchFilter.Include().Name.WithValue(assetName);
 
-        var pagination = new Pagination(Range.All);
-
-        var assets = assetRepository.SearchAssetsAsync(organizationId, projects, assetSearchFilter, pagination, cancellationToken);
+        var assets = assetRepository.QueryAssets(projectDescriptors).SelectWhereMatchesFilter(assetSearchFilter).ExecuteAsync(cancellationToken);
         return assets;
     }
 
@@ -49,26 +45,20 @@ public class AssetManagementExample
 
     #region AggregateAssets
 
-    async Task<Aggregation> AggregateAssets(IAssetProject project, string assetName, CancellationToken cancellationToken)
+    async Task<IReadOnlyDictionary<string, int>> AggregateAssets(IAssetProject project, string assetName, CancellationToken cancellationToken)
     {
         var assetSearchFilter = new AssetSearchFilter();
-        assetSearchFilter.Name.Include(assetName);
+        assetSearchFilter.Include().Name.WithValue(assetName);
 
-        var aggregationParameters = new AggregationParameters(AssetTypeSearchCriteria.SearchKey, 20);
-
-        var aggregation = await project.CountAssetsAsync(assetSearchFilter, aggregationParameters, cancellationToken);
-        return aggregation;
+        return await project.GroupAndCountAssets().SelectWhereMatchesFilter(assetSearchFilter).ExecuteAsync(GroupableField.Type, cancellationToken);
     }
 
-    async Task<Aggregation> AggregateAssets(IAssetRepository assetRepository, OrganizationId organizationId, IEnumerable<ProjectId> projects, string assetName, CancellationToken cancellationToken)
+    async Task<IReadOnlyDictionary<string, int>> AggregateAssets(IAssetRepository assetRepository, IEnumerable<ProjectDescriptor> projectDescriptors, string assetName, CancellationToken cancellationToken)
     {
         var assetSearchFilter = new AssetSearchFilter();
-        assetSearchFilter.Name.Include(assetName);
+        assetSearchFilter.Include().Name.WithValue(assetName);
 
-        var aggregationParameters = new AggregationParameters(AssetTypeSearchCriteria.SearchKey, 20);
-
-        var aggregation = await assetRepository.CountAssetsAsync(organizationId, projects, assetSearchFilter, aggregationParameters, cancellationToken);
-        return aggregation;
+        return await assetRepository.GroupAndCountAssets(projectDescriptors).SelectWhereMatchesFilter(assetSearchFilter).ExecuteAsync(GroupableField.Type, cancellationToken);
     }
 
     #endregion
@@ -103,10 +93,9 @@ public class AssetManagementExample
 
     #region GetAssetCollections
 
-    async Task<IEnumerable<CollectionPath>> RefreshAssetCollectionsAsync(IAsset asset, CancellationToken cancellationToken)
+    IAsyncEnumerable<CollectionDescriptor> GetAssetCollectionsAsync(IAsset asset, CancellationToken cancellationToken)
     {
-        await asset.RefreshAssetCollectionsAsync(cancellationToken);
-        return asset.Collections;
+        return asset.ListLinkedAssetCollectionsAsync(Range.All, cancellationToken);
     }
 
     #endregion
@@ -125,51 +114,6 @@ public class AssetManagementExample
     async Task UnlinkAssetFromProject(IAsset asset, ProjectDescriptor projectDescriptor, CancellationToken cancellationToken)
     {
         await asset.UnlinkFromProjectAsync(projectDescriptor, cancellationToken);
-    }
-
-    #endregion
-
-    #region PublishApprovedAsset
-
-    async Task PublishApprovedAsset(IAsset asset, CancellationToken cancellationToken)
-    {
-        await asset.PublishAsync(cancellationToken);
-    }
-
-    #endregion
-
-    #region WithdrawPublishedAsset
-
-    async Task WithdrawPublishedAsset(IAsset asset, CancellationToken cancellationToken)
-    {
-        await asset.WithdrawAsync(cancellationToken);
-    }
-
-    #endregion
-
-    #region SendAssetToReview
-
-    async Task SendAssetToReviewAsync(IAsset asset, CancellationToken cancellationToken)
-    {
-        await asset.SendToReviewAsync(cancellationToken);
-    }
-
-    #endregion
-
-    #region ApproveAsset
-
-    async Task ApproveAssetAsync(IAsset asset, CancellationToken cancellationToken)
-    {
-        await asset.ApproveAsync(cancellationToken);
-    }
-
-    #endregion
-
-    #region RejectAsset
-
-    async Task RejectAssetAsync(IAsset asset, CancellationToken cancellationToken)
-    {
-        await asset.RejectAsync(cancellationToken);
     }
 
     #endregion

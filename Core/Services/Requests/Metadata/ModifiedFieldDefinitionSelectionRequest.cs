@@ -10,9 +10,9 @@ namespace Unity.Cloud.Assets
         public ModifyFieldDefinitionSelectionRequest(OrganizationId organizationId, string fieldKey, IEnumerable<string> values)
             : base(organizationId, fieldKey)
         {
-            m_PathAndQueryParams += "/accepted-values";
+            m_RequestUrl += "/accepted-values";
 
-            AddParamToQueryParams("values", values);
+            AddParamToQuery("values", values);
         }
 
         public override HttpContent ConstructBody()

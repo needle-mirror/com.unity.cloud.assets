@@ -18,14 +18,15 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
             remove => m_CreatePopup.CollectionCreated -= value;
         }
 
-        public event Action<IAssetCollection> CollectionUpdated;
+        public event Action<IAssetCollection, IAssetCollectionUpdate> CollectionUpdated;
         public event Action<IAssetCollection> CollectionDeleted;
 
         public CollectionsContextMenuController(VisualElement root, ValidateCollectionName validateCollectionName)
             : base(root.Q("CollectionsContextMenu"))
         {
             m_CreatePopup = new CreateCollectionPopupController(root, validateCollectionName);
-            m_EditPopup = new EditCollectionPopupController(root, OnCollectionUpdated, validateCollectionName);
+            m_EditPopup = new EditCollectionPopupController(root, validateCollectionName);
+            m_EditPopup.UpdateCollection += UpdateCollection;
 
             RegisterButtonAction("Create", m_CreatePopup.Show);
             RegisterButtonAction("Edit", () => m_EditPopup.Show());
@@ -54,9 +55,9 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
             m_EditPopup.Hide();
         }
 
-        void OnCollectionUpdated()
+        void UpdateCollection(IAssetCollectionUpdate update)
         {
-            CollectionUpdated?.Invoke(m_AssetCollection);
+            CollectionUpdated?.Invoke(m_AssetCollection, update);
         }
 
         void UpdateButtonVisibility()

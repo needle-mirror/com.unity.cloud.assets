@@ -41,9 +41,7 @@ namespace Unity.Cloud.Assets
             }
 
             if (includeFields.HasFlag(FileFields.metadata))
-                file.MetadataEntity.Properties = fileData.Metadata?.From(assetDataSource, file.Descriptor.OrganizationGenesisId);
-            if (includeFields.HasFlag(FileFields.systemMetadata))
-                file.SystemMetadataEntity.Properties = fileData.SystemMetadata?.From(assetDataSource, file.Descriptor.OrganizationGenesisId);
+                file.MetadataEntity.Properties = fileData.Metadata?.From(assetDataSource, file.Descriptor.OrganizationId);
             if (includeFields.HasFlag(FileFields.userChecksum))
                 file.UserChecksum = fileData.UserChecksum;
             if (includeFields.HasFlag(FileFields.fileSize))
@@ -75,10 +73,9 @@ namespace Unity.Cloud.Assets
                 Tags = fileEntity.Tags,
                 SystemTags = fileEntity.SystemTags,
                 Metadata = fileEntity.MetadataEntity?.From() ?? new Dictionary<string, object>(),
-                SystemMetadata = fileEntity.SystemMetadataEntity?.From() ?? new Dictionary<string, object>(),
-                CreatedBy = fileEntity.AuthoringInfo?.CreatedBy,
+                CreatedBy = fileEntity.AuthoringInfo?.CreatedBy.ToString(),
                 Created = fileEntity.AuthoringInfo?.Created,
-                UpdatedBy = fileEntity.AuthoringInfo?.UpdatedBy,
+                UpdatedBy = fileEntity.AuthoringInfo?.UpdatedBy.ToString(),
                 Updated = fileEntity.AuthoringInfo?.Updated,
                 SizeBytes = fileEntity.SizeBytes,
                 UserChecksum = fileEntity.UserChecksum,

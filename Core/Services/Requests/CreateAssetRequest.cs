@@ -25,7 +25,7 @@ namespace Unity.Cloud.Assets
         {
             Asset = asset;
 
-            m_PathAndQueryParams += "/assets";
+            m_RequestUrl += "/assets";
         }
 
         /// <summary>

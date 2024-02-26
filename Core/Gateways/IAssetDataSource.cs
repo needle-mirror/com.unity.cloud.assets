@@ -25,43 +25,39 @@ namespace Unity.Cloud.Assets
         /// Retrieves a subset of <see cref="IAssetData"/>.
         /// </summary>
         /// <param name="projectDescriptor">The object containing the necessary information to identify the project. </param>
-        /// <param name="assetSearchFilter">An object defining the search criteria for retrieving a set of assets. </param>
-        /// <param name="pagination">An object containing the necessary information create retrieve a subset of <see cref="IAssetData"/>. </param>
+        /// <param name="searchData">An object containing the parameters of a search. </param>
         /// <param name="cancellationToken">A token that can be used to cancel the request.</param>
         /// <returns>A task whose result is a cancellationToken for the next page and a collection of <see cref="IAssetData"/>. </returns>
-        IAsyncEnumerable<IAssetData> ListAssetsAsync(ProjectDescriptor projectDescriptor, IAssetSearchFilter assetSearchFilter, Pagination pagination, CancellationToken cancellationToken);
+        IAsyncEnumerable<IAssetData> ListAssetsAsync(ProjectDescriptor projectDescriptor, SearchData searchData, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves a subset of <see cref="IAssetData"/> across specified projects.
         /// </summary>
         /// <param name="organizationId">The organization id. </param>
         /// <param name="projectIds">The ids of the projects in which to search. </param>
-        /// <param name="assetSearchFilter">An object defining the search criteria for retrieving a set of assets. </param>
-        /// <param name="pagination">An object containing the necessary information create retrieve a subset of <see cref="IAssetData"/>. </param>
+        /// <param name="searchData">An object containing the parameters of a search. </param>
         /// <param name="cancellationToken">A token that can be used to cancel the request.</param>
         /// <returns>A task whose result is a cancellationToken for the next page and a collection of <see cref="IAssetData"/>. </returns>
-        IAsyncEnumerable<IAssetData> ListAssetsAsync(OrganizationId organizationId, IEnumerable<ProjectId> projectIds, IAssetSearchFilter assetSearchFilter, Pagination pagination, CancellationToken cancellationToken);
+        IAsyncEnumerable<IAssetData> ListAssetsAsync(OrganizationId organizationId, IEnumerable<ProjectId> projectIds, SearchData searchData, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves the aggregate of assets that meet the search criteria.
         /// </summary>
         /// <param name="projectDescriptor">The object containing the necessary information to identify the project. </param>
-        /// <param name="assetSearchFilter">An object defining the search criteria. </param>
-        /// <param name="parameters">An object containing the necessary information to </param>
+        /// <param name="aggregationData">An object defining the search criteria. </param>
         /// <param name="cancellationToken">A token that can be used to cancel the request.</param>
         /// <returns>A task whose result is the aggregated count of assets. </returns>
-        Task<Aggregation> GetAssetAggregateAsync(ProjectDescriptor projectDescriptor, IAssetSearchFilter assetSearchFilter, AggregationParameters parameters, CancellationToken cancellationToken);
+        Task<AggregateDto[]> GetAssetAggregateAsync(ProjectDescriptor projectDescriptor, AggregationData aggregationData, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves the aggregate of assets across specified projects that meet the search criteria.
         /// </summary>
         /// <param name="organizationId">The id of the organization. </param>
         /// <param name="projectIds">The ids of the projects to search. </param>
-        /// <param name="assetSearchFilter">An object defining the search criteria. </param>
-        /// <param name="parameters">An object containing the necessary information to </param>
+        /// <param name="aggregationData">An object defining the search criteria. </param>
         /// <param name="cancellationToken">A token that can be used to cancel the request.</param>
         /// <returns>A task whose result is the aggregated count of assets. </returns>
-        Task<Aggregation> GetAssetAggregateAsync(OrganizationId organizationId, IEnumerable<ProjectId> projectIds, IAssetSearchFilter assetSearchFilter, AggregationParameters parameters, CancellationToken cancellationToken);
+        Task<AggregateDto[]> GetAssetAggregateAsync(OrganizationId organizationId, IEnumerable<ProjectId> projectIds, AggregationData aggregationData, CancellationToken cancellationToken);
 
         /// <summary>
         /// Creates an asset.
@@ -124,44 +120,13 @@ namespace Unity.Cloud.Assets
         Task<bool> CheckAssetBelongsToProjectAsync(AssetDescriptor assetDescriptor, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Publishes an approved asset.
+        /// Updates the status of an asset.
         /// </summary>
         /// <param name="assetDescriptor">The object containing the necessary information to identify the asset.</param>
+        /// <param name="assetStatusAction">The new status of the asset.</param>
         /// <param name="cancellationToken">A token that can be used to cancel the request.</param>
         /// <returns></returns>
-        Task PublishApprovedAssetAsync(AssetDescriptor assetDescriptor, CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Withdraws a published asset.
-        /// </summary>
-        /// <param name="assetDescriptor">The object containing the necessary information to identify the asset.</param>
-        /// <param name="cancellationToken">A token that can be used to cancel the request.</param>
-        /// <returns></returns>
-        Task WithdrawPublishedAssetAsync(AssetDescriptor assetDescriptor, CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Sends an asset to review.
-        /// </summary>
-        /// <param name="assetDescriptor">The object containing the necessary information to identify the asset.</param>
-        /// <param name="cancellationToken">A token that can be used to cancel the request.</param>
-        /// <returns></returns>
-        Task SendAssetToReviewAsync(AssetDescriptor assetDescriptor, CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Approves an asset in review.
-        /// </summary>
-        /// <param name="assetDescriptor">The object containing the necessary information to identify the asset.</param>
-        /// <param name="cancellationToken">A token that can be used to cancel the request.</param>
-        /// <returns></returns>
-        Task ApproveAssetAsync(AssetDescriptor assetDescriptor, CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Rejects an asset in review.
-        /// </summary>
-        /// <param name="assetDescriptor">The object containing the necessary information to identify the asset.</param>
-        /// <param name="cancellationToken">A token that can be used to cancel the request.</param>
-        /// <returns></returns>
-        Task RejectAssetAsync(AssetDescriptor assetDescriptor, CancellationToken cancellationToken);
+        Task UpdateAssetStatusAsync(AssetDescriptor assetDescriptor, AssetStatusAction assetStatusAction, CancellationToken cancellationToken);
 
         /// <summary>
         /// Uploads content.
@@ -179,9 +144,9 @@ namespace Unity.Cloud.Assets
         /// <param name="downloadUri">The url from which to download the content stream. </param>
         /// <param name="destinationStream">The destination stream for the file content</param>
         /// <param name="progress">The progress provider.</param>
-        /// <param name="token">The cancellation token</param>
+        /// <param name="cancellationToken">The cancellation token</param>
         /// <returns>A task with no result.</returns>
-        Task DownloadContentAsync(Uri downloadUri, Stream destinationStream, IProgress<HttpProgress> progress, CancellationToken token);
+        Task DownloadContentAsync(Uri downloadUri, Stream destinationStream, IProgress<HttpProgress> progress, CancellationToken cancellationToken);
 
         /// <summary>
         /// Removes metadata from an asset.
@@ -189,9 +154,9 @@ namespace Unity.Cloud.Assets
         /// <param name="assetDescriptor">The object containing the necessary information to identify the asset. </param>
         /// <param name="metadataType">The type of metadata to remove. </param>
         /// <param name="keys">The metadata fields to remove. </param>
-        /// <param name="token">The cancellation token</param>
+        /// <param name="cancellationToken">The cancellation token</param>
         /// <returns>A task with no result.</returns>
-        Task RemoveAssetMetadataAsync(AssetDescriptor assetDescriptor, string metadataType, IEnumerable<string> keys, CancellationToken token);
+        Task RemoveAssetMetadataAsync(AssetDescriptor assetDescriptor, string metadataType, IEnumerable<string> keys, CancellationToken cancellationToken);
 
         /// <summary>
         /// Implement this method to get the service url.

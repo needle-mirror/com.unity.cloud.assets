@@ -6,7 +6,7 @@ using System.Runtime.Serialization;
 namespace Unity.Cloud.Assets
 {
     [DataContract]
-    sealed class SearchConditionData
+    class SearchConditionData
     {
         [DataMember(Name = "type")]
         public string Type { get; private set; }
@@ -38,64 +38,38 @@ namespace Unity.Cloud.Assets
                 Conditions.Add(conditionValue);
             }
         }
-
-        public bool SatisfiesAllConditions(object value)
-        {
-            if (Type == "date-range" && value is DateTime dateTime || DateTime.TryParse(value.ToString(), out dateTime))
-            {
-                return Conditions.All(condition => condition.IsEmpty() || SatisfiesCondition(condition, dateTime));
-            }
-
-            return false;
-        }
-
-        public bool SatistiesAnyCondition(object value)
-        {
-            if (Type == "date-range" && value is DateTime dateTime || DateTime.TryParse(value.ToString(), out dateTime))
-            {
-                return Conditions.Any(condition => !condition.IsEmpty() && SatisfiesCondition(condition, dateTime));
-            }
-
-            return false;
-        }
-
-        static bool SatisfiesCondition(SearchConditionValue condition, DateTime dateTime)
-        {
-            if (condition.Value is not DateTime dateTimeCondition) return false;
-
-            if (condition.Type == SearchConditionType.GreaterThanOrEqual)
-            {
-                if (dateTime < dateTimeCondition) return false;
-            }
-            else if (condition.Type == SearchConditionType.LessThan)
-            {
-                if (dateTime >= dateTimeCondition) return false;
-            }
-
-            return true;
-        }
     }
 
     [DataContract]
-    public class SearchConditionValue
+    class SearchConditionValue
     {
         [DataMember(Name = "value")]
-        string ValueString => Value?.ToString() ?? string.Empty;
+        string ValueString => ValueToString();
 
         [DataMember(Name = "conditionType")]
         public string Type { get; private set; }
 
         public object Value { get; set; }
 
-        public SearchConditionValue(SearchConditionType conditionType, object value)
+        public SearchConditionValue(SearchConditionRange conditionRange, object value)
         {
-            Type = conditionType.ToString();
+            Type = conditionRange.ToString();
             Value = value;
         }
 
         internal bool IsEmpty()
         {
             return string.IsNullOrEmpty(Type) || string.IsNullOrEmpty(ValueString);
+        }
+
+        string ValueToString()
+        {
+            if (Value is DateTime dateTime)
+            {
+                return dateTime.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fffZ");
+            }
+
+            return Value?.ToString() ?? string.Empty;
         }
     }
 }

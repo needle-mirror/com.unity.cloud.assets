@@ -20,7 +20,7 @@ namespace Unity.Cloud.Assets
         public DatasetRequest(ProjectId projectId, AssetId assetId, AssetVersion assetVersion, DatasetId datasetId, IDatasetBaseData data = null)
             : base(projectId, assetId, assetVersion)
         {
-            m_PathAndQueryParams += $"/datasets/{datasetId}";
+            m_RequestUrl += $"/datasets/{datasetId}";
 
             m_Data = data;
         }

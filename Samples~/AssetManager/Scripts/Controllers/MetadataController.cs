@@ -11,22 +11,20 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
     public class MetadataController
     {
         readonly VisualElement m_ContentContainer;
-        readonly bool m_IsSystemMetadata;
         readonly VisualTreeAsset m_Template;
 
         readonly AddMetadataPopupController m_AddMetadataController;
 
         IMetadataContainer m_MetadataContainer;
         readonly List<string> m_MetadataKeys = new();
-        readonly Dictionary<string, object> m_MetadataValues = new();
+        readonly Dictionary<string, MetadataValue> m_MetadataValues = new();
         readonly List<string> m_MetadataKeysToRemove = new();
 
         CancellationTokenSource m_GetterCancellationTokenSource;
 
-        public MetadataController(VisualElement contentContainer, bool isSystemMetadata, VisualTreeAsset template, AddMetadataPopupController addMetadataController)
+        public MetadataController(VisualElement contentContainer, VisualTreeAsset template, AddMetadataPopupController addMetadataController)
         {
             m_ContentContainer = contentContainer;
-            m_IsSystemMetadata = isSystemMetadata;
             m_Template = template;
 
             m_AddMetadataController = addMetadataController;
@@ -39,7 +37,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
         {
             var cancellationToken = RefreshCancellationToken();
 
-            m_MetadataContainer = m_IsSystemMetadata ? asset.SystemMetadata : asset.Metadata;
+            m_MetadataContainer = asset.Metadata;
 
             await PopulateMetadataAsync(cancellationToken);
         }
@@ -48,7 +46,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
         {
             var cancellationToken = RefreshCancellationToken();
 
-            m_MetadataContainer = m_IsSystemMetadata ? dataset.SystemMetadata : dataset.Metadata;
+            m_MetadataContainer = dataset.Metadata;
 
             if (cancellationToken.IsCancellationRequested) return;
 
@@ -102,19 +100,19 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
         async Task PopulateMetadataAsync(CancellationToken cancellationToken)
         {
-            var metadata = await m_MetadataContainer.Query().ExecuteAsync(cancellationToken);
+            var metadata = m_MetadataContainer.Query().ExecuteAsync(cancellationToken);
 
-            foreach (var kvp in metadata)
+            await foreach (var kvp in metadata)
             {
                 m_MetadataKeys.Add(kvp.Key);
 
                 var visualElement = CreateMetadataElement(kvp.Key);
 
-                await ParseValueAsync(kvp.Key, kvp.Value, visualElement, cancellationToken);
+                _ = ParseValueAsync(kvp.Key, kvp.Value, visualElement, cancellationToken);
             }
         }
 
-        async Task ParseValueAsync(string key, IMetadataValue value, VisualElement visualElement, CancellationToken cancellationToken)
+        async Task ParseValueAsync(string key, MetadataValue value, VisualElement visualElement, CancellationToken cancellationToken)
         {
             if (cancellationToken.IsCancellationRequested) return;
 
@@ -125,73 +123,36 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
                     break;
 
                 case MetadataValueType.Boolean:
-                    var boolField = visualElement.Q<Toggle>("Boolean");
-                    boolField.style.display = DisplayStyle.Flex;
-
-                    boolField.SetValueWithoutNotify(value.AsBoolean());
-                    boolField.RegisterValueChangedCallback(evt =>
-                    {
-                        m_MetadataValues[key] = evt.newValue;
-                    });
+                    PopulateBoolean(key, value.AsBoolean(), visualElement);
                     break;
 
                 case MetadataValueType.Number:
-                    var numberField = visualElement.Q<DoubleField>("Number");
-                    numberField.style.display = DisplayStyle.Flex;
-
-                    numberField.SetValueWithoutNotify(value.AsNumber());
-                    numberField.RegisterValueChangedCallback(evt =>
-                    {
-                        m_MetadataValues[key] = evt.newValue;
-                    });
+                    PopulateNumber(key, value.AsNumber(), visualElement);
                     break;
 
                 case MetadataValueType.SingleSelection:
-                    var singleSelectionField = visualElement.Q<DropdownField>("SingleSelection");
-                    singleSelectionField.style.display = DisplayStyle.Flex;
-
-                    await PopulateSingleSelectionAsync(key, value.AsSingleSelection(), singleSelectionField);
+                    await PopulateSingleSelectionAsync(key, null, value.AsSingleSelection(), visualElement);
                     break;
 
                 case MetadataValueType.MultiSelection:
-                    await PoplateMultiSelectionAsync(key, value.AsMultiSelection(), visualElement);
+                    await PoplateMultiSelectionAsync(key, null, value.AsMultiSelection(), visualElement);
                     break;
 
                 case MetadataValueType.Url:
-                    var urlField = visualElement.Q("Url");
-                    urlField.style.display = DisplayStyle.Flex;
-
-                    PopulateUrl(key, value.AsUrl(), urlField);
+                    PopulateUrl(key, value.AsUrl(), visualElement);
                     break;
 
                 case MetadataValueType.Timestamp:
-                    var timestampField = visualElement.Q<TextField>("Text");
-                    timestampField.style.display = DisplayStyle.Flex;
-
-                    timestampField.SetValueWithoutNotify(value.ToString());
-                    timestampField.RegisterValueChangedCallback(evt =>
-                    {
-                        if (DateTime.TryParse(evt.newValue, out var timestamp))
-                        {
-                            m_MetadataValues[key] = timestamp;
-                        }
-                    });
+                    PopulateTimestamp(key, value.AsTimestamp(), visualElement);
                     break;
 
                 default:
-                    var textField = visualElement.Q<TextField>("Text");
-                    textField.style.display = DisplayStyle.Flex;
-
-                    textField.SetValueWithoutNotify(value.ToString());
-                    textField.RegisterValueChangedCallback(evt =>
-                    {
-                        m_MetadataValues[key] = evt.newValue;
-                    });
+                    PopulateText(key, value.AsText(), visualElement);
                     break;
             }
         }
 
-        async Task WaitOnUnknownAsync(string key, IMetadataValue value, VisualElement visualElement, CancellationToken cancellationToken)
+        async Task WaitOnUnknownAsync(string key, MetadataValue value, VisualElement visualElement, CancellationToken cancellationToken)
         {
             // Apply a timeout to prevent waiting forever
             var timeoutCancellationSource = new CancellationTokenSource(3000);
@@ -207,9 +168,73 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             await ParseValueAsync(key, value, visualElement, cancellationToken);
         }
 
-        async Task PopulateSingleSelectionAsync(string key, SingleSelectionMetadata metadata, DropdownField dropdownField)
+        void PopulateBoolean(string key, BooleanMetadata metadata, VisualElement visualElement)
         {
-            var choices = await metadata.GetAcceptedValuesAsync();
+            var boolField = visualElement.Q<Toggle>("Boolean");
+            boolField.style.display = DisplayStyle.Flex;
+
+            boolField.SetValueWithoutNotify(metadata.Value);
+            boolField.RegisterValueChangedCallback(evt =>
+            {
+                metadata.Value = evt.newValue;
+                m_MetadataValues[key] = metadata;
+            });
+        }
+
+        void PopulateNumber(string key, NumberMetadata metadata, VisualElement visualElement)
+        {
+            var numberField = visualElement.Q<DoubleField>("Number");
+            numberField.style.display = DisplayStyle.Flex;
+
+            numberField.SetValueWithoutNotify(metadata.Value);
+            numberField.RegisterValueChangedCallback(evt =>
+            {
+                metadata.Value = evt.newValue;
+                m_MetadataValues[key] = metadata;
+            });
+        }
+
+        void PopulateTimestamp(string key, DateTimeMetadata metadata, VisualElement visualElement)
+        {
+            var timestampField = visualElement.Q<TextField>("Text");
+            timestampField.style.display = DisplayStyle.Flex;
+
+            timestampField.SetValueWithoutNotify(metadata.Value.ToString());
+            timestampField.RegisterValueChangedCallback(evt =>
+            {
+                if (DateTime.TryParse(evt.newValue, out var timestamp))
+                {
+                    metadata.Value = timestamp;
+                    m_MetadataValues[key] = metadata;
+                }
+            });
+        }
+
+        void PopulateText(string key, StringMetadata metadata, VisualElement visualElement)
+        {
+            var textField = visualElement.Q<TextField>("Text");
+            textField.style.display = DisplayStyle.Flex;
+
+            textField.SetValueWithoutNotify(metadata.Value);
+            textField.RegisterValueChangedCallback(evt =>
+            {
+                metadata.Value = evt.newValue;
+                m_MetadataValues[key] = metadata;
+            });
+        }
+
+        async Task PopulateSingleSelectionAsync(string key, ISelectionFieldDefinition selectionFieldDefinition, SingleSelectionMetadata metadata, VisualElement visualElement)
+        {
+            var dropdownField = visualElement.Q<DropdownField>("SingleSelection");
+            dropdownField.style.display = DisplayStyle.Flex;
+
+            if (selectionFieldDefinition == null)
+            {
+                var fieldDefinition = await m_AddMetadataController.GetFieldDefinitionAsync(key);
+                selectionFieldDefinition = fieldDefinition.AsSelectionFieldDefinition();
+            }
+
+            var choices = selectionFieldDefinition.AcceptedValues;
 
             dropdownField.choices = choices.ToList();
             dropdownField.SetValueWithoutNotify(metadata.SelectedValue);
@@ -220,11 +245,17 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             });
         }
 
-        async Task PoplateMultiSelectionAsync(string key, MultiSelectionMetadata metadata, VisualElement visualElement)
+        async Task PoplateMultiSelectionAsync(string key, ISelectionFieldDefinition selectionFieldDefinition, MultiSelectionMetadata metadata, VisualElement visualElement)
         {
             var fieldTemplate = visualElement.Q<TemplateContainer>("MultiSelectionMetadataTemplate");
 
-            var choices = await metadata.GetAcceptedValuesAsync();
+            if (selectionFieldDefinition == null)
+            {
+                var fieldDefinition = await m_AddMetadataController.GetFieldDefinitionAsync(key);
+                selectionFieldDefinition = fieldDefinition.AsSelectionFieldDefinition();
+            }
+
+            var choices = selectionFieldDefinition.AcceptedValues;
 
             foreach (var choice in choices)
             {
@@ -252,7 +283,10 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
         void PopulateUrl(string key, UrlMetadata metadata, VisualElement visualElement)
         {
-            var label = visualElement.Q<TextField>("UrlLabel");
+            var urlField = visualElement.Q("Url");
+            urlField.style.display = DisplayStyle.Flex;
+
+            var label = urlField.Q<TextField>("UrlLabel");
             label.SetValueWithoutNotify(metadata.Label);
             label.RegisterValueChangedCallback(evt =>
             {
@@ -260,9 +294,9 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
                 m_MetadataValues[key] = metadata;
             });
 
-            var urlField = visualElement.Q<TextField>("Uri");
-            urlField.SetValueWithoutNotify(metadata.Uri?.ToString());
-            urlField.RegisterValueChangedCallback(evt =>
+            var url = urlField.Q<TextField>("Uri");
+            url.SetValueWithoutNotify(metadata.Uri?.ToString());
+            url.RegisterValueChangedCallback(evt =>
             {
                 if (Uri.TryCreate(evt.newValue, UriKind.Absolute, out var uri))
                 {
@@ -288,84 +322,51 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             switch (fieldDefinition.Type)
             {
                 case FieldDefinitionType.Boolean:
-                    m_MetadataValues[key] = false;
+                    var boolMetadata = new BooleanMetadata();
+                    m_MetadataValues[key] = boolMetadata;
 
-                    var boolField = visualElement.Q<Toggle>("Boolean");
-                    boolField.style.display = DisplayStyle.Flex;
-
-                    boolField.SetValueWithoutNotify(false);
-                    boolField.RegisterValueChangedCallback(evt =>
-                    {
-                        m_MetadataValues[key] = evt.newValue;
-                    });
+                    PopulateBoolean(key, boolMetadata, visualElement);
                     break;
 
                 case FieldDefinitionType.Number:
-                    m_MetadataValues[key] = 0;
+                    var numberMetadata = new NumberMetadata();
+                    m_MetadataValues[key] = numberMetadata;
 
-                    var numberField = visualElement.Q<DoubleField>("Number");
-                    numberField.style.display = DisplayStyle.Flex;
-
-                    numberField.SetValueWithoutNotify(0);
-                    numberField.RegisterValueChangedCallback(evt =>
-                    {
-                        m_MetadataValues[key] = evt.newValue;
-                    });
+                    PopulateNumber(key, numberMetadata, visualElement);
                     break;
 
                 case FieldDefinitionType.Selection:
                     var selectionFieldDefinition = fieldDefinition.AsSelectionFieldDefinition();
                     if (selectionFieldDefinition.Multiselection)
                     {
-                        var multiselectionField = new MultiSelectionMetadata(selectionFieldDefinition);
+                        var multiselectionField = new MultiSelectionMetadata();
                         m_MetadataValues[key] = multiselectionField;
 
-                        _ = PoplateMultiSelectionAsync(key, multiselectionField, visualElement);
+                        _ = PoplateMultiSelectionAsync(key, selectionFieldDefinition, multiselectionField, visualElement);
                     }
                     else
                     {
-                        var singleSelectionField = visualElement.Q<DropdownField>("SingleSelection");
-                        singleSelectionField.style.display = DisplayStyle.Flex;
-
-                        _ = PopulateSingleSelectionAsync(key, new SingleSelectionMetadata(selectionFieldDefinition), singleSelectionField);
+                        _ = PopulateSingleSelectionAsync(key, selectionFieldDefinition, new SingleSelectionMetadata(), visualElement);
                     }
 
                     break;
 
                 case FieldDefinitionType.Url:
-                    var urlField = visualElement.Q("Url");
-                    urlField.style.display = DisplayStyle.Flex;
-
-                    PopulateUrl(key, new UrlMetadata(), urlField);
+                    PopulateUrl(key, new UrlMetadata(), visualElement);
                     break;
 
                 case FieldDefinitionType.Timestamp:
-                    m_MetadataValues[key] = DateTime.UtcNow;
+                    var timestampMetadata = new DateTimeMetadata(DateTime.UtcNow);
+                    m_MetadataValues[key] = timestampMetadata;
 
-                    var timestampField = visualElement.Q<TextField>("Text");
-                    timestampField.style.display = DisplayStyle.Flex;
-
-                    timestampField.SetValueWithoutNotify(DateTime.UtcNow.ToString());
-                    timestampField.RegisterValueChangedCallback(evt =>
-                    {
-                        if (DateTime.TryParse(evt.newValue, out var timestamp))
-                        {
-                            m_MetadataValues[key] = timestamp;
-                        }
-                    });
+                    PopulateTimestamp(key, timestampMetadata, visualElement);
                     break;
 
                 default:
-                    m_MetadataValues[key] = string.Empty;
+                    var stringMetadata = new StringMetadata();
+                    m_MetadataValues[key] = stringMetadata;
 
-                    var textField = visualElement.Q<TextField>("Text");
-                    textField.style.display = DisplayStyle.Flex;
-
-                    textField.SetValueWithoutNotify(string.Empty);
-                    textField.RegisterValueChangedCallback(evt =>
-                    {
-                        m_MetadataValues[key] = evt.newValue;
-                    });
+                    PopulateText(key, stringMetadata, visualElement);
                     break;
             }
         }

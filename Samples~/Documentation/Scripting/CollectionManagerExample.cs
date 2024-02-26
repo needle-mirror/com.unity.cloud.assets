@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -20,10 +21,9 @@ namespace Unity.Cloud.Documentation.Assets.Scripting
 
         #region ListCollections
 
-        async Task<IEnumerable<IAssetCollection>> ListCollections(IAssetProject project, CancellationToken cancellationToken)
+        IAsyncEnumerable<IAssetCollection> ListCollectionsAsync(IAssetProject project, CancellationToken cancellationToken)
         {
-            var collections = await project.ListCollectionsAsync(cancellationToken);
-            return collections;
+            return project.ListCollectionsAsync(Range.All, cancellationToken);
         }
 
         #endregion
@@ -44,10 +44,13 @@ namespace Unity.Cloud.Documentation.Assets.Scripting
 
         async Task UpdateCollection(IAssetCollection assetCollection, CancellationToken cancellationToken)
         {
-            assetCollection.SetName("A new name");
-            assetCollection.SetDescription("A new description");
+            var update = new AssetCollectionUpdate()
+            {
+                Name = "A new name",
+                Description = "A new description"
+            };
 
-            await assetCollection.UpdateAsync(cancellationToken);
+            await assetCollection.UpdateAsync(update, cancellationToken);
         }
 
         #endregion
@@ -74,7 +77,7 @@ namespace Unity.Cloud.Documentation.Assets.Scripting
 
         async Task CollectionInsert(IAssetCollection assetCollection, CancellationToken cancellationToken, params IAsset[] assets)
         {
-            await assetCollection.AddAssetsAsync(assets, cancellationToken);
+            await assetCollection.LinkAssetsAsync(assets, cancellationToken);
         }
 
         #endregion
@@ -83,7 +86,7 @@ namespace Unity.Cloud.Documentation.Assets.Scripting
 
         async Task CollectionRemove(IAssetCollection assetCollection, CancellationToken cancellationToken, params IAsset[] assets)
         {
-            await assetCollection.RemoveAssetsAsync(assets, cancellationToken);
+            await assetCollection.UnlinkAssetsAsync(assets, cancellationToken);
         }
 
         #endregion

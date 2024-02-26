@@ -12,13 +12,14 @@ namespace Unity.Cloud.Assets
             includeFields ??= new FieldsFilter();
 
             asset.Name = assetData.Name;
-            asset.Description = assetData.Description;
             asset.Tags = assetData.Tags ?? Array.Empty<string>();
             asset.Type = assetData.Type ?? AssetType.Other;
             asset.Status = assetData.Status;
-            asset.StorageId = assetData.StorageId;
             asset.SystemTags = assetData.SystemTags;
             asset.Labels = assetData.Labels;
+
+            if (includeFields.AssetFields.HasFlag(AssetFields.description))
+                asset.Description = assetData.Description;
 
             if (includeFields.AssetFields.HasFlag(AssetFields.previewFile))
                 asset.PreviewFile = assetData.PreviewFile;
@@ -54,10 +55,7 @@ namespace Unity.Cloud.Assets
                 asset.AuthoringInfo = new AuthoringInfo(assetData.CreatedBy, assetData.Created, assetData.UpdatedBy, assetData.Updated);
 
             if (includeFields.AssetFields.HasFlag(AssetFields.metadata))
-                asset.MetadataEntity.Properties = assetData.Metadata?.From(assetDataSource, asset.Descriptor.OrganizationGenesisId);
-
-            if (includeFields.AssetFields.HasFlag(AssetFields.systemMetadata))
-                asset.SystemMetadataEntity.Properties = assetData.SystemMetadata?.From(assetDataSource, asset.Descriptor.OrganizationGenesisId);
+                asset.MetadataEntity.Properties = assetData.Metadata?.From(assetDataSource, asset.Descriptor.OrganizationId);
         }
 
         internal static AssetCreateData From(this IAssetCreation assetCreation)
@@ -68,8 +66,7 @@ namespace Unity.Cloud.Assets
                 Description = assetCreation.Description,
                 Tags = assetCreation.Tags,
                 Type = assetCreation.Type,
-                Metadata = assetCreation.Metadata ?? new Dictionary<string, object>(),
-                SystemMetadata = assetCreation.SystemMetadata ?? new Dictionary<string, object>(),
+                Metadata = assetCreation.Metadata?.ToObjectDictionary() ?? new Dictionary<string, object>(),
                 Collections = assetCreation.Collections,
             };
         }
@@ -88,8 +85,6 @@ namespace Unity.Cloud.Assets
 
         internal static Asset From(this IAssetData data, IAssetDataSource assetDataSource, OrganizationId organizationId, IEnumerable<ProjectId> availableProjects, FieldsFilter includeFields)
         {
-            data.ValidateSourceProjectId();
-
             var validProjects = new HashSet<ProjectId>(availableProjects);
             validProjects.IntersectWith(data.LinkedProjectIds ?? Array.Empty<ProjectId>());
 
@@ -98,7 +93,6 @@ namespace Unity.Cloud.Assets
 
         internal static Asset From(this IAssetData data, IAssetDataSource assetDataSource, ProjectDescriptor projectDescriptor, FieldsFilter includeFields)
         {
-            data.ValidateSourceProjectId();
             var descriptor = new AssetDescriptor(projectDescriptor, data.Id, data.Version);
             return data.From(assetDataSource, descriptor, includeFields);
         }
@@ -134,30 +128,17 @@ namespace Unity.Cloud.Assets
                 PreviewFileUrl = asset.PreviewFileUrl?.ToString(),
                 Status = asset.Status,
                 Created = asset.AuthoringInfo?.Created,
-                CreatedBy = asset.AuthoringInfo?.CreatedBy,
+                CreatedBy = asset.AuthoringInfo?.CreatedBy.ToString(),
                 Updated = asset.AuthoringInfo?.Updated,
-                UpdatedBy = asset.AuthoringInfo?.UpdatedBy,
-                StorageId = asset.StorageId,
+                UpdatedBy = asset.AuthoringInfo?.UpdatedBy.ToString(),
                 Files = asset.Files?.Select(file => file.From()),
                 Datasets = asset.Datasets?.Select(dataset => dataset.From()),
                 SourceProjectId = asset.SourceProject.ProjectId,
                 LinkedProjectIds = asset.LinkedProjects.Select(project => project.ProjectId).ToList(),
                 Metadata = asset.MetadataEntity.From(),
-                SystemMetadata = asset.SystemMetadataEntity.From(),
                 SystemTags = asset.SystemTags,
                 Labels = asset.Labels,
             };
-        }
-
-        static void ValidateSourceProjectId(this IAssetData data)
-        {
-            var sourceProjectId = data.SourceProjectId;
-            if (sourceProjectId == ProjectId.None || string.IsNullOrEmpty(sourceProjectId.ToString()))
-            {
-                sourceProjectId = data.LinkedProjectIds?.FirstOrDefault() ?? ProjectId.None;
-            }
-
-            data.SourceProjectId = sourceProjectId;
         }
     }
 }

@@ -1,21 +1,36 @@
-﻿using System.Net.Http;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
+using System.Runtime.Serialization;
 using System.Text;
 using Unity.Cloud.Common;
 
-namespace Unity.Cloud.Assets.Transformations
+namespace Unity.Cloud.Assets
 {
 
     /// <summary>
     /// Represents a get transformation URL request.
     /// </summary>
+    [DataContract]
     class StartTransformationRequest : DatasetRequest
     {
-        public StartTransformationRequest(WorkflowType workflowType, ProjectId projectId, AssetId assetId,
-            AssetVersion assetVersion, DatasetId datasetId)
-            : base(projectId, assetId, assetVersion, datasetId, null)
+        [DataMember(Name = "inputFiles")]
+        string[] m_InputFiles;
+
+        public StartTransformationRequest(WorkflowType workflowType, IEnumerable<string> inputFiles,
+            ProjectId projectId, AssetId assetId, AssetVersion assetVersion, DatasetId datasetId)
+            : base(projectId, assetId, assetVersion, datasetId)
         {
-            m_PathAndQueryParams +=
+            m_RequestUrl +=
                 $"/transformations/start/{IsolatedSerialization.SerializeWithConverters(workflowType, IsolatedSerialization.StringEnumConverter).Replace("\"", "")}";
+
+            m_InputFiles = inputFiles?.ToArray();
+        }
+
+        public override HttpContent ConstructBody()
+        {
+            var body = IsolatedSerialization.Serialize(this, IsolatedSerialization.defaultSettings);
+            return new StringContent(body, Encoding.UTF8, "application/json");
         }
     }
 }

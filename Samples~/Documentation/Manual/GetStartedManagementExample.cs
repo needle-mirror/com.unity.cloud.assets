@@ -13,7 +13,6 @@ namespace Unity.Cloud.Documentation.Assets
 
     public class AssetManagementBehaviour
     {
-        static readonly Pagination k_DefaultPagination = new(nameof(IAsset.Name), Range.All);
         const int k_DefaultCancellationTimeout = 5000;
 
         IOrganization[] m_AvailableOrganizations;
@@ -69,7 +68,12 @@ namespace Unity.Cloud.Documentation.Assets
 
             try
             {
-                var organizations = await PlatformServices.OrganizationRepository.ListOrganizationsAsync();
+                var organizations = new List<IOrganization>();
+                var organizationsAsyncEnumerable = PlatformServices.OrganizationRepository.ListOrganizationsAsync(Range.All);
+                await foreach (var organization in organizationsAsyncEnumerable)
+                {
+                    organizations.Add(organization);
+                }
                 m_AvailableOrganizations = organizations.ToArray();
             }
             catch (OperationCanceledException oe)
@@ -140,7 +144,7 @@ namespace Unity.Cloud.Documentation.Assets
 
             try
             {
-                var projects = PlatformServices.AssetRepository.ListAssetProjectsAsync(CurrentOrganization.Id, k_DefaultPagination, m_ProjectCancellationTokenSrc.Token);
+                var projects = PlatformServices.AssetRepository.ListAssetProjectsAsync(CurrentOrganization.Id, Range.All, m_ProjectCancellationTokenSrc.Token);
                 _ = PopulateProjectsAsync(projects);
             }
             catch (OperationCanceledException oe)
@@ -177,14 +181,7 @@ namespace Unity.Cloud.Documentation.Assets
             try
             {
                 var token = m_AssetCancellationTokenSrc.Token;
-                var filter = new AssetSearchFilter
-                {
-                    IncludedFields = new FieldsFilter
-                    {
-                        AssetFields = AssetFields.all
-                    }
-                };
-                var assets = CurrentProject.SearchAssetsAsync(filter, k_DefaultPagination, token);
+                var assets = CurrentProject.QueryAssets().ExecuteAsync(token);
                 _ = PopulateAssetsAsync(assets, token);
             }
             catch (OperationCanceledException oe)

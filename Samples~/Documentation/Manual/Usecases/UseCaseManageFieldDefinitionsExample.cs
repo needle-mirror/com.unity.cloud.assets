@@ -190,7 +190,7 @@ namespace Unity.Cloud.Documentation.Assets
             var field = m_Behaviour.CurrentFieldDefinition;
 
             GUILayout.Label($"Field Definition: {field.Descriptor.FieldKey}");
-            GUILayout.Label($"Status: {field.Status}");
+            GUILayout.Label($"Is deleted: {field.IsDeleted}");
             GUILayout.Label($"Created on: {field.AuthoringInfo?.Created:yyyy-M-d dddd}");
             GUILayout.Label($"Updated on: {field.AuthoringInfo?.Updated:yyyy-M-d dddd}");
 
@@ -207,7 +207,7 @@ namespace Unity.Cloud.Documentation.Assets
 
             GUILayout.Label($"Type: {field.Type}{multiSelectionStatus}");
 
-            if (field.Status == "Deleted")
+            if (field.IsDeleted)
             {
                 GUILayout.Label($"Display name: {field.DisplayName}");
                 if (!string.IsNullOrEmpty(acceptedValues))
@@ -281,8 +281,8 @@ namespace Unity.Cloud.Documentation.Assets
             FieldDefinitions = new List<IFieldDefinition>();
             CurrentFieldDefinition = null;
 
-            var pagination = new Pagination(Range.All);
-            var asyncList = PlatformServices.AssetRepository.ListFieldDefinitionsAsync(CurrentOrganization.Id, pagination, true, CancellationToken.None);
+            var asyncList = PlatformServices.AssetRepository.QueryFieldDefinitions(CurrentOrganization.Id)
+                .ExecuteAsync(CancellationToken.None);
             await foreach (var fieldDefinition in asyncList)
             {
                 FieldDefinitions.Add(fieldDefinition);

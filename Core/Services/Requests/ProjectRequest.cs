@@ -13,7 +13,7 @@ namespace Unity.Cloud.Assets
         /// <param name="projectId">ID of the project</param>
         public ProjectRequest(ProjectId projectId)
         {
-            m_PathAndQueryParams = $"/projects/{projectId}";
+            m_RequestUrl = $"/projects/{projectId}";
         }
     }
 }

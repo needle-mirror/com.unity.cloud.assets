@@ -5,6 +5,88 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [1.0.0] - 2024-02-26
+
+### Added
+- `IsDeleted` property to `IFieldDefinition`
+- `FieldDefinitionQueryBuilder`, `ProjectQueryBuilder`, `CollectionQueryBuilder`, `AssetQueryBuilder`, classes to build and execute queries.
+- `BooleanMetadata`, `DateTimeMetadata`, `NumberMetadata`, `StringMetadata`, and `UserMetadata`.
+- `IAsset.GetPreviewUrlAsync` and `IFile.GetPreviewUrlAsync`.
+- `IDataset.RefreshAsync()` and `IFile.RefreshAsync()`.
+- `IAsset.GetPreviewDatasetAsync()` and `IAsset.GetSourceDatasetAsync()` extension methods.
+- `UpdateStatusAsync` method to `IAsset`.
+- `WithValue(string, SearchOptions)` and `WithValue(Regex)` overloads to `StringSearchCriteria`.
+- Re-added `UploadAsync` method to `IFile` ans updated the method of the same name in `FileEntity`.
+
+### Changed
+- [Breaking] Renamed `OrganizationGenesisId` property to `OrganizationId` in `CollectionDescriptor` and `TransformationDescriptor` classes.
+- [Breaking] Changed `CreatedBy` and `UpdatedBy` property type of `AuthoringInfo` class to `UserId`.
+- [Breaking] Changed `CreatedBy` and `UpdatedBy` property type of `AuthoringInfoSearchFilter` class to `IdSearchCriteria<UserId>`.
+- [Breaking] `Collections` property of `AssetSearchFilter` changed from `List<CollectionPath>` to `QueryListParameter<CollectionPath>`.
+- [Breaking] `SearchAssetsAsync()` replaced by `QueryAssets()`.
+- [Breaking] `CountAssetsAsync()` replaced by `GroupAndCountAssets()`; `CountAssetsAsync()` returns `int` instead of `Aggregation`.
+- [Breaking] Renames `CollectionDescriptor.CollectionPath` to `CollectionDescriptor.Path`.
+- [Breaking] Renamed `AssetSearchFilter` to `AssetSearchCriteria`, `DatasetSearchFilter` to `DatasetSearchCriteria`, `FileSearchFiter` to `FilterSearchCriteria`, and `MetadataSearchFilter` to `MetadataSearchCriteria`.
+- [Breaking] `AssetSearchFilter` contains methods to `Include()`, `Exclude()`, and `Any()` on search criteria.
+- [Breaking] `Include()`, `Exclude()`, and `Any()` methods of search criteria replaced with `WithValue()` method; use `Include()`, `Exclude()`, and `Any()`, on `AssetSearchFilter`.
+- [Breaking] Renamed `IAssetCollection.AddAssetsAsync()` and `IAssetCollection.RemoveAssetsAsync()` to `IAssetCollection.ListAssetsAsync()` and `IAssetCollection.UnlinkAssetsAsync()` respectively.
+- [Breaking] Renamed `WorkflowType.TranscodeVideo` to `WorkflowType.Transcode_Video`.
+- [Breaking] `AccumulateIncludedCriteria`, `AccumulateExcludedCriteria`, and `AccumulateAnyCriteria` methods of `IAssetSearchFilter` return `IReadOnlyDictionary` instead of `Dictionary`.
+- Update com.unity.cloud.common dependency to 1.0.0.
+
+### Fixed
+- Fixes listing of files in `IDataset`.
+
+### Removed
+- [Breaking] Removed `Status` property from `IFieldDefinition`; use `IsDeleted`.
+- [Breaking] Removed `Pagination`; use `LimitTo()` and `OrderBy()` methods of query builders where available.
+- [Breaking] Removed `AggregationParameters`; use `GroupAndCountAssetsQueryBuilder`.
+- [Breaking] Removed `Aggregation`.
+- [Breaking] Internalized `FieldsFilter`.
+- [Breaking] Removed `MetadataObject` and `IMetadataValue`; use `MetadataValue`.
+- [Breaking] Removed `IAsset.PreviewFileUrl` and `IFile.PreviewUrl`; use `IAsset.GetPreviewUrlAsync` and `IFile.GetPreviewUrlAsync` respectively.
+- [Breaking] Removed `IAsset.GetProject()`, `IDataset.GetProject()`, and `IDataset.GetAsset()`.
+- [Breaking] Removed `IFile.InvalidateCachedUrls()`; use `IFile.RefreshAsync().
+- [Breaking] Removed `IdSearchCriteria`; use `SearchCriteria<string>`.
+- [Breaking] Removed inheritance of `IFieldDefinitionUpdate` from `IFieldDefinitionCreation` and `FieldDefinitionUpdate` from `FieldDefinitionCreation`.
+- [Breaking] Removed `PublishAsync`, `WithdrawAsync`, `SendToReviewAsync`, `ApproveAsync`, and `RejectAsync` methods from `IAsset`; use `UpdateStatusAsync`.
+
+## [1.0.0-exp.7] - 2024-02-13
+
+### Added
+- Added `StartTransformationAsync(ITransformationCreation, CancellationToken)` method to `IDataset`.
+- `GetTransformationAsync` method to `IAssetRepository`
+- `GetAssetProjectAsync` shortcut method to `IDataset`
+- `ListTransformationsAsync` method to `IDataset`
+- `TransformationQueryBuilder` class to build transformation queries
+- `QueryTransformations` method to `IAssetProject`
+- `Progress` property and `RefreshAsync` method to `ITransformation`
+- Added `UpdateAsync(IAssetCollectionUpdate, CancellationToken)` method to `IAssetCollection`.
+- `RefreshAsync` method to `IAssetCollection` to update properties.
+- Added `ReturnCached` and `ForceRefresh` options to `MetadataQueryBuilder`.
+
+### Changed
+- Updated Asset Manager sample to display progress bars for workflow operations.
+- Updated Asset Manager sample to add a `Remove` button in the asset's context menu to unlink an asset from the current project.
+- [Breaking] Renamed `ComplexSearchCriteria<T>` to `CompoundSearchCriteria`.
+- [Breaking] Renamed `SearchCriteriaBase` to `BaseSearchCriteria`.
+- [Breaking] Renamed `CollectionSearchCriteria<U,T>` to `ListSearchCriteria<T>`.
+- [Breaking] Renamed `SearchConditionType` to `SearchConditionRange`.
+- Update com.unity.cloud.common dependency to 1.0.0-pre.6.
+
+### Fixed
+- Maintenance of internal code.
+- `IAsset.LinkedProjects` no longer empty on asset creation.
+- Fixes formatting query when parameter can expect a list.
+- Fixes pagination of search requests.
+
+### Removed
+- [Breaking] Removed `ISearchCriteria`, `ISearchCriteria<T>`, and `HashsetSearchCriteria`
+- [Breaking] Removed `SystemMetadata` from `IAsset`, `IDataset`, and `IFile`.
+- [Breaking] Removed `StartTransformationAsync(WorkflowType, CancellationToken)` method from `IDataset`.
+- [Breaking] Removed `IAsset.StorageId` property.
+- [Breaking] Removed `SetName`, `SetDescription`, and `UpdateAsync(CancellationToken)` from `IAssetCollection`.
+
 ## [1.0.0-exp.6] - 2024-01-15
 
 ### Added

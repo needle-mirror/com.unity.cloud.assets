@@ -21,15 +21,11 @@ namespace Unity.Cloud.Assets.Samples
         /// Returns a <see cref="IAuthenticationStateProvider"/>.
         /// </summary>
         public static IAuthenticationStateProvider AuthenticationStateProvider => s_CompositeAuthenticator;
-        /// <summary>
-        /// Returns a <see cref="IAuthenticatedUserInfoProvider"/>.
-        /// </summary>
-        public static IAuthenticatedUserInfoProvider AuthenticatedUserInfoProvider => s_CompositeAuthenticator;
 
         /// <summary>
         /// Returns an <see cref="IOrganizationProvider"/>.
         /// </summary>
-        public static IOrganizationRepository OrganizationRepository { get; private set; }
+        public static IOrganizationRepository OrganizationRepository => s_CompositeAuthenticator;
 
         /// <summary>
         /// Returns an <see cref="IAssetRepository"/>.
@@ -56,8 +52,6 @@ namespace Unity.Cloud.Assets.Samples
             s_CompositeAuthenticator = new CompositeAuthenticator(compositeAuthenticatorSettings);
 
             var serviceHttpClient = new ServiceHttpClient(HttpClient, s_CompositeAuthenticator, playerSettings);
-
-            OrganizationRepository = new AuthenticatorOrganizationRepository(serviceHttpClient, serviceHostResolver);
 
             AssetRepository = AssetRepositoryFactory.Create(serviceHttpClient, serviceHostResolver);
         }

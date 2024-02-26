@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Unity.Cloud.Common;
 
 namespace Unity.Cloud.Assets
 {
@@ -32,31 +31,25 @@ namespace Unity.Cloud.Assets
         CollectionPath ParentPath { get; }
 
         /// <summary>
-        /// Sets the <see cref="Name"/> of the collection.
-        /// </summary>
-        /// <param name="name">The name of the collection. </param>
-        /// <exception cref="ArgumentNullException">This exception is thrown if the <paramref name="name"/> is null or empty. </exception>
-        void SetName(string name);
-
-        /// <summary>
-        /// Sets the <see cref="Description"/> of the collection.
-        /// </summary>
-        /// <param name="description">The description of the collection. </param>
-        /// <exception cref="ArgumentNullException">This exception is thrown if the <paramref name="description"/> is null or empty. </exception>
-        void SetDescription(string description);
-
-        /// <summary>
         /// Returns the full path to the collection.
         /// </summary>
         /// <returns>The path of the collection. </returns>
         string GetFullCollectionPath();
 
         /// <summary>
-        /// Synchronizes the local changes to the collection with the data source.
+        /// Refreshes the collection properties.
         /// </summary>
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task with no result. </returns>
-        Task UpdateAsync(CancellationToken cancellationToken);
+        Task RefreshAsync(CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Updates the collection.
+        /// </summary>
+        /// <param name="assetCollectionUpdate">The object containing the collection information to update. </param>
+        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
+        /// <returns>A task with no result. </returns>
+        Task UpdateAsync(IAssetCollectionUpdate assetCollectionUpdate, CancellationToken cancellationToken);
 
         /// <summary>
         /// Adds a set of asset references to the collection.
@@ -64,7 +57,7 @@ namespace Unity.Cloud.Assets
         /// <param name="assets">The assets to link to the collection. </param>
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task with no result. </returns>
-        Task AddAssetsAsync(IEnumerable<IAsset> assets, CancellationToken cancellationToken);
+        Task LinkAssetsAsync(IEnumerable<IAsset> assets, CancellationToken cancellationToken);
 
         /// <summary>
         /// Removes a set of asset references from the collection.
@@ -72,7 +65,7 @@ namespace Unity.Cloud.Assets
         /// <param name="assets">The assets to unlink from the collection. </param>
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task with no result. </returns>
-        Task RemoveAssetsAsync(IEnumerable<IAsset> assets, CancellationToken cancellationToken);
+        Task UnlinkAssetsAsync(IEnumerable<IAsset> assets, CancellationToken cancellationToken);
 
         /// <summary>
         /// Creates a new path for the collection.

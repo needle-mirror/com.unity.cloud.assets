@@ -381,24 +381,16 @@ namespace Unity.Cloud.Assets.Samples.AssetDatabaseUploader
             try
             {
                 var assetSearchFilter = new AssetSearchFilter();
-                assetSearchFilter.Name.Include(assetName);
+                assetSearchFilter.Include().Name.WithValue(assetName);
 
-                var pagination = new Pagination(nameof(IAsset.Name), Range.All);
+                var enumerator = m_OrgAndProjectSelector.SelectedProject.QueryAssets().SelectWhereMatchesFilter(assetSearchFilter).ExecuteAsync(cancellationTokenSource.Token);
+                await foreach (var asset in enumerator)
+                {
+                    if (asset.Name == assetName)
+                        return asset;
+                }
 
-                var assetsEnumerator = m_OrgAndProjectSelector.SelectedProject.SearchAssetsAsync(assetSearchFilter, pagination, cancellationTokenSource.Token).GetAsyncEnumerator(cancellationTokenSource.Token);
-                try
-                {
-                    while (await assetsEnumerator.MoveNextAsync())
-                    {
-                        var asset = assetsEnumerator.Current;
-                        if (asset.Name == assetName)
-                            return asset;
-                    }
-                }
-                catch (Exception)
-                {
-                    Debug.Log($"Asset: {assetName} does not exist in the project: {m_OrgAndProjectSelector.SelectedProject.Name}");
-                }
+                Debug.Log($"Asset: {assetName} does not exist in the project: {m_OrgAndProjectSelector.SelectedProject.Name}");
             }
             catch (OperationCanceledException oe)
             {

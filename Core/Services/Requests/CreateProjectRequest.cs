@@ -21,7 +21,7 @@ namespace Unity.Cloud.Assets
         {
             Data = data;
 
-            m_PathAndQueryParams += "/projects";
+            m_RequestUrl += "/projects";
         }
 
         public override HttpContent ConstructBody()

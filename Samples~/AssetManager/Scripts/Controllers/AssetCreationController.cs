@@ -16,7 +16,6 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
         IAssetProject m_AssetProject;
         AssetCreation m_CurrentAssetCreation;
-        DatasetCreation m_CurrentDatasetCreation;
 
         public event Action<bool> ChangeButtonEnabledState;
         public event Action<IAsset, IDataset> AssetCreated;
@@ -43,7 +42,6 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
         public void Show(IAssetProject project)
         {
             m_AssetProject = project;
-            m_CurrentDatasetCreation = new DatasetCreation("Default");
             var assetName = $"New Asset {DateTime.Now:yyyy-MM-dd HH:mm:ss}";
             m_CurrentAssetCreation = new AssetCreation(assetName)
             {
@@ -69,7 +67,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
         async Task CreateAssetAsync()
         {
-            if (m_AssetProject == null || m_CurrentAssetCreation == null || m_CurrentDatasetCreation == null)
+            if (m_AssetProject == null || m_CurrentAssetCreation == null)
             {
                 SetButtonsEnabled(true);
                 return;
@@ -117,22 +115,20 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
         async Task OnAssetCreated(IAsset createdAsset)
         {
             var datasets = new List<IDataset>();
-            await foreach(var dataset in createdAsset.ListDatasetsAsync(Range.All, CancellationToken.None))
+            await foreach (var dataset in createdAsset.ListDatasetsAsync(Range.All, CancellationToken.None))
             {
                 datasets.Add(dataset);
             }
 
-            var sourceDataset = datasets.FirstOrDefault();
+            var sourceDataset = datasets.FirstOrDefault(x => x.Name == "Source");
             if (sourceDataset == null)
             {
                 Debug.LogError($"No datasets found for created asset {createdAsset.Name}.");
             }
 
-            var didSucceed = await m_FileController.UploadFiles(sourceDataset);
+            await m_FileController.UploadFiles(sourceDataset);
 
             SetButtonsEnabled(true);
-
-            if (!didSucceed) return;
 
             m_FileController.Hide();
 
@@ -141,7 +137,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
         void OnFilesAdded(IEnumerable<string> files)
         {
-            if (m_CurrentAssetCreation != null && m_CurrentDatasetCreation != null && files.Any())
+            if (m_CurrentAssetCreation != null && files.Any())
             {
                 m_CreateAssetButton?.Show();
             }

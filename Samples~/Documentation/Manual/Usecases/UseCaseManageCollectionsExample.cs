@@ -63,7 +63,8 @@ namespace Unity.Cloud.Documentation.Assets
 
         Vector2 m_CollectionListScrollPosition;
 
-        string m_NewCollectionName = "My Asset Collection";
+        string m_NewCollectionName = "";
+        string m_UpdatedCollectionDescription = "";
 
         void ListCollections()
         {
@@ -87,6 +88,7 @@ namespace Unity.Cloud.Documentation.Assets
                     if (GUILayout.Button($"{collection.Name}", GUILayout.MaxWidth(Screen.width * 0.2f)))
                     {
                         m_Behaviour.SetCurrentCollection(collection);
+                        m_UpdatedCollectionDescription = collection.Description;
                     }
                 }
 
@@ -162,12 +164,12 @@ namespace Unity.Cloud.Documentation.Assets
 
             GUILayout.Label($"{collection.ParentPath}::{collection.Name}");
             GUILayout.Space(5f);
-            GUILayout.Label($"{collection.Description}");
+            m_UpdatedCollectionDescription = TextField(m_UpdatedCollectionDescription, "Description:");
             GUILayout.Space(5f);
 
             if (GUILayout.Button("Update"))
             {
-                _ = m_Behaviour.UpdateProjectAssetCollectionAsync();
+                _ = m_Behaviour.UpdateProjectAssetCollectionAsync(m_UpdatedCollectionDescription);
             }
 
             if (GUILayout.Button("Delete"))
@@ -203,7 +205,7 @@ namespace Unity.Cloud.Documentation.Assets
                 }
                 else if (GUILayout.Button("Add asset to collection"))
                 {
-                    _ = m_Behaviour.AddAssetToCollectionAsync(m_Behaviour.CurrentAsset);
+                    _ = m_Behaviour.LinkAssetToCollectionAsync(m_Behaviour.CurrentAsset);
                 }
             }
 
@@ -227,7 +229,7 @@ namespace Unity.Cloud.Documentation.Assets
             GUILayout.Label($"{asset.Name}");
             if (GUILayout.Button($"Remove from collection"))
             {
-                _ = m_Behaviour.RemoveAssetFromCollectionAsync(asset);
+                _ = m_Behaviour.UnlinkAssetFromCollectionAsync(asset);
             }
 
             GUILayout.EndHorizontal();
@@ -260,7 +262,14 @@ namespace Unity.Cloud.Documentation.Assets
             CurrentCollection = null;
 
             var cancellationTokenSrc = new CancellationTokenSource();
-            AssetCollections = await CurrentProject.ListCollectionsAsync(cancellationTokenSrc.Token);
+            var results = CurrentProject.ListCollectionsAsync(Range.All, cancellationTokenSrc.Token);
+            var collections = new List<IAssetCollection>();
+            await foreach (var collection in results)
+            {
+                collections.Add(collection);
+            }
+
+            AssetCollections = collections;
         }
 
         public void SetCurrentCollection(IAssetCollection collection)
@@ -280,12 +289,10 @@ namespace Unity.Cloud.Documentation.Assets
             CurrentCollectionAssets.Clear();
 
             var searchFilter = new AssetSearchFilter();
-            searchFilter.Collections.Add(CurrentCollection.GetFullCollectionPath());
-
-            var pagination = new Pagination(Range.All);
+            searchFilter.Collections.WhereContains(CurrentCollection.GetFullCollectionPath());
 
             var cancellationTokenSrc = new CancellationTokenSource();
-            var assetList = CurrentProject.SearchAssetsAsync(searchFilter, pagination, cancellationTokenSrc.Token);
+            var assetList = CurrentProject.QueryAssets().SelectWhereMatchesFilter(searchFilter).ExecuteAsync(cancellationTokenSrc.Token);
             await foreach (var asset in assetList)
             {
                 CurrentCollectionAssets.Add(asset);
@@ -316,24 +323,14 @@ namespace Unity.Cloud.Documentation.Assets
 
         #region Example_Behaviour_UpdateCollection
 
-        public async Task UpdateProjectAssetCollectionAsync()
+        public async Task UpdateProjectAssetCollectionAsync(string description)
         {
-            var description = CurrentCollection.Description.Split(' ').ToList();
-            if (int.TryParse(description[^1], out var updateCount))
+            var update = new AssetCollectionUpdate
             {
-                description[^1] = (updateCount + 1).ToString();
-            }
-            else
-            {
-                description.Add("Update count: 1");
-            }
+                Description = description
+            };
 
-            var strBuilder = new StringBuilder();
-            strBuilder.AppendJoin(' ', description);
-            CurrentCollection.SetDescription(strBuilder.ToString());
-
-            var cancellationTokenSrc = new CancellationTokenSource();
-            await CurrentCollection.UpdateAsync(cancellationTokenSrc.Token);
+            await CurrentCollection.UpdateAsync(update, default);
             Debug.Log("Collection updated.");
         }
 
@@ -367,10 +364,10 @@ namespace Unity.Cloud.Documentation.Assets
 
         #region Example_Behaviour_CollectionInsert
 
-        public async Task AddAssetToCollectionAsync(IAsset asset)
+        public async Task LinkAssetToCollectionAsync(IAsset asset)
         {
             var cancellationTokenSrc = new CancellationTokenSource();
-            await CurrentCollection.AddAssetsAsync(new[] {asset}, cancellationTokenSrc.Token);
+            await CurrentCollection.LinkAssetsAsync(new[] {asset}, cancellationTokenSrc.Token);
             Debug.Log("Asset added to collection.");
 
             await RefreshCollectionAssets();
@@ -380,10 +377,10 @@ namespace Unity.Cloud.Documentation.Assets
 
         #region Example_Behaviour_CollectionRemove
 
-        public async Task RemoveAssetFromCollectionAsync(IAsset asset)
+        public async Task UnlinkAssetFromCollectionAsync(IAsset asset)
         {
             var cancellationTokenSrc = new CancellationTokenSource();
-            await CurrentCollection.RemoveAssetsAsync(new[] {asset}, cancellationTokenSrc.Token);
+            await CurrentCollection.UnlinkAssetsAsync(new[] {asset}, cancellationTokenSrc.Token);
             Debug.Log("Asset added to collection.");
 
             await RefreshCollectionAssets();

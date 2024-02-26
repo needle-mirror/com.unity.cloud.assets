@@ -5,10 +5,10 @@ namespace Unity.Cloud.Assets
     public class AssetCreation : AssetInfo, IAssetCreation
     {
         /// <inheritdoc/>
-        public Dictionary<string, object> Metadata { get; set; }
+        public AssetType Type { get; set; }
 
         /// <inheritdoc/>
-        public Dictionary<string, object> SystemMetadata { get; set; }
+        public Dictionary<string, MetadataValue> Metadata { get; set; }
 
         /// <inheritdoc/>
         public List<CollectionPath> Collections { get; set; }

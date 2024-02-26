@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -10,9 +11,10 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
     {
         public class AssetListController : ListController<IAsset>
         {
-            readonly Dictionary<Button, int> m_OpenButtons = new();
+            readonly Dictionary<Button, int> m_ExpandButtons = new();
 
-            VisualElement m_CurrentMenuPopupOwner;
+            VisualElement m_MenuPopup;
+            int m_CurrentMenuPopupOwner = -1;
 
             public override void Initialize(ListView listView, VisualTreeAsset itemTemplate, Action<IEnumerable<object>> onSelectionChange)
             {
@@ -23,17 +25,20 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
                 var scrollview = listView.Q<ScrollView>();
                 scrollview.horizontalScrollerVisibility = ScrollerVisibility.Hidden;
                 scrollview.verticalScrollerVisibility = ScrollerVisibility.Hidden;
+
+                var popupTemplate = listView.parent.Q<TemplateContainer>("AssetListItemMenuPopup");
+                m_MenuPopup = popupTemplate.templateSource.Instantiate().Q("AssetMenu");
+                m_MenuPopup.style.display = DisplayStyle.None;
+
+                var openButton = m_MenuPopup.Q<Button>("Open");
+                openButton.RegisterCallback<ClickEvent>(OnOpenButtonClick);
+                var removeButton = m_MenuPopup.Q<Button>("Remove");
+                removeButton.RegisterCallback<ClickEvent>(OnRemoveButtonClick);
             }
 
             protected override VisualElement OnMakeItem(VisualTreeAsset itemTemplate)
             {
                 var item = base.OnMakeItem(itemTemplate);
-
-                item.Q<Button>("ExpandButton").RegisterCallback<ClickEvent>(evt =>
-                {
-                    ChangeMenuPopupDisplay(item, DisplayStyle.Flex);
-                    evt.StopImmediatePropagation();
-                });
 
                 ManageAssetListItemStyling(item);
 
@@ -52,16 +57,18 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
                 element.Q<Label>("VersionLabel").text = asset.Descriptor.AssetVersion.ToString();
                 element.Q<Label>("StatusLabel").text = asset.Status;
 
-                m_OpenButtons.Add(element.Q<Button>("OpenButton"), i);
-                element.Q<Button>("OpenButton").RegisterCallback<ClickEvent>(OnOpenButtonClick);
+                var expandButton = element.Q<Button>("ExpandButton");
+                m_ExpandButtons.Add(expandButton, i);
+                expandButton.RegisterCallback<ClickEvent>(OnExpandButtonClick);
             }
 
             protected override void OnUnbindItem(VisualElement element, int i)
             {
                 base.OnUnbindItem(element, i);
 
-                m_OpenButtons.Remove(element.Q<Button>("OpenButton"));
-                element.Q<Button>("OpenButton").UnregisterCallback<ClickEvent>(OnOpenButtonClick);
+                var expandButton = element.Q<Button>("ExpandButton");
+                expandButton.UnregisterCallback<ClickEvent>(OnExpandButtonClick);
+                m_ExpandButtons.Remove(expandButton);
             }
 
             protected override bool AreEqual(IAsset item1, IAsset item2)
@@ -84,27 +91,14 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
             public void ClearMenuPopupOwner()
             {
-                m_CurrentMenuPopupOwner = null;
+                m_CurrentMenuPopupOwner = -1;
+                m_MenuPopup.style.display = DisplayStyle.None;
+                m_MenuPopup.RemoveFromHierarchy();
             }
 
             public void HandleOutClickEvent(ClickEvent evt)
             {
-                if (m_CurrentMenuPopupOwner == null) return;
-
-                ChangeMenuPopupDisplay(m_CurrentMenuPopupOwner, DisplayStyle.None);
-            }
-
-            void ChangeMenuPopupDisplay(VisualElement item, DisplayStyle displayStyle)
-            {
-                var itemMenuPopup = item.Q("MenuPopup");
-
-                if (m_CurrentMenuPopupOwner != null && itemMenuPopup != m_CurrentMenuPopupOwner)
-                {
-                    displayStyle = DisplayStyle.None;
-                }
-
-                itemMenuPopup.style.display = displayStyle;
-                m_CurrentMenuPopupOwner = displayStyle == DisplayStyle.None ? null : item;
+                ClearMenuPopupOwner();
             }
 
             static void ManageAssetListItemStyling(VisualElement element)
@@ -122,13 +116,48 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
                 });
             }
 
+            void OnExpandButtonClick(EventBase evt)
+            {
+                evt.StopImmediatePropagation();
+
+                if (evt.target is Button button && m_ExpandButtons.TryGetValue(button, out var index))
+                {
+                    m_CurrentMenuPopupOwner = index;
+                    button.parent.Add(m_MenuPopup);
+                    m_MenuPopup.style.display = DisplayStyle.Flex;
+                }
+            }
+
             void OnOpenButtonClick(EventBase evt)
             {
-                if (evt.target is Button button && m_OpenButtons.TryGetValue(button, out var index))
-                {
-                    m_ListView.SetSelection(index);
-                    ChangeMenuPopupDisplay(m_CurrentMenuPopupOwner, DisplayStyle.None);
-                }
+                evt.StopImmediatePropagation();
+
+                if (m_CurrentMenuPopupOwner < 0) return;
+
+                m_ListView.SetSelection(m_CurrentMenuPopupOwner);
+                ClearMenuPopupOwner();
+            }
+
+            void OnRemoveButtonClick(EventBase evt)
+            {
+                evt.StopImmediatePropagation();
+
+                if (m_CurrentMenuPopupOwner < 0) return;
+
+                DialogService.ShowMessage("Remove Asset Confirmation",
+                    "This will remove the asset from the current project. Note that once an asset is no longer linked to any projects it is effectively deleted.",
+                    () =>
+                    {
+                        _ = RemoveAsset(m_List[m_CurrentMenuPopupOwner]);
+                        m_List.RemoveAt(m_CurrentMenuPopupOwner);
+                        m_ListView.Rebuild();
+                        ClearMenuPopupOwner();
+                    }, () => { });
+            }
+
+            static async Task RemoveAsset(IAsset asset)
+            {
+                await asset.UnlinkFromProjectAsync(asset.Descriptor.ProjectDescriptor, default);
             }
         }
 
@@ -161,9 +190,9 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
         public void ClearAssetList()
         {
-            m_ListController.ClearList();
-            m_ListController.ClearSelection();
             m_ListController.ClearMenuPopupOwner();
+            m_ListController.ClearSelection();
+            m_ListController.ClearList();
         }
 
         protected override void OnSelectionChange(IEnumerable<object> selectedItems)

@@ -2,15 +2,18 @@ using System.Collections.Generic;
 
 namespace Unity.Cloud.Assets
 {
-    public class FileCreation : FileUpdate, IFileCreation
+    public class FileCreation : IFileCreation
     {
         /// <inheritdoc/>
         public string Path { get; set; }
 
         /// <inheritdoc/>
-        public Dictionary<string, object> Metadata { get; set; }
+        public string Description { get; set; }
 
         /// <inheritdoc/>
-        public Dictionary<string, object> SystemMetadata { get; set; }
+        public IEnumerable<string> Tags { get; set; }
+
+        /// <inheritdoc/>
+        public Dictionary<string, MetadataValue> Metadata { get; set; }
     }
 }

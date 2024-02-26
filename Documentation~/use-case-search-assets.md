@@ -1,4 +1,4 @@
-# Use case: Search assets
+# Use case: Search assets in a project
 
 You can use the Unity Cloud Assets package to filter assets in a Project based on a set of search criteria.
 

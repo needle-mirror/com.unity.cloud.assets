@@ -2,15 +2,6 @@
 
 namespace Unity.Cloud.Assets
 {
-    enum ChangeAssetStatusAction
-    {
-        approved,
-        published,
-        rejected,
-        inreview,
-        withdrawn
-    }
-
     /// <summary>
     /// Represents a change asset's status request.
     /// </summary>
@@ -22,11 +13,12 @@ namespace Unity.Cloud.Assets
         /// <param name="projectId">ID of the project.</param>
         /// <param name="assetId">The id of the asset the file is linked to.</param>
         /// <param name="assetVersion">The version of the asset the file is linked to.</param>
-        /// <param name="statusAction"></param>
-        public ChangeAssetStatusRequest(ProjectId projectId, AssetId assetId, AssetVersion assetVersion, ChangeAssetStatusAction statusAction)
+        /// <param name="action"></param>
+        public ChangeAssetStatusRequest(ProjectId projectId, AssetId assetId, AssetVersion assetVersion, AssetStatusAction action)
             : base(projectId, assetId, assetVersion)
         {
-            m_PathAndQueryParams += $"/status/{statusAction.ToString()}";
+            var status = IsolatedSerialization.SerializeWithConverters(action, IsolatedSerialization.StringEnumConverter).Replace("\"", "");
+            m_RequestUrl += $"/status/{status}";
         }
     }
 }

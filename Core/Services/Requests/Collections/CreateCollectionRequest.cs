@@ -24,7 +24,7 @@ namespace Unity.Cloud.Assets
         {
             AssetCollection = assetCollectionDto;
 
-            m_PathAndQueryParams += "/collections";
+            m_RequestUrl += "/collections";
         }
 
         public override HttpContent ConstructBody()

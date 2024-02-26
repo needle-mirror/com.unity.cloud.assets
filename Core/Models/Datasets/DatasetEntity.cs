@@ -16,6 +16,8 @@ namespace Unity.Cloud.Assets
 
         readonly IAssetDataSource m_DataSource;
 
+        List<string> m_FileOrder = new();
+
         /// <inheritdoc />
         public DatasetDescriptor Descriptor { get; }
 
@@ -37,25 +39,22 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc />
         public AuthoringInfo AuthoringInfo { get; set; }
 
-        /// <summary>
-        /// The user metadata of the dataset.
-        /// </summary>
+        /// <inheritdoc />
         public IMetadataContainer Metadata => MetadataEntity;
 
-        /// <summary>
-        /// The system metadata of the dataset.
-        /// </summary>
-        public IMetadataContainer SystemMetadata => SystemMetadataEntity;
-
         /// <inheritdoc />
-        public IEnumerable<string> FileOrder { get; set; }
+        public IEnumerable<string> FileOrder
+        {
+            get => m_FileOrder;
+            set => m_FileOrder = value?.ToList() ?? new List<string>();
+        }
 
         /// <inheritdoc />
         public bool IsVisible { get; set; }
 
         internal FileEntity[] Files { get; set; }
+
         internal MetadataContainerEntity MetadataEntity { get; }
-        internal MetadataContainerEntity SystemMetadataEntity { get; }
 
         /// <summary>
         /// The name of the workflow.
@@ -73,7 +72,6 @@ namespace Unity.Cloud.Assets
             }
 
             MetadataEntity = new DatasetMetadataContainer(Descriptor, DatasetFields.metadata, m_DataSource);
-            SystemMetadataEntity = new DatasetMetadataContainer(Descriptor, DatasetFields.systemMetadata, m_DataSource);
         }
 
         internal DatasetEntity(DatasetDescriptor datasetDescriptor)
@@ -81,38 +79,27 @@ namespace Unity.Cloud.Assets
             Descriptor = datasetDescriptor;
 
             MetadataEntity = new DatasetMetadataContainer(Descriptor, DatasetFields.metadata, null);
-            SystemMetadataEntity = new DatasetMetadataContainer(Descriptor, DatasetFields.systemMetadata, null);
         }
 
         /// <inheritdoc />
-        public async Task RefreshAsync(DatasetFields datasetFields, CancellationToken cancellationToken)
+        public Task RefreshAsync(CancellationToken cancellationToken)
         {
-            var filter = new FieldsFilter
-            {
-                AssetFields = AssetFields.datasets,
-                DatasetFields = datasetFields,
-                FileFields = FileFields.none
-            };
-            var data = await m_DataSource.GetDatasetAsync(Descriptor, filter, cancellationToken);
-            this.MapFrom(m_DataSource, data, datasetFields);
-            if (datasetFields.HasFlag(DatasetFields.files))
-            {
-                await RefreshFiles(cancellationToken);
-            }
+            Files = null;
+            MetadataEntity.Refresh();
+
+            return RefreshAsync(FieldsFilter.DefaultDatasetIncludes, cancellationToken);
         }
 
-        /// <inheritdoc />
-        public async Task<IAsset> GetAssetAsync(FieldsFilter includedFieldsFilter, CancellationToken cancellationToken)
+        async Task RefreshAsync(FieldsFilter fieldsFilter, CancellationToken cancellationToken)
         {
-            var data = await m_DataSource.GetAssetAsync(Descriptor.AssetDescriptor, includedFieldsFilter, cancellationToken);
-            return data.From(m_DataSource, Descriptor.AssetDescriptor, includedFieldsFilter);
+            var data = await m_DataSource.GetDatasetAsync(Descriptor, fieldsFilter, cancellationToken);
+            this.MapFrom(m_DataSource, data, fieldsFilter.DatasetFields);
         }
 
         /// <inheritdoc />
         public async Task UpdateAsync(IDatasetUpdate datasetUpdate, CancellationToken cancellationToken)
         {
             await m_DataSource.UpdateDatasetAsync(Descriptor, datasetUpdate.From(), cancellationToken);
-            await RefreshAsync(DatasetFields.all, default);
         }
 
         /// <inheritdoc />
@@ -153,22 +140,12 @@ namespace Unity.Cloud.Assets
 
             if (Files == null || Files.Length == 0) yield break;
 
-            if (FileOrder == null || !FileOrder.Any())
+            var (start, length) = range.GetValidatedOffsetAndLength(Files.Length);
+            for (var i = start; i < start + length; ++i)
             {
-                var (start, length) = range.GetValidatedOffsetAndLength(Files.Length);
-                for (var i = start; i < start + length; ++i)
-                {
-                    yield return Files[i];
-                }
-            }
-            else
-            {
-                var fileOrderArray = FileOrder.ToArray();
-                var (start, length) = range.GetValidatedOffsetAndLength(fileOrderArray.Length);
-                for (var i = start; i < start + length; ++i)
-                {
-                    yield return Files.FirstOrDefault(x => x.Descriptor.Path == fileOrderArray[i]);
-                }
+                cancellationToken.ThrowIfCancellationRequested();
+
+                yield return Files[i];
             }
         }
 
@@ -187,16 +164,13 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc />
         public async Task<IFile> UploadFileAsync(IFileCreation fileCreation, Stream sourceStream, IProgress<HttpProgress> progress, CancellationToken cancellationToken)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-
             var checksum = await CalculateMD5ChecksumAsync(sourceStream, cancellationToken);
-            cancellationToken.ThrowIfCancellationRequested();
+
             var createInternal = new FileCreateData
             {
                 Path = fileCreation.Path,
                 Description = fileCreation.Description,
-                Metadata = fileCreation.Metadata ?? new Dictionary<string, object>(),
-                SystemMetadata = fileCreation.SystemMetadata ?? new Dictionary<string, object>(),
+                Metadata = fileCreation.Metadata?.ToObjectDictionary() ?? new Dictionary<string, object>(),
                 UserChecksum = checksum,
                 SizeBytes = sourceStream.Length,
                 Tags = fileCreation.Tags?.ToList() ?? new List<string>(), // WORKAROUND until backend supports null tags
@@ -227,23 +201,33 @@ namespace Unity.Cloud.Assets
         }
 
         /// <inheritdoc />
-        public async Task<ITransformation> StartTransformationAsync(WorkflowType type, CancellationToken cancellationToken)
+        public async Task<ITransformation> StartTransformationAsync(ITransformationCreation transformationCreation, CancellationToken cancellationToken)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            var transformationId = await m_DataSource.StartTransformationAsync(Descriptor, type, cancellationToken);
+            var transformationId = await m_DataSource.StartTransformationAsync(Descriptor, transformationCreation.WorkflowType, transformationCreation.InputFilePaths, cancellationToken);
             var transformation = await GetTransformationAsync(transformationId, cancellationToken);
 
             return transformation;
         }
 
         /// <inheritdoc />
+        public IAsyncEnumerable<ITransformation> ListTransformationsAsync(Range range, CancellationToken cancellationToken)
+        {
+            var searchFilter = new TransformationSearchFilter();
+            searchFilter.AssetId.WhereEquals(Descriptor.AssetId);
+            searchFilter.AssetVersion.WhereEquals(Descriptor.AssetVersion);
+            searchFilter.DatasetId.WhereEquals(Descriptor.DatasetId);
+
+            return new TransformationQueryBuilder(m_DataSource, Descriptor.AssetDescriptor.ProjectDescriptor)
+                .SelectWhereMatchesFilter(searchFilter)
+                .LimitTo(range)
+                .ExecuteAsync(cancellationToken);
+        }
+
+        /// <inheritdoc />
         public async Task<ITransformation> GetTransformationAsync(TransformationId transformationId, CancellationToken cancellationToken)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-
             var descriptor = new TransformationDescriptor(Descriptor, transformationId);
-            var transformation = new TransformationEntity(descriptor);
+            var transformation = new TransformationEntity(m_DataSource, descriptor);
 
             var data = await m_DataSource.GetTransformationAsync(descriptor, cancellationToken);
 
@@ -310,18 +294,40 @@ namespace Unity.Cloud.Assets
 
         async Task RefreshFiles(CancellationToken cancellationToken)
         {
-            var filter = new FieldsFilter
-            {
-                AssetFields = AssetFields.files,
-                DatasetFields = DatasetFields.none,
-                FileFields = FileFields.all
-            };
-            var data = await m_DataSource.GetAssetAsync(Descriptor.AssetDescriptor, filter, cancellationToken);
+            var data = await m_DataSource.GetAssetAsync(Descriptor.AssetDescriptor, FieldsFilter.DefaultFileIncludes, cancellationToken);
 
-            Files = data.Files?
+            var fileList = data.Files?
                 .Where(f => f.DatasetIds.Contains(Descriptor.DatasetId))
-                .Select(fileData => fileData.From(m_DataSource, new FileDescriptor(Descriptor, fileData.Path), FileFields.all))
-                .ToArray();
+                .Select(fileData => fileData.From(m_DataSource, new FileDescriptor(Descriptor, fileData.Path), FieldsFilter.DefaultFileIncludes.FileFields))
+                .ToList();
+
+            if (m_FileOrder.Count > 0)
+            {
+                fileList?.Sort(CompareFilesWithFileOrder);
+            }
+            else
+            {
+                fileList?.Sort(CompareFiles);
+            }
+
+            Files = fileList?.ToArray() ?? Array.Empty<FileEntity>();
+        }
+
+        int CompareFilesWithFileOrder(IFile x, IFile y)
+        {
+            var indexX = m_FileOrder.IndexOf(x.Descriptor.Path);
+            var indexY = m_FileOrder.IndexOf(y.Descriptor.Path);
+            if (indexX >= 0)
+            {
+                return indexY >= 0 ? indexX - indexY : -1;
+            }
+
+            return indexY >= 0 ? 1 : CompareFiles(x, y);
+        }
+
+        static int CompareFiles(IFile x, IFile y)
+        {
+            return string.Compare(x.Descriptor.Path, y.Descriptor.Path, StringComparison.Ordinal);
         }
     }
 }

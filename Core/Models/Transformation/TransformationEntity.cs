@@ -43,9 +43,16 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc />
         public DateTime StartedAt { get; set; }
 
-        internal TransformationEntity(TransformationDescriptor descriptor)
+        internal TransformationEntity(IAssetDataSource dataSource, TransformationDescriptor descriptor)
         {
+            m_DataSource = dataSource;
             Descriptor = descriptor;
+        }
+
+        public async Task RefreshAsync(CancellationToken cancellationToken)
+        {
+            var data = await m_DataSource.GetTransformationAsync(Descriptor, cancellationToken);
+            this.MapFrom(data);
         }
     }
 }

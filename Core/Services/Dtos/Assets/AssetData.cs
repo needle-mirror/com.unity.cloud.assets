@@ -9,9 +9,6 @@ namespace Unity.Cloud.Assets
     class AssetData : AssetBaseData, IAssetData
     {
         /// <inheritdoc />
-        public string StorageId { get; set; }
-
-        /// <inheritdoc />
         public AssetId Id { get; set; }
 
         /// <inheritdoc />
@@ -63,15 +60,10 @@ namespace Unity.Cloud.Assets
         public IEnumerable<CollectionPath> Collections { get; set; }
 
         internal AssetData()
-            : this(AssetId.None, AssetVersion.None)
-        {
-        }
+            : this(AssetId.None, AssetVersion.None) { }
 
-        public AssetData(string assetId, int assetVersion, string storageId)
-            : this(new AssetId(assetId), new AssetVersion(assetVersion))
-        {
-            StorageId = storageId;
-        }
+        public AssetData(string assetId, string assetVersion)
+            : this(new AssetId(assetId), new AssetVersion(assetVersion)) { }
 
         internal AssetData(AssetId assetId, AssetVersion assetVersion)
         {

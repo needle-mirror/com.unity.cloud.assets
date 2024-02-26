@@ -46,22 +46,23 @@ namespace Unity.Cloud.Assets.Samples
 
         static Dictionary<Uri, ThumbnailDownloadEntry> m_ThumbnailCache = new();
 
-        public static void GetThumbnail(IAsset asset, Action<Texture2D> thumbnailReadyCallback)
+        public static async Task GetThumbnail(IAsset asset, Action<Texture2D> thumbnailReadyCallback)
         {
-            if (asset.PreviewFileUrl == null) return;
+            var previewFileUrl = await asset.GetPreviewUrlAsync(default);
+            if (previewFileUrl == null) return;
 
-            if (!m_ThumbnailCache.TryGetValue(asset.PreviewFileUrl, out var entry))
+            if (!m_ThumbnailCache.TryGetValue(previewFileUrl, out var entry))
             {
                 // Create new download request
                 entry = new ThumbnailDownloadEntry();
-                _ = entry.DownloadThumbnail(asset.PreviewFileUrl);
+                _ = entry.DownloadThumbnail(previewFileUrl);
 
                 lock (entry.Listeners)
                 {
                     entry.Listeners.Add(thumbnailReadyCallback);
                 }
 
-                m_ThumbnailCache.Add(asset.PreviewFileUrl, entry);
+                m_ThumbnailCache.Add(previewFileUrl, entry);
             }
             else
             {

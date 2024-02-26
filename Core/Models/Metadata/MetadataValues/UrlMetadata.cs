@@ -1,13 +1,12 @@
 using System;
 using System.Text.RegularExpressions;
-using Unity.Cloud.Common;
 
 namespace Unity.Cloud.Assets
 {
     /// <summary>
     /// A class for manipulating a url metadata value.
     /// </summary>
-    public sealed class UrlMetadata : MetadataObject
+    public sealed class UrlMetadata : MetadataValue
     {
         /// <summary>
         /// The url value of a metadata field.
@@ -17,16 +16,17 @@ namespace Unity.Cloud.Assets
         /// <summary>
         /// The label value of a metadata field.
         /// </summary>
-        public string Label { get; set; } = string.Empty;
+        public string Label { get; set; }
 
-        /// <inheritdoc />
-        public override object GetValue()
+        public UrlMetadata(Uri uri = default, string label = null)
+            : base(MetadataValueType.Url)
         {
-            return string.IsNullOrEmpty(Label) ? Uri.ToString() : $"[{Label}]({Uri})";
+            Uri = uri;
+            Label = label ?? string.Empty;
         }
 
-        /// <inheritdoc />
-        internal override void SetValue(object value)
+        internal UrlMetadata(MetadataValueType valueType, object value)
+            : base(valueType, value)
         {
             if (value != null && TryParse(value.ToString(), out var uri, out var label))
             {
@@ -37,6 +37,12 @@ namespace Unity.Cloud.Assets
             {
                 throw new FormatException($"Cannot convert {value} to url.");
             }
+        }
+
+        /// <inheritdoc />
+        internal override object GetValue()
+        {
+            return string.IsNullOrEmpty(Label) ? Uri.ToString() : $"[{Label}]({Uri})";
         }
 
         internal static bool TryParse(string value, out Uri uri, out string label)

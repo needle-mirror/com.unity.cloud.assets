@@ -1,4 +1,4 @@
-# Use case: Replace uploaded file content
+# Use case: Replace uploaded files content
 
 You can use the Unity Cloud Assets package to upload new content for a file.
 

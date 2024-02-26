@@ -11,11 +11,5 @@ namespace Unity.Cloud.Assets
         /// </summary>
         [DataMember(Name = "metadata")]
         Dictionary<string, object> Metadata { get; }
-
-        /// <summary>
-        /// The system metadata.
-        /// </summary>
-        [DataMember(Name = "systemMetadata")]
-        Dictionary<string, object> SystemMetadata { get; }
     }
 }

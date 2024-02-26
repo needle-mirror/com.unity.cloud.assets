@@ -4,41 +4,31 @@ using System.Collections.Generic;
 namespace Unity.Cloud.Assets
 {
     /// <summary>
-    /// A structure for defining the criteria of an <see cref="IAsset"/> search request.
+    /// A structure that defines the criteria of an <see cref="IAsset"/> search query.
     /// </summary>
     public interface IAssetSearchFilter
     {
         /// <summary>
-        /// Returns the collections in which to search for assets.
+        /// Sets the collections the search criteria will be applied to.
         /// </summary>
-        List<CollectionPath> Collections { get; }
-
-        /// <summary>
-        /// Returns the number of matches required for a search to be considered a match.
-        /// </summary>
-        int AnyQueryMinimumMatch { get; }
-
-        /// <summary>
-        /// Returns which fields of the results will be populated.
-        /// </summary>
-        FieldsFilter IncludedFields { get; }
+        QueryListParameter<CollectionPath> Collections => new();
 
         /// <summary>
         /// Gets the required search criteria of the filter.
         /// </summary>
         /// <returns>A dictionary containing the required search criteria. </returns>
-        Dictionary<string, object> AccumulateIncludedCriteria();
+        IReadOnlyDictionary<string, object> AccumulateIncludedCriteria();
 
         /// <summary>
         /// Gets the excluded search criteria of the filter.
         /// </summary>
         /// <returns>A dictionary containing the excluded search criteria. </returns>
-        Dictionary<string, object> AccumulateExcludedCriteria();
+        IReadOnlyDictionary<string, object> AccumulateExcludedCriteria();
 
         /// <summary>
         /// Gets the optional search criteria of the filter.
         /// </summary>
-        /// <returns>A dictionary containing the optional search criteria. </returns>
-        Dictionary<string, object> AccumulateAnyCriteria();
+        /// <returns>A dictionary containing the optional search criteria and the minimum matches required to statisfy the condition. </returns>
+        (IReadOnlyDictionary<string, object> criteria, int minimumMatches) AccumulateAnyCriteria();
     }
 }

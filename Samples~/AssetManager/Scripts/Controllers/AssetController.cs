@@ -22,7 +22,6 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
         readonly List<IAsset> m_ProjectAssetsList = new();
 
         CancellationTokenSource m_NewListCancellationTokenSource = new();
-        CancellationTokenSource m_UpdateListCancellationTokenSource = new();
 
         public event Action<IAsset> AssetSelected
         {
@@ -40,7 +39,6 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
             var searchBarPanel = RootVisualElement.Q<VisualElement>("SearchBarContainer");
 
-            m_SearchBarUi.FieldsToInclude = FieldsToInclude;
             m_SearchBarUi.Initialize(RootVisualElement, searchBarPanel);
             m_SearchBarUi.DeleteSearchQuery += OnSearchQueryChanged;
             m_SearchBarUi.AddSearchQuery += OnSearchQueryChanged;
@@ -90,7 +88,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
             if (IsAllProjectSelected)
             {
-                m_SearchBarUi.UpdateSearchBarValues(AssetRepository, SelectedOrganizationId, GetAllProjects().Select(x => x.Descriptor.ProjectId));
+                m_SearchBarUi.UpdateSearchBarValues(AssetRepository, GetAllProjects().Select(x => x.Descriptor));
             }
             else if (SelectedProject != null)
             {
@@ -121,7 +119,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
             if (SelectedProject == null) return;
 
-            var token = GetCancellationToken();
+            var token = m_SearchBarUi.GetSearchCancellationToken();
 
             var assets = GetAssetsAsync(newListToken);
 
@@ -147,15 +145,13 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             }
         }
 
-        async void OnSearchQueryChanged(IAsyncEnumerable<IAsset> assets)
+        async void OnSearchQueryChanged(IAsyncEnumerable<IAsset> assets, CancellationToken cancellationToken)
         {
-            var token = GetCancellationToken();
-
             var assetList = new List<IAsset>();
             RefreshAssetList(assetList);
 
             var nextDisplayTrigger = 40;
-            await foreach (var asset in assets.WithCancellation(token))
+            await foreach (var asset in assets.WithCancellation(cancellationToken))
             {
                 assetList.Add(asset);
 
@@ -169,7 +165,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             }
 
             // Attempt final refresh
-            if (!token.IsCancellationRequested)
+            if (!cancellationToken.IsCancellationRequested)
             {
                 m_AssetListUi.PopulateAssetsList(assetList);
             }
@@ -177,7 +173,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
         void OnClearSearchQuery()
         {
-            _ = GetCancellationToken();
+            _ = m_SearchBarUi.GetSearchCancellationToken();
 
             RefreshAssetList(m_ProjectAssetsList);
         }
@@ -186,15 +182,6 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
         {
             m_AssetListUi.ClearAssetList();
             m_AssetListUi.PopulateAssetsList(assetsList);
-        }
-
-        CancellationToken GetCancellationToken()
-        {
-            m_UpdateListCancellationTokenSource.Cancel();
-            m_UpdateListCancellationTokenSource.Dispose();
-
-            m_UpdateListCancellationTokenSource = new CancellationTokenSource();
-            return m_UpdateListCancellationTokenSource.Token;
         }
     }
 }

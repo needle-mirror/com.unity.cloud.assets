@@ -34,7 +34,7 @@ namespace Unity.Cloud.Assets
         }
 
         /// <summary>
-        /// Creates and initializes a <see cref="AssetCollection"/>.
+        /// Creates and initializes an <see cref="AssetCollection"/>.
         /// </summary>
         /// <param name="name">The name of the collection. </param>
         /// <param name="description">The description of the collection. </param>
@@ -48,47 +48,34 @@ namespace Unity.Cloud.Assets
         }
 
         /// <inheritdoc />
-        public void SetName(string name)
-        {
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                throw new ArgumentNullException(nameof(name));
-            }
-
-            Name = name;
-        }
-
-        /// <inheritdoc />
-        public void SetDescription(string description)
-        {
-            if (string.IsNullOrWhiteSpace(description))
-            {
-                throw new ArgumentNullException(nameof(description));
-            }
-
-            Description = description;
-        }
-
-        /// <inheritdoc />
         public string GetFullCollectionPath()
         {
-            return Descriptor.CollectionPath;
+            return Descriptor.Path;
         }
 
         /// <inheritdoc />
-        public Task UpdateAsync(CancellationToken cancellationToken)
+        public async Task RefreshAsync(CancellationToken cancellationToken)
         {
-            return m_DataSource.UpdateCollectionAsync(Descriptor, this.From(), cancellationToken);
+            var data = await m_DataSource.GetCollectionAsync(Descriptor, cancellationToken);
+            Name = data.Name;
+            Description = data.Description;
+            ParentPath = new CollectionPath(data.ParentPath);
         }
 
         /// <inheritdoc />
-        public Task AddAssetsAsync(IEnumerable<IAsset> assets, CancellationToken cancellationToken)
+        public Task UpdateAsync(IAssetCollectionUpdate assetCollectionUpdate, CancellationToken cancellationToken)
+        {
+            return m_DataSource.UpdateCollectionAsync(Descriptor, assetCollectionUpdate.From(), cancellationToken);
+        }
+
+        /// <inheritdoc />
+        public Task LinkAssetsAsync(IEnumerable<IAsset> assets, CancellationToken cancellationToken)
         {
             return m_DataSource.AddAssetsToCollectionAsync(Descriptor, assets.Select(SelectAssetId), cancellationToken);
         }
 
         /// <inheritdoc />
-        public Task RemoveAssetsAsync(IEnumerable<IAsset> assets, CancellationToken cancellationToken)
+        public Task UnlinkAssetsAsync(IEnumerable<IAsset> assets, CancellationToken cancellationToken)
         {
             return m_DataSource.RemoveAssetsFromCollectionAsync(Descriptor, assets.Select(SelectAssetId), cancellationToken);
         }

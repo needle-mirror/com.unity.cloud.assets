@@ -12,8 +12,8 @@ namespace Unity.Cloud.Assets
         /// </summary>
         public readonly ProjectDescriptor ProjectDescriptor;
 
-        /// <inheritdoc cref="ProjectDescriptor.OrganizationGenesisId"/>
-        public OrganizationId OrganizationGenesisId => ProjectDescriptor.OrganizationGenesisId;
+        /// <inheritdoc cref="ProjectDescriptor.OrganizationId"/>
+        public OrganizationId OrganizationId => ProjectDescriptor.OrganizationId;
 
         /// <inheritdoc cref="ProjectDescriptor.ProjectId"/>
         public ProjectId ProjectId => ProjectDescriptor.ProjectId;
@@ -21,17 +21,17 @@ namespace Unity.Cloud.Assets
         /// <summary>
         /// The path to the collection.
         /// </summary>
-        public readonly CollectionPath CollectionPath;
+        public readonly CollectionPath Path;
 
         /// <summary>
         /// Creates an instance of the <see cref="CollectionDescriptor"/> struct.
         /// </summary>
         /// <param name="projectDescriptor">The descriptor of the project.</param>
-        /// <param name="collectionPath">The path to the collection.</param>
-        public CollectionDescriptor(ProjectDescriptor projectDescriptor, CollectionPath collectionPath)
+        /// <param name="path">The path to the collection.</param>
+        public CollectionDescriptor(ProjectDescriptor projectDescriptor, CollectionPath path)
         {
             ProjectDescriptor = projectDescriptor;
-            CollectionPath = collectionPath;
+            Path = path;
         }
 
         /// <summary>
@@ -45,7 +45,7 @@ namespace Unity.Cloud.Assets
         public bool Equals(CollectionDescriptor other)
         {
             return ProjectDescriptor.Equals(other.ProjectDescriptor) &&
-                CollectionPath.Equals(other.CollectionPath);
+                Path.Equals(other.Path);
         }
 
         /// <summary>
@@ -71,7 +71,7 @@ namespace Unity.Cloud.Assets
         {
             unchecked
             {
-                var hashCode = CollectionPath.GetHashCode();
+                var hashCode = Path.GetHashCode();
                 hashCode = (hashCode * 397) ^ ProjectDescriptor.GetHashCode();
                 return hashCode;
             }

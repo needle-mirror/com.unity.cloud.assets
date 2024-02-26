@@ -16,7 +16,7 @@ namespace Unity.Cloud.Assets
         public LinkAssetToProjectRequest(ProjectId projectId, AssetId assetId, ProjectId destinationProjectId)
             : base(projectId)
         {
-            m_PathAndQueryParams += $"/assets/{assetId}/link/projects/{destinationProjectId}";
+            m_RequestUrl += $"/assets/{assetId}/link/projects/{destinationProjectId}";
         }
     }
 }

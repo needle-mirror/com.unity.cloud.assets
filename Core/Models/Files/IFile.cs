@@ -20,11 +20,6 @@ namespace Unity.Cloud.Assets
         string Description { get; }
 
         /// <summary>
-        /// The url of the preview of the file.
-        /// </summary>
-        Uri PreviewUrl { get; }
-
-        /// <summary>
         /// The status of the file.
         /// Possible values are:
         /// 'Draft' - The file is created, upload may be in progress.
@@ -68,22 +63,11 @@ namespace Unity.Cloud.Assets
         IMetadataContainer Metadata { get; }
 
         /// <summary>
-        /// The non-searchable metadata of the asset.
-        /// </summary>
-        IMetadataContainer SystemMetadata { get; }
-
-        /// <summary>
-        /// Invalidates the download and upload urls of the file.
-        /// </summary>
-        void InvalidateCachedUrls();
-
-        /// <summary>
         /// Refreshes the file with the specified fields.
         /// </summary>
-        /// <param name="includeFields">The fields to refresh. </param>
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task with no result. </returns>
-        // Task RefreshAsync(FileFields includeFields, CancellationToken cancellationToken)
+        Task RefreshAsync(CancellationToken cancellationToken);
 
         /// <summary>
         /// Returns a file in the context of the specified dataset.
@@ -99,6 +83,13 @@ namespace Unity.Cloud.Assets
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task whose result is an async enumeration of datasets. </returns>
         IAsyncEnumerable<IDataset> GetLinkedDatasetsAsync(Range range, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Returns the preview URL for the file.
+        /// </summary>
+        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
+        /// <returns>A task whose result is the preview url of the file. </returns>
+        Task<Uri> GetPreviewUrlAsync(CancellationToken cancellationToken);
 
         /// <summary>
         /// Returns the download URL for the file.
@@ -130,7 +121,7 @@ namespace Unity.Cloud.Assets
         /// <param name="progress">The progress of the upload. </param>
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task with no result. </returns>
-        // Task UploadAsync(Stream sourceStream, IProgress<HttpProgress> progress, CancellationToken cancellationToken)
+        Task UploadAsync(Stream sourceStream, IProgress<HttpProgress> progress, CancellationToken cancellationToken);
 
         /// <summary>
         /// Updates the file.

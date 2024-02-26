@@ -5,7 +5,7 @@ namespace Unity.Cloud.Assets
     /// <summary>
     /// A structure for defining the criteria of an <see cref="IFile"/> search request.
     /// </summary>
-    public class AuthoringInfoSearchFilter : ComplexSearchCriteria<AuthoringInfo>
+    public class AuthoringInfoSearchFilter : CompoundSearchCriteria
     {
         /// <inheritdoc cref="AuthoringInfo.Created"/>
         public ConditionalSearchCriteria<DateTime> Created { get; } = new(nameof(AuthoringInfo.Created), "created", "date-range");
@@ -18,8 +18,6 @@ namespace Unity.Cloud.Assets
 
         /// <inheritdoc cref="AuthoringInfo.UpdatedBy"/>
         public SearchCriteria<string> UpdatedBy { get; } = new(nameof(AuthoringInfo.UpdatedBy), "updatedBy");
-
-        private protected override Type InstantiatedType => typeof(AuthoringInfo);
 
         internal AuthoringInfoSearchFilter(string propertyName, string searchKey)
             : base(propertyName, searchKey) { }

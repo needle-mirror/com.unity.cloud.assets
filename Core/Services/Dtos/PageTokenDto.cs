@@ -5,7 +5,7 @@ namespace Unity.Cloud.Assets
     [DataContract]
     struct PageTokenDto
     {
-        [DataMember(Name = "nextPaginationToken")]
+        [DataMember(Name = "next")]
         public string Token { get; set; }
     }
 }

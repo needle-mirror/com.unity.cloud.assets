@@ -1,4 +1,6 @@
 using System.Linq;
+using Unity.Cloud.Common;
+using Unity.Cloud.Identity;
 
 namespace Unity.Cloud.Documentation.Assets
 {
@@ -35,7 +37,7 @@ namespace Unity.Cloud.Documentation.Assets
 
     public interface IMetadataValueDisplayer
     {
-        object Value { get; }
+        MetadataValue Value { get; }
 
         bool IsValid { get; }
 
@@ -44,20 +46,20 @@ namespace Unity.Cloud.Documentation.Assets
 
     public class BooleanMetadataValueDisplayer : IMetadataValueDisplayer
     {
-        bool m_Boolean;
+        readonly BooleanMetadata m_Boolean;
 
-        public object Value => m_Boolean;
+        public MetadataValue Value => m_Boolean;
 
         public bool IsValid => true;
 
-        public BooleanMetadataValueDisplayer(bool value)
+        public BooleanMetadataValueDisplayer(BooleanMetadata value)
         {
             m_Boolean = value;
         }
 
         public void Display()
         {
-            m_Boolean = GUILayout.Toggle(m_Boolean, "Is enabled");
+            m_Boolean.Value = GUILayout.Toggle(m_Boolean.Value, "Is enabled");
         }
     }
 
@@ -67,20 +69,20 @@ namespace Unity.Cloud.Documentation.Assets
 
     public class NumberMetadataValueDisplayer : IMetadataValueDisplayer
     {
-        double m_Number;
+        readonly NumberMetadata m_Number;
 
-        public object Value => m_Number;
+        public MetadataValue Value => m_Number;
 
         public bool IsValid { get; private set; }
 
-        public NumberMetadataValueDisplayer(double value)
+        public NumberMetadataValueDisplayer(NumberMetadata value)
         {
             m_Number = value;
         }
 
         public void Display()
         {
-            var number = GUILayout.TextField(m_Number.ToString());
+            var number = GUILayout.TextField(m_Number.Value.ToString());
             if (string.IsNullOrWhiteSpace(number))
             {
                 number = "0";
@@ -97,7 +99,7 @@ namespace Unity.Cloud.Documentation.Assets
 
             if (double.TryParse(number, out var parsedNumber))
             {
-                m_Number = parsedNumber;
+                m_Number.Value = parsedNumber;
                 IsValid = true;
             }
             else
@@ -117,7 +119,7 @@ namespace Unity.Cloud.Documentation.Assets
         readonly UrlMetadata m_UrlMetadata;
         string m_Url;
 
-        public object Value => m_UrlMetadata;
+        public MetadataValue Value => m_UrlMetadata;
 
         public bool IsValid { get; private set; }
 
@@ -154,20 +156,21 @@ namespace Unity.Cloud.Documentation.Assets
         readonly SingleSelectionMetadata m_SelectionMetadata;
         readonly HashSet<string> m_AcceptedValues = new();
 
-        public object Value => m_SelectionMetadata;
+        public MetadataValue Value => m_SelectionMetadata;
 
         public bool IsValid { get; private set; }
 
-        public SingleSelectionMetadataValueDisplayer(SingleSelectionMetadata value)
+        public SingleSelectionMetadataValueDisplayer(SingleSelectionMetadata value, FieldDefinitionDescriptor definitionDescriptor)
         {
             m_SelectionMetadata = value;
-            _ = PopulateAcceptedValues();
+            _ = PopulateAcceptedValues(definitionDescriptor);
         }
 
-        async Task PopulateAcceptedValues()
+        async Task PopulateAcceptedValues(FieldDefinitionDescriptor descriptor)
         {
-            var acceptedValues = await m_SelectionMetadata.GetAcceptedValuesAsync();
-            m_AcceptedValues.UnionWith(acceptedValues);
+            var fieldDefinition = await PlatformServices.AssetRepository.GetFieldDefinitionAsync(descriptor, default);
+            if (fieldDefinition.Type == FieldDefinitionType.Selection)
+                m_AcceptedValues.UnionWith(fieldDefinition.AsSelectionFieldDefinition().AcceptedValues);
         }
 
         public void Display()
@@ -194,21 +197,22 @@ namespace Unity.Cloud.Documentation.Assets
         readonly HashSet<string> m_AcceptedValues = new();
         string m_SelectedValues;
 
-        public object Value => m_SelectionMetadata;
+        public MetadataValue Value => m_SelectionMetadata;
 
         public bool IsValid { get; private set; }
 
-        public MultiSelectionMetadataValueDisplayer(MultiSelectionMetadata value)
+        public MultiSelectionMetadataValueDisplayer(MultiSelectionMetadata value, FieldDefinitionDescriptor descriptor)
         {
             m_SelectionMetadata = value;
             m_SelectedValues = string.Join(", ", m_SelectionMetadata.SelectedValues);
-            _ = PopulateAcceptedValues();
+            _ = PopulateAcceptedValues(descriptor);
         }
 
-        async Task PopulateAcceptedValues()
+        async Task PopulateAcceptedValues(FieldDefinitionDescriptor descriptor)
         {
-            var acceptedValues = await m_SelectionMetadata.GetAcceptedValuesAsync();
-            m_AcceptedValues.UnionWith(acceptedValues);
+            var fieldDefinition = await PlatformServices.AssetRepository.GetFieldDefinitionAsync(descriptor, default);
+            if (fieldDefinition.Type == FieldDefinitionType.Selection)
+                m_AcceptedValues.UnionWith(fieldDefinition.AsSelectionFieldDefinition().AcceptedValues);
         }
 
         public void Display()
@@ -252,20 +256,20 @@ namespace Unity.Cloud.Documentation.Assets
 
     public class TextMetadataValueDisplayer : IMetadataValueDisplayer
     {
-        string m_Text;
+        readonly StringMetadata m_Text;
 
-        public object Value => m_Text;
+        public MetadataValue Value => m_Text;
 
         public bool IsValid => true;
 
-        public TextMetadataValueDisplayer(string value)
+        public TextMetadataValueDisplayer(StringMetadata value)
         {
             m_Text = value;
         }
 
         public void Display()
         {
-            m_Text = GUILayout.TextField(m_Text);
+            m_Text.Value = GUILayout.TextField(m_Text.Value);
         }
     }
 
@@ -285,8 +289,7 @@ namespace Unity.Cloud.Documentation.Assets
         enum MetadataType
         {
             none,
-            metadata,
-            systemMetadata
+            metadata
         }
 
         IAsset m_CurrentAsset;
@@ -348,21 +351,11 @@ namespace Unity.Cloud.Documentation.Assets
         {
             GUILayout.BeginHorizontal();
 
-            GUI.enabled = m_MetadataType != MetadataType.metadata;
-            if (GUILayout.Button("Metadata"))
+            if (GUILayout.Button("Refresh"))
             {
                 m_MetadataType = MetadataType.metadata;
                 _ = m_Behaviour.GetMetadataAsync(m_Behaviour.CurrentAsset.Metadata);
             }
-
-            GUI.enabled = m_MetadataType != MetadataType.systemMetadata;
-            if (GUILayout.Button("System Metadata"))
-            {
-                m_MetadataType = MetadataType.systemMetadata;
-                _ = m_Behaviour.GetMetadataAsync(m_Behaviour.CurrentAsset.SystemMetadata);
-            }
-
-            GUI.enabled = true;
 
             GUILayout.EndHorizontal();
         }
@@ -386,8 +379,10 @@ namespace Unity.Cloud.Documentation.Assets
                         MetadataValueType.Boolean => new BooleanMetadataValueDisplayer(metadataValue.AsBoolean()),
                         MetadataValueType.Number => new NumberMetadataValueDisplayer(metadataValue.AsNumber()),
                         MetadataValueType.Url => new UrlMetadataValueDisplayer(metadataValue.AsUrl()),
-                        MetadataValueType.SingleSelection => new SingleSelectionMetadataValueDisplayer(metadataValue.AsSingleSelection()),
-                        MetadataValueType.MultiSelection => new MultiSelectionMetadataValueDisplayer(metadataValue.AsMultiSelection()),
+                        MetadataValueType.SingleSelection => new SingleSelectionMetadataValueDisplayer(metadataValue.AsSingleSelection(),
+                            new FieldDefinitionDescriptor(m_Behaviour.CurrentOrganization.Id, key)),
+                        MetadataValueType.MultiSelection => new MultiSelectionMetadataValueDisplayer(metadataValue.AsMultiSelection(),
+                            new FieldDefinitionDescriptor(m_Behaviour.CurrentOrganization.Id, key)),
                         _ => new TextMetadataValueDisplayer(metadataValue.AsText())
                     };
                 }
@@ -420,27 +415,27 @@ namespace Unity.Cloud.Documentation.Assets
 
                 if (GUILayout.Button("Add Boolean"))
                 {
-                    _ = m_Behaviour.UpdateAsync(m_NewKey, bool.Parse(m_NewValue));
+                    _ = m_Behaviour.UpdateAsync(m_NewKey, new BooleanMetadata(bool.Parse(m_NewValue)));
                 }
 
                 if (GUILayout.Button("Add Number"))
                 {
-                    _ = m_Behaviour.UpdateAsync(m_NewKey, double.Parse(m_NewValue));
+                    _ = m_Behaviour.UpdateAsync(m_NewKey, new NumberMetadata(double.Parse(m_NewValue)));
                 }
 
                 if (GUILayout.Button("Add Timestamp"))
                 {
-                    _ = m_Behaviour.UpdateAsync(m_NewKey, DateTime.Parse(m_NewValue));
+                    _ = m_Behaviour.UpdateAsync(m_NewKey, new DateTimeMetadata(DateTime.Parse(m_NewValue)));
                 }
 
                 if (GUILayout.Button("Add Multi-selection"))
                 {
-                    _ = m_Behaviour.UpdateAsync(m_NewKey, m_NewValue.Split(',').Select(x => x.Trim()));
+                    _ = m_Behaviour.UpdateAsync(m_NewKey, new MultiSelectionMetadata(m_NewValue.Split(',').Select(x => x.Trim()).ToArray()));
                 }
 
                 if (GUILayout.Button("Add String"))
                 {
-                    _ = m_Behaviour.UpdateAsync(m_NewKey, m_NewValue);
+                    _ = m_Behaviour.UpdateAsync(m_NewKey, new StringMetadata(m_NewValue));
                 }
             }
             catch (Exception e)
@@ -486,6 +481,7 @@ namespace Unity.Cloud.Documentation.Assets
     {
         readonly AssetManagementBehaviour m_Behaviour;
 
+        public IOrganization CurrentOrganization => m_Behaviour.CurrentOrganization;
         public bool IsProjectSelected => m_Behaviour.IsProjectSelected;
         public IAsset CurrentAsset => m_Behaviour.CurrentAsset;
 
@@ -498,7 +494,7 @@ namespace Unity.Cloud.Documentation.Assets
 
         IMetadataContainer MetadataContainer { get; set; }
 
-        public IReadOnlyDictionary<string, IMetadataValue> Metadata { get; private set; }
+        public IReadOnlyDictionary<string, MetadataValue> Metadata { get; private set; }
 
         public async Task GetMetadataAsync(IMetadataContainer metadataContainer)
         {
@@ -507,7 +503,14 @@ namespace Unity.Cloud.Documentation.Assets
 
             if (metadataContainer == null) return;
 
-            Metadata = await MetadataContainer.Query().ExecuteAsync(CancellationToken.None);
+            var result = MetadataContainer.Query().ExecuteAsync(CancellationToken.None);
+            var metadata = new Dictionary<string, MetadataValue>();
+            await foreach (var item in result)
+            {
+                metadata[item.Key] = item.Value;
+            }
+
+            Metadata = metadata;
             Debug.Log("Successfully fetched metadata.");
         }
 
@@ -515,7 +518,7 @@ namespace Unity.Cloud.Documentation.Assets
 
         #region Example_Behaviour_UpdateMetadata
 
-        public async Task UpdateAsync(string key, object value)
+        public async Task UpdateAsync(string key, MetadataValue value)
         {
             try
             {

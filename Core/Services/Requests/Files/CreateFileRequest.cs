@@ -26,7 +26,7 @@ namespace Unity.Cloud.Assets
         public CreateFileRequest(ProjectId projectId, AssetId assetId, AssetVersion assetVersion, DatasetId datasetId, IFileBaseData fileData)
             : base(projectId, assetId, assetVersion, datasetId)
         {
-            m_PathAndQueryParams += $"/files";
+            m_RequestUrl += $"/files";
 
             FileData = fileData;
         }

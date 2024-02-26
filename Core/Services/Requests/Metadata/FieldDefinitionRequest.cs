@@ -12,7 +12,7 @@ namespace Unity.Cloud.Assets
         public FieldDefinitionRequest(OrganizationId organizationId, string fieldKey, IFieldDefinitionBaseData data = null)
             : base(organizationId)
         {
-            m_PathAndQueryParams += $"/templates/fields/{Uri.EscapeDataString(fieldKey)}";
+            m_RequestUrl += $"/templates/fields/{Uri.EscapeDataString(fieldKey)}";
 
             m_Data = data;
         }

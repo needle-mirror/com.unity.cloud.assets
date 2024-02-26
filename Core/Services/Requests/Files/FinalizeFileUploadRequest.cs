@@ -18,7 +18,7 @@ namespace Unity.Cloud.Assets
         public FinalizeFileUploadRequest(ProjectId projectId, AssetId assetId, AssetVersion assetVersion, string filePath)
             : base(projectId, assetId, assetVersion, filePath)
         {
-            m_PathAndQueryParams += $"/finalize";
+            m_RequestUrl += $"/finalize";
         }
     }
 }

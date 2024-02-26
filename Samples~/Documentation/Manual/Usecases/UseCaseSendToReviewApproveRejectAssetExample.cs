@@ -100,7 +100,7 @@ namespace Unity.Cloud.Documentation.Assets
             var cancellationTokenSrc = new CancellationTokenSource(k_DefaultCancellationTimeout);
             try
             {
-                await CurrentAsset.SendToReviewAsync(cancellationTokenSrc.Token);
+                await CurrentAsset.UpdateStatusAsync(AssetStatusAction.SendForReview, cancellationTokenSrc.Token);
             }
             catch (Exception e)
             {
@@ -117,7 +117,7 @@ namespace Unity.Cloud.Documentation.Assets
             var cancellationTokenSrc = new CancellationTokenSource(k_DefaultCancellationTimeout);
             try
             {
-                await CurrentAsset.ApproveAsync(cancellationTokenSrc.Token);
+                await CurrentAsset.UpdateStatusAsync(AssetStatusAction.Approve, cancellationTokenSrc.Token);
             }
             catch (Exception e)
             {
@@ -134,7 +134,7 @@ namespace Unity.Cloud.Documentation.Assets
             var cancellationTokenSrc = new CancellationTokenSource(k_DefaultCancellationTimeout);
             try
             {
-                await CurrentAsset.RejectAsync(cancellationTokenSrc.Token);
+                await CurrentAsset.UpdateStatusAsync(AssetStatusAction.Reject, cancellationTokenSrc.Token);
             }
             catch (Exception e)
             {

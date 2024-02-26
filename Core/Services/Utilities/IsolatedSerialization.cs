@@ -27,10 +27,10 @@ namespace Unity.Cloud.Assets
         public static JsonConverter CollectionPathConverter => new CollectionPathStringConverter();
         public static JsonConverter DatasetIdConverter => new DatasetIdConverter();
         public static JsonConverter TransformationIdConverter => new TransformationIdConverter();
-        public static JsonConverter JsonObjectConverter => new JsonObjectConverter();
         public static JsonConverter StringEnumConverter => new StringEnumConverter();
+        static JsonConverter JsonObjectConverter => new JsonObjectConverter();
 
-        public static readonly JsonConverter[] Converters =
+        static readonly JsonConverter[] Converters =
         {
             new OrganizationIdConverter(),
             new ProjectIdConverter(),
@@ -39,8 +39,6 @@ namespace Unity.Cloud.Assets
             DatasetIdConverter,
             TransformationIdConverter,
             CollectionPathConverter,
-            JsonObjectConverter,
-            StringEnumConverter
         };
 
         /// <summary>
@@ -124,10 +122,13 @@ namespace Unity.Cloud.Assets
             return JsonConvert.SerializeObject(value, settings);
         }
 
-        public static JsonSerializerSettings Clone(this JsonSerializerSettings settingsSource, params JsonConverter[] converters)
+        static JsonSerializerSettings Clone(this JsonSerializerSettings settingsSource, params JsonConverter[] converters)
         {
             var mergedConverters = settingsSource.Converters.ToList();
-            mergedConverters.AddRange(converters);
+            if (converters != null)
+                mergedConverters.AddRange(converters);
+            mergedConverters.Add(JsonObjectConverter);
+            mergedConverters.Add(StringEnumConverter);
 
 #if UC_NUGET
             var cloneSettings = new JsonSerializerSettings

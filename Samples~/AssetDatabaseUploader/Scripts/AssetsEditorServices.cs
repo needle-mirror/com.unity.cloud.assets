@@ -17,7 +17,7 @@ namespace Unity.Cloud.Assets.Samples.AssetDatabaseUploader
         /// <summary>
         /// Returns an <see cref="IOrganizationRepository"/>.
         /// </summary>
-        public static IOrganizationRepository OrganizationRepository { get; private set; }
+        public static IOrganizationRepository OrganizationRepository => s_Authenticator;
 
         /// <summary>
         /// Returns an <see cref="IAssetRepository"/>.
@@ -34,8 +34,6 @@ namespace Unity.Cloud.Assets.Samples.AssetDatabaseUploader
 
             s_Authenticator = new UnityEditorAuthenticator(new TargetClientIdTokenToUnityServicesTokenExchanger(httpClient, serviceHostResolver));
             var serviceHttpClient = new ServiceHttpClient(httpClient, s_Authenticator, playerSettings);
-
-            OrganizationRepository = new AuthenticatorOrganizationRepository(serviceHttpClient, serviceHostResolver);
 
             AssetRepository = AssetRepositoryFactory.Create(serviceHttpClient, serviceHostResolver);
 

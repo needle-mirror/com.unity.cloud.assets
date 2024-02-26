@@ -1,6 +1,5 @@
 using System.Threading;
 using System.Threading.Tasks;
-using Unity.Cloud.Common;
 
 namespace Unity.Cloud.Assets
 {
@@ -17,9 +16,9 @@ namespace Unity.Cloud.Assets
         FieldDefinitionType Type { get; }
 
         /// <summary>
-        /// The status of the field.
+        /// Whether the field is deleted.
         /// </summary>
-        string Status { get; }
+        bool IsDeleted { get; }
 
         /// <summary>
         /// The display name for the field.

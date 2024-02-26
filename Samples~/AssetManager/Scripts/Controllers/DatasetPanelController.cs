@@ -29,8 +29,8 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
         IDataset m_CurrentDataset;
         DatasetUpdate m_DatasetUpdate;
         FileController m_FileController;
+        TransformationController m_TransformationController;
         MetadataController m_MetadataController;
-        MetadataController m_SystemMetadataController;
 
         public event Action<IAsset> PanelClosed;
 
@@ -48,7 +48,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             m_DatasetLastEdit = datasetPanel.Q("LastEdit");
             m_DatasetStatusLastEditLabel = datasetPanel.Q<Label>("LastEditDate");
 
-            var scrollView = m_RightPanel.Q<ScrollView>();
+            var scrollView = m_RightPanel.Q<ScrollView>("DatasetInfo");
             var content = m_RightPanel.Q("Content");
             scrollView.Add(content);
 
@@ -62,13 +62,13 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             var metadataTemplate = datasetPanel.Q<TemplateContainer>("MetadataItemTemplate");
 
             var metadataContainer = datasetPanel.Q("MetadataContainer");
-            m_MetadataController = new MetadataController(metadataContainer, false, metadataTemplate.templateSource, addMetadataPopupController);
-
-            metadataContainer = datasetPanel.Q("SystemMetadataContainer");
-            m_SystemMetadataController = new MetadataController(metadataContainer, true, metadataTemplate.templateSource, addMetadataPopupController);
+            m_MetadataController = new MetadataController(metadataContainer, metadataTemplate.templateSource, addMetadataPopupController);
 
             m_SaveDatasetButton = datasetPanel.Q<Button>("DatasetSaveButton");
             m_GeneratePreviewButton = datasetPanel.Q<Button>("DatasetGeneratePreviewButton");
+
+            m_FileController = fileController;
+            m_TransformationController = new TransformationController(datasetPanel);
 
             // Call backs----------------------------------
             m_SaveDatasetButton.RegisterCallback<ClickEvent>(UpdateDataset);
@@ -96,8 +96,6 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
             m_BackButton = datasetPanel.Q<Button>("BackBtn");
             m_BackButton.RegisterCallback<ClickEvent>(_ => ClosePanel(null));
-
-            m_FileController = fileController;
         }
 
         public void Cleanup()
@@ -127,7 +125,8 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             UpdateStatus(dataset.Status);
 
             _ = m_MetadataController.PopulateMetadataAsync(dataset);
-            _ = m_SystemMetadataController.PopulateMetadataAsync(dataset);
+
+            _ = m_TransformationController.PopulateTransformationProgress(dataset);
         }
 
         public void Clear()
@@ -159,14 +158,14 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             {
                 m_CurrentDataset.UpdateAsync(m_DatasetUpdate, cancellationTokenSource.Token),
                 m_MetadataController.UpdateMetadataAsync(cancellationTokenSource.Token),
-                m_SystemMetadataController.UpdateMetadataAsync(cancellationTokenSource.Token)
             };
 
             try
             {
                 await Task.WhenAll(updateTasks);
 
-                DialogService.ShowMessage("Update complete", "The dataset has been saved successfully.");
+                if (updateTasks.TrueForAll(x => x.IsCompletedSuccessfully))
+                    DialogService.ShowMessage("Update complete", "The dataset has been saved successfully.");
 
                 OpenDataset(m_CurrentDataset);
             }
@@ -178,43 +177,6 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             finally
             {
                 ChangeButtonEnabledState(true);
-            }
-        }
-
-        async Task StartTransformationOnDataset(WorkflowType workflowType)
-        {
-            if (m_CurrentDataset == null)
-            {
-                ChangeButtonEnabledState(true);
-                return;
-            }
-
-            try
-            {
-                var cancellationTokenSource = new CancellationTokenSource();
-
-                var transformation =
-                    await m_CurrentDataset.StartTransformationAsync(workflowType, cancellationTokenSource.Token);
-
-                while (transformation.Status != TransformationStatus.Succeeded)
-                {
-                    await Task.Delay(1000, cancellationTokenSource.Token);
-
-                    transformation = await m_CurrentDataset.GetTransformationAsync(transformation.Descriptor.TransformationId, cancellationTokenSource.Token);
-                }
-
-                DialogService.ShowMessage("Success", $"Transformation of type {workflowType} has been started.");
-                ChangeButtonEnabledState(true);
-            }
-            catch (OperationCanceledException oe)
-            {
-                oe.LogException();
-                DialogService.ShowMessage("Error", $"Failed to start transformation {workflowType}. Request canceled.");
-            }
-            catch (Exception e)
-            {
-                e.LogException();
-                DialogService.ShowMessage("Error", $"Transformation of type {workflowType} failed.");
             }
         }
 
@@ -246,13 +208,12 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             m_DatasetVisibleToggle.SetValueWithoutNotify(false);
             m_FileController.Clear();
             m_MetadataController.Clear();
-            m_SystemMetadataController.Clear();
+            m_TransformationController.Clear();
         }
 
         void ClosePanel(IAsset asset)
         {
             m_MetadataController.Hide();
-            m_SystemMetadataController.Hide();
 
             PanelClosed?.Invoke(asset);
         }
@@ -294,6 +255,41 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             ChangeButtonEnabledState(false);
 
             _ = StartTransformationOnDataset(WorkflowType.Thumbnail_Generation);
+        }
+
+        async Task StartTransformationOnDataset(WorkflowType workflowType)
+        {
+            if (m_CurrentDataset == null)
+            {
+                ChangeButtonEnabledState(true);
+                return;
+            }
+
+            try
+            {
+                var cancellationTokenSource = new CancellationTokenSource();
+
+                var creation = new TransformationCreation()
+                {
+                    WorkflowType = workflowType
+                };
+                var transformation = await m_CurrentDataset.StartTransformationAsync(creation, cancellationTokenSource.Token);
+                m_TransformationController.AddTransformationProgress(transformation);
+            }
+            catch (OperationCanceledException oe)
+            {
+                oe.LogException();
+                DialogService.ShowMessage("Error", $"Failed to start transformation {workflowType}. Request canceled.");
+            }
+            catch (Exception e)
+            {
+                e.LogException();
+                DialogService.ShowMessage("Error", $"Transformation of type {workflowType} failed.");
+            }
+            finally
+            {
+                ChangeButtonEnabledState(true);
+            }
         }
     }
 }

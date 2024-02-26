@@ -14,6 +14,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
         readonly Label m_FieldInfo;
 
         readonly List<IFieldDefinition> m_FieldDefinitions = new();
+        bool m_IsPopulated;
 
         IFieldDefinition m_SelectedFieldDefinition;
         Action<IFieldDefinition> m_OnAdd;
@@ -34,6 +35,16 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
         public void ListFieldDefinitions(OrganizationId organizationId)
         {
             _ = RefreshAsync(organizationId);
+        }
+
+        public async Task<IFieldDefinition> GetFieldDefinitionAsync(string key)
+        {
+            while (!m_IsPopulated)
+            {
+                await Task.Yield();
+            }
+
+            return m_FieldDefinitions.FirstOrDefault(x => x.Descriptor.FieldKey == key);
         }
 
         public void Show(IEnumerable<string> existingKeys, Action<IFieldDefinition> onAdd)
@@ -66,14 +77,22 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
             m_FetchTokenSource = new CancellationTokenSource();
 
+            m_IsPopulated = false;
+
             m_FieldDefinitions.Clear();
 
-            var pagination = new Pagination(Range.All);
-            var enumerable = PlatformServices.AssetRepository.ListFieldDefinitionsAsync(organizationId, pagination, false, m_FetchTokenSource.Token);
+            var searchFilter = new FieldDefinitionSearchFilter();
+            searchFilter.Deleted.WhereEquals(false);
+
+            var enumerable = PlatformServices.AssetRepository.QueryFieldDefinitions(organizationId)
+                .SelectWhereMatchesFilter(searchFilter)
+                .ExecuteAsync(m_FetchTokenSource.Token);
             await foreach (var fieldDefinition in enumerable)
             {
                 m_FieldDefinitions.Add(fieldDefinition);
             }
+
+            m_IsPopulated = true;
         }
 
         void OnFieldDefinitionSelected(ChangeEvent<string> _)

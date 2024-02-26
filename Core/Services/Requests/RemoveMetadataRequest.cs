@@ -9,22 +9,22 @@ namespace Unity.Cloud.Assets
         public RemoveMetadataRequest(ProjectId projectId, AssetId assetId, AssetVersion assetVersion, string from, IEnumerable<string> keys)
             : base(projectId, assetId, assetVersion)
         {
-            m_PathAndQueryParams += $"/fields";
-            AddParamToQueryParams(from, keys);
+            m_RequestUrl += $"/fields";
+            AddParamToQuery(from, keys);
         }
 
         public RemoveMetadataRequest(ProjectId projectId, AssetId assetId, AssetVersion assetVersion, DatasetId datasetId, string from, IEnumerable<string> keys)
             : base(projectId, assetId, assetVersion)
         {
-            m_PathAndQueryParams += $"/datasets/{datasetId}/fields";
-            AddParamToQueryParams(from, keys);
+            m_RequestUrl += $"/datasets/{datasetId}/fields";
+            AddParamToQuery(from, keys);
         }
 
         public RemoveMetadataRequest(ProjectId projectId, AssetId assetId, AssetVersion assetVersion, DatasetId datasetId, string filePath, string from, IEnumerable<string> keys)
             : base(projectId, assetId, assetVersion)
         {
-            m_PathAndQueryParams += $"/datasets/{datasetId}/files/{Uri.EscapeDataString(filePath)}/fields";
-            AddParamToQueryParams(from, keys);
+            m_RequestUrl += $"/datasets/{datasetId}/files/{Uri.EscapeDataString(filePath)}/fields";
+            AddParamToQuery(from, keys);
         }
     }
 }

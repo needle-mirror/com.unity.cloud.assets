@@ -1,23 +1,69 @@
 ﻿using System;
+using System.Collections;
+using System.Threading.Tasks;
 
 namespace Unity.Cloud.Assets
 {
-    /// <summary>
-    /// A class that represents a metadata value.
-    /// </summary>
-    public abstract class MetadataObject
+    sealed class MetadataObject : MetadataValue
     {
-        /// <summary>
-        /// Returns the value of the metadata.
-        /// </summary>
-        /// <returns>An object representing the value of the metadata. </returns>
-        /// <remarks>Return values should be limited to the following types: <see cref="string"/>, <see cref="bool"/>, <see cref="DateTime"/>, <see cref="double"/> or other number types, and <c>IEnumerable</c> of string</remarks>
-        public abstract object GetValue();
+        readonly object m_Value;
 
-        /// <summary>
-        /// Sets the value of the metadata field.
-        /// </summary>
-        /// <param name="value">The value to apply. </param>
-        internal abstract void SetValue(object value);
+        internal MetadataObject(object value)
+            : base(ParseType(value))
+        {
+            m_Value = value;
+        }
+
+        internal MetadataObject(object value, IAssetDataSource dataSource, FieldDefinitionDescriptor fieldDefinitionDescriptor)
+            : base(ParseType(value), value)
+        {
+            m_Value = value;
+            _ = ValidateAsync(dataSource, fieldDefinitionDescriptor);
+        }
+
+        internal override object GetValue()
+        {
+            return m_Value;
+        }
+
+        static MetadataValueType ParseType(object value)
+        {
+            return value switch
+            {
+                bool => MetadataValueType.Boolean,
+                ICollection => MetadataValueType.MultiSelection,
+                double or int or float or long or short or byte or sbyte or decimal => MetadataValueType.Number,
+                DateTime => MetadataValueType.Timestamp,
+                string stringValue => UrlMetadata.TryParse(stringValue, out _, out _) ? MetadataValueType.Url : MetadataValueType.Unknown,
+                _ => MetadataValueType.Unknown
+            };
+        }
+
+        async Task ValidateAsync(IAssetDataSource dataSource, FieldDefinitionDescriptor fieldDefinitionDescriptor)
+        {
+            if (ValueType == MetadataValueType.Unknown)
+            {
+                try
+                {
+                    var fieldDefinition = await dataSource.GetFieldDefinitionAsync(fieldDefinitionDescriptor, default);
+                    var multiSelection = fieldDefinition.Multiselection ?? false;
+                    ValueType = fieldDefinition.Type switch
+                    {
+                        FieldDefinitionType.Boolean => MetadataValueType.Boolean,
+                        FieldDefinitionType.Number => MetadataValueType.Number,
+                        FieldDefinitionType.Text => MetadataValueType.Text,
+                        FieldDefinitionType.Timestamp => MetadataValueType.Timestamp,
+                        FieldDefinitionType.Url => MetadataValueType.Url,
+                        FieldDefinitionType.User => MetadataValueType.User,
+                        FieldDefinitionType.Selection => multiSelection ? MetadataValueType.MultiSelection : MetadataValueType.SingleSelection,
+                        _ => MetadataValueType.Unknown
+                    };
+                }
+                catch (Exception)
+                {
+                    // ignored - we'll just leave it as unknown
+                }
+            }
+        }
     }
 }

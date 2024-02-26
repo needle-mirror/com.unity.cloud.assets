@@ -21,13 +21,13 @@ namespace Unity.Cloud.Assets
         public GetFileUrlRequest(ProjectId projectId, AssetId assetId, AssetVersion assetVersion, DatasetId datasetId, string filePath, string urlType, IFileData fileData)
             : base(projectId, assetId, assetVersion, datasetId, filePath)
         {
-            m_PathAndQueryParams += $"/url";
+            m_RequestUrl += $"/url";
 
-            AddParamToQueryParams("urlType", urlType);
+            AddParamToQuery("urlType", urlType);
             if (fileData != null)
             {
-                AddParamToQueryParams("userChecksum", fileData.UserChecksum);
-                AddParamToQueryParams("fileSize", fileData.SizeBytes.ToString());
+                AddParamToQuery("userChecksum", fileData.UserChecksum);
+                AddParamToQuery("fileSize", fileData.SizeBytes.ToString());
                 // To be done by [UCAM-317] AddParamToQueryParams("width", width.ToString())
             }
         }

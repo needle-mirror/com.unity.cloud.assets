@@ -41,7 +41,12 @@ namespace Unity.Cloud.Assets.Samples
 
         public async Task PopulateOrganizations(IOrganizationRepository organizationRepository)
         {
-            var organizations = await organizationRepository.ListOrganizationsAsync();
+            var organizations = new List<IOrganization>();
+            var organizationsAsyncEnumerable = organizationRepository.ListOrganizationsAsync(Range.All);
+            await foreach (var organization in organizationsAsyncEnumerable)
+            {
+                organizations.Add(organization);
+            }
 
             m_OrganizationsDropdown.choices = GetOrganizationsList(organizations);
 

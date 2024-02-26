@@ -14,10 +14,10 @@ namespace Unity.Cloud.Assets.Samples
         struct SearchValue
         {
             public string Name { get; }
-            public SearchCriterion Type { get; }
+            public GroupableField Type { get; }
             public int Count { get; }
 
-            public SearchValue(string name, SearchCriterion type, int count)
+            public SearchValue(string name, GroupableField type, int count)
             {
                 Name = name;
                 Type = type;
@@ -25,19 +25,9 @@ namespace Unity.Cloud.Assets.Samples
             }
         }
 
-        public enum SearchCriterion
-        {
-            None = -1,
-            Name,
-            Tags,
-            Type,
-            Status,
-        }
-
         const string k_SearchBarPlaceholder = "Search by name, type or tag...";
-        static readonly Pagination m_DefaultPagination = new(nameof(IAsset.Name), Range.All);
 
-        AssetSearchFilter m_AssetSearchFilter;
+        readonly AssetSearchFilter m_AssetSearchFilter = new();
 
         VisualElement m_Root;
         VisualElement m_SearchBar;
@@ -52,19 +42,18 @@ namespace Unity.Cloud.Assets.Samples
         Button m_SearchBarClearButton;
 
         List<string> m_QueryList;
-        OrganizationId m_OrganizationId = OrganizationId.None;
-        IEnumerable<ProjectId> m_Projects;
+        IEnumerable<ProjectDescriptor> m_ProjectDescriptors;
         IAssetProject m_CurrentProject;
-        bool AcrossProjectMode => m_OrganizationId != OrganizationId.None && m_Projects != null;
+        bool AcrossProjectMode => m_ProjectDescriptors != null;
 
-        readonly Dictionary<SearchCriterion, KeyValuePair<string,int>[]> m_SearchValuesByCategory = new();
+        readonly Dictionary<GroupableField, KeyValuePair<string,int>[]> m_SearchValuesByCategory = new();
         readonly HashSet<string> m_AllSearchValues = new();
         readonly List<SearchValue> m_SearchValues = new();
 
-        public FieldsFilter FieldsToInclude { get; set; }
+        CancellationTokenSource m_SearchCancellationToken;
 
-        public event Action<IAsyncEnumerable<IAsset>> addSearchQuery;
-        public event Action<IAsyncEnumerable<IAsset>> deleteSearchQuery;
+        public event Action<IAsyncEnumerable<IAsset>, CancellationToken> AddSearchQuery;
+        public event Action<IAsyncEnumerable<IAsset>, CancellationToken> DeleteSearchQuery;
         public event Action clearSearchQuery;
 
         IAssetRepository m_AssetRepository;
@@ -85,10 +74,6 @@ namespace Unity.Cloud.Assets.Samples
 
         public void Init(VisualElement root, VisualTreeAsset chipsTemplate)
         {
-            m_AssetSearchFilter = new AssetSearchFilter
-            {
-                IncludedFields = FieldsToInclude
-            };
             m_QueryList = new List<string>();
 
             m_Root = root;
@@ -137,7 +122,12 @@ namespace Unity.Cloud.Assets.Samples
                 return;
             }
 
-            var assetCount = await CountAssetsAsync(searchString);
+            var cancellationToken = GetSearchCancellationToken();
+
+            var assetCount = await CountAssetsAsync(searchString, cancellationToken);
+
+            if (cancellationToken.IsCancellationRequested) return;
+
             var overflowString = assetCount > 100 ? "+" : "";
             assetCount = Math.Min(assetCount, 100);
 
@@ -151,7 +141,7 @@ namespace Unity.Cloud.Assets.Samples
 
             m_SearchBarClearButton.style.display = DisplayStyle.Flex;
 
-            addSearchQuery?.Invoke(UpdateAssetsListAsync());
+            AddSearchQuery?.Invoke(UpdateAssetsListAsync(cancellationToken), cancellationToken);
 
             HideSearchValuesContainer();
         }
@@ -173,14 +163,14 @@ namespace Unity.Cloud.Assets.Samples
             }
             else
             {
-                deleteSearchQuery?.Invoke(UpdateAssetsListAsync());
+                var cancellationToken = GetSearchCancellationToken();
+                DeleteSearchQuery?.Invoke(UpdateAssetsListAsync(cancellationToken), cancellationToken);
             }
         }
 
         public void UpdateSearchBarProjectsLabel(IAssetProject project)
         {
-            m_OrganizationId = OrganizationId.None;
-            m_Projects = null;
+            m_ProjectDescriptors = null;
             m_CurrentProject = project;
             m_AssetRepository = null;
 
@@ -192,10 +182,9 @@ namespace Unity.Cloud.Assets.Samples
             HideAndClearSearchBar();
         }
 
-        public void UpdateSearchBarProjectsLabel(IAssetRepository assetRepository, OrganizationId organizationId, IEnumerable<ProjectId> projects)
+        public void UpdateSearchBarProjectsLabel(IAssetRepository assetRepository, IEnumerable<ProjectDescriptor> projects)
         {
-            m_OrganizationId = organizationId;
-            m_Projects = projects;
+            m_ProjectDescriptors = projects;
             m_CurrentProject = null;
             m_AssetRepository = assetRepository;
 
@@ -204,7 +193,7 @@ namespace Unity.Cloud.Assets.Samples
             HideAndClearSearchBar();
         }
 
-        public void UpdateSearchValues(SearchCriterion criterion, KeyValuePair<string, int>[] names)
+        public void UpdateSearchValues(GroupableField criterion, KeyValuePair<string, int>[] names)
         {
             HideSearchValuesContainer();
 
@@ -231,6 +220,15 @@ namespace Unity.Cloud.Assets.Samples
             ClearSearchBar();
         }
 
+        public CancellationToken GetSearchCancellationToken()
+        {
+            m_SearchCancellationToken?.Cancel();
+            m_SearchCancellationToken?.Dispose();
+            m_SearchCancellationToken = new CancellationTokenSource();
+
+            return m_SearchCancellationToken.Token;
+        }
+
         void ClearSearchBar()
         {
             m_SearchBarChipsContainer?.Clear();
@@ -238,23 +236,23 @@ namespace Unity.Cloud.Assets.Samples
             clearSearchQuery?.Invoke();
         }
 
-        IAsyncEnumerable<IAsset> UpdateAssetsListAsync()
+        IAsyncEnumerable<IAsset> UpdateAssetsListAsync(CancellationToken cancellationToken)
         {
-            UpdateSearchCriterionString(SearchCriterion.Name, m_AllSearchValues, m_QueryList.ToArray());
-            UpdateSearchCriterionString(SearchCriterion.Type, m_AllSearchValues, m_QueryList.ToArray());
-            UpdateSearchCriterionList(SearchCriterion.Tags, m_AllSearchValues, m_QueryList.ToArray());
-            UpdateSearchCriterionString(SearchCriterion.Status, m_AllSearchValues, m_QueryList.ToArray());
+            UpdateSearchCriterionString(GroupableField.Name, m_AllSearchValues, m_QueryList.ToArray());
+            UpdateSearchCriterionString(GroupableField.Type, m_AllSearchValues, m_QueryList.ToArray());
+            UpdateSearchCriterionList(GroupableField.Tags, m_AllSearchValues, m_QueryList.ToArray());
+            UpdateSearchCriterionString(GroupableField.Status, m_AllSearchValues, m_QueryList.ToArray());
 
             try
             {
                 if (AcrossProjectMode)
                 {
-                    return m_AssetRepository.SearchAssetsAsync(m_OrganizationId, m_Projects, m_AssetSearchFilter, m_DefaultPagination, CancellationToken.None);
+                    return m_AssetRepository.QueryAssets(m_ProjectDescriptors).SelectWhereMatchesFilter(m_AssetSearchFilter).ExecuteAsync(cancellationToken);
                 }
 
                 if (m_CurrentProject != null)
                 {
-                    return m_CurrentProject.SearchAssetsAsync(m_AssetSearchFilter, m_DefaultPagination, CancellationToken.None);
+                    return m_CurrentProject.QueryAssets().SelectWhereMatchesFilter(m_AssetSearchFilter).ExecuteAsync(cancellationToken);
                 }
             }
             catch (OperationCanceledException)
@@ -276,34 +274,34 @@ namespace Unity.Cloud.Assets.Samples
             }
         }
 
-        static (SearchCriterion type, string queryValue) ParseQuery(string query)
+        static (GroupableField? type, string queryValue) ParseQuery(string query)
         {
             var split = query.Split(':');
 
-            if (split.Length != 2) return (SearchCriterion.None, query.Trim());
+            if (split.Length != 2) return (null, query.Trim());
 
-            return Enum.TryParse<SearchCriterion>(split[0].Trim(), out var type) ? (type, split[1].Trim()) : (SearchCriterion.None, string.Empty);
+            return Enum.TryParse<GroupableField>(split[0].Trim(), out var type) ? (type, split[1].Trim()) : (null, string.Empty);
         }
 
-        void UpdateSearchCriterionString(SearchCriterion criterion, ICollection<string> allValues, params string[] queries)
+        void UpdateSearchCriterionString(GroupableField criterion, ICollection<string> allValues, params string[] queries)
         {
             var filter = GetFilterAndValues(criterion, out var filterValues);
-            if (filter == null) return;
+            if (filter.include is not SearchCriteria<string> include || filter.any is not SearchCriteria<string> any) return;
 
-            var forAnyList = new List<string>();
+            var anyList = new List<string>();
             var includeList = new List<string>();
 
             for (var i = 0; i < queries.Length; ++i)
             {
                 var (type, queryValue) = ParseQuery(queries[i]);
 
-                if (type == SearchCriterion.None)
+                if (type == null)
                 {
                     // If this criterion contains this value, consider it a match,
                     // otherwise, only consider the value if it's not a value of other criteria (or the global list is null)
                     if (filterValues.Contains(queryValue) || allValues == null || !allValues.Contains(queryValue))
                     {
-                        forAnyList.Add(queryValue);
+                        anyList.Add(queryValue);
                     }
                 }
                 else if (type == criterion)
@@ -314,28 +312,21 @@ namespace Unity.Cloud.Assets.Samples
                     }
                     else
                     {
-                        forAnyList.Add(queryValue);
+                        anyList.Add(queryValue);
                     }
                 }
             }
 
-            if (forAnyList.Count > 0)
-            {
-                filter.ForAny(string.Join(' ', forAnyList));
-            }
-
-            if (includeList.Count > 0)
-            {
-                filter.Include(string.Join(' ', includeList));
-            }
+            any.WithValue(string.Join(' ', anyList));
+            include.WithValue(string.Join(' ', includeList));
         }
 
-        void UpdateSearchCriterionList(SearchCriterion criterion, ICollection<string> allValues, params string[] queries)
+        void UpdateSearchCriterionList(GroupableField criterion, ICollection<string> allValues, params string[] queries)
         {
             var filter = GetFilterAndValues(criterion, out var filterValues);
-            if (filter == null) return;
+            if (filter.include is not ListSearchCriteria<string> include || filter.any is not ListSearchCriteria<string> any) return;
 
-            var forAnyList = new List<string>();
+            var anyList = new List<string>();
             var includeList = new List<string>();
 
             for (var i = 0; i < queries.Length; ++i)
@@ -344,13 +335,13 @@ namespace Unity.Cloud.Assets.Samples
 
                 var (type, queryValue) = ParseQuery(query);
 
-                if (type == SearchCriterion.None)
+                if (type == null)
                 {
                     // If this criterion contains this value, consider it a match,
                     // otherwise, only consider the value if it's not a value of other criteria (or the global list is null)
                     if (filterValues.Contains(queryValue) || allValues == null || !allValues.Contains(queryValue))
                     {
-                        forAnyList.Add(queryValue);
+                        anyList.Add(queryValue);
                     }
                 }
                 else if (type == criterion && filterValues.Contains(queryValue))
@@ -361,18 +352,25 @@ namespace Unity.Cloud.Assets.Samples
                     }
                     else
                     {
-                        forAnyList.Add(queryValue);
+                        anyList.Add(queryValue);
                     }
                 }
             }
 
-            filter.ForAny(forAnyList.ToArray());
-            filter.Include(includeList.ToArray());
+            any.WithValue(anyList.ToArray());
+            include.WithValue(includeList.ToArray());
         }
 
-        ISearchCriteria GetFilterAndValues(SearchCriterion criterion, out HashSet<string> filterValues)
+        (BaseSearchCriteria include, BaseSearchCriteria any) GetFilterAndValues(GroupableField criterion, out HashSet<string> filterValues)
         {
-            var filter = m_AssetSearchFilter.AllCriteria.FirstOrDefault(x => x.PropertyName == criterion.ToString());
+            var include = GetFilterAndValues(m_AssetSearchFilter.Include(), criterion, out filterValues);
+            var any = GetFilterAndValues(m_AssetSearchFilter.Any(), criterion, out _);
+            return (include, any);
+        }
+
+        BaseSearchCriteria GetFilterAndValues(CompoundSearchCriteria root, GroupableField criterion, out HashSet<string> filterValues)
+        {
+            var filter = root.AllCriteria.FirstOrDefault(x => x.PropertyName == criterion.ToString());
             if (filter == null)
             {
                 filterValues = null;
@@ -392,28 +390,26 @@ namespace Unity.Cloud.Assets.Samples
             return filter;
         }
 
-        async Task<int> CountAssetsAsync(string query)
+        async Task<int> CountAssetsAsync(string query, CancellationToken cancellationToken)
         {
-            UpdateSearchCriterionString(SearchCriterion.Name, m_AllSearchValues, query);
-            UpdateSearchCriterionString(SearchCriterion.Type, m_AllSearchValues, query);
-            UpdateSearchCriterionList(SearchCriterion.Tags, m_AllSearchValues, query);
-            UpdateSearchCriterionString(SearchCriterion.Status, m_AllSearchValues, query);
-
-            var parameters = new AggregationParameters(AssetTypeSearchCriteria.SearchKey, 101);
+            UpdateSearchCriterionString(GroupableField.Name, m_AllSearchValues, query);
+            UpdateSearchCriterionString(GroupableField.Type, m_AllSearchValues, query);
+            UpdateSearchCriterionList(GroupableField.Tags, m_AllSearchValues, query);
+            UpdateSearchCriterionString(GroupableField.Status, m_AllSearchValues, query);
 
             try
             {
-                Aggregation aggregation = default;
+                var count = 0;
                 if (AcrossProjectMode)
                 {
-                    aggregation = await m_AssetRepository.CountAssetsAsync(m_OrganizationId, m_Projects, m_AssetSearchFilter, parameters, CancellationToken.None);
+                    count = await m_AssetRepository.CountAssetsAsync(m_ProjectDescriptors, m_AssetSearchFilter, cancellationToken);
                 }
                 else if (m_CurrentProject != null)
                 {
-                    aggregation = await m_CurrentProject.CountAssetsAsync(m_AssetSearchFilter, parameters, CancellationToken.None);
+                    count = await m_CurrentProject.CountAssetsAsync(m_AssetSearchFilter, cancellationToken);
                 }
 
-                return aggregation?.Total ?? 0;
+                return count;
             }
             catch (OperationCanceledException)
             {

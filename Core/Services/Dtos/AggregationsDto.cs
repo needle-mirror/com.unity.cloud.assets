@@ -12,7 +12,7 @@ namespace Unity.Cloud.Assets
     struct AggregateDto
     {
         [DataMember(Name = "value")]
-        public string Value { get; set; }
+        public object Value { get; set; }
 
         [DataMember(Name = "count")]
         public int Count { get; set; }

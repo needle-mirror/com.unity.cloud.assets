@@ -1,14 +1,14 @@
 namespace Unity.Cloud.Assets
 {
-    public class FieldDefinitionCreation : FieldDefinitionUpdate, IFieldDefinitionCreation
+    public class FieldDefinitionCreation : IFieldDefinitionCreation
     {
         /// <inheritdoc/>
         public string Key { get; set; } = string.Empty;
 
         /// <inheritdoc/>
-        public FieldDefinitionType Type { get; set; }
+        public string DisplayName { get; set; } = string.Empty;
 
-        public FieldDefinitionCreation()
-            : base() { }
+        /// <inheritdoc/>
+        public FieldDefinitionType Type { get; set; }
     }
 }

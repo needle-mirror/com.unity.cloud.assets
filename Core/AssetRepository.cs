@@ -1,7 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Unity.Cloud.Common;
@@ -21,13 +19,9 @@ namespace Unity.Cloud.Assets
         }
 
         /// <inheritdoc />
-        public async IAsyncEnumerable<IAssetProject> ListAssetProjectsAsync(OrganizationId organizationId, Pagination pagination, [EnumeratorCancellation] CancellationToken cancellationToken)
+        public AssetProjectQueryBuilder QueryAssetProjects(OrganizationId organizationId)
         {
-            var projectsEnumerator = m_DataSource.ListProjectsAsync(organizationId, pagination, cancellationToken).GetAsyncEnumerator(cancellationToken);
-            while (await projectsEnumerator.MoveNextAsync())
-            {
-                yield return projectsEnumerator.Current.From(m_DataSource, organizationId);
-            }
+            return new AssetProjectQueryBuilder(m_DataSource, organizationId);
         }
 
         /// <inheritdoc />
@@ -50,98 +44,59 @@ namespace Unity.Cloud.Assets
         }
 
         /// <inheritdoc />
-        public async IAsyncEnumerable<IAssetCollection> ListAssetCollectionsAsync(ProjectDescriptor projectDescriptor, [EnumeratorCancellation] CancellationToken cancellationToken)
-        {
-            var collectionDatas = await m_DataSource.ListCollectionsAsync(projectDescriptor, cancellationToken);
-            foreach (var data in collectionDatas)
-            {
-                yield return data.From(m_DataSource, projectDescriptor);
-            }
-        }
-
-        /// <inheritdoc />
         public async Task<IAssetCollection> GetAssetCollectionAsync(CollectionDescriptor collectionDescriptor, CancellationToken cancellationToken)
         {
             var collectionData = await m_DataSource.GetCollectionAsync(collectionDescriptor, cancellationToken);
             return collectionData.From(m_DataSource, collectionDescriptor);
         }
 
-        /// <inheritdoc/>
-        public async IAsyncEnumerable<IAsset> SearchAssetsAsync(OrganizationId organizationId, IEnumerable<ProjectId> projectIds, IAssetSearchFilter assetSearchFilter, Pagination pagination, [EnumeratorCancellation] CancellationToken cancellationToken)
+        /// <inheritdoc />
+        public AssetQueryBuilder QueryAssets(IEnumerable<ProjectDescriptor> projectDescriptors)
         {
-            var availableProjects = projectIds as ProjectId[] ?? projectIds.ToArray();
-            if (!availableProjects.Any())
-                yield break;
-
-            var assetEnumerator = m_DataSource.ListAssetsAsync(organizationId, availableProjects, assetSearchFilter, pagination, cancellationToken).GetAsyncEnumerator(cancellationToken);
-            while (await assetEnumerator.MoveNextAsync())
-            {
-                yield return assetEnumerator.Current.From(m_DataSource, organizationId, availableProjects, assetSearchFilter.IncludedFields);
-            }
-
-            await assetEnumerator.DisposeAsync();
+            return new AssetQueryBuilder(m_DataSource, projectDescriptors);
         }
 
         /// <inheritdoc />
-        public Task<Aggregation> CountAssetsAsync(OrganizationId organizationId, IEnumerable<ProjectId> projectIds, IAssetSearchFilter assetSearchFilter, AggregationParameters parameters, CancellationToken cancellationToken)
+        public GroupAndCountAssetsQueryBuilder GroupAndCountAssets(IEnumerable<ProjectDescriptor> projectDescriptors)
         {
-            return m_DataSource.GetAssetAggregateAsync(organizationId, projectIds, assetSearchFilter, parameters, cancellationToken);
+            return new GroupAndCountAssetsQueryBuilder(m_DataSource, projectDescriptors);
         }
 
         /// <inheritdoc />
-        public async Task<IAsset> GetAssetAsync(AssetDescriptor assetDescriptor, FieldsFilter includedFieldsFilter, CancellationToken cancellationToken)
+        public async Task<IAsset> GetAssetAsync(AssetDescriptor assetDescriptor, CancellationToken cancellationToken)
         {
-            var assetData = await m_DataSource.GetAssetAsync(assetDescriptor, includedFieldsFilter, cancellationToken);
-            return assetData.From(m_DataSource, assetDescriptor, includedFieldsFilter);
+            var assetData = await m_DataSource.GetAssetAsync(assetDescriptor, FieldsFilter.DefaultAssetIncludes, cancellationToken);
+            return assetData.From(m_DataSource, assetDescriptor, FieldsFilter.DefaultAssetIncludes);
         }
 
         /// <inheritdoc />
-        public async Task<IDataset> GetDatasetAsync(DatasetDescriptor datasetDescriptor, DatasetFields includedFields, CancellationToken cancellationToken)
+        public async Task<IDataset> GetDatasetAsync(DatasetDescriptor datasetDescriptor, CancellationToken cancellationToken)
         {
-            var filter = new FieldsFilter
-            {
-                AssetFields = AssetFields.datasets,
-                DatasetFields = includedFields,
-                FileFields = FileFields.none
-            };
-            var datasetData = await m_DataSource.GetDatasetAsync(datasetDescriptor, filter, cancellationToken);
-            return datasetData.From(m_DataSource, datasetDescriptor.AssetDescriptor, includedFields);
+            var datasetData = await m_DataSource.GetDatasetAsync(datasetDescriptor, FieldsFilter.DefaultDatasetIncludes, cancellationToken);
+            return datasetData.From(m_DataSource, datasetDescriptor.AssetDescriptor, FieldsFilter.DefaultDatasetIncludes.DatasetFields);
         }
 
         /// <inheritdoc />
-        public async Task<IDataset> GetDatasetBySystemTagAsync(AssetDescriptor assetDescriptor, string systemTag, DatasetFields includedFields, CancellationToken cancellationToken)
+        public async Task<ITransformation> GetTransformationAsync(TransformationDescriptor transformationDescriptor, CancellationToken cancellationToken)
         {
-            var filter = new FieldsFilter
-            {
-                AssetFields = AssetFields.datasets,
-                DatasetFields = includedFields,
-                FileFields = FileFields.none
-            };
-            var datasetData = await m_DataSource.GetDatasetBySystemTagAsync(assetDescriptor, systemTag, filter, cancellationToken);
-            return datasetData.From(m_DataSource, assetDescriptor, includedFields);
+            var data = await m_DataSource.GetTransformationAsync(transformationDescriptor, cancellationToken);
+
+            var transformation = new TransformationEntity(m_DataSource, transformationDescriptor);
+            transformation.MapFrom(data);
+            return transformation;
         }
 
         /// <inheritdoc />
-        public async Task<IFile> GetFileAsync(FileDescriptor fileDescriptor, FileFields includedFields, CancellationToken cancellationToken)
+        public async Task<IFile> GetFileAsync(FileDescriptor fileDescriptor, CancellationToken cancellationToken)
         {
-            var filter = new FieldsFilter
-            {
-                AssetFields = AssetFields.files,
-                DatasetFields = DatasetFields.none,
-                FileFields = includedFields
-            };
-            var fileData = await m_DataSource.GetFileAsync(fileDescriptor, filter, cancellationToken);
-            return fileData.From(m_DataSource, fileDescriptor, includedFields);
+            var fileData = await m_DataSource.GetFileAsync(fileDescriptor, FieldsFilter.DefaultFileIncludes, cancellationToken);
+            return fileData.From(m_DataSource, fileDescriptor, FieldsFilter.DefaultFileIncludes.FileFields);
         }
 
         /// <inheritdoc />
-        public async IAsyncEnumerable<IFieldDefinition> ListFieldDefinitionsAsync(OrganizationId organizationId, Pagination pagination, bool includeDeleted, [EnumeratorCancellation] CancellationToken cancellationToken)
+        public FieldDefinitionQueryBuilder QueryFieldDefinitions(OrganizationId organizationId)
         {
-            var asyncEnumerator = m_DataSource.ListFieldDefinitionsAsync(organizationId, pagination, includeDeleted, cancellationToken).GetAsyncEnumerator(cancellationToken);
-            while (await asyncEnumerator.MoveNextAsync())
-            {
-                yield return asyncEnumerator.Current.From(m_DataSource, organizationId);
-            }
+            return new FieldDefinitionQueryBuilder(m_DataSource, organizationId);
         }
 
         /// <inheritdoc />

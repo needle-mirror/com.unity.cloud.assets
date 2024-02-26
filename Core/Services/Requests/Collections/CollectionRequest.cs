@@ -21,7 +21,7 @@ namespace Unity.Cloud.Assets
         public CollectionRequest(ProjectId projectId, CollectionPath collectionPath, IAssetCollectionData data = null)
             : base(projectId)
         {
-            m_PathAndQueryParams += $"/collections/{Uri.EscapeDataString(collectionPath)}";
+            m_RequestUrl += $"/collections/{Uri.EscapeDataString(collectionPath)}";
 
             m_Data = data;
         }

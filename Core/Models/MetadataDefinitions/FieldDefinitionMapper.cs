@@ -9,7 +9,7 @@ namespace Unity.Cloud.Assets
         internal static void MapFrom(this FieldDefinitionEntity entity, IFieldDefinitionData data)
         {
             entity.Type = data.Type;
-            entity.Status = data.Status;
+            entity.IsDeleted = data.Status == "Deleted";
             entity.DisplayName = data.DisplayName;
             entity.AuthoringInfo = new AuthoringInfo(data.CreatedBy, data.Created, data.UpdatedBy, data.Updated);
 
@@ -42,11 +42,11 @@ namespace Unity.Cloud.Assets
             var data = new FieldDefinitionData
             {
                 Type = entity.Type,
-                Status = entity.Status,
+                Status = entity.IsDeleted ? "Deleted" : "Active",
                 DisplayName = entity.DisplayName,
-                CreatedBy = entity.AuthoringInfo?.CreatedBy,
+                CreatedBy = entity.AuthoringInfo?.CreatedBy.ToString(),
                 Created = entity.AuthoringInfo?.Created,
-                UpdatedBy = entity.AuthoringInfo?.UpdatedBy,
+                UpdatedBy = entity.AuthoringInfo?.UpdatedBy.ToString(),
                 Updated = entity.AuthoringInfo?.Updated,
             };
             if (entity is SelectionFieldDefinitionEntity selectionFieldDefinition)

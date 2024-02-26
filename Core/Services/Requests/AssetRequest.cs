@@ -16,7 +16,7 @@ namespace Unity.Cloud.Assets
         public AssetRequest(ProjectId projectId, AssetId assetId, AssetVersion assetVersion)
             : base(projectId)
         {
-            m_PathAndQueryParams += $"/assets/{assetId}/versions/{assetVersion}";
+            m_RequestUrl += $"/assets/{assetId}/versions/{assetVersion}";
         }
     }
 }

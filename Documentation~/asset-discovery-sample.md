@@ -87,15 +87,13 @@ The details view shows you the following information about your asset:
 * Collections
 * Authoring information: creation date and last modified date
 * Metadata
-* System metadata
 
 To download your asset information in this sample, follow these steps:
 
 1. Select one of the assets in the grid. The asset details view appears.
-
 2. In the details view, select **Download**.
 
-To edit the download's filepath, update the `path` variable in `AssetInformationPanelController.OnAssetDownloadButtonClicked()`.
+To change the location of the downloaded asset, update the `path` variable in `AssetInformationPanelController.OnAssetDownloadButtonClicked()`.
 ```C#
 async void OnAssetDownloadButtonClicked()
 {
@@ -105,7 +103,7 @@ async void OnAssetDownloadButtonClicked()
 ```
 
 >[!NOTE]
->To download assets, you will need the right permissions in your Project to **consume** assets.
+>To download assets, you need the right permissions in your Project to consume assets. Refer to the the [Asset Manager documentation](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles) for more information on permissions.
 
 ## Main components
 

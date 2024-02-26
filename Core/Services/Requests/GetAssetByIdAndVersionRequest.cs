@@ -28,7 +28,7 @@ namespace Unity.Cloud.Assets
 
         void AddFieldFilterToQueryParams(string value)
         {
-            AddParamToQueryParams("IncludeFields", value);
+            AddParamToQuery("IncludeFields", value);
         }
     }
 }

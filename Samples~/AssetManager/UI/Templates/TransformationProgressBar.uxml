@@ -1,0 +1,7 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="../StyleSheets/AssetCreationPanelStyleSheet.uss?fileID=7433441132597879392&amp;guid=2a9d0e7b4e75049048525c21e638987e&amp;type=3#AssetCreationPanelStyleSheet" />
+    <ui:VisualElement style="flex-direction: row; align-items: center;">
+        <ui:ProgressBar title="my-progress" name="ProgressBar" style="flex-grow: 1;" />
+        <ui:Button parse-escape-sequences="true" display-tooltip-when-elided="true" style="width: 20px; height: 20px; padding-top: 4px; padding-right: 12px; padding-bottom: 4px; padding-left: 12px; background-color: rgba(188, 188, 188, 0); background-image: url(&apos;../../../Shared/UI/Sprites/delete.png?fileID=2800000&amp;guid=2fba3b8e11a714aeca7937eb158f6f0b&amp;type=3#delete&apos;); -unity-background-scale-mode: scale-to-fit; border-top-width: 0; border-right-width: 0; border-bottom-width: 0; border-left-width: 0;" />
+    </ui:VisualElement>
+</ui:UXML>

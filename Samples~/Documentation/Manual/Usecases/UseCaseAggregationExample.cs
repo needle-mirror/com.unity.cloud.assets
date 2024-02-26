@@ -5,6 +5,9 @@ namespace Unity.Cloud.Documentation.Assets
 
     #region Example_UIClass
 
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
     using Unity.Cloud.Assets;
@@ -38,7 +41,8 @@ namespace Unity.Cloud.Documentation.Assets
 
         #region Example_UIContent
 
-        string m_CustomAggregationField;
+        readonly string[] m_AggregationFields = Enum.GetNames(typeof(GroupableField));
+        int m_SelectedIndex = -1;
 
         public void OnGUI()
         {
@@ -59,37 +63,27 @@ namespace Unity.Cloud.Documentation.Assets
 
             GUILayout.BeginVertical();
 
-            if (GUILayout.Button("Aggregate by Type"))
+            GUILayout.Label("Aggregate by: ");
+            var selection = GUILayout.SelectionGrid(m_SelectedIndex, m_AggregationFields, 4);
+            if (selection != m_SelectedIndex && selection >= 0)
             {
-                _ = m_Behaviour.AggregateByField(AssetTypeSearchCriteria.SearchKey);
+                m_SelectedIndex = selection;
+                var aggregationField = (GroupableField)Enum.Parse(typeof(GroupableField), m_AggregationFields[m_SelectedIndex]);
+                _ = m_Behaviour.AggregateByField(aggregationField);
             }
 
-            if (GUILayout.Button("Aggregate by Tag"))
+            if (GUILayout.Button("Collections"))
             {
-                _ = m_Behaviour.AggregateByField(nameof(IAsset.Tags));
+                _ = m_Behaviour.AggregateByCollection();
             }
-
-            if (GUILayout.Button("Aggregate by Status"))
-            {
-                _ = m_Behaviour.AggregateByField(nameof(IAsset.Status));
-            }
-
-            GUILayout.BeginHorizontal();
-            m_CustomAggregationField = GUILayout.TextField(m_CustomAggregationField, GUILayout.MinWidth(120f));
-            if (GUILayout.Button("Aggregate"))
-            {
-                _ = m_Behaviour.AggregateByField(m_CustomAggregationField);
-            }
-
-            GUILayout.EndHorizontal();
 
             GUILayout.Label("Aggregation Results:");
-            if (m_Behaviour.Aggregation != null)
+            if (m_Behaviour.GroupCounters != null)
             {
-                GUILayout.Label($"Total: {m_Behaviour.Aggregation.Total}");
-                GUILayout.Label($"Unique: {m_Behaviour.Aggregation.Unique}");
+                GUILayout.Label($"Total: {m_Behaviour.Total}");
+                GUILayout.Label($"Unique: {m_Behaviour.GroupCounters.Keys}");
                 GUILayout.Label($"Values:");
-                foreach (var value in m_Behaviour.Aggregation.Values)
+                foreach (var value in m_Behaviour.GroupCounters)
                 {
                     GUILayout.Label($"- {value.Key}: {value.Value}");
                 }
@@ -121,15 +115,22 @@ namespace Unity.Cloud.Documentation.Assets
 
         #region Example_Behaviour
 
-        public Aggregation Aggregation { get; private set; }
+        public IReadOnlyDictionary<string, int> GroupCounters { get; private set; }
+        public int Total { get; private set; }
 
-        public async Task AggregateByField(string aggregationField)
+        public async Task AggregateByField(GroupableField groupableField)
         {
-            var assetSearchFilter = new AssetSearchFilter();
-            var aggregationParameters = new AggregationParameters(aggregationField, int.MaxValue);
+            GroupCounters = null;
+            GroupCounters = await CurrentProject.GroupAndCountAssets().ExecuteAsync(groupableField, CancellationToken.None);
+            Total = GroupCounters.Values.Sum();
+        }
 
-            var cancellationTokenSrc = new CancellationTokenSource();
-            Aggregation = await CurrentProject.CountAssetsAsync(assetSearchFilter, aggregationParameters, cancellationTokenSrc.Token);
+        public async Task AggregateByCollection()
+        {
+            GroupCounters = null;
+            var collections = await CurrentProject.GroupAndCountAssets().GroupByCollectionAndExecuteAsync(CancellationToken.None);
+            GroupCounters = collections.ToDictionary(x => x.Key.Path.ToString(), x => x.Value);
+            Total = GroupCounters.Values.Sum();
         }
 
         #endregion

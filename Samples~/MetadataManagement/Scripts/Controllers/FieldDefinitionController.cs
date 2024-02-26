@@ -72,7 +72,7 @@ namespace Unity.Cloud.Assets.Samples.MetadataManagement
             m_ContextMenu.SetButtonVisibility("Hide Deleted", false);
             m_ContextMenu.SetButtonVisibility("Show Deleted", true);
 
-            m_FieldDefinitionListUi.Filter = x => x.Status != "Deleted";
+            m_FieldDefinitionListUi.Filter = x => !x.IsDeleted;
             m_FieldDefinitionListUi.Populate();
         }
 

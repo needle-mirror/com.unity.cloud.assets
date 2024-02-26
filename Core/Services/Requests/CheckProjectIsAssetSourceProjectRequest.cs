@@ -15,7 +15,7 @@ namespace Unity.Cloud.Assets
         public CheckProjectIsAssetSourceProjectRequest(ProjectId projectId, AssetId assetId)
             : base(projectId)
         {
-            m_PathAndQueryParams += $"/assets/{assetId}/is-source-project";
+            m_RequestUrl += $"/assets/{assetId}/is-source-project";
         }
     }
 }

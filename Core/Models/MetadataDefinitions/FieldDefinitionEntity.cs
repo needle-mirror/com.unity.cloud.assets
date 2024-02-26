@@ -1,6 +1,5 @@
 using System.Threading;
 using System.Threading.Tasks;
-using Unity.Cloud.Common;
 
 namespace Unity.Cloud.Assets
 {
@@ -15,7 +14,7 @@ namespace Unity.Cloud.Assets
         public FieldDefinitionType Type { get; set; }
 
         /// <inheritdoc/>
-        public string Status { get; set; }
+        public bool IsDeleted { get; set; }
 
         /// <inheritdoc/>
         public string DisplayName { get; set; }

@@ -25,7 +25,7 @@ namespace Unity.Cloud.Assets
         public FileRequest(ProjectId projectId, AssetId assetId, AssetVersion assetVersion, DatasetId datasetId, string filePath, IFileBaseData data = null)
             : base(projectId, assetId, assetVersion)
         {
-            m_PathAndQueryParams += $"/datasets/{datasetId}/files/{Uri.EscapeDataString(filePath)}";
+            m_RequestUrl += $"/datasets/{datasetId}/files/{Uri.EscapeDataString(filePath)}";
 
             m_Data = data;
         }
@@ -42,7 +42,7 @@ namespace Unity.Cloud.Assets
         public FileRequest(ProjectId projectId, AssetId assetId, AssetVersion assetVersion, string filePath, IFileBaseData data = null)
             : base(projectId, assetId, assetVersion)
         {
-            m_PathAndQueryParams += $"/files/{Uri.EscapeDataString(filePath)}";
+            m_RequestUrl += $"/files/{Uri.EscapeDataString(filePath)}";
 
             m_Data = data;
         }
@@ -58,7 +58,7 @@ namespace Unity.Cloud.Assets
                 return base.ConstructBody();
             }
 
-            var body = IsolatedSerialization.SerializeWithConverters(m_Data, IsolatedSerialization.JsonObjectConverter);
+            var body = IsolatedSerialization.SerializeWithConverters(m_Data);
             return new StringContent(body, Encoding.UTF8, "application/json");
         }
     }

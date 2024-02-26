@@ -7,6 +7,7 @@ using System.Threading;
 using UnityEngine;
 using System.Threading.Tasks;
 using Unity.Cloud.Common;
+using Unity.Cloud.Identity;
 using UnityEngine.UIElements;
 
 namespace Unity.Cloud.Assets.Samples.AssetDiscovery
@@ -28,9 +29,7 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
             nameof(IAsset.SourceProject),
             nameof(IAsset.LinkedProjects),
             nameof(IAsset.Name),
-            nameof(IAsset.PreviewFileUrl),
             nameof(IAsset.Metadata),
-            nameof(IAsset.SystemMetadata)
         };
 
         static readonly Type k_DatasetType = typeof(IDataset);
@@ -39,7 +38,6 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
             nameof(IDataset.Name),
             nameof(IDataset.FileOrder),
             nameof(IDataset.Metadata),
-            nameof(IDataset.SystemMetadata)
         };
 
         const string k_NoneLabel = "None";
@@ -66,6 +64,13 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
         readonly HashSet<string> m_InProgressDownloads = new();
 
         CancellationTokenSource m_CancelPopulateAsset;
+
+        readonly OrganizationController m_OrganizationController;
+
+        public AssetInformationPanelController(OrganizationController organizationController)
+        {
+            m_OrganizationController = organizationController;
+        }
 
         public void Init(VisualElement root, VisualTreeAsset informationItemTemplate, VisualTreeAsset tagsTemplate, VisualTreeAsset dataSetItemTemplate, MonoBehaviour coroutineHandler)
         {
@@ -145,7 +150,7 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
                 }
             }
 
-            _ = PopulateMetadata(asset.Metadata, asset.SystemMetadata, m_CancelPopulateAsset.Token);
+            _ = PopulateMetadata(asset.Metadata, m_CancelPopulateAsset.Token);
 
             m_AssetDownloadButton.tooltip = "";
 
@@ -190,7 +195,7 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
                     }
                 }
 
-                _ = PopulateMetadata(dataset.Metadata, dataset.SystemMetadata, m_CancelPopulateAsset.Token);
+                _ = PopulateMetadata(dataset.Metadata, m_CancelPopulateAsset.Token);
 
                 var datasetDownloadButton = item.Q<Button>("DatasetDownloadButton");
                 datasetDownloadButton.clickable.clicked += () =>
@@ -216,7 +221,9 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
                     break;
                 case AuthoringInfo authoringInfo:
                     AddItem(items,"Created On", authoringInfo.Created.ToString("MM/dd/yyyy"));
+                    if (m_OrganizationController.OrganizationMembersInfo.ContainsKey(authoringInfo.CreatedBy)) AddItem(items,"Created By", m_OrganizationController.OrganizationMembersInfo[authoringInfo.CreatedBy].Name);
                     AddItem(items,"Updated On", authoringInfo.Updated.ToString("MM/dd/yyyy"));
+                    if (m_OrganizationController.OrganizationMembersInfo.ContainsKey(authoringInfo.UpdatedBy)) AddItem(items,"Updated By", m_OrganizationController.OrganizationMembersInfo[authoringInfo.UpdatedBy].Name);
                     break;
                 case int propertyValueInt:
                     AddItem(items, propertyName, propertyValueInt.ToString());
@@ -236,26 +243,19 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
             return items;
         }
 
-        async Task PopulateMetadata(IMetadataContainer metadataContainer, IMetadataContainer systemMetadataContainer, CancellationToken cancellationToken)
+        async Task PopulateMetadata(IMetadataContainer metadataContainer, CancellationToken cancellationToken)
         {
             if (cancellationToken.IsCancellationRequested) return;
 
-            var metadata = await metadataContainer.Query().ExecuteAsync(cancellationToken);
-
-            PopulateMetadata(metadata, "Metadata");
-
-            if (cancellationToken.IsCancellationRequested) return;
-
-            var systemMetadata = await systemMetadataContainer.Query().ExecuteAsync(cancellationToken);
-
-            PopulateMetadata(systemMetadata, "System Metadata");
+            var result = metadataContainer.Query().ExecuteAsync(cancellationToken);
+            await PopulateMetadata(result, "Metadata");
         }
 
-        void PopulateMetadata(IReadOnlyDictionary<string, IMetadataValue> metadata, string sectionTitle)
+        async Task PopulateMetadata(IAsyncEnumerable<KeyValuePair<string, MetadataValue>> metadata, string sectionTitle)
         {
             var properties = new List<TemplateContainer>();
 
-            foreach (var kvp in metadata)
+            await foreach (var kvp in metadata)
             {
                 switch (kvp.Value.ValueType)
                 {
@@ -420,15 +420,21 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
             m_AssetInformationDownloadSuccessful.style.display = DisplayStyle.None;
         }
 
-        async Task ListAssetCollections(TemplateContainer item)
+        async Task ListAssetCollections(VisualElement item)
         {
             var label = item.Q<Label>("InformationValueLabel");
             label.style.display = DisplayStyle.None;
             var container = item.Q<VisualElement>("InformationValue");
 
+            var collections = new List<CollectionPath>();
+
             try
             {
-                await m_SelectedAsset.RefreshAssetCollectionsAsync(CancellationToken.None);
+                var collectionsAsync = m_SelectedAsset.ListLinkedAssetCollectionsAsync(Range.All, CancellationToken.None);
+                await foreach(var collection in collectionsAsync)
+                {
+                    collections.Add(collection.Path);
+                }
             }
             catch (Exception e)
             {
@@ -436,8 +442,7 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
             }
             finally
             {
-                var collections = m_SelectedAsset.Collections.ToArray();
-                if (collections.Length != 0)
+                if (collections.Count == 0)
                 {
                     foreach (var collection in collections)
                     {

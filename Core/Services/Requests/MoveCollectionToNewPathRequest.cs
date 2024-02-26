@@ -28,7 +28,7 @@ namespace Unity.Cloud.Assets
         {
             m_DestinationPath = destinationPath;
 
-            m_PathAndQueryParams += $"/move";
+            m_RequestUrl += $"/move";
         }
 
         /// <summary>

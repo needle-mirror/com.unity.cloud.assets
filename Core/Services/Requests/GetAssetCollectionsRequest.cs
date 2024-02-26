@@ -16,7 +16,7 @@ namespace Unity.Cloud.Assets
         public GetAssetCollectionsRequest(ProjectId projectId, AssetId assetId)
             : base(projectId)
         {
-            m_PathAndQueryParams += $"/assets/{assetId}/collections";
+            m_RequestUrl += $"/assets/{assetId}/collections";
         }
     }
 }

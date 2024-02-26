@@ -1,4 +1,4 @@
-# Use case: Create and upload files
+# Use case: Manage datasets
 
 You can use the Unity Cloud Assets package to view and create datasets within an asset.
 

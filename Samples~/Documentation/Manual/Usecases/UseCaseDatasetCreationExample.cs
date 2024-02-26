@@ -126,6 +126,7 @@ namespace Unity.Cloud.Documentation.Assets
         {
             Datasets = new List<IDataset>();
 
+            _ = CurrentAsset.RefreshAsync(CancellationToken.None);
             var asyncList = CurrentAsset.ListDatasetsAsync(Range.All, CancellationToken.None);
             await foreach (var dataset in asyncList)
             {

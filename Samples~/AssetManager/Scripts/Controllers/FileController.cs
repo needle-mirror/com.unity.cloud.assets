@@ -125,7 +125,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             return true;
         }
 
-        async Task RemoveFileAsync(IFile file)
+        static async Task RemoveFileAsync(IFile file)
         {
             try
             {
@@ -180,7 +180,8 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
 #if UNITY_EDITOR
             var path = UnityEditor.EditorUtility.OpenFilePanel(addFileHeader, m_LastOpenedFolder, "");
-            OnFileSelected(path);
+            if (!string.IsNullOrEmpty(path))
+                OnFileSelected(path);
 #else
             DialogService.ShowMessage("Upload a file", addFileHeader, OnFileSelected, m_LastOpenedFolder);
 #endif
@@ -240,10 +241,8 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
             try
             {
-                var cancellationTokenSource = new CancellationTokenSource();
-
                 var fileStream = File.OpenRead(filePath);
-                assetFile = await dataset.UploadFileAsync(fileCreation, fileStream, null, cancellationTokenSource.Token);
+                assetFile = await dataset.UploadFileAsync(fileCreation, fileStream, null, CancellationToken.None);
                 if (assetFile == null)
                 {
                     DialogService.ShowMessage("Error", $"Failed to upload file: {filePath}");

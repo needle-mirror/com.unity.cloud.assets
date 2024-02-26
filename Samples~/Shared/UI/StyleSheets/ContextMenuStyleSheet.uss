@@ -48,3 +48,7 @@
     color: rgb(210, 210, 210);
     background-color: rgba(0, 0, 0, 0);
 }
+
+.ContextMenuEntry:hover {
+    background-color: rgb(72, 72, 72);
+}

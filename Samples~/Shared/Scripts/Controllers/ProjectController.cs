@@ -10,8 +10,6 @@ namespace Unity.Cloud.Assets.Samples
 {
     public class ProjectController : OrganizationController
     {
-        static readonly Pagination k_DefaultPagination = new(nameof(IAsset.Name), Range.All);
-
         [SerializeField]
         VisualTreeAsset m_ListItemTemplate;
 
@@ -28,13 +26,6 @@ namespace Unity.Cloud.Assets.Samples
             add => m_ProjectListUi.ProjectSelected += value;
             remove => m_ProjectListUi.ProjectSelected -= value;
         }
-
-        public FieldsFilter FieldsToInclude { get; } = new()
-        {
-            AssetFields = AssetFields.all,
-            DatasetFields = DatasetFields.all,
-            FileFields = FileFields.authoring | FileFields.downloadUrl | FileFields.fileSize
-        };
 
         protected override void Start()
         {
@@ -53,12 +44,7 @@ namespace Unity.Cloud.Assets.Samples
         {
             try
             {
-                var filter = new AssetSearchFilter
-                {
-                    IncludedFields = FieldsToInclude
-                };
-                var projects = m_ProjectListUi.GetProjects().Select(p => p.Descriptor.ProjectId);
-                return AssetRepository.SearchAssetsAsync(SelectedOrganizationId, projects, filter, k_DefaultPagination, cancellationToken);
+                return AssetRepository.QueryAssets(m_ProjectListUi.GetProjects().Select(p => p.Descriptor)).ExecuteAsync(cancellationToken);
             }
             catch (OperationCanceledException oe)
             {
@@ -76,11 +62,7 @@ namespace Unity.Cloud.Assets.Samples
         {
             try
             {
-                var filter = new AssetSearchFilter
-                {
-                    IncludedFields = FieldsToInclude
-                };
-                return SelectedProject.SearchAssetsAsync(filter, k_DefaultPagination, cancellationToken);
+                return SelectedProject.QueryAssets().ExecuteAsync(cancellationToken);
             }
             catch (OperationCanceledException oe)
             {

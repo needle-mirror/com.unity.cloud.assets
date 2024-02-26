@@ -27,11 +27,6 @@ namespace Unity.Cloud.Assets
                 fieldsFilter.AssetFields.HasFlag(AssetFields.metadata),
                 fieldsFilter.DatasetFields.HasFlag(DatasetFields.metadata),
                 fieldsFilter.FileFields.HasFlag(FileFields.metadata));
-
-            fieldsFilter.SystemMetadataFields.Select(select, "systemMetadata",
-                fieldsFilter.AssetFields.HasFlag(AssetFields.systemMetadata),
-                fieldsFilter.DatasetFields.HasFlag(DatasetFields.systemMetadata),
-                fieldsFilter.FileFields.HasFlag(FileFields.systemMetadata));
         }
 
         static void Parse(this FileFields fileFields, OnFieldFilterSelected select)

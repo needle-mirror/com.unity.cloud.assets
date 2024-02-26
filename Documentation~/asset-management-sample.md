@@ -76,7 +76,7 @@ To update an asset in this sample, follow these steps:
 2. On the right side of the screen, select **...** button of the asset you want to update and select **Open**.
    </br>
    ![Screenshot of the open button](images/open-selected-asset.png)
-3. In the asset details page, edit the asset's information and select the **Save asset** button. Add metadata to the asset by selecting the **Add Metadata** or **Add System Metadata** button.
+3. In the asset details page, edit the asset's information and select the **Save asset** button. Add metadata to the asset by selecting the **Add Metadata** button.
    </br>
    ![Screenshot of the asset edit panel](images/asset-edit-panel.png)
 4. To add a new dataset to the asset, select the **Create dataset** button.
@@ -88,17 +88,18 @@ To update an asset in this sample, follow these steps:
 6. To update a dataset or manage the files of an asset, you can select the desired dataset.
    </br>
    ![Screenshot of the dataset in list](images/asset-edit-dataset-list.png)
-5. In the dataset details page, edit the dataset's information and select the **Save dataset** button.
+7. In the dataset details page, edit the dataset's information and select the **Save dataset** button.
    </br>
    ![Screenshot of the dataset panel](images/dataset-edit-panel.png)
-6. To add a new file to the dataset, select the **Browse** button, select the desired file. If a dataset possesses at least one file, you can generate a preview image by selecting **Generate Preview** button.
+8. In the dataset details page, you can start a workflow to generate a thumbnail by selecting the **Generate preview** button. This will create a new dataset containing an image file.
+9. To add a new file to the dataset, select the **Browse** button, select the desired file. If a dataset possesses at least one file, you can generate a preview image by selecting **Generate Preview** button.
    </br>
    ![Screenshot of the browse button](images/dataset-edit-panel-browse-button.png)
-7. To remove a file from the dataset, select the **Trash icon** button.
-   </br>
-   ![Screenshot of the remove button](images/trash-icon-button.png)
-8. To go back to the detail of the asset, select the **Back** button on the top left corner.
-9. To go back to the list of assets of the Project, select the **Back** button on the top left corner.
+10. To remove a file from the dataset, select the **Trash icon** button.
+    </br>
+    ![Screenshot of the remove button](images/trash-icon-button.png)
+11. To go back to the detail of the asset, select the **Back** button on the top left corner.
+12. To go back to the list of assets of the Project, select the **Back** button on the top left corner.
 
 >[!NOTE]
 >When an asset is not published, you can do the two following actions :

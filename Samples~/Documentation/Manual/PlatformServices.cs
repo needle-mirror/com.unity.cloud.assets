@@ -28,7 +28,7 @@ namespace Unity.Cloud.Documentation.Assets
         /// <summary>
         /// Returns an <see cref="IOrganizationRepository"/>.
         /// </summary>
-        public static IOrganizationRepository OrganizationRepository { get; private set; }
+        public static IOrganizationRepository OrganizationRepository => Authenticator;
 
         /// <summary>
         /// Returns an <see cref="IAssetRepository"/>.
@@ -49,8 +49,6 @@ namespace Unity.Cloud.Documentation.Assets
             Authenticator = new CompositeAuthenticator(compositeAuthenticatorSettings);
 
             var serviceHttpClient = new ServiceHttpClient(httpClient, Authenticator, playerSettings);
-
-            OrganizationRepository = new AuthenticatorOrganizationRepository(serviceHttpClient, serviceHostResolver);
 
             AssetRepository = AssetRepositoryFactory.Create(serviceHttpClient, serviceHostResolver);
         }

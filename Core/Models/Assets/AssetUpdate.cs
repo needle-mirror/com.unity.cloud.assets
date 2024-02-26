@@ -9,7 +9,10 @@ namespace Unity.Cloud.Assets
     /// </summary>
     public class AssetUpdate : AssetInfo, IAssetUpdate
     {
-        /// <inheritdoc />
+        /// <inheritdoc/>
+        public AssetType? Type { get; set; }
+
+        /// <inheritdoc/>
         public string PreviewFile { get; set; }
 
         public AssetUpdate() { }

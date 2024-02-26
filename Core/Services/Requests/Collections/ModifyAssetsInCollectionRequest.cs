@@ -30,7 +30,7 @@ namespace Unity.Cloud.Assets
         {
             m_AssetsInCollection = assets.ToArray();
 
-            m_PathAndQueryParams += $"/assets";
+            m_RequestUrl += $"/assets";
         }
 
         /// <summary>

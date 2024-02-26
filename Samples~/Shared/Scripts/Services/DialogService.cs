@@ -19,6 +19,11 @@ namespace Unity.Cloud.Assets.Samples
             m_MessagePopupController?.ShowMessage(title, message);
         }
 
+        public static void ShowMessage(string title, string message, Action onAccept, Action onCancel = null)
+        {
+            m_MessagePopupController?.ShowMessage(title, message, onAccept, onCancel);
+        }
+
         public static void ShowMessage(string title, Action<string> onAccept, string defaultValue = null)
         {
             m_TextInputPopupController?.ShowMessage(title, string.Empty, onAccept, defaultValue);

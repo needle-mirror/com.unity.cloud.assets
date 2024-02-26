@@ -18,22 +18,18 @@ namespace Unity.Cloud.Assets.Samples
 
         readonly SearchBarController m_SearchBarController = new();
 
-        public FieldsFilter FieldsToInclude
+        CancellationTokenSource m_AggregationCancellationToken;
+
+        public event Action<IAsyncEnumerable<IAsset>, CancellationToken> AddSearchQuery
         {
-            get => m_SearchBarController.FieldsToInclude;
-            set => m_SearchBarController.FieldsToInclude = value;
+            add => m_SearchBarController.AddSearchQuery += value;
+            remove => m_SearchBarController.AddSearchQuery -= value;
         }
 
-        public event Action<IAsyncEnumerable<IAsset>> AddSearchQuery
+        public event Action<IAsyncEnumerable<IAsset>, CancellationToken> DeleteSearchQuery
         {
-            add => m_SearchBarController.addSearchQuery += value;
-            remove => m_SearchBarController.addSearchQuery -= value;
-        }
-
-        public event Action<IAsyncEnumerable<IAsset>> DeleteSearchQuery
-        {
-            add => m_SearchBarController.deleteSearchQuery += value;
-            remove => m_SearchBarController.deleteSearchQuery -= value;
+            add => m_SearchBarController.DeleteSearchQuery += value;
+            remove => m_SearchBarController.DeleteSearchQuery -= value;
         }
 
         public event Action ClearSearchQuery
@@ -50,6 +46,8 @@ namespace Unity.Cloud.Assets.Samples
             m_SearchBarController.Init(root, m_SearchBarChipTemplate);
         }
 
+        public CancellationToken GetSearchCancellationToken() => m_SearchBarController.GetSearchCancellationToken();
+
         public void DisplaySearchBar(IAssetProject project)
         {
             m_SearchBarController.DisplaySearchBar();
@@ -61,40 +59,48 @@ namespace Unity.Cloud.Assets.Samples
             }
         }
 
-        public void DisplaySearchBar(IAssetRepository assetRepository, OrganizationId organizationId, IEnumerable<IAssetProject> projects)
+        public void DisplaySearchBar(IAssetRepository assetRepository, IEnumerable<IAssetProject> projects)
         {
-            var projectIds = projects.Select(p => p.Descriptor.ProjectId).ToArray();
+            var projectDescriptors = projects.Select(p => p.Descriptor).ToArray();
 
             m_SearchBarController.DisplaySearchBar();
-            m_SearchBarController.UpdateSearchBarProjectsLabel(assetRepository, organizationId, projectIds);
+            m_SearchBarController.UpdateSearchBarProjectsLabel(assetRepository, projectDescriptors);
 
-            UpdateSearchBarValues(assetRepository, organizationId, projectIds);
+            UpdateSearchBarValues(assetRepository, projectDescriptors);
         }
 
         public void UpdateSearchBarValues(IAssetProject project)
         {
-            _ = UpdateSearchBarValuesAsync(SearchBarController.SearchCriterion.Type, project);
-            _ = UpdateSearchBarValuesAsync(SearchBarController.SearchCriterion.Name, project);
-            _ = UpdateSearchBarValuesAsync(SearchBarController.SearchCriterion.Tags, project);
-            _ = UpdateSearchBarValuesAsync(SearchBarController.SearchCriterion.Status, project);
+            var cancellationToken = GetAggregationCancellationToken();
+
+            _ = UpdateSearchBarValuesAsync(GroupableField.Type, project, cancellationToken);
+            _ = UpdateSearchBarValuesAsync(GroupableField.Name, project, cancellationToken);
+            _ = UpdateSearchBarValuesAsync(GroupableField.Tags, project, cancellationToken);
+            _ = UpdateSearchBarValuesAsync(GroupableField.Status, project, cancellationToken);
         }
 
-        public void UpdateSearchBarValues(IAssetRepository assetRepository, OrganizationId organizationId, IEnumerable<ProjectId> projectIds)
+        public void UpdateSearchBarValues(IAssetRepository assetRepository, IEnumerable<ProjectDescriptor> projectDescriptors)
         {
-            _ = UpdateSearchBarValuesAsync(SearchBarController.SearchCriterion.Type, assetRepository, organizationId, projectIds);
-            _ = UpdateSearchBarValuesAsync(SearchBarController.SearchCriterion.Name, assetRepository, organizationId, projectIds);
-            _ = UpdateSearchBarValuesAsync(SearchBarController.SearchCriterion.Tags, assetRepository, organizationId, projectIds);
-            _ = UpdateSearchBarValuesAsync(SearchBarController.SearchCriterion.Status, assetRepository, organizationId, projectIds);
+            var cancellationToken = GetAggregationCancellationToken();
+
+            var enumerable = projectDescriptors.ToArray();
+            _ = UpdateSearchBarValuesAsync(GroupableField.Type, assetRepository, enumerable, cancellationToken);
+            _ = UpdateSearchBarValuesAsync(GroupableField.Name, assetRepository, enumerable, cancellationToken);
+            _ = UpdateSearchBarValuesAsync(GroupableField.Tags, assetRepository, enumerable, cancellationToken);
+            _ = UpdateSearchBarValuesAsync(GroupableField.Status, assetRepository, enumerable, cancellationToken);
         }
 
-        async Task UpdateSearchBarValuesAsync(SearchBarController.SearchCriterion criterion, IAssetProject project)
+        async Task UpdateSearchBarValuesAsync(GroupableField criterion, IAssetProject project, CancellationToken cancellationToken)
         {
+            if (cancellationToken.IsCancellationRequested) return;
+
             try
             {
-                var parameters = new AggregationParameters(GetCriterionSearchKey(criterion), 10000);
-                var  aggregation = await project.CountAssetsAsync(new AssetSearchFilter(), parameters, CancellationToken.None);
+                var aggregation = await project.GroupAndCountAssets()
+                    .LimitTo(102)
+                    .ExecuteAsync(criterion, cancellationToken);
 
-                m_SearchBarController.UpdateSearchValues(criterion, aggregation.Values.ToArray());
+                m_SearchBarController.UpdateSearchValues(criterion, aggregation.ToArray());
             }
             catch (Exception e)
             {
@@ -102,14 +108,17 @@ namespace Unity.Cloud.Assets.Samples
             }
         }
 
-        async Task UpdateSearchBarValuesAsync(SearchBarController.SearchCriterion criterion, IAssetRepository assetRepository, OrganizationId organizationId, IEnumerable<ProjectId> projects)
+        async Task UpdateSearchBarValuesAsync(GroupableField criterion, IAssetRepository assetRepository, IEnumerable<ProjectDescriptor> projectDescriptors, CancellationToken cancellationToken)
         {
+            if (cancellationToken.IsCancellationRequested) return;
+
             try
             {
-                var parameters = new AggregationParameters(GetCriterionSearchKey(criterion), 10000);
-                var aggregation = await assetRepository.CountAssetsAsync(organizationId, projects, new AssetSearchFilter(), parameters, CancellationToken.None);
+                var aggregation = await assetRepository.GroupAndCountAssets(projectDescriptors)
+                    .LimitTo(102)
+                    .ExecuteAsync(criterion, cancellationToken);
 
-                m_SearchBarController.UpdateSearchValues(criterion, aggregation.Values.ToArray());
+                m_SearchBarController.UpdateSearchValues(criterion, aggregation.ToArray());
             }
             catch (Exception e)
             {
@@ -117,16 +126,12 @@ namespace Unity.Cloud.Assets.Samples
             }
         }
 
-        static string GetCriterionSearchKey(SearchBarController.SearchCriterion criterion)
+        CancellationToken GetAggregationCancellationToken()
         {
-            return criterion switch
-            {
-                SearchBarController.SearchCriterion.Type => AssetTypeSearchCriteria.SearchKey,
-                SearchBarController.SearchCriterion.Name => "name",
-                SearchBarController.SearchCriterion.Tags => "tags",
-                SearchBarController.SearchCriterion.Status => "status",
-                _ => throw new ArgumentOutOfRangeException(nameof(criterion), criterion, null)
-            };
+            m_AggregationCancellationToken?.Cancel();
+            m_AggregationCancellationToken?.Dispose();
+            m_AggregationCancellationToken = new CancellationTokenSource();
+            return m_AggregationCancellationToken.Token;
         }
     }
 }

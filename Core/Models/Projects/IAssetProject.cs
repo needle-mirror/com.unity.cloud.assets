@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Unity.Cloud.Common;
@@ -31,10 +30,9 @@ namespace Unity.Cloud.Assets
         /// </summary>
         /// <param name="assetId">The id of the asset. </param>
         /// <param name="assetVersion">The version of the asset. </param>
-        /// <param name="includedFieldsFilter">The filter describing which fields to return populated. </param>
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task whose result is the requested asset. </returns>
-        Task<IAsset> GetAssetAsync(AssetId assetId, AssetVersion assetVersion, FieldsFilter includedFieldsFilter, CancellationToken cancellationToken);
+        Task<IAsset> GetAssetAsync(AssetId assetId, AssetVersion assetVersion, CancellationToken cancellationToken);
 
         /// <summary>
         /// Creates an asset.
@@ -45,29 +43,22 @@ namespace Unity.Cloud.Assets
         Task<IAsset> CreateAssetAsync(IAssetCreation assetCreation, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Searches the project for assets which match the search filter.
+        /// Returns a builder to create a query to search a project's <see cref="IAsset"/>.
         /// </summary>
-        /// <param name="assetSearchFilter">A search filter. </param>
-        /// <param name="pagination">The range and ordering of assets to retrieve. </param>
-        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
-        /// <returns>A task whose result is an async enumeration of <see cref="IAsset"/>. </returns>
-        IAsyncEnumerable<IAsset> SearchAssetsAsync(IAssetSearchFilter assetSearchFilter, Pagination pagination, CancellationToken cancellationToken);
+        /// <returns>An <see cref="AssetQueryBuilder"/>. </returns>
+        AssetQueryBuilder QueryAssets();
 
         /// <summary>
-        /// Counts the number of assets which match the search filter.
+        /// Returns a builder to create a query to count a project's <see cref="IAsset"/>.
         /// </summary>
-        /// <param name="assetSearchFilter">A search filter. </param>
-        /// <param name="parameters">The parameters for the count. </param>
-        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
-        /// <returns>A task whose result is the asset count. </returns>
-        Task<Aggregation> CountAssetsAsync(IAssetSearchFilter assetSearchFilter, AggregationParameters parameters, CancellationToken cancellationToken);
+        /// <returns>An <see cref="GroupAndCountAssetsQueryBuilder"/>. </returns>
+        GroupAndCountAssetsQueryBuilder GroupAndCountAssets();
 
         /// <summary>
-        /// Returns the collections in the project.
+        /// Returns a builder to create a query to search a project's <see cref="IAssetCollection"/>.
         /// </summary>
-        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
-        /// <returns>A task whose result is an enumeration of <see cref="IAssetCollection"/>. </returns>
-        Task<IEnumerable<IAssetCollection>> ListCollectionsAsync(CancellationToken cancellationToken);
+        /// <returns>A <see cref="CollectionQueryBuilder"/>. </returns>
+        CollectionQueryBuilder QueryCollections();
 
         /// <summary>
         /// Returns the collection at the specified path.
@@ -92,5 +83,11 @@ namespace Unity.Cloud.Assets
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task with no result. </returns>
         Task DeleteCollectionAsync(CollectionPath collectionPath, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Returns an object that can be used to query transformations.
+        /// </summary>
+        /// <returns>A <see cref="TransformationQueryBuilder"/>. </returns>
+        TransformationQueryBuilder QueryTransformations();
     }
 }

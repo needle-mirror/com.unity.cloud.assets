@@ -20,21 +20,18 @@ namespace Unity.Cloud.Documentation.Assets
 
 #region Example_Search
 
-IAsyncEnumerable<IAsset> SearchAsync(OrganizationId organizationId, IEnumerable<ProjectId> projectIds, IAssetSearchFilter assetSearchFilter)
+IAsyncEnumerable<IAsset> SearchAsync(IEnumerable<ProjectDescriptor> projectDescriptors, IAssetSearchFilter assetSearchFilter)
 {
-    Pagination pagination = new Pagination(nameof(IAsset.Name), new Range(0, 10), SortingOrder.Ascending);
-    return m_AssetRepository.SearchAssetsAsync(organizationId, projectIds, assetSearchFilter, pagination, CancellationToken.None);
+    return m_AssetRepository.QueryAssets(projectDescriptors).SelectWhereMatchesFilter(assetSearchFilter).LimitTo(new Range(0, 10)).ExecuteAsync(CancellationToken.None);
 }
 
 #endregion
 
 #region Example_Foreach
 
-async Task DisplayResultsIndividually(OrganizationId organizationId, IEnumerable<ProjectId> projectIds, IAssetSearchFilter assetSearchFilter)
+async Task DisplayResultsIndividually(IEnumerable<ProjectDescriptor> projectDescriptors, IAssetSearchFilter assetSearchFilter)
 {
-    var pagination = new Pagination(nameof(IAsset.Name), Range.All);
-
-    var assets = m_AssetRepository.SearchAssetsAsync(organizationId, projectIds, assetSearchFilter, pagination, CancellationToken.None);
+    var assets = m_AssetRepository.QueryAssets(projectDescriptors).SelectWhereMatchesFilter(assetSearchFilter).ExecuteAsync(CancellationToken.None);
 
     await foreach (var asset in assets)
     {
@@ -49,11 +46,9 @@ async Task DisplayResultsIndividually(OrganizationId organizationId, IEnumerable
 
 #region Example_ToList
 
-async Task<IEnumerable<IAsset>> DisplayResults(OrganizationId organizationId, IEnumerable<ProjectId> projectIds, IAssetSearchFilter assetSearchFilter)
+async Task<IEnumerable<IAsset>> DisplayResults(IEnumerable<ProjectDescriptor> projectDescriptors, IAssetSearchFilter assetSearchFilter)
 {
-    var pagination = new Pagination(nameof(IAsset.Name), Range.All);
-
-    var assets = m_AssetRepository.SearchAssetsAsync(organizationId, projectIds, assetSearchFilter, pagination, CancellationToken.None);
+    var assets = m_AssetRepository.QueryAssets(projectDescriptors).SelectWhereMatchesFilter(assetSearchFilter).ExecuteAsync(CancellationToken.None);
 
     var assetList = new List<IAsset>();
     await foreach (var asset in assets)

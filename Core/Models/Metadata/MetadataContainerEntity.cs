@@ -10,7 +10,6 @@ namespace Unity.Cloud.Assets
     enum MetadataContainerSpecification
     {
         metadata,
-        systemMetadata
     }
 
     abstract class MetadataContainerEntity : IMetadataContainer
@@ -19,21 +18,28 @@ namespace Unity.Cloud.Assets
         private protected readonly MetadataContainerSpecification m_ContainerSpecification;
         protected Func<FieldsFilter> m_BuildFieldsFilter;
 
-        private protected Dictionary<string, MetadataValue> m_Properties;
+        private protected Dictionary<string, MetadataObject> m_Properties;
 
         protected abstract OrganizationId OrganizationId { get; }
 
-        internal IDictionary<string, MetadataValue> Properties
+        internal IDictionary<string, MetadataObject> Properties
         {
             get => m_Properties;
-            set => m_Properties = value?.ToDictionary(x => x.Key, x => x.Value) ?? new Dictionary<string, MetadataValue>();
+            set => m_Properties = value?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value) ?? new Dictionary<string, MetadataObject>();
         }
 
-        private protected MetadataContainerEntity(IAssetDataSource assetDataSource, MetadataContainerSpecification type, Dictionary<string, MetadataValue> properties)
+        private protected MetadataContainerEntity(IAssetDataSource assetDataSource, MetadataContainerSpecification type)
         {
             m_AssetDataSource = assetDataSource;
             m_ContainerSpecification = type;
-            m_Properties = properties ?? new Dictionary<string, MetadataValue>();
+        }
+
+        /// <summary>
+        /// Clears the cache.
+        /// </summary>
+        public void Refresh()
+        {
+            m_Properties = null;
         }
 
         /// <summary>
@@ -46,71 +52,52 @@ namespace Unity.Cloud.Assets
         {
             var keyList = keys?.ToHashSet() ?? new HashSet<string>();
 
-            var missingKeys = new HashSet<string>(keyList);
-            missingKeys.ExceptWith(m_Properties.Keys);
-
-            var metadata = m_Properties.Where(x => keyList.Contains(x.Key));
-
-            if (missingKeys.Count > 0 || keyList.Count == 0)
+            if (m_Properties == null)
             {
-                Dictionary<string, MetadataValue> missingMetadata = null;
-
                 var filter = m_BuildFieldsFilter?.Invoke();
                 IMetadataInfo data;
                 switch (m_ContainerSpecification)
                 {
                     case MetadataContainerSpecification.metadata:
-                        filter?.MetadataFields.AddRange(missingKeys);
+                        filter?.MetadataFields.AddRange(keyList);
                         data = await GetMetadataInfoAsync(filter, cancellationToken);
-                        missingMetadata = data.Metadata?.From(m_AssetDataSource, OrganizationId) ?? new Dictionary<string, MetadataValue>();
-                        break;
-                    case MetadataContainerSpecification.systemMetadata:
-                        filter?.SystemMetadataFields.AddRange(missingKeys);
-                        data = await GetMetadataInfoAsync(filter, cancellationToken);
-                        missingMetadata = data.SystemMetadata?.From(m_AssetDataSource, OrganizationId) ?? new Dictionary<string, MetadataValue>();
+                        m_Properties = data.Metadata?.From(m_AssetDataSource, OrganizationId) ?? new Dictionary<string, MetadataObject>();
                         break;
                 }
 
-                if (missingMetadata != null)
-                    metadata = metadata.Concat(missingMetadata);
+                m_Properties ??= new Dictionary<string, MetadataObject>();
             }
 
-            return metadata.ToDictionary(x => x.Key, x => x.Value);
+            var metadata = keyList.Count == 0 ? m_Properties : m_Properties.Where(kvp => keyList.Contains(kvp.Key));
+            return metadata.ToDictionary(kvp => kvp.Key, kvp => (MetadataValue) kvp.Value);
         }
 
         protected abstract Task<IMetadataInfo> GetMetadataInfoAsync(FieldsFilter filter, CancellationToken cancellationToken);
 
         /// <inheritdoc />
-        public Task AddOrUpdateAsync(IDictionary<string, object> metadataValues, CancellationToken cancellationToken)
+        public Task AddOrUpdateAsync(IReadOnlyDictionary<string, MetadataValue> metadataObjects, CancellationToken cancellationToken)
         {
             var dictionary = new Dictionary<string, object>();
-            foreach (var metadataValue in metadataValues)
+            foreach (var kvp in metadataObjects)
             {
-                var value = metadataValue.Value;
-                if (value is MetadataObject metadataValueObject)
-                {
-                    value = metadataValueObject.GetValue();
-                }
+                var value = kvp.Value.GetValue();
 
-                value = ValidateMetadataValue(value);
+                ValidateMetadataValue(value);
 
-                dictionary.Add(metadataValue.Key, value);
+                dictionary.Add(kvp.Key, value);
             }
 
             return AddOrUpdateAsync(dictionary, cancellationToken);
         }
 
         /// <inheritdoc />
-        public Task AddOrUpdateAsync(string key, object metadataValue, CancellationToken cancellationToken)
+        public Task AddOrUpdateAsync(string key, MetadataValue metadataValue, CancellationToken cancellationToken)
         {
-            if (metadataValue is MetadataObject metadataValueObject)
-            {
-                metadataValue = metadataValueObject.GetValue();
-            }
+            var value = metadataValue.GetValue();
 
-            metadataValue = ValidateMetadataValue(metadataValue);
+            ValidateMetadataValue(value);
 
-            return AddOrUpdateAsync(new Dictionary<string, object> {{key, metadataValue}}, cancellationToken);
+            return AddOrUpdateAsync(new Dictionary<string, object> {{key, value}}, cancellationToken);
         }
 
         async Task AddOrUpdateAsync(Dictionary<string, object> metadataValues, CancellationToken cancellationToken)
@@ -119,7 +106,7 @@ namespace Unity.Cloud.Assets
 
             await ExecuteAddOrUpdateAsync(metadataValues, cancellationToken);
 
-            m_Properties.Clear();
+            m_Properties = null;
         }
 
         protected abstract Task ExecuteAddOrUpdateAsync(Dictionary<string, object> properties, CancellationToken cancellationToken);
@@ -133,7 +120,7 @@ namespace Unity.Cloud.Assets
 
             await DatasourceRemoveAsync(keyHashSet, cancellationToken);
 
-            m_Properties.Clear();
+            m_Properties = null;
         }
 
         /// <inheritdoc />
@@ -144,7 +131,7 @@ namespace Unity.Cloud.Assets
 
         protected abstract Task DatasourceRemoveAsync(IEnumerable<string> keys, CancellationToken cancellationToken);
 
-        static object ValidateMetadataValue(object value)
+        static void ValidateMetadataValue(object value)
         {
             switch (value)
             {
@@ -152,9 +139,8 @@ namespace Unity.Cloud.Assets
                 case string:
                 case IEnumerable<string>:
                 case double or int or float or long or short or byte or sbyte or decimal:
-                    return value;
-                case DateTime d:
-                    return d.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fffZ");
+                case DateTime:
+                    return;
                 default:
                     throw new ArgumentException($"Invalid metadata value type: {value.GetType()}");
             }

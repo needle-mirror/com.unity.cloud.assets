@@ -14,7 +14,7 @@ namespace Unity.Cloud.Assets
         public AddFileReferenceRequest(ProjectId projectId, AssetId assetId, AssetVersion assetVersion, DatasetId datasetId, string filePath, DatasetId targetDatasetId)
             : base(projectId, assetId, assetVersion, datasetId, filePath)
         {
-            m_PathAndQueryParams += "/reference";
+            m_RequestUrl += "/reference";
             m_DatasetId = targetDatasetId;
         }
 

@@ -11,7 +11,7 @@ namespace Unity.Cloud.Assets
         public CreateFieldDefinitionRequest(OrganizationId organizationId, IFieldDefinitionBaseData data)
             : base(organizationId)
         {
-            m_PathAndQueryParams += "/templates/fields";
+            m_RequestUrl += "/templates/fields";
 
             m_Data = data;
         }
@@ -19,7 +19,7 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc/>
         public override HttpContent ConstructBody()
         {
-            var body = IsolatedSerialization.SerializeWithConverters(m_Data, IsolatedSerialization.StringEnumConverter);
+            var body = IsolatedSerialization.SerializeWithConverters(m_Data);
             return new StringContent(body, Encoding.UTF8, "application/json");
         }
     }

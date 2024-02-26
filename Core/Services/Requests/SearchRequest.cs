@@ -23,7 +23,7 @@ namespace Unity.Cloud.Assets
         public SearchRequest(ProjectId projectId, SearchRequestParameters parameters = default)
             : base(projectId)
         {
-            m_PathAndQueryParams += $"/assets/search";
+            m_RequestUrl += $"/assets/search";
 
             Parameters = parameters;
         }

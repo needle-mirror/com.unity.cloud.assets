@@ -4,17 +4,16 @@ using System.Collections.Generic;
 namespace Unity.Cloud.Assets
 {
     [Flags]
-    public enum AssetFields
+    enum AssetFields
     {
         /// <summary>
         /// Only the default fields will be populated
         /// </summary>
         none = 0,
         all = ~none,
-        authoring = 1,
-        // portalMetadata = 2, Deprecated
+        description = 1,
+        authoring = 2,
         metadata = 4,
-        systemMetadata = 8,
         previewFile = 16,
         previewFileUrl = 32,
         /// <summary>
@@ -28,7 +27,7 @@ namespace Unity.Cloud.Assets
     }
 
     [Flags]
-    public enum DatasetFields
+    enum DatasetFields
     {
         /// <summary>
         /// Only the default fields will be populated
@@ -37,15 +36,13 @@ namespace Unity.Cloud.Assets
         all = ~none,
         description = 1,
         authoring = 2,
-        // portalMetadata = 4, Deprecated
         metadata = 8,
-        systemMetadata = 16,
         files = 32,
         filesOrder = 64,
     }
 
     [Flags]
-    public enum FileFields
+    enum FileFields
     {
         /// <summary>
         /// Only the default fields will be populated
@@ -55,27 +52,45 @@ namespace Unity.Cloud.Assets
         description = 1,
         authoring = 2,
         downloadUrl = 4,
-        // portalMetadata = 8, deprecated
         metadata = 16,
-        systemMetadata = 32,
         userChecksum = 64,
         fileSize = 128,
         previewUrl = 256,
     }
 
-    public class FieldsFilter
+    class FieldsFilter
     {
         public AssetFields AssetFields { get; set; } = AssetFields.none;
         public DatasetFields DatasetFields { get; set; } = DatasetFields.none;
         public FileFields FileFields { get; set; } = FileFields.none;
         public List<string> MetadataFields { get; } = new();
-        public List<string> SystemMetadataFields { get; } = new();
 
-        public static FieldsFilter Default => new()
+        public static FieldsFilter None => new()
         {
-            AssetFields = AssetFields.all,
+            AssetFields = AssetFields.none,
             DatasetFields = DatasetFields.none,
             FileFields = FileFields.none,
+        };
+
+        public static FieldsFilter DefaultAssetIncludes => new()
+        {
+            AssetFields = AssetFields.description | AssetFields.authoring | AssetFields.previewFile,
+            DatasetFields = DatasetFields.none,
+            FileFields = FileFields.none,
+        };
+
+        public static FieldsFilter DefaultDatasetIncludes => new()
+        {
+            AssetFields = AssetFields.datasets,
+            DatasetFields = DatasetFields.description | DatasetFields.authoring | DatasetFields.filesOrder,
+            FileFields = FileFields.none,
+        };
+
+        public static FieldsFilter DefaultFileIncludes => new()
+        {
+            AssetFields = AssetFields.files,
+            DatasetFields = DatasetFields.none,
+            FileFields = FileFields.description | FileFields.authoring | FileFields.userChecksum | FileFields.fileSize
         };
 
         public static FieldsFilter All => new()
@@ -84,17 +99,5 @@ namespace Unity.Cloud.Assets
             DatasetFields = DatasetFields.all,
             FileFields = FileFields.all,
         };
-
-        public FieldsFilter WithMetadataFields(params string[] metadataFields)
-        {
-            MetadataFields.AddRange(metadataFields);
-            return this;
-        }
-
-        public FieldsFilter WithSystemMetadataFields(params string[] systemMetadataFields)
-        {
-            SystemMetadataFields.AddRange(systemMetadataFields);
-            return this;
-        }
     }
 }

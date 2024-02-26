@@ -9,10 +9,10 @@ namespace Unity.Cloud.Assets
     {
         readonly AssetDescriptor m_Descriptor;
 
-        protected override OrganizationId OrganizationId => m_Descriptor.OrganizationGenesisId;
+        protected override OrganizationId OrganizationId => m_Descriptor.OrganizationId;
 
-        internal AssetMetadataContainer(AssetDescriptor assetDescriptor, AssetFields field, IAssetDataSource assetDataSource, Dictionary<string, MetadataValue> properties = null)
-            : base(assetDataSource, field == AssetFields.metadata ? MetadataContainerSpecification.metadata : MetadataContainerSpecification.systemMetadata, properties)
+        internal AssetMetadataContainer(AssetDescriptor assetDescriptor, AssetFields field, IAssetDataSource assetDataSource)
+            : base(assetDataSource, MetadataContainerSpecification.metadata)
         {
             m_Descriptor = assetDescriptor;
             m_BuildFieldsFilter = () => new FieldsFilter
@@ -33,9 +33,6 @@ namespace Unity.Cloud.Assets
             {
                 case MetadataContainerSpecification.metadata:
                     data.Metadata = properties;
-                    break;
-                case MetadataContainerSpecification.systemMetadata:
-                    data.SystemMetadata = properties;
                     break;
             }
             return m_AssetDataSource.UpdateAssetAsync(m_Descriptor, data, cancellationToken);

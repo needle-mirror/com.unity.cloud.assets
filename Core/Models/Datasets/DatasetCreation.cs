@@ -6,10 +6,7 @@ namespace Unity.Cloud.Assets
     public class DatasetCreation : DatasetInfo, IDatasetCreation
     {
         /// <inheritdoc/>
-        public Dictionary<string, object> Metadata { get; set; }
-
-        /// <inheritdoc/>
-        public Dictionary<string, object> SystemMetadata { get; set; }
+        public Dictionary<string, MetadataValue> Metadata { get; set; }
 
         public DatasetCreation(string name)
             : base(name) { }

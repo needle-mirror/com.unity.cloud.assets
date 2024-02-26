@@ -14,6 +14,12 @@ namespace Unity.Cloud.Assets
         TransformationId Id { get; }
 
         /// <summary>
+        /// The user id.
+        /// </summary>
+        [DataMember(Name = "userId")]
+        string UserId { get; }
+
+        /// <summary>
         /// The ID of the asset containing the dataset on which the transformation is applied.
         /// </summary>
         [DataMember(Name = "assetId")]
@@ -66,6 +72,12 @@ namespace Unity.Cloud.Assets
         /// </summary>
         [DataMember(Name = "ErrorMessage")]
         string ErrorMessage { get; }
+
+        /// <summary>
+        /// Transformation progress status. In percent.
+        /// </summary>
+        [DataMember(Name = "progress")]
+        int Progress { get; }
 
         /// <summary>
         /// The datetime at which the transformation was created.

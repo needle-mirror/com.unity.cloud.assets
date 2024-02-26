@@ -4,15 +4,11 @@ namespace Unity.Cloud.Assets
 {
     public interface IAssetCreation : IAssetInfo
     {
-        /// <summary>
-        /// The user metadata of the asset.
-        /// </summary>
-        Dictionary<string, object> Metadata { get; }
+        /// <inheritdoc cref="IAsset.Type"/>
+        AssetType Type { get; }
 
-        /// <summary>
-        /// The system metadata of the asset.
-        /// </summary>
-        Dictionary<string, object> SystemMetadata { get; }
+        /// <inheritdoc cref="IAsset.Metadata"/>
+        Dictionary<string, MetadataValue> Metadata { get; }
 
         /// <summary>
         /// The collections to which the asset should be added.

@@ -10,17 +10,17 @@ namespace Unity.Cloud.Assets
     {
         internal const char k_PathDelimiter = '/';
 
-        readonly string path;
+        readonly string m_Path;
 
         /// <summary>
         /// Returns whether the path is empty.
         /// </summary>
-        public bool IsEmpty => string.IsNullOrWhiteSpace(path);
+        public bool IsEmpty => string.IsNullOrWhiteSpace(m_Path);
 
         /// <summary>
         /// Returns the length of the path.
         /// </summary>
-        public int Length => path.Length;
+        public int Length => m_Path.Length;
 
         /// <summary>
         /// Initializes and returns an instance of <see cref="CollectionPath"/>
@@ -28,7 +28,7 @@ namespace Unity.Cloud.Assets
         /// <param name="path">A path. </param>
         public CollectionPath(string path)
         {
-            this.path = string.IsNullOrEmpty(path) ? "" : path;
+            this.m_Path = string.IsNullOrEmpty(path) ? "" : path;
         }
 
         /// <summary>
@@ -37,7 +37,7 @@ namespace Unity.Cloud.Assets
         /// <returns>An array of string representing every element in the path. </returns>
         public string[] GetPathComponents()
         {
-            return path.Split(k_PathDelimiter);
+            return m_Path.Split(k_PathDelimiter);
         }
 
         /// <summary>
@@ -47,7 +47,7 @@ namespace Unity.Cloud.Assets
         /// <returns>True if the parameter string is contained within the path. </returns>
         public bool Contains(string str)
         {
-            return path.Contains(str);
+            return m_Path.Contains(str);
         }
 
         /// <summary>
@@ -57,7 +57,7 @@ namespace Unity.Cloud.Assets
         /// <returns>True if the parameter string matches the beginning of the path. </returns>
         public bool StartsWith(string str)
         {
-            return path.StartsWith(str);
+            return m_Path.StartsWith(str);
         }
 
         /// <summary>
@@ -67,7 +67,7 @@ namespace Unity.Cloud.Assets
         /// <returns>True if the parameter string matches the end of the path. </returns>
         public bool EndsWith(string str)
         {
-            return path.EndsWith(str);
+            return m_Path.EndsWith(str);
         }
 
         public override bool Equals(object obj)
@@ -77,22 +77,22 @@ namespace Unity.Cloud.Assets
 
         public bool Equals(string str)
         {
-            return path.Equals(str);
+            return m_Path.Equals(str);
         }
 
         public bool Equals(CollectionPath other)
         {
-            return Equals(other.path);
+            return Equals(other.m_Path);
         }
 
         public override int GetHashCode()
         {
-            return path != null ? path.GetHashCode() : 0;
+            return m_Path != null ? m_Path.GetHashCode() : 0;
         }
 
         public override string ToString()
         {
-            return path;
+            return m_Path;
         }
 
         public static bool operator ==(CollectionPath a, CollectionPath b)
@@ -105,7 +105,7 @@ namespace Unity.Cloud.Assets
             return !(a == b);
         }
 
-        public static implicit operator string(CollectionPath a) => a.path;
+        public static implicit operator string(CollectionPath a) => a.m_Path;
 
         public static implicit operator CollectionPath(string a) => new(a);
 
@@ -122,7 +122,7 @@ namespace Unity.Cloud.Assets
                 return relativePath;
             }
 
-            return relativePath.IsEmpty ? startPath : new CollectionPath(string.Join(k_PathDelimiter, startPath.path, relativePath.path));
+            return relativePath.IsEmpty ? startPath : new CollectionPath(string.Join(k_PathDelimiter, startPath.m_Path, relativePath.m_Path));
         }
 
         /// <summary>

@@ -15,10 +15,10 @@ namespace Unity.Cloud.Assets
             int? page = default, int? pageSize = default)
             : base(organizationId)
         {
-            m_PathAndQueryParams += "/projects";
+            m_RequestUrl += "/projects";
 
-            AddParamToQueryParams("Page", page.ToString());
-            AddParamToQueryParams("Limit", pageSize.ToString());
+            AddParamToQuery("Page", page.ToString());
+            AddParamToQuery("Limit", pageSize.ToString());
         }
     }
 }

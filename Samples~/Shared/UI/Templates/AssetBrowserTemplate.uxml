@@ -32,8 +32,9 @@
                     <ui:VisualElement style="flex-direction: column; padding-top: 12px; padding-bottom: 12px; margin-top: 2px; margin-right: 4px; margin-bottom: 2px; margin-left: 4px;">
                         <ui:Label display-tooltip-when-elided="true" name="Message" text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua." style="display: flex; color: rgb(197, 197, 197); white-space: normal; margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0;" />
                     </ui:VisualElement>
-                    <ui:VisualElement style="align-items: center;">
-                        <ui:Button text="Ok" name="Action" style="margin-left: 7px; margin-right: 2px; min-width: 120px;" />
+                    <ui:VisualElement style="align-items: center; flex-direction: row; justify-content: center;">
+                        <ui:Button text="Cancel" name="Cancel" class="PopupButton" />
+                        <ui:Button text="Ok" name="Action" class="PopupButton" />
                     </ui:VisualElement>
                 </ui:VisualElement>
                 <ui:VisualElement name="TextInputPopup" class="Popup" style="min-width: 450px;">
@@ -46,7 +47,7 @@
                         <ui:TextField picking-mode="Ignore" value="filler text" style="margin-top: 4px; margin-right: 0; margin-bottom: 4px; margin-left: 0;" />
                     </ui:VisualElement>
                     <ui:VisualElement style="align-items: center;">
-                        <ui:Button text="Ok" name="Action" style="margin-left: 7px; margin-right: 2px; min-width: 120px;" />
+                        <ui:Button text="Ok" name="Action" class="PopupButton" />
                     </ui:VisualElement>
                 </ui:VisualElement>
             </ui:VisualElement>

@@ -13,7 +13,7 @@ namespace Unity.Cloud.Assets
         /// <param name="organizationId">Genesis ID of the organization</param>
         public OrganizationRequest(OrganizationId organizationId)
         {
-            m_PathAndQueryParams = $"/organizations/{organizationId}";
+            m_RequestUrl = $"/organizations/{organizationId}";
         }
     }
 }

@@ -10,8 +10,6 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
     [Serializable]
     public class AssetPanelUi
     {
-        static readonly Pagination m_DefaultPagination = new(nameof(IAsset.Name), Range.All);
-
         readonly CollectionAssetListUi m_CollectionAssetListUi = new();
         ContextMenuController m_ContextMenu;
         AddToCollectionPopupController m_AddToCollectionPopup;
@@ -25,7 +23,7 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
         IAssetProject m_CurrentProject;
         CancellationTokenSource m_CancellationTokenSource = new();
 
-        public event Action<IEnumerable<IAsset>> AssetAddedToCollection
+        public event Action<IEnumerable<IAsset>> AddAssetsToCollection
         {
             add => m_AddToCollectionPopup.AssetsAddedToCollection += value;
             remove => m_AddToCollectionPopup.AssetsAddedToCollection -= value;
@@ -91,13 +89,13 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
         async Task Populate(IAssetProject project, IAssetCollection collection, CancellationToken token)
         {
             var filter = new AssetSearchFilter();
-            filter.Collections.Add(collection.GetFullCollectionPath());
+            filter.Collections.WhereContains(collection.GetFullCollectionPath());
 
             try
             {
-                var assets = project.SearchAssetsAsync(filter, m_DefaultPagination, token);
+                var assets = project.QueryAssets().SelectWhereMatchesFilter(filter).ExecuteAsync(token);
                 var assetList = new List<IAsset>();
-                await foreach (var asset in assets.WithCancellation(token))
+                await foreach (var asset in assets)
                 {
                     assetList.Add(asset);
                 }

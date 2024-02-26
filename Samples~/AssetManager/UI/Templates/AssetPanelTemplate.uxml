@@ -34,11 +34,6 @@
                         <ui:VisualElement name="MetadataContainer" style="flex-grow: 1;" />
                         <ui:Button text="+ Add Metadata" parse-escape-sequences="true" display-tooltip-when-elided="true" name="AddMetadataButton" class="metadataAddButton" />
                     </ui:VisualElement>
-                    <ui:VisualElement name="SystemMetadata" style="flex-grow: 1; flex-shrink: 0; margin-top: 2px; margin-right: 4px; margin-bottom: 2px; margin-left: 4px;">
-                        <ui:Label tabindex="-1" text="System Metadata" parse-escape-sequences="true" display-tooltip-when-elided="true" class="unity-base-field__label" style="align-self: flex-start;" />
-                        <ui:VisualElement name="SystemMetadataContainer" style="flex-grow: 1;" />
-                        <ui:Button text="+ Add System Metadata" parse-escape-sequences="true" display-tooltip-when-elided="true" name="AddMetadataButton" />
-                    </ui:VisualElement>
                     <ui:Instance template="MetadataItemTemplate" name="MetadataItemTemplate" style="display: none;" />
                 </ui:VisualElement>
                 <ui:ScrollView style="overflow: hidden; flex-grow: 1;" />

@@ -1,7 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Unity.Cloud.Assets.Transformations;
 using Unity.Cloud.Common;
 
 namespace Unity.Cloud.Assets
@@ -9,13 +8,17 @@ namespace Unity.Cloud.Assets
     partial class AssetDataSource
     {
         /// <inheritdoc/>
-        public async Task<TransformationId> StartTransformationAsync(DatasetDescriptor datasetDescriptor, WorkflowType workflowType, CancellationToken cancellationToken)
+        public async Task<TransformationId> StartTransformationAsync(DatasetDescriptor datasetDescriptor, WorkflowType workflowType, string[] inputFiles, CancellationToken cancellationToken)
         {
-            var request = new StartTransformationRequest(workflowType, datasetDescriptor.ProjectId, datasetDescriptor.AssetId, datasetDescriptor.AssetVersion, datasetDescriptor.DatasetId);
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var request = new StartTransformationRequest(workflowType, inputFiles, datasetDescriptor.ProjectId, datasetDescriptor.AssetId, datasetDescriptor.AssetVersion, datasetDescriptor.DatasetId);
             var response = await m_ServiceHttpClient.PostAsync(GetPublicRequestUri(request), request.ConstructBody(),
                 ServiceHttpClientOptions.Default(), cancellationToken);
 
             var jsonContent = await response.GetContentAsString();
+
+            cancellationToken.ThrowIfCancellationRequested();
 
             var startedTransformationResponse = IsolatedSerialization.DeserializeWithConverters<StartedTransformationDto>(jsonContent, IsolatedSerialization.TransformationIdConverter);
 
@@ -25,6 +28,8 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc/>
         public async Task<ITransformationData> GetTransformationAsync(TransformationDescriptor transformationDescriptor, CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             var request = new GetTransformationRequest(transformationDescriptor.TransformationId,
                 transformationDescriptor.ProjectId, transformationDescriptor.AssetId,
                 transformationDescriptor.AssetVersion, transformationDescriptor.DatasetId);
@@ -33,7 +38,24 @@ namespace Unity.Cloud.Assets
 
             var jsonContent = await response.GetContentAsString();
 
+            cancellationToken.ThrowIfCancellationRequested();
+
             return IsolatedSerialization.DeserializeWithDefaultConverters<TransformationData>(jsonContent);
+        }
+
+        /// <inheritdoc/>
+        public async Task<ITransformationData[]> GetTransformationsAsync(ProjectDescriptor projectDescriptor, TransformationSearchData searchData, CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var request = new SearchTransformationRequest(projectDescriptor.ProjectId, searchData);
+            var response = await m_ServiceHttpClient.GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(), cancellationToken);
+
+            var jsonContent = await response.GetContentAsString();
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var transformations = IsolatedSerialization.DeserializeWithDefaultConverters<TransformationData[]>(jsonContent);
+            return transformations.Select(x => (ITransformationData)x).ToArray();
         }
     }
 }

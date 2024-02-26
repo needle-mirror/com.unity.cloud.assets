@@ -1,15 +1,15 @@
-# Use case: Create and upload files
+# Use case: Start a transformation on a dataset
 
-You can use the Unity Cloud Assets package to start any transformation on a given dataset. You can also fetch any previously started ones.
+You can use the Unity Cloud Assets package to start any transformation on a given dataset. You can also fetch any previously started transformations.
 
-The SDK supports different workflows for users with different roles.
+The SDK supports different workflows for users with different roles:
 
-| Organization or Asset Manager Project role                                                           | Start a transformation | Get a transformation |
-|:-----------------------------------------------------------------------------------------------------|:-----------------------|----------------------|
-| [`Asset Management Viewer`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles)      | no                     | no                   |
-| [`Asset Management Consumer`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles)    | no                     | yes                  |
-| [`Asset Management Contributor`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles) | yes                    | yes                  |
-| [`Organization Owner`](https://docs.unity.com/cloud/en-us/accounts/roles-and-permissions)            | yes                    | yes                  |
+| Organization or Asset Manager Project role | Start a transformation | Get a transformation |
+|--------------------------------------------|:-----------------------|----------------------|
+| [`Asset Management Viewer`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles) | no | no |
+| [`Asset Management Consumer`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles) | no | yes |
+| [`Asset Management Contributor`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles) | yes | yes |
+| [`Organization Owner`](https://docs.unity.com/cloud/en-us/accounts/roles-and-permissions) | yes  | yes  |
 
 ## Before you start
 
@@ -26,7 +26,10 @@ Before you start, you must:
 
 ### Start a transformation
 
-To list the datasets of an asset, open the `AssetManagementBehaviour` script you created and add the following code to the end of the class:
+To start a transformation on a dataset, follow these steps:
+
+1. Open the `AssetManagementBehaviour` script you created.
+2. Add the following code to the end of the class:
 
 [!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseStartTransformationExample.cs#Example_Behaviour_StartTransformation)]
 
@@ -34,9 +37,11 @@ The code snippet starts a transformation on a selected dataset.
 
 ### Get a transformation
 
-To create a new dataset, open the `AssetManagementBehaviour` script you created and add the following code to the end of the class:
+To get a transformation that has been previously started on a dataset, whether already completed or not, follow these steps:
+
+1. Open the `AssetManagementBehaviour` script you created.
+2. Add the following code to the end of the class:
 
 [!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseStartTransformationExample.cs#Example_Behaviour_GetTransformation)]
 
 The code snippet gets a transformation that has been previously started on the dataset.
-

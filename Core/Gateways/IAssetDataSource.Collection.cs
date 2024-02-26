@@ -23,9 +23,10 @@ namespace Unity.Cloud.Assets
         /// Retrieves the collections in a project.
         /// </summary>
         /// <param name="projectDescriptor">The object containing the necessary information to identify the project. </param>
+        /// <param name="range">The range of the collections to return. </param>
         /// <param name="cancellationToken">A token that can be used to cancel the request.</param>
-        /// <returns>A task whose result is an enumeration of <see cref="IAssetCollectionData"/>. </returns>
-        Task<IEnumerable<IAssetCollectionData>> ListCollectionsAsync(ProjectDescriptor projectDescriptor, CancellationToken cancellationToken);
+        /// <returns>A task whose result is an async enumeration of <see cref="IAssetCollectionData"/>. </returns>
+        IAsyncEnumerable<IAssetCollectionData> ListCollectionsAsync(ProjectDescriptor projectDescriptor, Range range, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves the collection at the specified path.

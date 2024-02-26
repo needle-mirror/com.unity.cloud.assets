@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+
 namespace Unity.Cloud.Documentation.Assets
 {
 #pragma warning disable S4487 // Unread "private" fields should be removed
@@ -66,7 +69,7 @@ namespace Unity.Cloud.Documentation.Assets
             GUILayout.Label("Collections:");
             if (m_Behaviour.CurrentAsset != null)
             {
-                foreach (var collection in m_Behaviour.CurrentAsset.Collections)
+                foreach (var collection in m_Behaviour.Collections)
                 {
                     DisplayAssetCollections(collection);
                 }
@@ -79,15 +82,15 @@ namespace Unity.Cloud.Documentation.Assets
             GUILayout.EndVertical();
         }
 
-        void DisplayAssetCollections(string collectionName)
+        void DisplayAssetCollections(CollectionPath collectionPath)
         {
             GUILayout.BeginHorizontal();
 
-            GUILayout.Label($"{collectionName}");
+            GUILayout.Label($"{collectionPath}");
 
             if (GUILayout.Button("Remove asset"))
             {
-                _ = m_Behaviour.RemoveAssetFromCollectionAsync(collectionName);
+                _ = m_Behaviour.RemoveAssetFromCollectionAsync(collectionPath);
             }
 
             GUILayout.EndHorizontal();
@@ -101,6 +104,7 @@ namespace Unity.Cloud.Documentation.Assets
         readonly AssetManagementBehaviour m_Behaviour;
 
         public bool IsProjectSelected => m_Behaviour.IsProjectSelected;
+        public IAssetProject CurrentProject => m_Behaviour.CurrentProject;
         public IAsset CurrentAsset => m_Behaviour.CurrentAsset;
 
         public UseCaseAssetCollectionExampleBehaviour(AssetManagementBehaviour behaviour)
@@ -110,10 +114,18 @@ namespace Unity.Cloud.Documentation.Assets
 
         #region Example_Behaviour_RefreshCollections
 
+        public IEnumerable<CollectionPath> Collections { get; private set; }
+
         public async Task RefreshAssetCollections()
         {
-            var cancellationTokenSrc = new CancellationTokenSource();
-            await CurrentAsset.RefreshAssetCollectionsAsync(cancellationTokenSrc.Token);
+            var collectionsAsync = CurrentAsset.ListLinkedAssetCollectionsAsync(Range.All, CancellationToken.None);
+            var collections = new List<CollectionPath>();
+            await foreach(var collection in collectionsAsync)
+            {
+                collections.Add(collection.Path);
+            }
+
+            Collections = collections.ToArray();
         }
 
         #endregion
@@ -124,14 +136,14 @@ namespace Unity.Cloud.Documentation.Assets
         {
             var cancellationTokenSrc = new CancellationTokenSource();
 
-            var collection = await CurrentAsset.GetCollectionAsync(collectionPath, cancellationTokenSrc.Token);
+            var collection = await CurrentProject.GetCollectionAsync(collectionPath, cancellationTokenSrc.Token);
             if (collection == null)
             {
                 Debug.LogError($"Collection {collectionPath} not found.");
                 return;
             }
 
-            await collection.RemoveAssetsAsync(new[] {CurrentAsset}, cancellationTokenSrc.Token);
+            await collection.UnlinkAssetsAsync(new[] {CurrentAsset}, cancellationTokenSrc.Token);
             await RefreshAssetCollections();
             Debug.Log("Asset removed from collection.");
         }

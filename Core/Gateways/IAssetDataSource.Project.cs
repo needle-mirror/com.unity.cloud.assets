@@ -15,7 +15,7 @@ namespace Unity.Cloud.Assets
         /// <param name="pagination">An object containing the necessary information return a range of projects. </param>
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task whose result is an async enumeration of projects. </returns>
-        IAsyncEnumerable<IProjectData> ListProjectsAsync(OrganizationId organizationId, Pagination pagination, CancellationToken cancellationToken);
+        IAsyncEnumerable<IProjectData> ListProjectsAsync(OrganizationId organizationId, PaginationData pagination, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets an <see cref="IProjectData"/> for an organization.

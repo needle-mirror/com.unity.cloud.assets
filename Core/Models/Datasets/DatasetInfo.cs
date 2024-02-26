@@ -6,9 +6,17 @@ namespace Unity.Cloud.Assets
 {
     public abstract class DatasetInfo : IDatasetInfo
     {
+        /// <inheritdoc />
         public string Name { get; set; }
+
+        /// <inheritdoc />
         public string Description { get; set; }
+
+        /// <inheritdoc />
         public List<string> Tags { get; set; }
+
+        /// <inheritdoc />
+        public bool? IsVisible { get; set; }
 
         protected DatasetInfo(string name)
         {
@@ -24,7 +32,8 @@ namespace Unity.Cloud.Assets
             : this(dataset.Name)
         {
             Description = dataset.Description;
-            Tags = dataset.Tags?.ToList();
+            Tags = dataset.Tags?.ToList() ?? new List<string>();
+            IsVisible = dataset.IsVisible;
         }
     }
 }

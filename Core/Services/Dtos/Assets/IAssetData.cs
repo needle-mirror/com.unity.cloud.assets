@@ -11,12 +11,6 @@ namespace Unity.Cloud.Assets
     interface IAssetData : IAssetBaseData, IAuthoringData
     {
         /// <summary>
-        /// The storage id of the asset.
-        /// </summary>
-        [DataMember(Name = "storageId")]
-        string StorageId { get; }
-
-        /// <summary>
         /// The id of the asset.
         /// </summary>
         [DataMember(Name = "assetId")]
@@ -62,7 +56,7 @@ namespace Unity.Cloud.Assets
         /// The project ids to which the asset is linked.
         /// </summary>
         [DataMember(Name = "projectIds")]
-        IEnumerable<ProjectId> LinkedProjectIds { get; }
+        IEnumerable<ProjectId> LinkedProjectIds { get; set; }
 
         /// <summary>
         /// The preview file ID of the asset.

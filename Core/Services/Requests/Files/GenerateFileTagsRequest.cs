@@ -16,7 +16,7 @@ namespace Unity.Cloud.Assets
         public GenerateFileTagsRequest(ProjectId projectId, AssetId assetId, AssetVersion assetVersion, DatasetId datasetId, string filePath)
             : base(projectId, assetId, assetVersion, datasetId, filePath)
         {
-            m_PathAndQueryParams += $"/auto-tags";
+            m_RequestUrl += $"/auto-tags";
         }
     }
 }

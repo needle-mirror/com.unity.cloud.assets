@@ -12,8 +12,6 @@ namespace Unity.Cloud.Assets.Samples
     {
         const string k_AllProjectId = "All";
 
-        static readonly Pagination k_DefaultPagination = new(nameof(IAssetProject.Name), Range.All);
-
         CancellationTokenSource m_ListProjectsCancellationTokenSource = new();
 
         public event Action ProjectSelected;
@@ -43,7 +41,7 @@ namespace Unity.Cloud.Assets.Samples
         {
             try
             {
-                return assetRepository.ListAssetProjectsAsync(organizationId, k_DefaultPagination, token);
+                return assetRepository.ListAssetProjectsAsync(organizationId, Range.All, token);
             }
             catch (OperationCanceledException oe)
             {

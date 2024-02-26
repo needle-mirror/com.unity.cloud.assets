@@ -15,7 +15,7 @@ namespace Unity.Cloud.Assets
         public UnlinkAssetFromProjectRequest(ProjectId projectId, AssetId assetId)
             : base(projectId)
         {
-            m_PathAndQueryParams += $"/assets/{assetId}/unlink";
+            m_RequestUrl += $"/assets/{assetId}/unlink";
         }
     }
 }

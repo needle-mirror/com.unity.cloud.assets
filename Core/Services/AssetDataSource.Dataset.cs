@@ -10,12 +10,16 @@ namespace Unity.Cloud.Assets
     partial class AssetDataSource
     {
         /// <inheritdoc />
-        public async Task<IDatasetData> CreateDatasetAsync(AssetDescriptor assetDescriptor, IDatasetBaseData datasetCreation, CancellationToken token)
+        public async Task<IDatasetData> CreateDatasetAsync(AssetDescriptor assetDescriptor, IDatasetBaseData datasetCreation, CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             var request = new CreateDatasetRequest(assetDescriptor.ProjectId, assetDescriptor.AssetId, assetDescriptor.AssetVersion, datasetCreation);
             var response = await m_ServiceHttpClient.PostAsync(GetPublicRequestUri(request), request.ConstructBody(),
-                ServiceHttpClientOptions.Default(), token);
+                ServiceHttpClientOptions.Default(), cancellationToken);
+
             var jsonContent = await response.GetContentAsString();
+            cancellationToken.ThrowIfCancellationRequested();
 
             var createdDatasetResponse = IsolatedSerialization.DeserializeWithConverters<CreatedDatasetDto>(jsonContent, IsolatedSerialization.DatasetIdConverter);
 
@@ -26,7 +30,6 @@ namespace Unity.Cloud.Assets
                 Description = datasetCreation.Description,
                 Tags = datasetCreation.Tags ?? new List<string>(),
                 Metadata = datasetCreation.Metadata,
-                SystemMetadata = datasetCreation.SystemMetadata,
                 SystemTags = new List<string>(),
                 FileOrder = new List<string>(),
             };
@@ -35,9 +38,9 @@ namespace Unity.Cloud.Assets
         }
 
         /// <inheritdoc />
-        public async Task<IDatasetData> GetDatasetAsync(DatasetDescriptor datasetDescriptor, FieldsFilter includedFieldsFilter, CancellationToken token)
+        public async Task<IDatasetData> GetDatasetAsync(DatasetDescriptor datasetDescriptor, FieldsFilter includedFieldsFilter, CancellationToken cancellationToken)
         {
-            var assetData = await GetAssetAsync(datasetDescriptor.AssetDescriptor, includedFieldsFilter, token);
+            var assetData = await GetAssetAsync(datasetDescriptor.AssetDescriptor, includedFieldsFilter, cancellationToken);
             var dataset = assetData.Datasets.FirstOrDefault(d => d.DatasetId == datasetDescriptor.DatasetId);
             if (dataset == null)
             {
@@ -48,9 +51,9 @@ namespace Unity.Cloud.Assets
         }
 
         /// <inheritdoc />
-        public async Task<IDatasetData> GetDatasetBySystemTagAsync(AssetDescriptor assetDescriptor, string systemTag, FieldsFilter includedFieldsFilter, CancellationToken token)
+        public async Task<IDatasetData> GetDatasetBySystemTagAsync(AssetDescriptor assetDescriptor, string systemTag, FieldsFilter includedFieldsFilter, CancellationToken cancellationToken)
         {
-            var assetData = await GetAssetAsync(assetDescriptor, includedFieldsFilter, token);
+            var assetData = await GetAssetAsync(assetDescriptor, includedFieldsFilter, cancellationToken);
             var dataset = assetData.Datasets.FirstOrDefault(d => d.SystemTags != null && d.SystemTags.Contains(systemTag));
             if (dataset == null)
             {
@@ -61,34 +64,38 @@ namespace Unity.Cloud.Assets
         }
 
         /// <inheritdoc />
-        public Task UpdateDatasetAsync(DatasetDescriptor datasetDescriptor, IDatasetUpdateData datasetUpdate, CancellationToken token)
+        public Task UpdateDatasetAsync(DatasetDescriptor datasetDescriptor, IDatasetUpdateData datasetUpdate, CancellationToken cancellationToken)
         {
             var request = new DatasetRequest(datasetDescriptor.ProjectId, datasetDescriptor.AssetId, datasetDescriptor.AssetVersion, datasetDescriptor.DatasetId, datasetUpdate);
             return m_ServiceHttpClient.PatchAsync(GetPublicRequestUri(request), request.ConstructBody(),
-                ServiceHttpClientOptions.Default(), token);
+                ServiceHttpClientOptions.Default(), cancellationToken);
         }
 
         /// <inheritdoc />
-        public Task ReferenceFileFromDatasetAsync(DatasetDescriptor datasetDescriptor, DatasetId sourceDatasetId, string filePath, CancellationToken token)
+        public Task ReferenceFileFromDatasetAsync(DatasetDescriptor datasetDescriptor, DatasetId sourceDatasetId, string filePath, CancellationToken cancellationToken)
         {
             var request = new AddFileReferenceRequest(datasetDescriptor.ProjectId, datasetDescriptor.AssetId, datasetDescriptor.AssetVersion, sourceDatasetId, filePath, datasetDescriptor.DatasetId);
             return m_ServiceHttpClient.PostAsync(GetPublicRequestUri(request), request.ConstructBody(),
-                ServiceHttpClientOptions.Default(), token);
+                ServiceHttpClientOptions.Default(), cancellationToken);
         }
 
-        public Task RemoveFileFromDatasetAsync(DatasetDescriptor datasetDescriptor, string filePath, CancellationToken token)
+        public Task RemoveFileFromDatasetAsync(DatasetDescriptor datasetDescriptor, string filePath, CancellationToken cancellationToken)
         {
             var request = new FileRequest(datasetDescriptor.ProjectId, datasetDescriptor.AssetId, datasetDescriptor.AssetVersion, datasetDescriptor.DatasetId, filePath);
-            return m_ServiceHttpClient.DeleteAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(), token);
+            return m_ServiceHttpClient.DeleteAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(), cancellationToken);
         }
 
         /// <inheritdoc />
-        public async Task<bool> CheckDatasetIsInProjectAssetVersionAsync(DatasetDescriptor datasetDescriptor, CancellationToken token)
+        public async Task<bool> CheckDatasetIsInProjectAssetVersionAsync(DatasetDescriptor datasetDescriptor, CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             var request = new CheckDatasetBelongsToAssetRequest(datasetDescriptor.ProjectId, datasetDescriptor.AssetId, datasetDescriptor.AssetVersion, datasetDescriptor.DatasetId);
             var response = await m_ServiceHttpClient.GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(),
-                token);
+                cancellationToken);
+
             var jsonContent = await response.GetContentAsString();
+            cancellationToken.ThrowIfCancellationRequested();
 
             var dto = JsonSerialization.Deserialize<DatasetAssetCheckDto>(jsonContent);
 
@@ -96,7 +103,7 @@ namespace Unity.Cloud.Assets
         }
 
         /// <inheritdoc />
-        public Task RemoveDatasetMetadataAsync(DatasetDescriptor datasetDescriptor, string metadataType, IEnumerable<string> keys, CancellationToken token)
+        public Task RemoveDatasetMetadataAsync(DatasetDescriptor datasetDescriptor, string metadataType, IEnumerable<string> keys, CancellationToken cancellationToken)
         {
             var request = new RemoveMetadataRequest(datasetDescriptor.ProjectId,
                 datasetDescriptor.AssetId,
@@ -105,7 +112,7 @@ namespace Unity.Cloud.Assets
                 metadataType,
                 keys);
             return m_ServiceHttpClient.DeleteAsync(GetPublicRequestUri(request), request.ConstructBody(),
-                ServiceHttpClientOptions.Default(), token);
+                ServiceHttpClientOptions.Default(), cancellationToken);
         }
     }
 }

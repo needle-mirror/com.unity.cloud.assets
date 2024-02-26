@@ -21,9 +21,7 @@ namespace Unity.Cloud.Assets
             if (includeFields.HasFlag(DatasetFields.authoring))
                 dataset.AuthoringInfo = new AuthoringInfo(datasetData.CreatedBy, datasetData.Created, datasetData.UpdatedBy, datasetData.Updated);
             if (includeFields.HasFlag(DatasetFields.metadata))
-                dataset.MetadataEntity.Properties = datasetData.Metadata?.From(assetDataSource, dataset.Descriptor.OrganizationGenesisId);
-            if (includeFields.HasFlag(DatasetFields.systemMetadata))
-                dataset.SystemMetadataEntity.Properties = datasetData.SystemMetadata?.From(assetDataSource, dataset.Descriptor.OrganizationGenesisId);
+                dataset.MetadataEntity.Properties = datasetData.Metadata?.From(assetDataSource, dataset.Descriptor.OrganizationId);
             if (includeFields.HasFlag(DatasetFields.filesOrder))
                 dataset.FileOrder = datasetData.FileOrder;
         }
@@ -44,13 +42,12 @@ namespace Unity.Cloud.Assets
                 DatasetId = datasetEntity.Descriptor.DatasetId,
                 Name = datasetEntity.Name,
                 Description = datasetEntity.Description,
-                CreatedBy = datasetEntity.AuthoringInfo?.CreatedBy,
+                CreatedBy = datasetEntity.AuthoringInfo?.CreatedBy.ToString(),
                 Created = datasetEntity.AuthoringInfo?.Created,
-                UpdatedBy = datasetEntity.AuthoringInfo?.UpdatedBy,
+                UpdatedBy = datasetEntity.AuthoringInfo?.UpdatedBy.ToString(),
                 Updated = datasetEntity.AuthoringInfo?.Updated,
                 FileOrder = datasetEntity.FileOrder,
                 Metadata = datasetEntity.MetadataEntity?.From() ?? new Dictionary<string, object>(),
-                SystemMetadata = datasetEntity.SystemMetadataEntity?.From() ?? new Dictionary<string, object>(),
                 Tags = datasetEntity.Tags?.ToList(),
                 SystemTags = datasetEntity.SystemTags,
                 Status = datasetEntity.Status,
@@ -77,8 +74,7 @@ namespace Unity.Cloud.Assets
             {
                 Name = dataset.Name,
                 Description = dataset.Description,
-                Metadata = dataset.Metadata ?? new Dictionary<string, object>(),
-                SystemMetadata = dataset.SystemMetadata ?? new Dictionary<string, object>(),
+                Metadata = dataset.Metadata?.ToObjectDictionary() ?? new Dictionary<string, object>(),
                 Tags = dataset.Tags ?? new List<string>(),// WORKAROUND until backend supports null metadata
             };
         }

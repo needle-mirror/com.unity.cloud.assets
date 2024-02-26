@@ -17,7 +17,7 @@ namespace Unity.Cloud.Assets
         public GetAssetDownloadUrlsRequest(ProjectId projectId, AssetId assetId, AssetVersion assetVersion)
             : base(projectId, assetId, assetVersion)
         {
-            m_PathAndQueryParams += $"/download-urls";
+            m_RequestUrl += $"/download-urls";
         }
     }
 }

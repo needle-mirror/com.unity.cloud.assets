@@ -23,8 +23,6 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
             }
         }
 
-        static readonly Pagination m_DefaultPagination = new(nameof(IAsset.Name), Range.All);
-
         CancellationTokenSource m_ListAssetsCancellationTokenSource = new();
 
         public IEnumerable<IAsset> Assets => m_ListController.AllItems;
@@ -44,26 +42,14 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
 
             var assets = GetAssetsAsync(project, token);
 
-            await UpdateList(null, assets, token, RefreshAssetCollections);
-        }
-
-        async Task RefreshAssetCollections(IAsset entry)
-        {
-            try
-            {
-                await entry.RefreshAssetCollectionsAsync(m_ListAssetsCancellationTokenSource.Token);
-            }
-            catch (Exception e)
-            {
-                e.LogException();
-            }
+            await UpdateList(null, assets, token);
         }
 
         static IAsyncEnumerable<IAsset> GetAssetsAsync(IAssetProject project, CancellationToken token)
         {
             try
             {
-                return project.SearchAssetsAsync(new AssetSearchFilter(), m_DefaultPagination, token);
+                return project.QueryAssets().ExecuteAsync(token);
             }
             catch (OperationCanceledException oe)
             {

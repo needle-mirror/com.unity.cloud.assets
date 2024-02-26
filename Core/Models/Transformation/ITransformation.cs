@@ -49,6 +49,11 @@ namespace Unity.Cloud.Assets
         string ErrorMessage { get; }
 
         /// <summary>
+        /// The progress of the transformation. This is a value between 0 and 100.
+        /// </summary>
+        int Progress => 0;
+
+        /// <summary>
         /// The datetime at which the transformation was created
         /// </summary>
         DateTime CreatedOn { get; }
@@ -62,5 +67,12 @@ namespace Unity.Cloud.Assets
         /// The datetime at which the transformation was started
         /// </summary>
         DateTime StartedAt { get; }
+
+        /// <summary>
+        /// Refreshes the transformation properties.
+        /// </summary>
+        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
+        /// <returns>A task with no result. </returns>
+        Task RefreshAsync(CancellationToken cancellationToken);
     }
 }

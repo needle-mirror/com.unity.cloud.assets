@@ -63,11 +63,6 @@ namespace Unity.Cloud.Assets
         string PreviewFile { get; }
 
         /// <summary>
-        /// The url of the preview file of the asset.
-        /// </summary>
-        Uri PreviewFileUrl { get; }
-
-        /// <summary>
         /// The status of the asset.
         /// </summary>
         string Status { get; }
@@ -84,24 +79,9 @@ namespace Unity.Cloud.Assets
         AuthoringInfo AuthoringInfo { get; }
 
         /// <summary>
-        /// The storage id of the asset.
-        /// </summary>
-        string StorageId { get; }
-
-        /// <summary>
-        /// The collections of the asset.
-        /// </summary>
-        IEnumerable<CollectionPath> Collections { get; }
-
-        /// <summary>
         /// The searchable metadata of the asset.
         /// </summary>
         IMetadataContainer Metadata { get; }
-
-        /// <summary>
-        /// The non-searchable metadata of the asset.
-        /// </summary>
-        IMetadataContainer SystemMetadata { get; }
 
         /// <summary>
         /// Returns an asset in the context of the specified project.
@@ -113,18 +93,25 @@ namespace Unity.Cloud.Assets
         /// <summary>
         /// Refreshes the asset with the specified fields.
         /// </summary>
-        /// <param name="includeFields">The fields to refresh. </param>
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task with no result. </returns>
-        Task RefreshAsync(FieldsFilter includeFields, CancellationToken cancellationToken);
+        Task RefreshAsync(CancellationToken cancellationToken);
 
         /// <summary>
-        /// Synchronizes local changes to the asset to the data source.
+        /// Updates the asset.
         /// </summary>
-        /// <param name="assetUpdate"></param>
+        /// <param name="assetUpdate">The object containing the asset information to update. </param>
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task with no result. </returns>
         Task UpdateAsync(IAssetUpdate assetUpdate, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Updates the asset's status.
+        /// </summary>
+        /// <param name="statusAction">The new status of the asset. </param>
+        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
+        /// <returns>A task with no result. </returns>
+        Task UpdateStatusAsync(AssetStatusAction statusAction, CancellationToken cancellationToken);
 
         /// <summary>
         /// Returns an enumeration of the asset's linked <see cref="IAssetProject"/>.
@@ -156,6 +143,13 @@ namespace Unity.Cloud.Assets
         Task UnlinkFromProjectAsync(ProjectDescriptor projectDescriptor, CancellationToken cancellationToken);
 
         /// <summary>
+        /// Returns the url to the preview image of the asset.
+        /// </summary>
+        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
+        /// <returns>A task whose result is downloadble url pointing to the preview image. </returns>
+        Task<Uri> GetPreviewUrlAsync(CancellationToken cancellationToken);
+
+        /// <summary>
         /// Returns the download URLs for the asset's files.
         /// </summary>
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
@@ -163,19 +157,12 @@ namespace Unity.Cloud.Assets
         Task<IDictionary<string, Uri>> GetAssetDownloadUrlsAsync(CancellationToken cancellationToken);
 
         /// <summary>
-        /// Refreshes the
+        /// Returns the <see cref="IAssetCollection"/> the asset belongs too.
         /// </summary>
+        /// <param name="range">The range of collections to return. </param>
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
-        /// <returns>A task with no result. </returns>
-        Task RefreshAssetCollectionsAsync(CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Returns the <see cref="IAssetCollection"/> with the specified path.
-        /// </summary>
-        /// <param name="collectionPath">The path to the collection. </param>
-        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
-        /// <returns>A task whose result is the <see cref="IAssetCollection"/> at path <paramref name="collectionPath"/>. </returns>
-        Task<IAssetCollection> GetCollectionAsync(CollectionPath collectionPath, CancellationToken cancellationToken);
+        /// <returns>An async enumeration of <see cref="IAssetCollection"/>. </returns>
+        IAsyncEnumerable<CollectionDescriptor> ListLinkedAssetCollectionsAsync(Range range, CancellationToken cancellationToken);
 
         /// <summary>
         /// Returns a <see cref="IDataset"/> with the specified creation information.
@@ -196,7 +183,7 @@ namespace Unity.Cloud.Assets
         /// <summary>
         /// Retrieves all the <see cref="IDataset"/>.
         /// </summary>
-        /// <param name="range"></param>
+        /// <param name="range">The range of datasets to return. </param>
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task whose result is an async enumeration of datasets. </returns>
         IAsyncEnumerable<IDataset> ListDatasetsAsync(Range range, CancellationToken cancellationToken);
@@ -216,41 +203,6 @@ namespace Unity.Cloud.Assets
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task whose result is an async enumeration of <see cref="IFile"/> referenced by the asset. </returns>
         IAsyncEnumerable<IFile> ListFilesAsync(Range range, CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Updates the asset status to published.
-        /// </summary>
-        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
-        /// <returns>A task with no result. </returns>
-        Task PublishAsync(CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Updates the asset status to draft.
-        /// </summary>
-        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
-        /// <returns>A task with no result. </returns>
-        Task WithdrawAsync(CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Updates the asset status to ingestion.
-        /// </summary>
-        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
-        /// <returns>A task with no result. </returns>
-        Task SendToReviewAsync(CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Updates the asset status to approved.
-        /// </summary>
-        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
-        /// <returns>A task with no result. </returns>
-        Task ApproveAsync(CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Updates the asset status to draft.
-        /// </summary>
-        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
-        /// <returns>A task with no result. </returns>
-        Task RejectAsync(CancellationToken cancellationToken);
 
         /// <summary>
         /// Returns a JSON serialized string of the asset's identifiers.

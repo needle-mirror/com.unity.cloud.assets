@@ -36,10 +36,10 @@ namespace Unity.Cloud.Assets
         }
 
         /// <inheritdoc />
-        public async Task<IAsset> GetAssetAsync(AssetId assetId, AssetVersion assetVersion, FieldsFilter includedFieldsFilter, CancellationToken cancellationToken)
+        public async Task<IAsset> GetAssetAsync(AssetId assetId, AssetVersion assetVersion, CancellationToken cancellationToken)
         {
-            var data = await m_DataSource.GetAssetAsync(new AssetDescriptor(Descriptor, assetId, assetVersion), includedFieldsFilter, cancellationToken);
-            return data.From(m_DataSource, Descriptor, includedFieldsFilter);
+            var data = await m_DataSource.GetAssetAsync(new AssetDescriptor(Descriptor, assetId, assetVersion), FieldsFilter.DefaultAssetIncludes, cancellationToken);
+            return data.From(m_DataSource, Descriptor, FieldsFilter.DefaultAssetIncludes);
         }
 
         /// <inheritdoc />
@@ -50,34 +50,21 @@ namespace Unity.Cloud.Assets
         }
 
         /// <inheritdoc />
-        public async IAsyncEnumerable<IAsset> SearchAssetsAsync(IAssetSearchFilter assetSearchFilter, Pagination pagination, [EnumeratorCancellation] CancellationToken cancellationToken)
+        public AssetQueryBuilder QueryAssets()
         {
-            var assetEnumerator = m_DataSource.ListAssetsAsync(Descriptor, assetSearchFilter, pagination, cancellationToken).GetAsyncEnumerator(cancellationToken);
-            while (await assetEnumerator.MoveNextAsync())
-            {
-                yield return assetEnumerator.Current.From(m_DataSource, Descriptor, assetSearchFilter.IncludedFields);
-            }
-
-            await assetEnumerator.DisposeAsync();
+            return new AssetQueryBuilder(m_DataSource, Descriptor);
         }
 
         /// <inheritdoc />
-        public Task<Aggregation> CountAssetsAsync(IAssetSearchFilter assetSearchFilter, AggregationParameters parameters, CancellationToken cancellationToken)
+        public GroupAndCountAssetsQueryBuilder GroupAndCountAssets()
         {
-            return m_DataSource.GetAssetAggregateAsync(Descriptor, assetSearchFilter, parameters, cancellationToken);
+            return new GroupAndCountAssetsQueryBuilder(m_DataSource, Descriptor);
         }
 
         /// <inheritdoc />
-        public async Task<IEnumerable<IAssetCollection>> ListCollectionsAsync(CancellationToken cancellationToken)
+        public CollectionQueryBuilder QueryCollections()
         {
-            var collectionDatas = await m_DataSource.ListCollectionsAsync(Descriptor, cancellationToken);
-            var collections = new List<IAssetCollection>();
-            foreach (var data in collectionDatas)
-            {
-                collections.Add(data.From(m_DataSource, Descriptor));
-            }
-
-            return collections;
+            return new CollectionQueryBuilder(m_DataSource, Descriptor);
         }
 
         /// <inheritdoc />
@@ -90,6 +77,8 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc />
         public async Task<IAssetCollection> CreateCollectionAsync(IAssetCollectionCreation assetCollectionCreation, CancellationToken cancellationToken)
         {
+            assetCollectionCreation.Validate();
+
             var creationPath = CollectionPath.CombinePaths(assetCollectionCreation.ParentPath, assetCollectionCreation.Name);
             var assetCollection = new AssetCollection(m_DataSource, new CollectionDescriptor(Descriptor, creationPath), assetCollectionCreation.Name, assetCollectionCreation.Description, assetCollectionCreation.ParentPath);
 
@@ -106,6 +95,12 @@ namespace Unity.Cloud.Assets
         public Task DeleteCollectionAsync(CollectionPath collectionPath, CancellationToken cancellationToken)
         {
             return m_DataSource.DeleteCollectionAsync(new CollectionDescriptor(Descriptor, collectionPath), cancellationToken);
+        }
+
+        /// <inheritdoc />
+        public TransformationQueryBuilder QueryTransformations()
+        {
+            return new TransformationQueryBuilder(m_DataSource, Descriptor);
         }
     }
 }

@@ -60,25 +60,11 @@ namespace Unity.Cloud.Assets
         IMetadataContainer Metadata { get; }
 
         /// <summary>
-        /// The non-searchable metadata of the asset.
-        /// </summary>
-        IMetadataContainer SystemMetadata { get; }
-
-        /// <summary>
         /// Refreshes the dataset with the specified fields.
         /// </summary>
-        /// <param name="includeFields">The fields to refresh. </param>
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task with no result. </returns>
-        // Task RefreshAsync(DatasetFields includeFields, CancellationToken cancellationToken)
-
-        /// <summary>
-        /// Returns the asset that this dataset is associated with.
-        /// </summary>
-        /// <param name="includedFieldsFilter">The filter describing which fields to return populated. </param>
-        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
-        /// <returns>A task whose result is the enclosing asset. </returns>
-        Task<IAsset> GetAssetAsync(FieldsFilter includedFieldsFilter, CancellationToken cancellationToken);
+        Task RefreshAsync(CancellationToken cancellationToken);
 
         /// <summary>
         /// Updates the dataset.
@@ -92,7 +78,7 @@ namespace Unity.Cloud.Assets
         /// Creates and uploads a new file to the dataset.
         /// </summary>
         /// <param name="fileCreation">The object containing the necessary information to create a new file. </param>
-        /// <param name="sourceStream">The stream from which to uplaod the new file. </param>
+        /// <param name="sourceStream">The stream from which to upload the new file. </param>
         /// <param name="progress">The progress of the upload. </param>
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task whose result is a newly created file. </returns>
@@ -139,11 +125,19 @@ namespace Unity.Cloud.Assets
         Uri GetFileUrl(string filePath);
 
         /// <summary>
-        /// Start a transformation on the dataset
+        /// Start a transformation on the dataset.
         /// </summary>
-        /// <param name="workflowType">The type of transformation to apply on the dataset. </param>
+        /// <param name="transformationCreation">The object containing the information necessary to start a transformation. </param>
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
-        Task<ITransformation> StartTransformationAsync(WorkflowType workflowType, CancellationToken cancellationToken);
+        Task<ITransformation> StartTransformationAsync(ITransformationCreation transformationCreation, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Returns the transformations on the dataset.
+        /// </summary>
+        /// <param name="range">The range of results to return. </param>
+        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
+        /// <returns>A task whose result is an async enumeration of <see cref="ITransformation"/>. </returns>
+        IAsyncEnumerable<ITransformation> ListTransformationsAsync(Range range, CancellationToken cancellationToken);
 
         /// <summary>
         /// Get specified transformation on the dataset

@@ -14,6 +14,9 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
         UIDocument m_UiDocument;
 
         [SerializeField]
+        OrganizationController m_OrganizationController;
+
+        [SerializeField]
         ProjectController m_ProjectController;
 
         [SerializeField]
@@ -69,11 +72,10 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
                 m_UiDocumentRoot = m_UiDocument.rootVisualElement;
 
             m_AssetsGridController = new AssetsGridController();
-            m_AssetInformationPanelController = new AssetInformationPanelController();
+            m_AssetInformationPanelController = new AssetInformationPanelController(m_OrganizationController);
 
             m_ContentPanel = m_UiDocumentRoot.Q<VisualElement>("Content");
 
-            m_SearchBarUi.FieldsToInclude = m_ProjectController.FieldsToInclude;
             m_SearchBarUi.Initialize(m_UiDocumentRoot, m_UiDocumentRoot.Q<VisualElement>("SearchBarContainer"));
             m_SearchBarUi.DeleteSearchQuery += OnSearchQueryChanged;
             m_SearchBarUi.AddSearchQuery += OnSearchQueryChanged;
@@ -160,7 +162,7 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
 
             if (m_ProjectController.IsAllProjectSelected)
             {
-                m_SearchBarUi.DisplaySearchBar(m_ProjectController.AssetRepository, m_ProjectController.SelectedOrganizationId, m_ProjectController.GetAllProjects());
+                m_SearchBarUi.DisplaySearchBar(m_ProjectController.AssetRepository, m_ProjectController.GetAllProjects());
             }
             else
             {
@@ -244,18 +246,18 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
             m_AssetInformationPanelController.HideInformationPanel();
         }
 
-        async void OnSearchQueryChanged(IAsyncEnumerable<IAsset> assets)
+        async void OnSearchQueryChanged(IAsyncEnumerable<IAsset> assets, CancellationToken cancellationToken)
         {
-            m_AssetInformationPanelController.HideInformationPanel();
+            if (cancellationToken.IsCancellationRequested) return;
 
-            var token = GetCancellationToken();
+            m_AssetInformationPanelController.HideInformationPanel();
 
             m_AssetsGridController.ClearAssetGrid();
             m_AssetsGridController.DisplayAssetGrid();
             var assetList = new List<IAsset>();
 
             var nextDisplayTrigger = 40;
-            await foreach (var asset in assets.WithCancellation(token))
+            await foreach (var asset in assets.WithCancellation(cancellationToken))
             {
                 assetList.Add(asset);
 
@@ -268,7 +270,7 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
             }
 
             // Attempt final refresh
-            if (!token.IsCancellationRequested)
+            if (!cancellationToken.IsCancellationRequested)
             {
                 m_AssetsGridController.PopulateAssetsGrid(assetList);
             }

@@ -1,40 +1,33 @@
 using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Unity.Cloud.Common;
 
 namespace Unity.Cloud.Assets
 {
     /// <summary>
     /// A class for manipulating a single selection metadata value.
     /// </summary>
-    public sealed class SingleSelectionMetadata : SelectionMetadata
+    public sealed class SingleSelectionMetadata : MetadataValue
     {
         /// <summary>
         /// The text value of a metadata field.
         /// </summary>
         public string SelectedValue { get; set; }
 
-        /// <summary>
-        /// Returns a new instance of the <see cref="SingleSelectionMetadata"/> class.
-        /// </summary>
-        /// <param name="selectionFieldDefinition"></param>
-        public SingleSelectionMetadata(ISelectionFieldDefinition selectionFieldDefinition)
-            : base(selectionFieldDefinition) { }
-
-        internal SingleSelectionMetadata(IAssetDataSource dataSource, FieldDefinitionDescriptor fieldDefinitionDescriptor)
-            : base(dataSource, fieldDefinitionDescriptor) { }
-
-        /// <inheritdoc />
-        public override object GetValue()
+        public SingleSelectionMetadata(string selectedValue = default)
+            : base(MetadataValueType.SingleSelection)
         {
-            return SelectedValue ?? string.Empty;
+            SelectedValue = selectedValue ?? string.Empty;
+        }
+
+        internal SingleSelectionMetadata(MetadataValueType valueType, object value)
+            : base(valueType, value)
+        {
+            SelectedValue = value?.ToString() ?? string.Empty;
         }
 
         /// <inheritdoc />
-        internal override void SetValue(object value)
+        internal override object GetValue()
         {
-            SelectedValue = value?.ToString() ?? string.Empty;
+            return SelectedValue ?? string.Empty;
         }
     }
 }

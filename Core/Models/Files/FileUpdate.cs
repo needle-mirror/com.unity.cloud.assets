@@ -4,14 +4,10 @@ namespace Unity.Cloud.Assets
 {
     public class FileUpdate : IFileUpdate
     {
-        /// <summary>
-        /// The description of the asset file.
-        /// </summary>
+        /// <inheritdoc/>
         public string Description { get; set; }
 
-        /// <summary>
-        /// The tags of the asset file.
-        /// </summary>
+        /// <inheritdoc/>
         public IEnumerable<string> Tags { get; set; }
 
         public FileUpdate() { }

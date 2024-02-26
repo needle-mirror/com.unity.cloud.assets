@@ -1,19 +1,18 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace Unity.Cloud.Assets
 {
     /// <summary>
-    /// Allows building and executing queries on a <see cref="IMetadataContainer"/>.
+    /// A class that builds and executes a query to return a set of metadata.
     /// </summary>
-    public sealed class MetadataQueryBuilder
+    public class MetadataQueryBuilder
     {
         readonly MetadataContainerEntity m_MetadataContainerEntity;
 
-        IEnumerable<string> m_Select;
+        IEnumerable<string> m_Keys;
 
         internal MetadataQueryBuilder(MetadataContainerEntity metadataContainer)
         {
@@ -24,34 +23,37 @@ namespace Unity.Cloud.Assets
         /// Sets the query to return the metadata for the specified keys.
         /// </summary>
         /// <param name="keys">The collection of desired keys. </param>
-        /// <returns>The called <see cref="MetadataQueryBuilder"/></returns>
-        public MetadataQueryBuilder Select(params string[] keys)
+        /// <returns>The calling <see cref="MetadataQueryBuilder"/>. </returns>
+        public MetadataQueryBuilder SelectWhereKeyEquals(params string[] keys)
         {
-            m_Select = keys;
+            m_Keys = keys;
             return this;
         }
 
         /// <summary>
-        /// Sets the query to return all metadata.
+        /// Sets the query to return metadata for all keys.
         /// </summary>
-        /// <returns>The called <see cref="MetadataQueryBuilder"/></returns>
+        /// <returns>The calling <see cref="MetadataQueryBuilder"/>. </returns>
         public MetadataQueryBuilder SelectAll()
         {
-            m_Select = null;
+            m_Keys = null;
             return this;
         }
 
         /// <summary>
-        /// Executes the built query.
+        /// Executes the query and returns the results.
         /// </summary>
         /// <param name="cancellationToken">A token that can be used to cancel the request.</param>
-        /// <returns>A dictionary of metadata. </returns>
-        public async Task<IReadOnlyDictionary<string, IMetadataValue>> ExecuteAsync(CancellationToken cancellationToken)
+        /// <returns>An async enumeration of key value pairs of a string key and <see cref="MetadataValue"/> value. </returns>
+        public async IAsyncEnumerable<KeyValuePair<string, MetadataValue>> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            cancellationToken.ThrowIfCancellationRequested();
+            var results = await m_MetadataContainerEntity.GetMetadataAsync(m_Keys, cancellationToken);
+            foreach (var (key, value) in results)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
 
-            var metadata = await m_MetadataContainerEntity.GetMetadataAsync(m_Select, cancellationToken);
-            return metadata.ToDictionary(x => x.Key, x => (IMetadataValue)x.Value);
+                yield return new KeyValuePair<string, MetadataValue>(key, value);
+            }
         }
     }
 }

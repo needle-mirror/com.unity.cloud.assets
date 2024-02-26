@@ -3,27 +3,23 @@ using System.Collections.Generic;
 
 namespace Unity.Cloud.Assets
 {
-    public interface IFileCreation : IFileUpdate
+    /// <summary>
+    /// File properties for creation.
+    /// </summary>
+    public interface IFileCreation
     {
         /// <summary>
         /// The path to the file.
         /// </summary>
         string Path { get; }
 
-        /// <summary>
-        /// The user metadata of the file.
-        /// </summary>
-        Dictionary<string, object> Metadata { get; }
+        /// <inheritdoc cref="IFile.Description"/>
+        string Description { get; }
 
-        /// <summary>
-        /// The system metadata of the file.
-        /// </summary>
-        Dictionary<string, object> SystemMetadata { get; }
-    }
+        /// <inheritdoc cref="IFile.Tags"/>
+        IEnumerable<string> Tags { get; }
 
-    interface IFileCreationWithDetails: IFileCreation
-    {
-        string UserChecksum { get; }
-        long SizeBytes { get; }
+        /// <inheritdoc cref="IFile.Metadata"/>
+        Dictionary<string, MetadataValue> Metadata { get; }
     }
 }
