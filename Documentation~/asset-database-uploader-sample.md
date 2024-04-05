@@ -33,7 +33,7 @@ To install the sample, follow these steps:
    
    ![Screenshot of the samples import section of the package manager window](images/import-uploader-sample.png)
 
-   After the import process is complete, you can view your imported assets in the `Assets/Samples/Unity Cloud Assets` folder.
+4. After the import process completes, you can view the imported sample in the `Assets/Samples/Unity Cloud Assets` folder.
 
    ![Screenshot of the imported sample](images/tac-sample-uploader-scene.png)
 

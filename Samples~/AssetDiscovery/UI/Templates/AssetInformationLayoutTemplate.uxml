@@ -14,7 +14,7 @@
                     </ui:VisualElement>
                     <ui:Button text="Download" display-tooltip-when-elided="true" name="AssetDownloadButton" style="height: 7%;" />
                     <ui:VisualElement name="AssetDownloadSuccessful" style="display: none; height: 3%; transition-duration: 1s; transition-timing-function: ease-in;">
-                        <ui:Label text="Download successful to Desktop!" display-tooltip-when-elided="true" name="AssetDownloadSuccessfulLabel" />
+                        <ui:Label text="Download successful!" display-tooltip-when-elided="true" name="AssetDownloadSuccessfulLabel" />
                     </ui:VisualElement>
                 </ui:VisualElement>
                 <ui:VisualElement name="DatasetInformationContainer" class="unselectedContent" style="height: 100%; width: 100%; display: none;">

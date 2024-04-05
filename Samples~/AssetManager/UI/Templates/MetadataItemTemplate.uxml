@@ -9,6 +9,7 @@
             <ui:Instance template="ContextMenu" class="ContextMenuContainer" style="flex-direction: row-reverse;" />
         </ui:VisualElement>
         <ui:VisualElement name="MetadataValue" style="align-items: flex-start; justify-content: flex-start; flex-direction: column; flex-grow: 1; min-width: 65%;">
+            <ui:Label tabindex="-1" text="Label" parse-escape-sequences="true" display-tooltip-when-elided="true" name="NoEdit" class="MetadataValue" style="-unity-font-style: normal; white-space: normal; align-self: stretch;" />
             <ui:TextField picking-mode="Ignore" value="filler text" name="Text" class="MetadataValue" style="margin-left: 0;" />
             <ui:DoubleField value="42.2" name="Number" class="MetadataValue" style="margin-left: 0;" />
             <ui:Toggle name="Boolean" class="MetadataValue" style="margin-left: 0; flex-grow: 0;" />

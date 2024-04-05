@@ -48,16 +48,22 @@ namespace Unity.Cloud.Assets.Samples
             }
         }
 
-        public static void AddTag(this VisualElement container, string tag, ICollection<string> tags, VisualTreeAsset template)
+        public static void AddTag(this VisualElement container, string tag, ICollection<string> tags, VisualTreeAsset template, bool canRemove)
         {
             var chip = template.Instantiate();
             chip.Q<Label>().text = tag;
             container.Add(chip);
-            chip.Q<Button>().clicked += () =>
+
+            var removeButton = chip.Q<Button>();
+            removeButton.style.display = canRemove ? DisplayStyle.Flex : DisplayStyle.None;
+            if (canRemove)
             {
-                tags.Remove(tag);
-                chip.RemoveFromHierarchy();
-            };
+                removeButton.clicked += () =>
+                {
+                    tags.Remove(tag);
+                    chip.RemoveFromHierarchy();
+                };
+            }
         }
     }
 }

@@ -98,5 +98,31 @@ namespace Unity.Cloud.Assets
         /// <see langword="false"/> if both instances are the same.
         /// </returns>
         public static bool operator !=(CollectionDescriptor left, CollectionDescriptor right) => !left.Equals(right);
+
+        /// <summary>
+        /// Serializes the <see cref="CollectionDescriptor"/> into a JSON string.
+        /// </summary>
+        /// <returns>A <see cref="CollectionDescriptor"/> serialized as a JSON string. </returns>
+        public string ToJson()
+        {
+            return JsonSerialization.Serialize(new CollectionDescriptorDto
+            {
+                ProjectDescriptor = ProjectDescriptor.ToJson(),
+                CollectionPath = Path.ToString()
+            });
+        }
+
+        /// <summary>
+        /// Deserializes the given JSON string into a <see cref="CollectionDescriptor"/> object.
+        /// </summary>
+        /// <param name="json">A <see cref="CollectionDescriptor"/> serialized as a JSON string. </param>
+        /// <returns>A <see cref="CollectionDescriptor"/>. </returns>
+        public static CollectionDescriptor FromJson(string json)
+        {
+            var dto = JsonSerialization.Deserialize<CollectionDescriptorDto>(json);
+            return new CollectionDescriptor(
+                ProjectDescriptor.FromJson(dto.ProjectDescriptor),
+                new CollectionPath(dto.CollectionPath));
+        }
     }
 }

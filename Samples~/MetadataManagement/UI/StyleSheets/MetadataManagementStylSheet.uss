@@ -6,3 +6,63 @@
     color: rgb(0, 0, 0);
     padding: 0 10px;
 }
+
+#Type .unity-enum-field__input {
+    margin-left: 3px;
+    background-color: rgb(47, 47, 47);
+    color: rgb(210, 210, 210);
+    border-left-color: rgba(0, 0, 0, 0);
+    border-right-color: rgba(0, 0, 0, 0);
+    border-top-color: rgba(0, 0, 0, 0);
+    border-bottom-color: rgba(0, 0, 0, 0);
+}
+
+#Type .unity-enum-field__arrow {
+    -unity-background-image-tint-color: rgb(205, 205, 205);
+}
+
+#Multiselection .unity-toggle__input {
+    margin-left: 2px;
+}
+
+#AcceptedValues > .unity-collection-view {
+    border-top-left-radius: 2px;
+    border-top-right-radius: 2px;
+    border-bottom-right-radius: 2px;
+    border-bottom-left-radius: 2px;
+    border-left-color: rgb(47, 47, 47);
+    border-right-color: rgb(47, 47, 47);
+    border-top-color: rgb(47, 47, 47);
+    border-bottom-color: rgb(47, 47, 47);
+    border-top-width: 2px;
+    border-right-width: 2px;
+    border-bottom-width: 2px;
+    border-left-width: 2px;
+}
+
+#AcceptedValues .unity-toggle__checkmark {
+    -unity-background-image-tint-color: rgb(205, 205, 205);
+}
+
+#AcceptedValues .unity-button {
+    color: rgb(210, 210, 210);
+    background-color: rgba(0, 0, 0, 0);
+}
+
+#AcceptedValues .unity-button:hover {
+    background-color: rgb(66, 66, 66);
+}
+
+.unity-list-view__footer {
+    margin-top: 0;
+    margin-right: 0;
+    margin-bottom: 0;
+    margin-left: 0;
+    border-bottom-left-radius: 0;
+    height: 30px;
+    background-color: rgba(0, 0, 0, 0);
+    border-left-color: rgba(0, 0, 0, 0);
+    border-right-color: rgba(0, 0, 0, 0);
+    border-top-color: rgba(0, 0, 0, 0);
+    border-bottom-color: rgba(0, 0, 0, 0);
+}

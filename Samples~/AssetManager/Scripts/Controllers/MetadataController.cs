@@ -14,6 +14,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
         readonly VisualTreeAsset m_Template;
 
         readonly AddMetadataPopupController m_AddMetadataController;
+        readonly VisualElement m_AddButton;
 
         IMetadataContainer m_MetadataContainer;
         readonly List<string> m_MetadataKeys = new();
@@ -31,26 +32,30 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
             var addButton = m_ContentContainer.parent.Q<Button>("AddMetadataButton");
             addButton.clicked += AddMetadata;
+
+            m_AddButton = addButton;
         }
 
-        public async Task PopulateMetadataAsync(IAsset asset)
+        public async Task PopulateMetadataAsync(IAsset asset, bool canUpdate)
         {
             var cancellationToken = RefreshCancellationToken();
 
             m_MetadataContainer = asset.Metadata;
 
-            await PopulateMetadataAsync(cancellationToken);
+            m_AddButton.style.display = canUpdate ? DisplayStyle.Flex : DisplayStyle.None;
+
+            await PopulateMetadataAsync(cancellationToken, canUpdate);
         }
 
-        public async Task PopulateMetadataAsync(IDataset dataset)
+        public async Task PopulateMetadataAsync(IDataset dataset, bool canUpdate)
         {
             var cancellationToken = RefreshCancellationToken();
 
             m_MetadataContainer = dataset.Metadata;
 
-            if (cancellationToken.IsCancellationRequested) return;
+            m_AddButton.style.display = canUpdate ? DisplayStyle.Flex : DisplayStyle.None;
 
-            await PopulateMetadataAsync(cancellationToken);
+            await PopulateMetadataAsync(cancellationToken, canUpdate);
         }
 
         public void Hide()
@@ -98,7 +103,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             }
         }
 
-        async Task PopulateMetadataAsync(CancellationToken cancellationToken)
+        async Task PopulateMetadataAsync(CancellationToken cancellationToken, bool canUpdate)
         {
             var metadata = m_MetadataContainer.Query().ExecuteAsync(cancellationToken);
 
@@ -106,53 +111,53 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             {
                 m_MetadataKeys.Add(kvp.Key);
 
-                var visualElement = CreateMetadataElement(kvp.Key);
+                var visualElement = CreateMetadataElement(kvp.Key, canUpdate);
 
-                _ = ParseValueAsync(kvp.Key, kvp.Value, visualElement, cancellationToken);
+                _ = ParseValueAsync(kvp.Key, kvp.Value, visualElement, canUpdate, cancellationToken);
             }
         }
 
-        async Task ParseValueAsync(string key, MetadataValue value, VisualElement visualElement, CancellationToken cancellationToken)
+        async Task ParseValueAsync(string key, MetadataValue value, VisualElement visualElement, bool canUpdate, CancellationToken cancellationToken)
         {
             if (cancellationToken.IsCancellationRequested) return;
 
             switch (value.ValueType)
             {
                 case MetadataValueType.Unknown:
-                    await WaitOnUnknownAsync(key, value, visualElement, cancellationToken);
+                    await WaitOnUnknownAsync(key, value, visualElement, canUpdate, cancellationToken);
                     break;
 
                 case MetadataValueType.Boolean:
-                    PopulateBoolean(key, value.AsBoolean(), visualElement);
+                    PopulateBoolean(key, value.AsBoolean(), visualElement, canUpdate);
                     break;
 
                 case MetadataValueType.Number:
-                    PopulateNumber(key, value.AsNumber(), visualElement);
+                    PopulateNumber(key, value.AsNumber(), visualElement, canUpdate);
                     break;
 
                 case MetadataValueType.SingleSelection:
-                    await PopulateSingleSelectionAsync(key, null, value.AsSingleSelection(), visualElement);
+                    await PopulateSingleSelectionAsync(key, null, value.AsSingleSelection(), visualElement, canUpdate);
                     break;
 
                 case MetadataValueType.MultiSelection:
-                    await PoplateMultiSelectionAsync(key, null, value.AsMultiSelection(), visualElement);
+                    await PoplateMultiSelectionAsync(key, null, value.AsMultiSelection(), visualElement, canUpdate);
                     break;
 
                 case MetadataValueType.Url:
-                    PopulateUrl(key, value.AsUrl(), visualElement);
+                    PopulateUrl(key, value.AsUrl(), visualElement, canUpdate);
                     break;
 
                 case MetadataValueType.Timestamp:
-                    PopulateTimestamp(key, value.AsTimestamp(), visualElement);
+                    PopulateTimestamp(key, value.AsTimestamp(), visualElement, canUpdate);
                     break;
 
                 default:
-                    PopulateText(key, value.AsText(), visualElement);
+                    PopulateText(key, value.AsText(), visualElement, canUpdate);
                     break;
             }
         }
 
-        async Task WaitOnUnknownAsync(string key, MetadataValue value, VisualElement visualElement, CancellationToken cancellationToken)
+        async Task WaitOnUnknownAsync(string key, MetadataValue value, VisualElement visualElement, bool canUpdate, CancellationToken cancellationToken)
         {
             // Apply a timeout to prevent waiting forever
             var timeoutCancellationSource = new CancellationTokenSource(3000);
@@ -165,11 +170,24 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
             if (cancellationToken.IsCancellationRequested) return;
 
-            await ParseValueAsync(key, value, visualElement, cancellationToken);
+            await ParseValueAsync(key, value, visualElement, canUpdate, cancellationToken);
         }
 
-        void PopulateBoolean(string key, BooleanMetadata metadata, VisualElement visualElement)
+        static void PopulateLabel(string value, VisualElement visualElement)
         {
+            var label = visualElement.Q<Label>("NoEdit");
+            label.style.display = DisplayStyle.Flex;
+            label.text = value;
+        }
+
+        void PopulateBoolean(string key, BooleanMetadata metadata, VisualElement visualElement, bool canUpdate = true)
+        {
+            if (!canUpdate)
+            {
+                PopulateLabel(metadata.Value.ToString(), visualElement);
+                return;
+            }
+
             var boolField = visualElement.Q<Toggle>("Boolean");
             boolField.style.display = DisplayStyle.Flex;
 
@@ -181,8 +199,14 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             });
         }
 
-        void PopulateNumber(string key, NumberMetadata metadata, VisualElement visualElement)
+        void PopulateNumber(string key, NumberMetadata metadata, VisualElement visualElement, bool canUpdate = true)
         {
+            if (!canUpdate)
+            {
+                PopulateLabel(metadata.Value.ToString(), visualElement);
+                return;
+            }
+
             var numberField = visualElement.Q<DoubleField>("Number");
             numberField.style.display = DisplayStyle.Flex;
 
@@ -194,8 +218,14 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             });
         }
 
-        void PopulateTimestamp(string key, DateTimeMetadata metadata, VisualElement visualElement)
+        void PopulateTimestamp(string key, DateTimeMetadata metadata, VisualElement visualElement, bool canUpdate = true)
         {
+            if (!canUpdate)
+            {
+                PopulateLabel(metadata.Value.ToString(), visualElement);
+                return;
+            }
+
             var timestampField = visualElement.Q<TextField>("Text");
             timestampField.style.display = DisplayStyle.Flex;
 
@@ -210,8 +240,14 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             });
         }
 
-        void PopulateText(string key, StringMetadata metadata, VisualElement visualElement)
+        void PopulateText(string key, StringMetadata metadata, VisualElement visualElement, bool canUpdate = true)
         {
+            if (!canUpdate)
+            {
+                PopulateLabel(metadata.Value, visualElement);
+                return;
+            }
+
             var textField = visualElement.Q<TextField>("Text");
             textField.style.display = DisplayStyle.Flex;
 
@@ -223,8 +259,14 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             });
         }
 
-        async Task PopulateSingleSelectionAsync(string key, ISelectionFieldDefinition selectionFieldDefinition, SingleSelectionMetadata metadata, VisualElement visualElement)
+        async Task PopulateSingleSelectionAsync(string key, ISelectionFieldDefinition selectionFieldDefinition, SingleSelectionMetadata metadata, VisualElement visualElement, bool canUpdate = true)
         {
+            if (!canUpdate)
+            {
+                PopulateLabel(metadata.SelectedValue, visualElement);
+                return;
+            }
+
             var dropdownField = visualElement.Q<DropdownField>("SingleSelection");
             dropdownField.style.display = DisplayStyle.Flex;
 
@@ -245,8 +287,14 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             });
         }
 
-        async Task PoplateMultiSelectionAsync(string key, ISelectionFieldDefinition selectionFieldDefinition, MultiSelectionMetadata metadata, VisualElement visualElement)
+        async Task PoplateMultiSelectionAsync(string key, ISelectionFieldDefinition selectionFieldDefinition, MultiSelectionMetadata metadata, VisualElement visualElement, bool canUpdate = true)
         {
+            if (!canUpdate)
+            {
+                PopulateLabel(string.Join(", ", metadata.SelectedValues), visualElement);
+                return;
+            }
+
             var fieldTemplate = visualElement.Q<TemplateContainer>("MultiSelectionMetadataTemplate");
 
             if (selectionFieldDefinition == null)
@@ -281,8 +329,15 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             }
         }
 
-        void PopulateUrl(string key, UrlMetadata metadata, VisualElement visualElement)
+        void PopulateUrl(string key, UrlMetadata metadata, VisualElement visualElement, bool canUpdate = true)
         {
+            if (!canUpdate)
+            {
+                var urlLabel = string.IsNullOrEmpty(metadata.Label) ? metadata.Uri.ToString() : metadata.Label;
+                PopulateLabel($"<a href=\"{metadata.Uri}\">{urlLabel}</a>", visualElement);
+                return;
+            }
+
             var urlField = visualElement.Q("Url");
             urlField.style.display = DisplayStyle.Flex;
 
@@ -371,23 +426,38 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             }
         }
 
-        VisualElement CreateMetadataElement(string key)
+        VisualElement CreateMetadataElement(string key, bool canUpdate = true)
         {
             var visualElement = m_Template.Instantiate();
-            visualElement.Q<Label>("MetadataKey").text = key;
+            _ = GetDisplayNameAsync(visualElement.Q<Label>("MetadataKey"), key);
 
             m_ContentContainer.Add(visualElement);
 
             var contextMenu = new ContextMenuController(visualElement);
-            contextMenu.RegisterButtonAction("Remove", () =>
+            contextMenu.SetEnabled(canUpdate);
+            if (canUpdate)
             {
-                m_MetadataKeysToRemove.Add(key);
-                m_MetadataKeys.Remove(key);
-                m_MetadataValues.Remove(key);
-                m_ContentContainer.Remove(visualElement);
-            });
+                contextMenu.RegisterButtonAction("Remove", () =>
+                {
+                    m_MetadataKeysToRemove.Add(key);
+                    m_MetadataKeys.Remove(key);
+                    m_MetadataValues.Remove(key);
+                    m_ContentContainer.Remove(visualElement);
+                });
+            }
 
             return visualElement;
+        }
+
+        async Task GetDisplayNameAsync(TextElement label, string key)
+        {
+            label.text = key;
+
+            var fieldDefinition = await m_AddMetadataController.GetFieldDefinitionAsync(key);
+            if (fieldDefinition != null)
+            {
+                label.text = fieldDefinition.DisplayName;
+            }
         }
 
         CancellationToken RefreshCancellationToken()

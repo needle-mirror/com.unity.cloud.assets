@@ -49,7 +49,7 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
 
         protected override void OnClicked()
         {
-            var newCollection = new AssetCollectionCreation(m_NameInput.value.Trim(), m_DescriptionInput.value);
+            var newCollection = new AssetCollectionCreation(m_NameInput.value.Trim(), m_DescriptionInput.value.Trim());
             var parentPath = m_ParentPathInput.value.Trim();
             if (!string.IsNullOrEmpty(parentPath.Trim()))
                 newCollection.ParentPath = new CollectionPath(parentPath);

@@ -23,7 +23,7 @@ namespace Unity.Cloud.Assets.Samples
         public static IAuthenticationStateProvider AuthenticationStateProvider => s_CompositeAuthenticator;
 
         /// <summary>
-        /// Returns an <see cref="IOrganizationProvider"/>.
+        /// Returns an <see cref="IOrganizationRepository"/>.
         /// </summary>
         public static IOrganizationRepository OrganizationRepository => s_CompositeAuthenticator;
 

@@ -26,5 +26,10 @@ namespace Unity.Cloud.Assets
         /// Sets the status to use for the query.
         /// </summary>
         public QueryParameter<TransformationStatus?> Status { get; } = new();
+
+        /// <summary>
+        /// Sets the user id to use for the query.
+        /// </summary
+        public QueryParameter<UserId> UserId { get; } = new(Common.UserId.None);
     }
 }

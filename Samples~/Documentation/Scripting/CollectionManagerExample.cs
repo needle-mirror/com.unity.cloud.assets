@@ -59,7 +59,7 @@ namespace Unity.Cloud.Documentation.Assets.Scripting
 
         async Task DeleteCollection(IAssetProject project, IAssetCollection assetCollection, CancellationToken cancellationToken)
         {
-            await project.DeleteCollectionAsync(assetCollection.GetFullCollectionPath(), cancellationToken);
+            await project.DeleteCollectionAsync(assetCollection.Descriptor.Path, cancellationToken);
         }
 
         #endregion

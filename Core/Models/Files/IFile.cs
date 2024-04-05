@@ -58,7 +58,7 @@ namespace Unity.Cloud.Assets
         public IEnumerable<DatasetDescriptor> LinkedDatasets { get; }
 
         /// <summary>
-        /// The searchable metadata of the asset.
+        /// The metadata of the file.
         /// </summary>
         IMetadataContainer Metadata { get; }
 
@@ -130,5 +130,13 @@ namespace Unity.Cloud.Assets
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task with no result. </returns>
         Task UpdateAsync(IFileUpdate fileUpdate, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Generates tag suggestions for the image file.
+        /// Accepted formats are: JPEG, PNG, GIF, TIFF, and WebP.
+        /// </summary>
+        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
+        /// <returns>A task whose result is an enumeration of <see cref="GeneratedTag"/>. </returns>
+        Task<IEnumerable<GeneratedTag>> GenerateSuggestedTagsAsync(CancellationToken cancellationToken) => throw new NotImplementedException();
     }
 }

@@ -9,6 +9,8 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc />
         public IReadOnlyList<string> FileOrder { get; set; }
 
+        public DatasetUpdate() { }
+
         public DatasetUpdate(string name)
             : base(name) { }
 

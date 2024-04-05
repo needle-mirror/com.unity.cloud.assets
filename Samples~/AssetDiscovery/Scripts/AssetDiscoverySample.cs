@@ -53,8 +53,7 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
 
         IAsset m_SelectedAsset;
 
-        CancellationTokenSource m_NewListCancellationTokenSource = new();
-        CancellationTokenSource m_UpdateListCancellationTokenSource = new();
+        CancellationTokenSource m_NewListCancellationTokenSource;
 
         [Serializable]
         public struct DefaultThumbnail
@@ -76,7 +75,7 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
 
             m_ContentPanel = m_UiDocumentRoot.Q<VisualElement>("Content");
 
-            m_SearchBarUi.Initialize(m_UiDocumentRoot, m_UiDocumentRoot.Q<VisualElement>("SearchBarContainer"));
+            m_SearchBarUi.Initialize(m_UiDocumentRoot, m_UiDocumentRoot.Q<VisualElement>("SearchBarContainer"), m_ProjectController.AssetRepository);
             m_SearchBarUi.DeleteSearchQuery += OnSearchQueryChanged;
             m_SearchBarUi.AddSearchQuery += OnSearchQueryChanged;
             m_SearchBarUi.ClearSearchQuery += OnClearSearchQuery;
@@ -109,13 +108,13 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
             m_ProjectController.ProjectSelected += OnProjectSelected;
 
             m_AssetsGridController.AssetSelected += OnAssetSelected;
+
+            Application.lowMemory += OnLowMemory;
         }
 
         void OnDestroy()
         {
-            CancelUpdate();
-            m_NewListCancellationTokenSource.Cancel();
-            m_NewListCancellationTokenSource.Dispose();
+            CancelNewList();
 
             m_ProjectController.ShowContent -= ShowAssetDiscoveryLayout;
             m_ProjectController.HideContent -= HideAssetDiscoveryLayout;
@@ -162,15 +161,14 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
 
             if (m_ProjectController.IsAllProjectSelected)
             {
-                m_SearchBarUi.DisplaySearchBar(m_ProjectController.AssetRepository, m_ProjectController.GetAllProjects());
+                m_SearchBarUi.DisplaySearchBar(m_ProjectController.GetAllProjects());
             }
             else
             {
                 m_SearchBarUi.DisplaySearchBar(m_ProjectController.SelectedProject);
             }
 
-            m_NewListCancellationTokenSource.Cancel();
-            m_NewListCancellationTokenSource.Dispose();
+            CancelNewList();
             m_NewListCancellationTokenSource = new CancellationTokenSource();
 
             var newListToken = m_NewListCancellationTokenSource.Token;
@@ -179,7 +177,7 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
             m_AssetsGridController.ClearAssetGrid();
             m_ContentPanel.style.display = DisplayStyle.Flex;
 
-            var updateToken = GetCancellationToken();
+            var updateToken = m_SearchBarUi.GetSearchCancellationToken();
 
             IAsyncEnumerable<IAsset> assets = null;
             if (m_ProjectController.IsAllProjectSelected)
@@ -257,16 +255,23 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
             var assetList = new List<IAsset>();
 
             var nextDisplayTrigger = 40;
-            await foreach (var asset in assets.WithCancellation(cancellationToken))
+            try
             {
-                assetList.Add(asset);
-
-                if (assetList.Count > nextDisplayTrigger)
+                await foreach (var asset in assets.WithCancellation(cancellationToken))
                 {
-                    nextDisplayTrigger *= 2;
-                    m_AssetsGridController.PopulateAssetsGrid(assetList);
-                    assetList.Clear();
+                    assetList.Add(asset);
+
+                    if (assetList.Count > nextDisplayTrigger)
+                    {
+                        nextDisplayTrigger *= 2;
+                        m_AssetsGridController.PopulateAssetsGrid(assetList);
+                        assetList.Clear();
+                    }
                 }
+            }
+            catch (Exception e)
+            {
+                e.LogException();
             }
 
             // Attempt final refresh
@@ -278,30 +283,28 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
 
         void OnClearSearchQuery()
         {
-            CancelUpdate();
+            _ = m_SearchBarUi.GetSearchCancellationToken();
 
             m_AssetsGridController.ClearAssetGrid();
             m_AssetsGridController.DisplayAssetGrid();
             m_AssetsGridController.PopulateAssetsGrid(m_ProjectAssetsList);
         }
 
-        void CancelUpdate()
+        void CancelNewList()
         {
-            if (m_UpdateListCancellationTokenSource != null)
-            {
-                m_UpdateListCancellationTokenSource.Cancel();
-                m_UpdateListCancellationTokenSource.Dispose();
-            }
-
-            m_UpdateListCancellationTokenSource = null;
+            m_NewListCancellationTokenSource?.Cancel();
+            m_NewListCancellationTokenSource?.Dispose();
+            m_NewListCancellationTokenSource = null;
         }
 
-        CancellationToken GetCancellationToken()
+        void OnLowMemory()
         {
-            CancelUpdate();
+            CancelNewList();
+            _ = m_SearchBarUi.GetSearchCancellationToken();
 
-            m_UpdateListCancellationTokenSource = new CancellationTokenSource();
-            return m_UpdateListCancellationTokenSource.Token;
+            Resources.UnloadUnusedAssets();
+
+            DialogService.ShowMessage("Low Memory", "The application is running low on memory. Some assets may not be displayed correctly.");
         }
     }
 }

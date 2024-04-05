@@ -1,6 +1,6 @@
 .unity-text-field__input {
     border-color: rgba(255, 255, 255, 0.12);
-    color: rgba(255, 255, 255, 0.82);
+    color: rgb(210, 210, 210);
     border-radius: 5px;
     background-color: rgba(0, 0, 0, 0);
     border-left-color: rgba(255, 255, 255, 0);
@@ -20,4 +20,33 @@
 
 #SearchBarClearButton:hover {
     -unity-background-image-tint-color: rgb(112, 112, 112);
+}
+
+#Filter > VisualElement {
+    background-color: rgba(0, 0, 0, 0);
+    border-top-width: 0;
+    border-right-width: 0;
+    border-bottom-width: 0;
+    border-left-width: 0;
+    width: 130px;
+    padding-top: 0;
+    padding-right: 0;
+    padding-bottom: 0;
+    padding-left: 0;
+    margin-top: 4px;
+    margin-right: 8px;
+    margin-bottom: 4px;
+    margin-left: 8px;
+}
+
+#Filter .unity-enum-field__text {
+    margin-top: 0;
+    margin-right: 0;
+    margin-bottom: 0;
+    margin-left: 0;
+}
+
+#Filter .unity-enum-field__arrow {
+    -unity-background-image-tint-color: rgb(205, 205, 205);
+    margin-right: 4px;
 }

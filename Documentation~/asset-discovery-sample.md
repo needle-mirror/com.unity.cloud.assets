@@ -37,7 +37,7 @@ To install the sample, follow these steps:
 
    ![Screenshot of the samples import section of the package manager window](images/import-discovery-sample.png)
 
-   After the import process is complete, you can view your imported assets in the `Assets/Samples/Unity Cloud Assets` folder.
+4. After the import process completes, you can view the imported sample in the `Assets/Samples/Unity Cloud Assets` folder.
 
    ![Screenshot of the imported sample](images/tac-sample-discovery-scene.png)
 
@@ -85,22 +85,15 @@ The details view shows you the following information about your asset:
 * Tags
 * System tags
 * Collections
-* Authoring information: creation date and last modified date
+* Creation and last edit dates
+* Name of users who created and last edited the asset
 * Metadata
 
 To download your asset information in this sample, follow these steps:
 
 1. Select one of the assets in the grid. The asset details view appears.
 2. In the details view, select **Download**.
-
-To change the location of the downloaded asset, update the `path` variable in `AssetInformationPanelController.OnAssetDownloadButtonClicked()`.
-```C#
-async void OnAssetDownloadButtonClicked()
-{
-    UpdateDownloadButton(false);
-
-    var path = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-```
+3. A prompt appears to confirm the download location. Select **Ok** to download the asset.
 
 >[!NOTE]
 >To download assets, you need the right permissions in your Project to consume assets. Refer to the the [Asset Manager documentation](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles) for more information on permissions.
@@ -119,9 +112,9 @@ The `PlatformServices` class has two accompanying classes called `PlatformServic
 
 ### Project controller script
 
-The `ProjectController` class inherits from the `OrganizationController` class which makes it so you can sign into your application and uses your ID to grant access to the Asset Discovery sample. For more information on authentication, see the **Get user information** use case in the [Identity package documentation](https://docs.unity3d.com/Packages/com.unity.cloud.identity@latest).
+The `ProjectController` class inherits from the `OrganizationController` class which enables signing into your application and uses your ID to grant access to the Asset Discovery sample. For more information on authentication, see the **Get user information** use case in the [Identity package documentation](https://docs.unity3d.com/Packages/com.unity.cloud.identity@latest).
 The `ProjectController` class uses the `IOrganizationRepository` of the `PlatformServices` to retrieve the list of organizations you have access to.
-The `ProjectController` class also uses the `IAssetRepository` of the `PlatformServices` to retrieve the list of projects you have access to for the selected organization.
+The `ProjectController` class uses the `IAssetRepository` of the `PlatformServices` to retrieve the list of projects you have access to for the selected organization.
 
 To open the project controller script, go to your `Assets/Samples/Unity Cloud Assets/<package-version>/Shared/Scripts/Controllers/ProjectController.cs` file.
 

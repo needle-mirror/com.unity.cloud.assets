@@ -1,27 +1,26 @@
 {
   "name": "com.unity.cloud.assets",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "displayName": "Unity Cloud Assets",
   "description": "Unity Cloud Assets makes it easy to discover, create, update, delete, and manage Unity assets through the Assets service interface.",
   "unity": "2022.3",
   "dependencies": {
-    "com.unity.cloud.common": "1.0.0",
-    "com.unity.editorcoroutines": "1.0.0"
+    "com.unity.cloud.common": "1.1.0"
   },
   "relatedPackages": {
-    "com.unity.cloud.assets.tests": "1.0.0"
+    "com.unity.cloud.assets.tests": "1.1.0"
   },
   "_upm": {
-    "changelog": "### Added\n- `IsDeleted` property to `IFieldDefinition`\n- `FieldDefinitionQueryBuilder`, `ProjectQueryBuilder`, `CollectionQueryBuilder`, `AssetQueryBuilder`, classes to build and execute queries.\n- `BooleanMetadata`, `DateTimeMetadata`, `NumberMetadata`, `StringMetadata`, and `UserMetadata`.\n- `IAsset.GetPreviewUrlAsync` and `IFile.GetPreviewUrlAsync`.\n- `IDataset.RefreshAsync()` and `IFile.RefreshAsync()`.\n- `IAsset.GetPreviewDatasetAsync()` and `IAsset.GetSourceDatasetAsync()` extension methods.\n- `UpdateStatusAsync` method to `IAsset`.\n- `WithValue(string, SearchOptions)` and `WithValue(Regex)` overloads to `StringSearchCriteria`.\n- Re-added `UploadAsync` method to `IFile` ans updated the method of the same name in `FileEntity`.\n\n### Changed\n- [Breaking] Renamed `OrganizationGenesisId` property to `OrganizationId` in `CollectionDescriptor` and `TransformationDescriptor` classes.\n- [Breaking] Changed `CreatedBy` and `UpdatedBy` property type of `AuthoringInfo` class to `UserId`.\n- [Breaking] Changed `CreatedBy` and `UpdatedBy` property type of `AuthoringInfoSearchFilter` class to `IdSearchCriteria<UserId>`.\n- [Breaking] `Collections` property of `AssetSearchFilter` changed from `List<CollectionPath>` to `QueryListParameter<CollectionPath>`.\n- [Breaking] `SearchAssetsAsync()` replaced by `QueryAssets()`.\n- [Breaking] `CountAssetsAsync()` replaced by `GroupAndCountAssets()`; `CountAssetsAsync()` returns `int` instead of `Aggregation`.\n- [Breaking] Renames `CollectionDescriptor.CollectionPath` to `CollectionDescriptor.Path`.\n- [Breaking] Renamed `AssetSearchFilter` to `AssetSearchCriteria`, `DatasetSearchFilter` to `DatasetSearchCriteria`, `FileSearchFiter` to `FilterSearchCriteria`, and `MetadataSearchFilter` to `MetadataSearchCriteria`.\n- [Breaking] `AssetSearchFilter` contains methods to `Include()`, `Exclude()`, and `Any()` on search criteria.\n- [Breaking] `Include()`, `Exclude()`, and `Any()` methods of search criteria replaced with `WithValue()` method; use `Include()`, `Exclude()`, and `Any()`, on `AssetSearchFilter`.\n- [Breaking] Renamed `IAssetCollection.AddAssetsAsync()` and `IAssetCollection.RemoveAssetsAsync()` to `IAssetCollection.ListAssetsAsync()` and `IAssetCollection.UnlinkAssetsAsync()` respectively.\n- [Breaking] Renamed `WorkflowType.TranscodeVideo` to `WorkflowType.Transcode_Video`.\n- [Breaking] `AccumulateIncludedCriteria`, `AccumulateExcludedCriteria`, and `AccumulateAnyCriteria` methods of `IAssetSearchFilter` return `IReadOnlyDictionary` instead of `Dictionary`.\n- Update com.unity.cloud.common dependency to 1.0.0.\n\n### Fixed\n- Fixes listing of files in `IDataset`.\n\n### Removed\n- [Breaking] Removed `Status` property from `IFieldDefinition`; use `IsDeleted`.\n- [Breaking] Removed `Pagination`; use `LimitTo()` and `OrderBy()` methods of query builders where available.\n- [Breaking] Removed `AggregationParameters`; use `GroupAndCountAssetsQueryBuilder`.\n- [Breaking] Removed `Aggregation`.\n- [Breaking] Internalized `FieldsFilter`.\n- [Breaking] Removed `MetadataObject` and `IMetadataValue`; use `MetadataValue`.\n- [Breaking] Removed `IAsset.PreviewFileUrl` and `IFile.PreviewUrl`; use `IAsset.GetPreviewUrlAsync` and `IFile.GetPreviewUrlAsync` respectively.\n- [Breaking] Removed `IAsset.GetProject()`, `IDataset.GetProject()`, and `IDataset.GetAsset()`.\n- [Breaking] Removed `IFile.InvalidateCachedUrls()`; use `IFile.RefreshAsync().\n- [Breaking] Removed `IdSearchCriteria`; use `SearchCriteria<string>`.\n- [Breaking] Removed inheritance of `IFieldDefinitionUpdate` from `IFieldDefinitionCreation` and `FieldDefinitionUpdate` from `FieldDefinitionCreation`.\n- [Breaking] Removed `PublishAsync`, `WithdrawAsync`, `SendToReviewAsync`, `ApproveAsync`, and `RejectAsync` methods from `IAsset`; use `UpdateStatusAsync`."
+    "changelog": "### Added\n- `UserId` property in `TransformationSearchFilter`.\n- `GreaterThan` and `LessThanOrEqual` to `SearchConditionRange`.\n- `WithValueGreaterThan`, `WithValueGreaterThanOrEqualTo`, `WithValueLessThan`, and `WithValueLessThanOrEqualTo` to `ConditionalSearchCriteria`.\n- `GenerateTagsAsync` method to `IFile`.\n- Default constructor to `DatasetUpdate` class.\n- String search queries recognize '?' as wildcard character.\n- Memory warning popups in Discovery and Management samples.\n- Added Apple Privacy Manifest file to `/Plugins` directory.\n\n### Changed\n- Improved Discovery and Management samples search bar.\n- Improved samples' UI and cleaned up debug logs.\n- Updated use case documentation.\n- Modified the `LogLevel` for several log messages to reduce the default amount of logs in the console.\n- FieldDefinitions no longer auto-refresh properties on update; use `RefreshAsync`.\n- Reviewed manual documentation\n- Manual documentation code-snippets set to compile only in editor.\n- Documentation updates.\n- Updated deprecated endpoints.\n\n### Fixed\n- Bubbles up exceptions in `IFile.UploadAsync`.\n- Updated deprecated endpoints.\n- Upgrade to Common 1.1.0.\n\n### Removed\n- Removes `com.unity.editorcoroutines` dependency from package.\n\n### Deprecated\n- Deprecated `IAssetCollection.GetFullCollectionPath`; use `IAssetCollection.Descriptor.Path`.\n- Deprecated default constructor of `FileCreation` class; use `FileCreation(string path)`.\n- Deprecated `IAsset.SerializeIdentifiers` and `IAssetRepository.DeserializeAssetIdentifiers`; use `AssetDescriptor.ToJson` and `AssetDescriptor.FromJson` respectively."
   },
   "upmCi": {
-    "footprint": "1a071dbf21983bca3bb1c665cdf99290e855a783"
+    "footprint": "b5ba54e7a74d22f46d8aee8ca9990c04a5182eeb"
   },
-  "documentationUrl": "https://docs.unity3d.com/Packages/com.unity.cloud.assets@1.0/manual/index.html",
+  "documentationUrl": "https://docs.unity3d.com/Packages/com.unity.cloud.assets@1.1/manual/index.html",
   "repository": {
     "url": "https://github.cds.internal.unity3d.com/unity/digital-twins-sdk.git",
     "type": "git",
-    "revision": "bed3b2af9ad90affe06d12875fdb221a2496a3c1"
+    "revision": "1a7fa1a2eab17a06bce740d95954ad7a22e7ca92"
   },
   "samples": [
     {

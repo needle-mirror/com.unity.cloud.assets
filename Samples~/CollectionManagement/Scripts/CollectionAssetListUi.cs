@@ -34,7 +34,7 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
 
         public event Action<IAsset> AssetSelected;
         public IAsset SelectedAsset { get; private set; }
-        public IEnumerable<IAsset> Assets => m_Entries;
+        public IEnumerable<IAsset> Assets => m_ListController.AllItems;
 
         protected override string VisualElementName => "AssetsPanel";
         protected override string EmptyListMessage => "No assets in collection.";

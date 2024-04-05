@@ -81,9 +81,10 @@ namespace Unity.Cloud.Assets
         /// Gets the asset download URLs.
         /// </summary>
         /// <param name="assetDescriptor">The object containing the necessary information to identify the asset.</param>
+        /// <param name="datasetIds">An optional collection of ids to limit the fetched urls. </param>
         /// <param name="cancellationToken">A token that can be used to cancel the request.. </param>
         /// <returns>An enumeration of download urls. </returns>
-        Task<IEnumerable<AssetDownloadUrl>> GetAssetDownloadUrlsAsync(AssetDescriptor assetDescriptor, CancellationToken cancellationToken);
+        Task<IEnumerable<AssetDownloadUrl>> GetAssetDownloadUrlsAsync(AssetDescriptor assetDescriptor, DatasetId[] datasetIds, CancellationToken cancellationToken);
 
         /// <summary>
         /// Add an asset link to the project.

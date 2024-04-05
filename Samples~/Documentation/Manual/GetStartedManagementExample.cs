@@ -90,12 +90,12 @@ namespace Unity.Cloud.Documentation.Assets
             }
         }
 
-        public async Task CreateAssetAsync()
+        public async Task CreateAssetAsync(AssetType assetType)
         {
             var assetCreation = new AssetCreation("GrayTexture_0")
             {
                 Description = "Documentation example asset creation.",
-                Type = AssetType.Asset_2D
+                Type = assetType
             };
 
             var cancellationTokenSrc = new CancellationTokenSource(k_DefaultCancellationTimeout);
@@ -121,6 +121,7 @@ namespace Unity.Cloud.Documentation.Assets
             {
                 var cancellationTokenSrc = new CancellationTokenSource(k_DefaultCancellationTimeout);
                 await asset.UpdateAsync(assetUpdate, cancellationTokenSrc.Token);
+                await asset.RefreshAsync(cancellationTokenSrc.Token);
             }
             catch (OperationCanceledException oe)
             {

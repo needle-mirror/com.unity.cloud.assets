@@ -109,9 +109,9 @@ The `PlatformServices` class has two accompanying classes called `PlatformServic
 
 ### Field definition controller script
 
-The `FieldDefinitionController` class inherits from the `OrganizationController` class which makes it so you can sign into your application and uses your ID to grant access to the Collection Management sample. For more information on authentication, see the **Get user information** use case in the  [Identity package documentation](https://docs.unity3d.com/Packages/com.unity.cloud.identity@latest).
+The `FieldDefinitionController` class inherits from the `OrganizationController` class which enables signing into your application and uses your ID to grant access to the Collection Management sample. For more information on authentication, see the **Get user information** use case in the  [Identity package documentation](https://docs.unity3d.com/Packages/com.unity.cloud.identity@latest).
 The `FieldDefinitionController` class uses the `IOrganizationRepository` of the `PlatformServices` to retrieve the list of organizations you have access to.
-The `FieldDefinitionController` class also uses the `IAssetRepository` of the `PlatformServices` to retrieve the list of field definitions for the selected organization.
+The `FieldDefinitionController` class uses the `IAssetRepository` of the `PlatformServices` to retrieve the list of field definitions for the selected organization.
 
 To open the field definition controller script, go to your `Assets/Samples/Unity Cloud Assets/<package-version>/MetadataManagement/Scripts/Controllers/Field.cs` file.
 

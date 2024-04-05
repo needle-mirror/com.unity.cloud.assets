@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Serialization;
 using System.Text.RegularExpressions;
 
@@ -29,7 +30,7 @@ namespace Unity.Cloud.Assets
             public bool IsEmpty => string.IsNullOrWhiteSpace(Value);
         }
 
-        internal const char k_WildcardChar = '*';
+        internal static readonly char[] k_WildcardChars = new[] {'*', '?'};
 
         PartialQuery m_IncludedPartial;
 
@@ -58,7 +59,7 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc />
         public override void WithValue(string value)
         {
-            if (value.Contains(k_WildcardChar))
+            if (k_WildcardChars.Any(value.Contains))
             {
                 WithValue(value, SearchOptions.None);
                 return;

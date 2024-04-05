@@ -18,7 +18,7 @@
             <ui:VisualElement name="RightPanel" style="width: 60%;">
                 <ui:TextField picking-mode="Ignore" value="Asset Name" name="AssetNameField" style="font-size: 20px; -unity-font-style: bold;" />
                 <ui:Instance template="StatusTemplate" />
-                <ui:VisualElement name="Content" style="width: 100%; overflow: hidden; align-self: flex-end; padding-left: 4px;">
+                <ui:ScrollView style="overflow: hidden; padding-left: 4px; flex-grow: 1;">
                     <ui:VisualElement name="AssetDescription" style="min-height: 70px; flex-grow: 1; flex-shrink: 0;">
                         <ui:TextField picking-mode="Ignore" label="Description" value="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua." text="Description" name="AssetDescriptionField" multiline="true" style="color: rgb(210, 210, 210); white-space: normal; flex-grow: 1; flex-wrap: wrap;" />
                     </ui:VisualElement>
@@ -35,8 +35,7 @@
                         <ui:Button text="+ Add Metadata" parse-escape-sequences="true" display-tooltip-when-elided="true" name="AddMetadataButton" class="metadataAddButton" />
                     </ui:VisualElement>
                     <ui:Instance template="MetadataItemTemplate" name="MetadataItemTemplate" style="display: none;" />
-                </ui:VisualElement>
-                <ui:ScrollView style="overflow: hidden; flex-grow: 1;" />
+                </ui:ScrollView>
                 <ui:VisualElement name="AssetButtonContainer" style="flex-shrink: 0; justify-content: flex-end; flex-direction: row; padding-top: 2px; padding-right: 2px; padding-bottom: 2px; padding-left: 2px; width: 100%;">
                     <ui:Button text="Publish asset" display-tooltip-when-elided="true" visible="false" name="AssetPublishButton" class="button-blue sample-button" />
                     <ui:Button text="Save asset" display-tooltip-when-elided="true" visible="false" name="AssetSaveButton" class="button-blue sample-button" />

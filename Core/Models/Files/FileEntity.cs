@@ -11,20 +11,13 @@ namespace Unity.Cloud.Assets
 {
     class FileEntity : IFile
     {
-        static readonly UCLogger k_Logger = LoggerProvider.GetLogger<FileEntity>();
-
         readonly IAssetDataSource m_DataSource;
         internal DatasetDescriptor[] m_LinkedDatasets = Array.Empty<DatasetDescriptor>();
 
-        internal FileEntity(IAssetDataSource dataSource, FileDescriptor descriptor, IEnumerable<DatasetId> datasetIds)
+        internal FileEntity(IAssetDataSource dataSource, FileDescriptor descriptor)
             : this(descriptor)
         {
             m_DataSource = dataSource;
-            if (datasetIds != null)
-            {
-                m_LinkedDatasets = datasetIds.Select(id => new DatasetDescriptor(descriptor.DatasetDescriptor.AssetDescriptor, id)).ToArray();
-            }
-
             MetadataEntity = new FileMetadataContainer(Descriptor, FileFields.metadata, m_DataSource);
         }
 
@@ -59,11 +52,6 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc />
         public IEnumerable<DatasetDescriptor> LinkedDatasets => m_LinkedDatasets;
 
-        /// <summary>
-        /// The metadata of the file.
-        /// </summary>
-        public MetadataContainerEntity MetadataEntity { get; }
-
         /// <inheritdoc />
         public long SizeBytes { get; set; }
 
@@ -77,6 +65,8 @@ namespace Unity.Cloud.Assets
 
         internal bool IsDownloadable { get; set; } = true;
 
+        internal MetadataContainerEntity MetadataEntity { get; }
+
         AssetDescriptor AssetDescriptor => Descriptor.DatasetDescriptor.AssetDescriptor;
 
         /// <inheritdoc />
@@ -88,8 +78,9 @@ namespace Unity.Cloud.Assets
                 throw new InvalidArgumentException("The file does not belong to the specified dataset.");
 
             var descriptor = new FileDescriptor(datasetDescriptor, Descriptor.Path);
-            return new FileEntity(m_DataSource, descriptor, m_LinkedDatasets.Select(d => d.DatasetId))
+            return new FileEntity(m_DataSource, descriptor)
             {
+                m_LinkedDatasets = m_LinkedDatasets,
                 Description = Description,
                 Status = Status,
                 AuthoringInfo = AuthoringInfo,
@@ -98,8 +89,10 @@ namespace Unity.Cloud.Assets
                 MetadataEntity = { Properties = MetadataEntity.Properties },
                 SizeBytes = SizeBytes,
                 UserChecksum = UserChecksum,
+                PreviewUrl = PreviewUrl,
                 UploadUrl = UploadUrl,
-                DownloadUrl = DownloadUrl
+                DownloadUrl = DownloadUrl,
+                IsDownloadable = IsDownloadable
             };
         }
 
@@ -117,7 +110,7 @@ namespace Unity.Cloud.Assets
         async Task RefreshAsync(FieldsFilter fieldsFilter, CancellationToken cancellationToken)
         {
             var fileData = await m_DataSource.GetFileAsync(Descriptor, fieldsFilter, cancellationToken);
-            this.MapFrom(m_DataSource, fileData, fieldsFilter.FileFields);
+            this.MapFrom(m_DataSource, Descriptor.DatasetDescriptor.AssetDescriptor, fileData, fieldsFilter.FileFields);
         }
 
         /// <inheritdoc />
@@ -144,7 +137,7 @@ namespace Unity.Cloud.Assets
                 };
 
                 var fileData = await m_DataSource.GetFileAsync(Descriptor, filter, cancellationToken);
-                this.MapFrom(m_DataSource, fileData, filter.FileFields);
+                this.MapFrom(m_DataSource, Descriptor.DatasetDescriptor.AssetDescriptor, fileData, filter.FileFields);
             }
 
             return PreviewUrl;
@@ -157,15 +150,9 @@ namespace Unity.Cloud.Assets
 
             if (DownloadUrl == null)
             {
-                var data = new FileData
-                {
-                    Path = Descriptor.Path,
-                    UserChecksum = UserChecksum,
-                    SizeBytes = SizeBytes
-                };
                 try
                 {
-                    DownloadUrl = await m_DataSource.GetFileDownloadUrlAsync(Descriptor, data, cancellationToken);
+                    DownloadUrl = await m_DataSource.GetFileDownloadUrlAsync(Descriptor, cancellationToken);
                 }
                 catch (NotFoundException)
                 {
@@ -230,6 +217,8 @@ namespace Unity.Cloud.Assets
                 metadata.Add(item.Key, item.Value);
             }
 
+            cancellationToken.ThrowIfCancellationRequested();
+
             var datasets = new List<IDataset>();
             var datasetList = GetLinkedDatasetsAsync(Range.All, cancellationToken);
 
@@ -237,97 +226,39 @@ namespace Unity.Cloud.Assets
             await foreach (var dataset in datasetList)
             {
                 datasets.Add(dataset);
-                await RemoveFileAsync(dataset, Descriptor.Path, cancellationToken);
-                if (cancellationToken.IsCancellationRequested) return;
+                await dataset.RemoveFileAsync(Descriptor.Path, cancellationToken);
+
+                cancellationToken.ThrowIfCancellationRequested();
             }
 
             // Reupload to dataset[0]
-            var fileCreation = new FileCreation
+            var fileCreation = new FileCreation(Descriptor.Path)
             {
-                Path = Descriptor.Path,
                 Description = Description,
                 Tags = Tags,
                 Metadata = metadata
             };
 
-            var newFile = await UploadFileAsync(datasets[0], fileCreation, sourceStream, progress, cancellationToken);
+            var newFile = await datasets[0].UploadFileAsync(fileCreation, sourceStream, progress, cancellationToken);
+
+            cancellationToken.ThrowIfCancellationRequested();
 
             // Link to remaining datasets
             var tasks = new List<Task>();
             for (var i = 1; i < datasets.Count; ++i)
             {
-                var task = AddFileAsync(datasets[i], newFile, cancellationToken);
+                var task = datasets[i].AddExistingFileAsync(newFile.Descriptor.Path, newFile.Descriptor.DatasetId, cancellationToken);
                 tasks.Add(task);
             }
 
             await Task.WhenAll(tasks);
         }
 
-        static async Task RemoveFileAsync(IDataset dataset, string path, CancellationToken cancellationToken)
+        /// <inheritdoc />
+        public async Task<IEnumerable<GeneratedTag>> GenerateSuggestedTagsAsync(CancellationToken cancellationToken)
         {
-            try
-            {
-                await dataset.RemoveFileAsync(path, cancellationToken);
-                k_Logger.LogInformation($"{path} removed from {dataset.Name}.");
-            }
-            catch (OperationCanceledException)
-            {
-                k_Logger.LogWarning("File replacement cancelled.");
-            }
-            catch (AggregateException e)
-            {
-                k_Logger.LogError($"Failed to remove file reference from {dataset.Name}. {e.InnerException}");
-            }
-            catch (Exception e)
-            {
-                k_Logger.LogError($"Failed to remove file reference from {dataset.Name}. {e}");
-            }
-        }
-
-        static async Task<IFile> UploadFileAsync(IDataset dataset, IFileCreation fileCreation, Stream memoryStream,
-            IProgress<HttpProgress> progress, CancellationToken cancellationToken)
-        {
-            try
-            {
-                var newFile = await dataset.UploadFileAsync(fileCreation, memoryStream, progress, cancellationToken);
-                k_Logger.LogInformation($"{newFile.Descriptor.Path} uploaded to {dataset.Name}.");
-                return newFile;
-            }
-            catch (OperationCanceledException)
-            {
-                k_Logger.LogWarning("File replacement cancelled.");
-            }
-            catch (AggregateException e)
-            {
-                k_Logger.LogError($"Failed to upload file to {dataset.Name}. {e.InnerException}");
-            }
-            catch (Exception e)
-            {
-                k_Logger.LogError($"Failed to upload file to {dataset.Name}. {e}");
-            }
-
-            return null;
-        }
-
-        static async Task AddFileAsync(IDataset dataset, IFile file, CancellationToken cancellationToken)
-        {
-            try
-            {
-                await dataset.AddExistingFileAsync(file.Descriptor.Path, file.Descriptor.DatasetId, cancellationToken);
-                k_Logger.LogInformation($"{file.Descriptor.Path} linked to {dataset.Name}.");
-            }
-            catch (OperationCanceledException)
-            {
-                k_Logger.LogWarning("File replacement cancelled.");
-            }
-            catch (AggregateException e)
-            {
-                k_Logger.LogError($"Failed to link file to {dataset.Name}. {e.InnerException}");
-            }
-            catch (Exception e)
-            {
-                k_Logger.LogError($"Failed to link file to {dataset.Name}. {e}");
-            }
+            var tags = await m_DataSource.GenerateFileTagsAsync(Descriptor, cancellationToken);
+            return tags.Select(x => new GeneratedTag(x.Tag, x.Confidence));
         }
     }
 }

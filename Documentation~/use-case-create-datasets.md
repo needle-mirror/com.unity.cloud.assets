@@ -1,4 +1,4 @@
-# Use case: Manage datasets
+# Use case: Create datasets
 
 You can use the Unity Cloud Assets package to view and create datasets within an asset.
 
@@ -57,14 +57,10 @@ To create UI for listing datasets, follow these steps:
 
 6. Open the `AssetManagementUI` script you created and replace the contents of the `Awake` function with the following code:
 
-```cs
-   m_UI.Add(new OrganizationSelectionExampleUI(m_Behaviour));
-   m_UI.Add(new ProjectSelectionExampleUI(m_Behaviour));
-   m_UI.Add(new AssetSelectionExampleUI(m_Behaviour));
-   m_UI.Add(new UseCaseDatasetCreationExampleUI(m_Behaviour));
-```
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseSetupExamples.cs#UseCaseCreateDatasets)
 
 The code snippet does the following:
 
 * Displays a list of datasets for the selected asset.
 * Provides a text input and UI button to create a new dataset.
+* Logs a confirmation message to the console when a dataset is created.

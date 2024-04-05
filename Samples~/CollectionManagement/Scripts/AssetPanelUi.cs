@@ -89,7 +89,7 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
         async Task Populate(IAssetProject project, IAssetCollection collection, CancellationToken token)
         {
             var filter = new AssetSearchFilter();
-            filter.Collections.WhereContains(collection.GetFullCollectionPath());
+            filter.Collections.WhereContains(collection.Descriptor.Path);
 
             try
             {

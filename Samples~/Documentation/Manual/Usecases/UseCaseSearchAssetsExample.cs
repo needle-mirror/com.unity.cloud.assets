@@ -8,6 +8,7 @@ using UnityEngine;
 namespace Unity.Cloud.Documentation.Assets
 {
 #pragma warning disable S1144 // Remove unused private method
+#pragma warning disable S1481 // Unused local variables should be removed
     public class UseCaseSearchAssetsExample
     {
         readonly IAssetProject project;
@@ -57,21 +58,25 @@ assetSearchFilter.Collections.WhereContains("my awesome collection", "my other a
 
         }
 
-        IAsyncEnumerable<IAsset> SearchAsync(IAssetSearchFilter assetSearchFilter)
+        void SearchAsync(IAssetSearchFilter assetSearchFilter)
         {
 #region Example_Search
 
-return project.QueryAssets().SelectWhereMatchesFilter(assetSearchFilter).LimitTo(new Range(0, 10)).ExecuteAsync(CancellationToken.None);
+var results = project.QueryAssets()
+    .SelectWhereMatchesFilter(assetSearchFilter)
+    .OrderBy(nameof(IAsset.Name), SortingOrder.Descending)
+    .LimitTo(Range.EndAt(10))
+    .ExecuteAsync(CancellationToken.None);
 
 #endregion
         }
 
-        async Task DisplayResultsIndividually(IAssetSearchFilter assetSearchFilter)
+        async Task DisplayResultsIndividually()
         {
+            var results = project.QueryAssets().ExecuteAsync(default);
 #region Example_Foreach
 
-var assets = project.QueryAssets().SelectWhereMatchesFilter(assetSearchFilter).ExecuteAsync(CancellationToken.None);
-await foreach (var asset in assets)
+await foreach (var asset in results)
 {
     Debug.Log(asset.Name + " is available for use.");
 
@@ -81,22 +86,23 @@ await foreach (var asset in assets)
 #endregion
         }
 
-        async Task DisplayResults(IAssetSearchFilter assetSearchFilter)
+        async Task<IEnumerable<IAsset>> DisplayResults()
         {
+            var results = project.QueryAssets().ExecuteAsync(default);
+
 #region Example_ToList
 
-var assets = project.QueryAssets().SelectWhereMatchesFilter(assetSearchFilter).ExecuteAsync(CancellationToken.None);
-
 var assetList = new List<IAsset>();
-await foreach (var asset in assets)
+await foreach (var asset in results)
 {
     assetList.Add(asset);
 }
 
-// Do something with the complete `assetList`
+return assetList;
 
 #endregion
         }
     }
 #pragma warning restore S1144 // Remove unused private method
+#pragma warning restore S1481 // Unused local variables should be removed
 }

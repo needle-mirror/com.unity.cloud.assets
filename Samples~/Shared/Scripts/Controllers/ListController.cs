@@ -8,7 +8,7 @@ namespace Unity.Cloud.Assets.Samples
     public abstract class ListController<T>
     {
         List<T> m_OriginalList = new();
-        List<T> m_ItemsToFilter = new();
+        Func<T, bool> m_Filter;
 
         protected List<T> m_List = new();
         protected ListView m_ListView;
@@ -41,10 +41,13 @@ namespace Unity.Cloud.Assets.Samples
             m_ListView.style.display = DisplayStyle.None;
         }
 
-        public void ApplyFilter(IEnumerable<T> itemsToFilter)
+        public void ApplyFilter(Func<T, bool> filter)
         {
-            m_ItemsToFilter = itemsToFilter == null ? new List<T>() : new List<T>(itemsToFilter);
-            UpdateList();
+            m_Filter = filter;
+            if (m_OriginalList.Any())
+            {
+                UpdateList();
+            }
         }
 
         public void UpdateList(IEnumerable<T> entries)
@@ -57,14 +60,9 @@ namespace Unity.Cloud.Assets.Samples
 
         void UpdateList()
         {
-            m_List = m_OriginalList.Where(x => !m_ItemsToFilter.Any(y => AreEqual(x, y))).ToList();
+            m_List = m_Filter == null ? m_OriginalList.ToList() : m_OriginalList.Where(m_Filter).ToList();
             m_ListView.itemsSource = m_List;
             m_ListView.RefreshItems();
-        }
-
-        protected virtual bool AreEqual(T item1, T item2)
-        {
-            return item1.Equals(item2);
         }
 
         public void ClearList()

@@ -122,8 +122,15 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc />
         public AssetDescriptor DeserializeAssetIdentifiers(string jsonSerialization)
         {
+            // Verify old deprecated serialization format first
             var ids = IsolatedSerialization.DeserializeWithDefaultConverters<AssetIdentifier>(jsonSerialization);
-            return ids.From();
+            var projectId = ids.ProjectId.ToString();
+            if (!string.IsNullOrEmpty(projectId) && projectId != ProjectId.None.ToString())
+            {
+                return ids.From();
+            }
+
+            return AssetDescriptor.FromJson(jsonSerialization);
         }
 
         /// <inheritdoc />

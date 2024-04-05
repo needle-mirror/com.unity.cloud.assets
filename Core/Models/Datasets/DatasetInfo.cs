@@ -18,13 +18,10 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc />
         public bool? IsVisible { get; set; }
 
+        protected DatasetInfo() { }
+
         protected DatasetInfo(string name)
         {
-            if (string.IsNullOrEmpty(name))
-            {
-                throw new ArgumentNullException(nameof(name), "The name of the dataset cannot be null or empty.");
-            }
-
             Name = name;
         }
 

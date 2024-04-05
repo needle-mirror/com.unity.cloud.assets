@@ -68,10 +68,7 @@ To create UI for listing and managing field definitions, follow these steps:
 
 6. Open the `AssetManagementUI` script you created and replace the contents of the `Awake` function with the following code:
 
-```cs
-   m_UI.Add(new OrganizationSelectionExampleUI(m_Behaviour));
-   m_UI.Add(new UseCaseFieldDefinitionsModifyAcceptedValuesExampleUI(m_Behaviour));
-```
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseSetupExamples.cs#UseCaseModifyAcceptedValues)
 
 The code snippet does the following:
 

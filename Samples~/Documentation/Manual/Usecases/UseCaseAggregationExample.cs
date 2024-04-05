@@ -81,7 +81,7 @@ namespace Unity.Cloud.Documentation.Assets
             if (m_Behaviour.GroupCounters != null)
             {
                 GUILayout.Label($"Total: {m_Behaviour.Total}");
-                GUILayout.Label($"Unique: {m_Behaviour.GroupCounters.Keys}");
+                GUILayout.Label($"Unique: {m_Behaviour.GroupCounters.Keys.Count()}");
                 GUILayout.Label($"Values:");
                 foreach (var value in m_Behaviour.GroupCounters)
                 {

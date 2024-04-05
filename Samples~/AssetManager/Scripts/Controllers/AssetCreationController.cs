@@ -25,6 +25,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             m_FileController = fileController;
 
             m_CreateAssetButton = root.Q<Button>("CreateAssetButton");
+            m_CreateAssetButton.style.display = DisplayStyle.None;
             m_CreateAssetButton.RegisterCallback<ClickEvent>(CreateAsset);
 
             m_FileController.FilesAdded += OnFilesAdded;

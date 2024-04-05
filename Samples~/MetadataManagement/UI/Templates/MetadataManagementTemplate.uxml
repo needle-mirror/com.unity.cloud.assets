@@ -16,9 +16,9 @@
             <ui:Label tabindex="-1" text="Label" parse-escape-sequences="true" display-tooltip-when-elided="true" name="Multiselection" class="unity-base-field__label" />
             <ui:VisualElement name="AcceptedValues" style="flex-direction: row;">
                 <ui:Label tabindex="-1" text="Label" parse-escape-sequences="true" display-tooltip-when-elided="true" class="unity-base-field__label" />
-                <ui:ListView focusable="true" show-add-remove-footer="true" reorderable="true" selection-type="None" show-foldout-header="true" header-title="Accepted Values" show-border="true" show-bound-collection-size="false" style="background-color: rgb(206, 206, 206); flex-grow: 1; margin-top: 4px; margin-right: 4px; margin-bottom: 4px; margin-left: 4px; border-top-left-radius: 8px; border-top-right-radius: 8px; border-bottom-right-radius: 8px; border-bottom-left-radius: 8px; color: rgb(27, 27, 28);" />
+                <ui:ListView focusable="true" show-add-remove-footer="true" reorderable="true" selection-type="Single" show-foldout-header="true" header-title="Accepted Values" show-border="true" show-bound-collection-size="false" name="ListView" style="background-color: rgb(56, 56, 56); flex-grow: 1; color: rgb(27, 27, 28);" />
             </ui:VisualElement>
-            <ui:Button text="Update" parse-escape-sequences="true" display-tooltip-when-elided="true" name="Update" />
+            <ui:Button text="Update" parse-escape-sequences="true" display-tooltip-when-elided="true" name="Update" style="width: 30%;" />
             <ui:Instance template="ContextMenu" name="FieldContextMenu" class="ContextMenuContainer" />
         </ui:VisualElement>
         <ui:VisualElement picking-mode="Ignore" class="PopupContainer" style="width: 90%; height: 90%; justify-content: space-around; align-self: center; left: 5%;">
@@ -28,10 +28,10 @@
                     <ui:Button display-tooltip-when-elided="true" name="Close" class="PopupClose" />
                 </ui:VisualElement>
                 <ui:VisualElement>
-                    <ui:TextField password="false" name="Name" label="Unique Id *" style="margin-left: 7px; margin-right: 7px; align-items: stretch; flex-direction: row;" />
-                    <ui:TextField password="false" name="DisplayName" label="Display Name *" style="margin-left: 7px; margin-right: 7px; align-items: stretch; flex-direction: row;" />
+                    <ui:TextField password="false" name="Name" label="Unique Id *" style="align-items: stretch; flex-direction: row;" />
+                    <ui:TextField password="false" name="DisplayName" label="Display Name *" style="align-items: stretch; flex-direction: row;" />
                     <ui:EnumField label="Type *" type="Unity.Cloud.Assets.FieldDefinitionType, Unity.Cloud.Assets" name="Type" />
-                    <ui:RadioButton label="Multi-selection" name="Multiselection" />
+                    <ui:Toggle label="Toggle" name="Multiselection" />
                     <ui:VisualElement style="flex-direction: row;">
                         <ui:ListView focusable="true" name="AcceptedValues" header-title="Accepted Values" show-add-remove-footer="true" show-foldout-header="true" show-bound-collection-size="false" selection-type="None" reorderable="true" style="color: rgb(206, 206, 206); flex-grow: 1;" />
                     </ui:VisualElement>

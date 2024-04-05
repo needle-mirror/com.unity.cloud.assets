@@ -30,12 +30,12 @@ To install the sample, follow these steps:
 1. Inside your Unity Project window, go to **Package Manager** > **Unity Cloud Assets**.
 2. Expand the **Samples** section.
 3. On the right of the Asset Management sample, select **Import**.
-   </br>
+
    ![Screenshot of the samples import section of the package manager window](images/import-manager-sample.png)
 
-After the import process completes, you can view the imported assets in the `Unity Cloud Assets/Samples/Samples/Asset Management` folder.
-</br>
-![Screenshot of the imported sample](images/tac-sample-management-scene.png)
+4. After the import process completes, you can view the imported sample in the `Unity Cloud Assets/Samples/Samples/Asset Management` folder.
+   
+   ![Screenshot of the imported sample](images/tac-sample-management-scene.png)
 
 ## Run the sample
 
@@ -128,9 +128,9 @@ The `PlatformServices` class has two accompanying classes called `PlatformServic
 
 ### Project controller script
 
-The `ProjectController` class inherits from the `OrganizationController` class which makes it so you can sign into your application and uses your ID to grant access to the Asset Management sample. For more information on authentication, see the **Get user information** use case in the [Identity package documentation](https://docs.unity3d.com/Packages/com.unity.cloud.identity@latest).
+The `ProjectController` class inherits from the `OrganizationController` class which enables signing into your application and uses your ID to grant access to the Asset Management sample. For more information on authentication, see the **Get user information** use case in the [Identity package documentation](https://docs.unity3d.com/Packages/com.unity.cloud.identity@latest).
 The `ProjectController` class uses the `IOrganizationRepository` of the `PlatformServices` to retrieve the list of organizations you have access to.
-The `ProjectController` class also uses the `IAssetRepository` of the `PlatformServices` to retrieve the list of projects you have access to for the selected organization.
+The `ProjectController` class uses the `IAssetRepository` of the `PlatformServices` to retrieve the list of projects you have access to for the selected organization.
 
 To open the project controller script, go to your `Assets/Samples/Unity Cloud Assets/<package-version>/Shared/Scripts/Controllers/ProjectController.cs` file.
 

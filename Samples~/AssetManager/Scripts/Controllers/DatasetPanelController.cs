@@ -104,7 +104,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             m_DatasetTagsField.UnregisterCallback<FocusInEvent>(AddTags);
         }
 
-        public void OpenDataset(IDataset dataset)
+        public void OpenDataset(IDataset dataset, bool canUpdate)
         {
             ClearInformation();
 
@@ -113,18 +113,26 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
             m_CurrentDataset = dataset;
             m_DatasetUpdate = new DatasetUpdate(m_CurrentDataset);
+
+            m_SaveDatasetButton.SetEnabled(canUpdate);
+            m_DatasetTagsField.style.display = canUpdate ? DisplayStyle.Flex : DisplayStyle.None;
+
             m_DatasetNameField.SetValueWithoutNotify(dataset.Name);
+            m_DatasetNameField.SetEnabled(canUpdate);
             m_DatasetDescriptionField.SetValueWithoutNotify(dataset.Description);
+            m_DatasetDescriptionField.SetEnabled(canUpdate);
             m_DatasetStatusLastEditLabel.text = dataset.AuthoringInfo?.Updated.ToString("MMM dd, yyyy h:mm tt GMT") ?? "unknown";
             m_DatasetVisibleToggle.SetValueWithoutNotify(dataset.IsVisible);
+            m_DatasetVisibleToggle.SetEnabled(canUpdate);
 
-            ((Action<string>) AddTag).AddTags(m_DatasetUpdate.Tags);
+            Action<string> addTagAction = tag => AddTag(tag, canUpdate);
+            addTagAction.AddTags(m_DatasetUpdate.Tags);
 
-            _ = m_FileController.ListExistingFiles(dataset);
+            _ = m_FileController.ListExistingFiles(dataset, canUpdate);
 
             UpdateStatus(dataset.Status);
 
-            _ = m_MetadataController.PopulateMetadataAsync(dataset);
+            _ = m_MetadataController.PopulateMetadataAsync(dataset, canUpdate);
 
             _ = m_TransformationController.PopulateTransformationProgress(dataset);
         }
@@ -167,7 +175,9 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
                 if (updateTasks.TrueForAll(x => x.IsCompletedSuccessfully))
                     DialogService.ShowMessage("Update complete", "The dataset has been saved successfully.");
 
-                OpenDataset(m_CurrentDataset);
+                await m_CurrentDataset.RefreshAsync(cancellationTokenSource.Token);
+
+                OpenDataset(m_CurrentDataset, true);
             }
             catch (Exception e)
             {
@@ -242,12 +252,12 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
         void AddTags(FocusInEvent evt)
         {
-            m_DatasetTagsField.ParseTags(m_DatasetUpdate.Tags, AddTag);
+            m_DatasetTagsField.ParseTags(m_DatasetUpdate.Tags, tag => AddTag(tag, true));
         }
 
-        void AddTag(string tag)
+        void AddTag(string tag, bool canRemove)
         {
-            m_DatasetTagsContainer.AddTag(tag, m_DatasetUpdate.Tags, m_DatasetTagsTemplate);
+            m_DatasetTagsContainer.AddTag(tag, m_DatasetUpdate.Tags, m_DatasetTagsTemplate, canRemove);
         }
 
         void GenerateThumbnailPreview(ClickEvent evt)

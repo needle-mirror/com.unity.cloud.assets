@@ -4,8 +4,9 @@
     <ui:Template name="TransformationProgressBar" src="../Templates/TransformationProgressBar.uxml?fileID=9197481963319205126&amp;guid=27c2d97f5d3174588b1881cd7c7e4a40&amp;type=3#TransformationProgressBar" />
     <Style src="../StyleSheets/AssetCreationPanelStyleSheet.uss?fileID=7433441132597879392&amp;guid=2a9d0e7b4e75049048525c21e638987e&amp;type=3#AssetCreationPanelStyleSheet" />
     <ui:VisualElement style="height: 100%; width: 100%; background-color: rgb(19, 19, 19); justify-content: center; min-width: 100%; min-height: 100%; max-width: 100%; max-height: 100%;">
-        <ui:VisualElement name="Header" style="flex-direction: row; padding-top: 2px; padding-right: 2px; padding-bottom: 2px; padding-left: 2px;">
+        <ui:VisualElement name="Header" style="flex-direction: row; padding-top: 2px; padding-right: 2px; padding-bottom: 2px; padding-left: 2px; justify-content: space-between;">
             <ui:Button text="Back" parse-escape-sequences="true" display-tooltip-when-elided="true" name="BackBtn" class="sample-button" />
+            <ui:Button text="Create asset" display-tooltip-when-elided="true" name="CreateAssetButton" class="sample-button button-blue" />
         </ui:VisualElement>
         <ui:VisualElement name="DatasetPanels" style="flex-direction: row; width: 100%; flex-grow: 1;">
             <ui:VisualElement name="LeftPanel" style="flex-direction: column; flex-grow: 1;">
@@ -15,9 +16,6 @@
                         <ui:VisualElement name="FileUploadIcon" style="background-image: url(&apos;../Sprites/upload.png?fileID=21300000&amp;guid=f44e3bc83b7624066b709ce2b697218e&amp;type=3#upload&apos;); width: 30px; height: 30px; -unity-background-image-tint-color: rgb(128, 128, 128);" />
                         <ui:Button text="Browse" display-tooltip-when-elided="true" name="FileUploadButton" class="sample-button" style="color: rgb(210, 210, 210);" />
                     </ui:VisualElement>
-                </ui:VisualElement>
-                <ui:VisualElement name="CreateDatasetContainer" style="align-items: center; flex-shrink: 0;">
-                    <ui:Button text="Create asset" display-tooltip-when-elided="true" name="CreateAssetButton" class="sample-button button-blue" style="display: none;" />
                 </ui:VisualElement>
             </ui:VisualElement>
             <ui:VisualElement name="RightPanel" style="width: 60%;">

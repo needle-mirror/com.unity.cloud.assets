@@ -17,31 +17,25 @@ namespace Unity.Cloud.Assets
             : base(dataSource, descriptor) { }
 
         /// <inheritdoc/>
-        public async Task SetSelectionValuesAsync(IEnumerable<string> acceptedValues, CancellationToken cancellationToken)
+        public Task SetSelectionValuesAsync(IEnumerable<string> acceptedValues, CancellationToken cancellationToken)
         {
             var definitionUpdate = new FieldDefinitionBaseData
             {
                 AcceptedValues = acceptedValues.ToArray()
             };
-            await m_DataSource.UpdateFieldDefinitionAsync(Descriptor, definitionUpdate, cancellationToken);
-            if (cancellationToken.IsCancellationRequested) return;
-            await RefreshAsync(cancellationToken);
+            return m_DataSource.UpdateFieldDefinitionAsync(Descriptor, definitionUpdate, cancellationToken);
         }
 
         /// <inheritdoc/>
-        public async Task AddSelectionValuesAsync(IEnumerable<string> acceptedValues, CancellationToken cancellationToken)
+        public Task AddSelectionValuesAsync(IEnumerable<string> acceptedValues, CancellationToken cancellationToken)
         {
-            await m_DataSource.AddAcceptedValuesToFieldDefinitionAsync(Descriptor, acceptedValues, cancellationToken);
-            if (cancellationToken.IsCancellationRequested) return;
-            await RefreshAsync(cancellationToken);
+            return m_DataSource.AddAcceptedValuesToFieldDefinitionAsync(Descriptor, acceptedValues, cancellationToken);
         }
 
         /// <inheritdoc/>
-        public async Task RemoveSelectionValuesAsync(IEnumerable<string> acceptedValues, CancellationToken cancellationToken)
+        public Task RemoveSelectionValuesAsync(IEnumerable<string> acceptedValues, CancellationToken cancellationToken)
         {
-            await m_DataSource.RemoveAcceptedValuesFromFieldDefinitionAsync(Descriptor, acceptedValues, cancellationToken);
-            if (cancellationToken.IsCancellationRequested) return;
-            await RefreshAsync(cancellationToken);
+            return m_DataSource.RemoveAcceptedValuesFromFieldDefinitionAsync(Descriptor, acceptedValues, cancellationToken);
         }
     }
 }

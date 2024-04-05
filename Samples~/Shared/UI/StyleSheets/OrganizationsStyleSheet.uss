@@ -1,37 +1,39 @@
-.unity-base-popup-field__text {
-    font-size: 16px;
+.unity-base-popup-field__label {
+    color: rgba(255, 255, 255, 0.45);
+    font-size: 12px;
+    -unity-text-align: upper-right;
 }
 
-.unity-base-field {
-    font-size: 14px;
-    color: rgb(210, 210, 210);
-    flex-direction: column;
-    border-top-left-radius: 5px;
-    border-bottom-left-radius: 5px;
-    border-top-right-radius: 5px;
-    border-bottom-right-radius: 5px;
-}
-
-.unity-base-field__input {
+.unity-base-popup-field__input {
     color: rgba(255, 255, 255, 0.82);
     border-color: rgb(0, 0, 0);
-    padding-left: 0;
     font-size: 14px;
-    margin-top: -18px;
     background-color: rgba(0, 0, 0, 0);
     border-left-color: rgba(0, 0, 0, 0);
     border-right-color: rgba(0, 0, 0, 0);
     border-top-color: rgba(0, 0, 0, 0);
     border-bottom-color: rgba(0, 0, 0, 0);
+    margin-top: -12px;
+    margin-right: 0;
+    margin-bottom: 0;
+    margin-left: 0;
+    padding-top: 8px;
+    padding-right: 8px;
+    padding-bottom: 8px;
+    padding-left: 8px;
+    overflow: visible;
 }
 
-.unity-base-field__label {
-    color: rgba(255, 255, 255, 0.45);
-    font-size: 12px;
+.unity-base-popup-field__text {
+    font-size: 16px;
+    margin-right: 8px;
+    overflow: visible;
+    -unity-text-align: upper-right;
+    padding-left: 60px;
 }
 
 .unity-base-popup-field__arrow {
-    background-image: url('../Sprites/sync.png?fileID=21300000&guid=5b20410bf69384410a683e2228a9d6de&type=3#sync');
+    background-image: url('project://database/Packages/com.unity.cloud.assets/Samples/Shared/UI/Sprites/sync.png?fileID=21300000&guid=5b20410bf69384410a683e2228a9d6de&type=3#sync');
     width: 24px;
     height: 100%;
     -unity-background-image-tint-color: rgba(255, 255, 255, 0.45);

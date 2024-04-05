@@ -67,14 +67,10 @@ To create UI for displaying asset collections, follow these steps:
 
 6. Open the `AssetManagementUI` script you created and replace the contents of the `Awake` function with the following code:
 
-```cs
-   m_UI.Add(new OrganizationSelectionExampleUI(m_Behaviour));
-   m_UI.Add(new ProjectSelectionExampleUI(m_Behaviour));
-   m_UI.Add(new AssetSelectionExampleUI(m_Behaviour));
-   m_UI.Add(new UseCaseAssetCollectionExampleUI(m_Behaviour));
-```
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseSetupExamples.cs#UseCaseAssetCollections)
 
 The code snippet displays the following UI elements:
 
+* A UI button to refresh the selected asset's collections.
 * A list of the selected asset's collections.
 * A UI button beside each collection to remove the selected asset from it.

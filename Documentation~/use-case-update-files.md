@@ -1,4 +1,4 @@
-# Use case: Manage an asset's files
+# Use case: Update an asset's files
 
 You can use the Unity Cloud Assets package to edit file metadata and download file content.
 
@@ -55,6 +55,11 @@ The code snippet does the following:
 
 ### Update a file
 
+The properties of the file that can be updated are the following:
+
+* Description
+* Tags
+
 To update a file, follow these steps:
 
 1. Open the `AssetManagementBehaviour` script you created.
@@ -64,13 +69,37 @@ To update a file, follow these steps:
 
 The code snippet does the following:
 
-* Increments the index in the name of the file.
+* Updates the file with new data.
 * Prints a message to the console on success.
 
 ### Delete a file
 
 Deleting a file involves removing all references to the file from the asset.
 For more information see the use case for [Removing a file reference from a dataset](use-case-create-files.md#remove-a-file-reference-from-a-dataset).
+
+### Generating tags for a file
+
+The service can generate a list of suggested tags for any image files in the following supported formats:
+
+* JPEG
+* PNG
+* GIF
+* TIFF
+* WebP
+
+The desired tags can then be added to the file through the update method.
+
+To generate tags for a file, follow these steps:
+
+1. Open the `AssetManagementBehaviour` script you created.
+2. Add the following code to the end of the class:
+
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseFileManagementExample.cs#Example_Behaviour_GenerateFileTags)]
+
+The code snippet does the following:
+
+* Returns a list of generated tags for the file.
+* Prints any errors to the console.
 
 ### Add the UI for interacting with files
 
@@ -89,17 +118,13 @@ To create UI for interacting with files, follow these steps:
 
 6. Open the `AssetManagementUI` script you created and replace the contents of the `Awake` function with the following code:
 
-```cs
-   m_UI.Add(new OrganizationSelectionExampleUI(m_Behaviour));
-   m_UI.Add(new ProjectSelectionExampleUI(m_Behaviour));
-   m_UI.Add(new AssetSelectionExampleUI(m_Behaviour));
-   m_UI.Add(new UseCaseFileManagementExampleUI(m_Behaviour));
-```
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseSetupExamples.cs#UseCaseFileManagement)
 
 The code snippet does the following:
 
 * Displays a button to force refresh the list of files of the selected asset.
-* Displays each file of the selected asset with a UI buttons to update and download.
+* Displays each file of the selected asset with a UI buttons to select and download.
+* When a file is selected, displays a UI to generate tags and update the file's description and tags.
 
 ## Going further
 

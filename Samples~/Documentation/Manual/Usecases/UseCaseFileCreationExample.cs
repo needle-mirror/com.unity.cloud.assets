@@ -109,10 +109,14 @@ namespace Unity.Cloud.Documentation.Assets
 
             GUILayout.Space(5f);
 
-            if (GUILayout.Button("Create new asset file"))
+#if UNITY_EDITOR
+            if (GUILayout.Button("Upload new file"))
             {
-                _ = m_Behaviour.UploadAssetFile(dataset);
+                var filePath = UnityEditor.EditorUtility.OpenFilePanel("File to upload", "Assets", string.Empty);
+                if (!string.IsNullOrEmpty(filePath))
+                    _ = m_Behaviour.UploadFile(dataset, filePath);
             }
+#endif
 
             GUI.enabled = m_SelectedDataset == null;
             if (GUILayout.Button("Link asset file"))
@@ -141,12 +145,12 @@ namespace Unity.Cloud.Documentation.Assets
 
                 foreach (var file in files)
                 {
-                    DisplayAssetFile(dataset, file);
+                    DisplayFile(dataset, file);
                 }
             }
         }
 
-        void DisplayAssetFile(IDataset dataset, IFile file)
+        void DisplayFile(IDataset dataset, IFile file)
         {
             GUILayout.BeginHorizontal();
 
@@ -258,11 +262,6 @@ namespace Unity.Cloud.Documentation.Assets
 
         #region Example_Behaviour_UploadAssetFile
 
-        static readonly byte[] s_Bytes = new byte[]
-        {
-            100, 100, 100, 100, 100, 100, 100, 100, 100, 100
-        };
-
         class LogProgress : IProgress<HttpProgress>
         {
             public void Report(HttpProgress value)
@@ -273,23 +272,21 @@ namespace Unity.Cloud.Documentation.Assets
             }
         }
 
-        public async Task UploadAssetFile(IDataset dataset)
+        public async Task UploadFile(IDataset dataset, string filePath)
         {
-            var fileCreation = new FileCreation
+            var fileCreation = new FileCreation(Path.GetFileName(filePath))
             {
-                Path = $@"files/file_{DateTime.Now:MM-dd_HH-mm-ss}",
                 Description = "Documentation example asset file creation.",
                 Tags = new List<string> {"Texture", "Gray"}
             };
-
-            var contentStream = new MemoryStream(s_Bytes);
 
             var cancellationTokenSrc = new CancellationTokenSource();
             try
             {
                 var progress = new LogProgress();
 
-                var file = await dataset.UploadFileAsync(fileCreation, contentStream, progress, cancellationTokenSrc.Token);
+                var fileStream = File.OpenRead(filePath);
+                var file = await dataset.UploadFileAsync(fileCreation, fileStream, progress, cancellationTokenSrc.Token);
                 Files.Add(file);
 
                 Debug.Log($"Asset file upload: {file.Descriptor.Path} added and uploaded.");

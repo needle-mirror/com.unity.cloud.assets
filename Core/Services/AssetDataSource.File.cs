@@ -64,11 +64,16 @@ namespace Unity.Cloud.Assets
         }
 
         /// <inheritdoc />
-        public async Task<Uri> GetFileDownloadUrlAsync(FileDescriptor fileDescriptor, IFileData fileData, CancellationToken cancellationToken)
+        public async Task<Uri> GetFileDownloadUrlAsync(FileDescriptor fileDescriptor, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var request = GetFileUrlRequest(fileDescriptor, "download", null);
+            var request = new GetFileDownloadUrlRequest(fileDescriptor.ProjectId,
+                fileDescriptor.AssetId,
+                fileDescriptor.AssetVersion,
+                fileDescriptor.DatasetId,
+                fileDescriptor.Path,
+                null);
             var response = await m_ServiceHttpClient.GetAsync(GetPublicRequestUri(request),
                 ServiceHttpClientOptions.Default(), cancellationToken);
 
@@ -85,7 +90,12 @@ namespace Unity.Cloud.Assets
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var request = GetFileUrlRequest(fileDescriptor, "upload", fileData);
+            var request = new GetFileUploadUrlRequest(fileDescriptor.ProjectId,
+                fileDescriptor.AssetId,
+                fileDescriptor.AssetVersion,
+                fileDescriptor.DatasetId,
+                fileDescriptor.Path,
+                fileData);
             var response = await m_ServiceHttpClient.GetAsync(GetPublicRequestUri(request),
                 ServiceHttpClientOptions.Default(), cancellationToken);
 
@@ -141,15 +151,6 @@ namespace Unity.Cloud.Assets
                 keys);
             return m_ServiceHttpClient.DeleteAsync(GetPublicRequestUri(request), request.ConstructBody(),
                 ServiceHttpClientOptions.Default(), cancellationToken);
-        }
-
-        static GetFileUrlRequest GetFileUrlRequest(FileDescriptor fileDescriptor, string urlType, IFileData fileData)
-        {
-            return new GetFileUrlRequest(fileDescriptor.ProjectId,
-                fileDescriptor.AssetId,
-                fileDescriptor.AssetVersion,
-                fileDescriptor.DatasetId,
-                fileDescriptor.Path, urlType, fileData);
         }
     }
 }

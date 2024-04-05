@@ -92,5 +92,31 @@ namespace Unity.Cloud.Assets
         /// <see langword="false"/> if both instances are the same.
         /// </returns>
         public static bool operator !=(FieldDefinitionDescriptor left, FieldDefinitionDescriptor right) => !left.Equals(right);
+
+        /// <summary>
+        /// Serializes the <see cref="FieldDefinitionDescriptor"/> into a JSON string.
+        /// </summary>
+        /// <returns>A <see cref="FieldDefinitionDescriptor"/> serialized as a JSON string. </returns>
+        public string ToJson()
+        {
+            return JsonSerialization.Serialize(new FieldDefinitionDescriptorDto
+            {
+                OrganizationId = OrganizationId.ToString(),
+                FieldKey = FieldKey
+            });
+        }
+
+        /// <summary>
+        /// Deserializes the given JSON string into a <see cref="FieldDefinitionDescriptor"/> object.
+        /// </summary>
+        /// <param name="json">A <see cref="FieldDefinitionDescriptor"/> serialized as a JSON string. </param>
+        /// <returns>A <see cref="FieldDefinitionDescriptor"/>. </returns>
+        public static FieldDefinitionDescriptor FromJson(string json)
+        {
+            var dto = JsonSerialization.Deserialize<FieldDefinitionDescriptorDto>(json);
+            return new FieldDefinitionDescriptor(
+                new OrganizationId(dto.OrganizationId),
+                dto.FieldKey);
+        }
     }
 }

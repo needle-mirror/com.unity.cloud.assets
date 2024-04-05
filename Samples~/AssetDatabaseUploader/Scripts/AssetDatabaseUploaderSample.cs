@@ -28,7 +28,7 @@ namespace Unity.Cloud.Assets.Samples.AssetDatabaseUploader
         {
             if (!AssetsEditorServices.IsInitialized)
             {
-                await AssetsEditorServices.Create(false);
+                await AssetsEditorServices.Create();
             }
 
             if (m_OrgAndProjectSelector)

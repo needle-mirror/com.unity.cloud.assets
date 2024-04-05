@@ -71,11 +71,6 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
                 m_ExpandButtons.Remove(expandButton);
             }
 
-            protected override bool AreEqual(IAsset item1, IAsset item2)
-            {
-                return item1.Descriptor.Equals(item2.Descriptor);
-            }
-
             public void SetSelection(IAsset asset)
             {
                 m_ListView.SetSelection(m_List.FindIndex(a => a.Descriptor.Equals(asset.Descriptor)));

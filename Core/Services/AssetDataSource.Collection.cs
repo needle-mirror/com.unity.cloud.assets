@@ -89,7 +89,7 @@ namespace Unity.Cloud.Assets
         public Task UpdateCollectionAsync(CollectionDescriptor collectionDescriptor, IAssetCollectionData assetCollection, CancellationToken cancellationToken)
         {
             var request = new CollectionRequest(collectionDescriptor.ProjectId, collectionDescriptor.Path, assetCollection);
-            return m_ServiceHttpClient.PutAsync(GetPublicRequestUri(request), request.ConstructBody(),
+            return m_ServiceHttpClient.PatchAsync(GetPublicRequestUri(request), request.ConstructBody(),
                 ServiceHttpClientOptions.Default(), cancellationToken);
         }
 

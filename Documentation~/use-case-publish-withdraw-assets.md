@@ -64,11 +64,6 @@ To create UI for updating the status of assets, follow these steps:
 
 6. Open the `AssetManagementUI` script you created and replace the contents of the `Awake` function with the following code:
 
-```cs
-   m_UI.Add(new OrganizationSelectionExampleUI(m_Behaviour));
-   m_UI.Add(new ProjectSelectionExampleUI(m_Behaviour));
-   m_UI.Add(new AssetSelectionExampleUI(m_Behaviour));
-   m_UI.Add(new UseCasePublishWithdrawAssetExampleUI(m_Behaviour));
-```
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseSetupExamples.cs#UseCasePublishWithdrawAsset)
 
-The code snippet provides UI buttons to trigger the publish or the withdraw of a new asset.
+The code snippet provides UI buttons to publish or withdraw an asset.

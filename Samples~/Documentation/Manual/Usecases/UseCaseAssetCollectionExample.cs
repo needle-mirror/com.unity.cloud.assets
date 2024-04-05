@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-
 namespace Unity.Cloud.Documentation.Assets
 {
 #pragma warning disable S4487 // Unread "private" fields should be removed
@@ -8,6 +5,8 @@ namespace Unity.Cloud.Documentation.Assets
 
     #region Example_UIClass
 
+    using System;
+    using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
     using Unity.Cloud.Assets;
@@ -67,16 +66,12 @@ namespace Unity.Cloud.Documentation.Assets
             }
 
             GUILayout.Label("Collections:");
-            if (m_Behaviour.CurrentAsset != null)
+            if (m_Behaviour.Collections != null)
             {
                 foreach (var collection in m_Behaviour.Collections)
                 {
                     DisplayAssetCollections(collection);
                 }
-            }
-            else
-            {
-                GUILayout.Label(" ! No asset selected !");
             }
 
             GUILayout.EndVertical();
@@ -114,13 +109,15 @@ namespace Unity.Cloud.Documentation.Assets
 
         #region Example_Behaviour_RefreshCollections
 
-        public IEnumerable<CollectionPath> Collections { get; private set; }
+        public IEnumerable<CollectionPath> Collections { get; private set; } = Array.Empty<CollectionPath>();
 
         public async Task RefreshAssetCollections()
         {
+            Collections = Array.Empty<CollectionPath>();
+
             var collectionsAsync = CurrentAsset.ListLinkedAssetCollectionsAsync(Range.All, CancellationToken.None);
             var collections = new List<CollectionPath>();
-            await foreach(var collection in collectionsAsync)
+            await foreach (var collection in collectionsAsync)
             {
                 collections.Add(collection.Path);
             }

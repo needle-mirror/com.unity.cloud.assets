@@ -42,7 +42,7 @@ namespace Unity.Cloud.Assets.Samples.MetadataManagement
             }
         }
 
-        public IEnumerable<IFieldDefinition> FieldDefinitions => m_Entries;
+        public IEnumerable<IFieldDefinition> FieldDefinitions => m_ListController.AllItems;
 
         public Func<IFieldDefinition, bool> Filter { get; set; }
 
@@ -65,11 +65,12 @@ namespace Unity.Cloud.Assets.Samples.MetadataManagement
 
         public void Populate()
         {
-            var filteredList = (Filter == null ? m_FieldDefinitions : m_FieldDefinitions.Where(Filter)).ToArray();
             m_ListController.ClearList();
-            UpdateList(filteredList);
 
-            if (m_SelectedFieldDefinition != null && filteredList.All(x => x.Descriptor.FieldKey != m_SelectedFieldDefinition.Descriptor.FieldKey))
+            m_ListController.ApplyFilter(Filter);
+            UpdateList(m_FieldDefinitions);
+
+            if (m_SelectedFieldDefinition != null && Filter != null && !Filter(m_SelectedFieldDefinition))
             {
                 SelectedFieldDefinition = null;
             }

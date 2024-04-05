@@ -1,10 +1,6 @@
 ﻿#if UNITY_EDITOR
-#if !USE_UIELEMENTS
-#error Missing dependency to com.unity.modules.uielements
-#else
 
 using UnityEditor;
-using UnityEditor.UIElements;
 using UnityEngine.UIElements;
 
 namespace Unity.Cloud.Assets.Samples.AssetDatabaseUploader.Editor
@@ -35,8 +31,10 @@ namespace Unity.Cloud.Assets.Samples.AssetDatabaseUploader.Editor
 
         void DrawUI()
         {
-            var localAssetSourcePath = new TextField("Local Assets path");
-            localAssetSourcePath.value = m_AssetsUploader.AssetsSourcePath;
+            var localAssetSourcePath = new TextField("Local Assets path: Assets/")
+            {
+                value = m_AssetsUploader.AssetsSourcePath
+            };
             localAssetSourcePath.RegisterValueChangedCallback(evt =>
             {
                 m_AssetsUploader.AssetsSourcePath = evt.newValue;
@@ -67,7 +65,7 @@ namespace Unity.Cloud.Assets.Samples.AssetDatabaseUploader.Editor
 
         void DrawKnownAssetSubSection(bool clear)
         {
-            if(clear && m_CloudKnownAssetsSubSection != null)
+            if (clear && m_CloudKnownAssetsSubSection != null)
                 m_CloudKnownAssetsSubSection.Clear();
 
             m_CloudKnownAssetsSubSection ??= new VisualElement();
@@ -83,7 +81,7 @@ namespace Unity.Cloud.Assets.Samples.AssetDatabaseUploader.Editor
                 var assetsListView = new ListView(m_AssetsUploader.Assets, 20, () => new Label(), (element, index) =>
                 {
                     var asset = m_AssetsUploader.Assets[index];
-                    (element as Label).text = asset.Name;
+                    (element as Label)!.text = asset.Name;
                 });
 
                 m_CloudKnownAssetsSubSection.Add(assetsListView);
@@ -245,5 +243,4 @@ namespace Unity.Cloud.Assets.Samples.AssetDatabaseUploader.Editor
         }
     }
 }
-#endif
 #endif

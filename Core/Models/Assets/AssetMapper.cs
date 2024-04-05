@@ -7,9 +7,12 @@ namespace Unity.Cloud.Assets
 {
     static partial class EntityMapper
     {
-        internal static void MapFrom(this Asset asset, IAssetDataSource assetDataSource, IAssetData assetData, FieldsFilter includeFields)
+        internal static void MapFrom(this Asset asset, IAssetDataSource assetDataSource, OrganizationId organizationId, IAssetData assetData, FieldsFilter includeFields)
         {
             includeFields ??= new FieldsFilter();
+
+            asset.m_LinkedProjects = assetData.LinkedProjectIds?.Select(projectId => new ProjectDescriptor(organizationId, projectId)).ToArray() ?? Array.Empty<ProjectDescriptor>();
+            asset.SourceProject = new ProjectDescriptor(organizationId, assetData.SourceProjectId);
 
             asset.Name = assetData.Name;
             asset.Tags = assetData.Tags ?? Array.Empty<string>();
@@ -99,15 +102,15 @@ namespace Unity.Cloud.Assets
 
         internal static Asset From(this IAssetData data, IAssetDataSource assetDataSource, AssetDescriptor assetDescriptor, FieldsFilter includeFields)
         {
-            var asset = new Asset(assetDataSource, assetDescriptor, data.SourceProjectId, data.LinkedProjectIds);
-            asset.MapFrom(assetDataSource, data, includeFields);
+            var asset = new Asset(assetDataSource, assetDescriptor);
+            asset.MapFrom(assetDataSource, assetDescriptor.OrganizationId, data, includeFields);
             return asset;
         }
 
         internal static IAsset From(this AssetDataWithIdentifiers data, IAssetDataSource dataSource, FieldsFilter includeFields)
         {
-            var assetVersionDescriptor = data.Identifier.From();
-            return data.Data.From(dataSource, assetVersionDescriptor, includeFields);
+            var assetDescriptor = string.IsNullOrEmpty(data.Descriptor) ? data.Identifier.From() : AssetDescriptor.FromJson(data.Descriptor);
+            return data.Data.From(dataSource, assetDescriptor, includeFields);
         }
 
         internal static AssetDescriptor From(this AssetIdentifier ids)

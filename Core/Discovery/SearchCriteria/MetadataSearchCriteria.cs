@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace Unity.Cloud.Assets
@@ -63,7 +64,7 @@ namespace Unity.Cloud.Assets
             {
                 m_Included[metadataFieldKey] = StringSearchCriteria.BuildPrefixQuery(value);
             }
-            else if (value.Contains(StringSearchCriteria.k_WildcardChar))
+            else if (StringSearchCriteria.k_WildcardChars.Any(value.Contains))
             {
                 m_Included[metadataFieldKey] = StringSearchCriteria.BuildWildcardQuery(value);
             }

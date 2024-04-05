@@ -152,6 +152,7 @@ namespace Unity.Cloud.Assets
                 Name = assetCreation.Name,
                 Description = assetCreation.Description,
                 Type = assetCreation.Type,
+                Status = "Draft",
                 Datasets = createdAsset.Datasets,
             };
         }
@@ -165,11 +166,11 @@ namespace Unity.Cloud.Assets
         }
 
         /// <inheritdoc />
-        public async Task<IEnumerable<AssetDownloadUrl>> GetAssetDownloadUrlsAsync(AssetDescriptor assetDescriptor, CancellationToken cancellationToken)
+        public async Task<IEnumerable<AssetDownloadUrl>> GetAssetDownloadUrlsAsync(AssetDescriptor assetDescriptor, DatasetId[] datasetIds, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var request = new GetAssetDownloadUrlsRequest(assetDescriptor.ProjectId, assetDescriptor.AssetId, assetDescriptor.AssetVersion);
+            var request = new GetAssetDownloadUrlsRequest(assetDescriptor.ProjectId, assetDescriptor.AssetId, assetDescriptor.AssetVersion, datasetIds, null);
             var response = await m_ServiceHttpClient.GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(),
                 cancellationToken);
 
@@ -330,10 +331,10 @@ namespace Unity.Cloud.Assets
 
             var source = await response.Content.ReadAsStreamAsync();
 
+            cancellationToken.ThrowIfCancellationRequested();
+
             try
             {
-                cancellationToken.ThrowIfCancellationRequested();
-
                 await source.CopyToAsync(destinationStream, cancellationToken);
             }
             catch (Exception e)

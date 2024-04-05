@@ -22,20 +22,18 @@ You can create a new search filter by instantiating the `AssetSearchFilter` clas
 
 [!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseSearchAssetsExample.cs#Example_Constructor)]
 
-Each searchable property provides 3 avenues for searching:
+The filter provides 3 methods for searching assets:
 
-- `Include` - The property must match the value exactly.
-- `Exclude` - The property must not match the value.
-- `Any` - The property may contain the value. This represents an `OR` operation to be applied on all properties that include the `Any` value.
+- `Include()` - The properties added here must match the value.
+- `Exclude()` - The properties added here must not match the value.
+- `Any()` - The properties added here may match the value. This represents an `OR` operation to be applied on all properties added via the `Any()` method.
 
-To compute the search results, you can use the `SearchAssetsAsync` method of an `IAssetProject`, like so:
+To compute the search results, you can use the `QueryAssets` method of an `IAssetProject`, like so:
 
 [!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseSearchAssetsExample.cs#Example_Search)]
 
-The `Pagination` struct is used to control the range of results to be returned and the ordering of results.
-
-In this example, the first 10 results displayed are sorted by the asset name in ascending order.
-The `Search` method returns an awaitable `IAsyncEnumerable` that will return each `IAsset` result.
+In this example, only the first 10 results will be returned and are sorted by the asset name in ascending order.
+The execution of the query returns an awaitable `IAsyncEnumerable` that will return each `IAsset` result.
 
 The results can be iterated over using a `foreach` loop and used as they become available, like so:
 
@@ -47,7 +45,7 @@ Alternatively, the results can be iterated over and compiled into a list, so tha
 
 #### Search by Name
 
-* You can search for assets by name using the `Name` property of the `AssetSearchFilter` class, like so:
+* You can search for assets by name using the `Name` property of the `AssetSearchFilter.Include()`, like so:
 
 [!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseSearchAssetsExample.cs#Example_NameInclude)]
 

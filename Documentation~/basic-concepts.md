@@ -21,18 +21,22 @@ A dataset is a set of files and metadata that are uploaded to an asset on the As
 
 An asset is a collection of one or several datasets and metadata uploaded to the Asset Manager.
 
-* An asset is always part of at least one project. 
+* An asset is always part of at least one project.
 * An asset can be linked to multiple projects. They can optionally be part of a collection.
 
 ## Projects
 
-Asset Projects are where Organizations can add assets, collections and users, as well as assign roles to users.
-
-Asset Projects are Unity Cloud Projects with the Asset Manager enabled.
+Asset Projects are Unity Cloud Projects with the Asset Manager enabled. In Asset Manager Projects members of an Organization can add assets, collections, and users. They can also assign roles to users.  
 
 ## Collections
 
-Within a project, assets can be linked to one or more collections. For information, see [the use case on collection ](use-case-manage-collections.md).
+Within a project, assets can be linked to one or more collections. For information, see [the use case on collection](use-case-manage-collections.md).
+
+## Metadata
+
+Metadata exposes additional information about an asset, dataset, or file.
+Metadata keys are defined in an organization's library; to manage these keys, see [Manage the field definitions in an organization](use-case-manage-fields.md).
+Once keys have been created within an organization, they can be used to populate the metadata of assets, datasets, and files, see [Add or update an asset's metadata entries](use-case-manage-asset-metadata.md).
 
 ## Additional resources
 
@@ -42,4 +46,5 @@ Within a project, assets can be linked to one or more collections. For informati
   * searching asset across project see the [Search across projects use case](use-case-search-across-projects-assets.md).
   * finding and downloading published assets in your Projects, see the [Asset Discovery Sample](./asset-discovery-sample.md)
   * creating, viewing, and editing assets, see the [Asset Management Sample](./asset-management-sample.md).
-* Unity Cloud Assets samples rely on functionality in the Unity Identity and Access Management SDK. For more information, see [Identity package for user login](https://docs.unity3d.com/Packages/com.unity.cloud.identity@latest).
+
+Unity Cloud Assets samples rely on functionality in the Unity Identity and Access Management SDK. For more information, see [Identity package for user login](https://docs.unity3d.com/Packages/com.unity.cloud.identity@latest).

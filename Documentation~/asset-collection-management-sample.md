@@ -34,7 +34,7 @@ To install the sample, follow these steps:
 
    <img alt="Screenshot of the samples import section of the package manager window" height="64" src="images/sample-import-collection-management.png"/>
 
-After the import process is complete, you can view your imported assets under the `Assets/Samples/Unity Cloud Assets` folder.
+4. After the import process completes, you can view the sample under the `Assets/Samples/Unity Cloud Assets` folder.
 
   <img alt="Screenshot of the imported sample" height="256" src="images/tac-sample-collections-scene.png"/>
 
@@ -140,9 +140,9 @@ The `PlatformServices` class has two accompanying classes called `PlatformServic
 
 ### Project controller script
 
-The `ProjectController` class inherits from the `OrganizationController` class which makes it so you can sign into your application and uses your ID to grant access to the Collection Management sample. For more information on authentication, see the **Get user information** use case in the  [Identity package documentation](https://docs.unity3d.com/Packages/com.unity.cloud.identity@latest).
+The `ProjectController` class inherits from the `OrganizationController` class which enables signing into your application and uses your ID to grant access to the Collection Management sample. For more information on authentication, see the **Get user information** use case in the  [Identity package documentation](https://docs.unity3d.com/Packages/com.unity.cloud.identity@latest).
 The `ProjectController` class uses the `IOrganizationRepository` of the `PlatformServices` to retrieve the list of organizations you have access to.
-The `ProjectController` class also uses the `IAssetRepository` of the `PlatformServices` to retrieve the list of projects you have access to for the selected organization.
+The `ProjectController` class uses the `IAssetRepository` of the `PlatformServices` to retrieve the list of projects you have access to for the selected organization.
 
 To open the project controller script, go to your `Assets/Samples/Unity Cloud Assets/<package-version>/Shared/Scripts/Controllers/ProjectController.cs` file.
 

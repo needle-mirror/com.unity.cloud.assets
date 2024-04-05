@@ -5,6 +5,42 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2024-04-05
+
+### Added
+- `UserId` property in `TransformationSearchFilter`.
+- `GreaterThan` and `LessThanOrEqual` to `SearchConditionRange`.
+- `WithValueGreaterThan`, `WithValueGreaterThanOrEqualTo`, `WithValueLessThan`, and `WithValueLessThanOrEqualTo` to `ConditionalSearchCriteria`.
+- `GenerateTagsAsync` method to `IFile`.
+- Default constructor to `DatasetUpdate` class.
+- String search queries recognize '?' as wildcard character.
+- Memory warning popups in Discovery and Management samples.
+- Added Apple Privacy Manifest file to `/Plugins` directory.
+
+### Changed
+- Improved Discovery and Management samples search bar.
+- Improved samples' UI and cleaned up debug logs.
+- Updated use case documentation.
+- Modified the `LogLevel` for several log messages to reduce the default amount of logs in the console.
+- FieldDefinitions no longer auto-refresh properties on update; use `RefreshAsync`.
+- Reviewed manual documentation
+- Manual documentation code-snippets set to compile only in editor.
+- Documentation updates.
+- Updated deprecated endpoints.
+
+### Fixed
+- Bubbles up exceptions in `IFile.UploadAsync`.
+- Updated deprecated endpoints.
+- Upgrade to Common 1.1.0.
+
+### Removed
+- Removes `com.unity.editorcoroutines` dependency from package.
+
+### Deprecated
+- Deprecated `IAssetCollection.GetFullCollectionPath`; use `IAssetCollection.Descriptor.Path`.
+- Deprecated default constructor of `FileCreation` class; use `FileCreation(string path)`.
+- Deprecated `IAsset.SerializeIdentifiers` and `IAssetRepository.DeserializeAssetIdentifiers`; use `AssetDescriptor.ToJson` and `AssetDescriptor.FromJson` respectively.
+
 ## [1.0.0] - 2024-02-26
 
 ### Added

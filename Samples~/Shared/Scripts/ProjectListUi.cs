@@ -67,7 +67,7 @@ namespace Unity.Cloud.Assets.Samples
 
         public IEnumerable<IAssetProject> GetProjects()
         {
-            return m_Entries.OfType<IAssetProject>();
+            return m_ListController.AllItems.OfType<IAssetProject>();
         }
     }
 }

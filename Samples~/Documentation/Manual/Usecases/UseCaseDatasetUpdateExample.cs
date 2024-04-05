@@ -61,8 +61,6 @@ namespace Unity.Cloud.Documentation.Assets
                 return;
             }
 
-            GUILayout.BeginHorizontal();
-
             GUILayout.BeginVertical();
 
             if (GUILayout.Button("Refresh") || m_Behaviour.Datasets == null)
@@ -78,7 +76,6 @@ namespace Unity.Cloud.Documentation.Assets
             if (m_Behaviour.CurrentDataset == null)
             {
                 GUILayout.Label(" ! No dataset selected !");
-                GUILayout.EndHorizontal();
                 return;
             }
 
@@ -87,8 +84,6 @@ namespace Unity.Cloud.Documentation.Assets
             DisplayDataset();
 
             GUILayout.EndVertical();
-
-            GUILayout.EndHorizontal();
         }
 
         void DisplayDatasets(IReadOnlyList<IDataset> datasets)
@@ -137,8 +132,14 @@ namespace Unity.Cloud.Documentation.Assets
 
             if (GUILayout.Button("Update"))
             {
-                _ = m_Behaviour.UpdateDataset(m_DatasetUpdate);
+                _ = UpdateDataset();
             }
+        }
+
+        async Task UpdateDataset()
+        {
+            await m_Behaviour.UpdateDataset(m_DatasetUpdate);
+            m_DatasetUpdate = new DatasetUpdate(m_Behaviour.CurrentDataset);
         }
 
         #endregion

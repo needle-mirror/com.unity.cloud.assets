@@ -12,7 +12,7 @@ namespace Unity.Cloud.Assets.Samples.MetadataManagement
         readonly TextField m_NameInput;
         readonly TextField m_DisplayNameInput;
         readonly EnumField m_TypeInput;
-        readonly RadioButton m_MultiSelectionInput;
+        readonly Toggle m_MultiSelectionInput;
         readonly ListView m_AcceptedValuesInput;
         readonly List<string> m_AcceptedValues = new();
 
@@ -34,7 +34,7 @@ namespace Unity.Cloud.Assets.Samples.MetadataManagement
             m_TypeInput = m_PopupWindow.Q<EnumField>("Type");
             m_TypeInput.RegisterValueChangedCallback(evt => SetFieldDefinitionType(evt.newValue));
 
-            m_MultiSelectionInput = m_PopupWindow.Q<RadioButton>("Multiselection");
+            m_MultiSelectionInput = m_PopupWindow.Q<Toggle>("Multiselection");
 
             m_AcceptedValuesInput = m_PopupWindow.Q<ListView>("AcceptedValues");
             m_AcceptedValuesInput.itemsSource = m_AcceptedValues;

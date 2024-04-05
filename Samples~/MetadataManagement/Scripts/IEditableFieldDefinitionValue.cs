@@ -86,8 +86,6 @@ namespace Samples.MetadataManagement.Scripts
             m_EditableAcceptedValues.itemsSource = AcceptedValues;
             m_EditableAcceptedValues.Rebuild();
             m_EditableAcceptedValues.itemsAdded += OnItemsAdded;
-            m_EditableAcceptedValues.itemsRemoved += OnItemsRemoved;
-            m_EditableAcceptedValues.itemIndexChanged += OnItemIndexChanged;
         }
 
         public void SetEditable(bool editable)
@@ -119,23 +117,12 @@ namespace Samples.MetadataManagement.Scripts
             }
         }
 
-        void OnItemsRemoved(IEnumerable<int> obj)
-        {
-            Debug.LogWarning(string.Join(", ", AcceptedValues));
-        }
-
         void OnItemsAdded(IEnumerable<int> obj)
         {
             foreach (var index in obj)
             {
                 AcceptedValues[index] = string.Empty;
             }
-            Debug.LogWarning(string.Join(", ", AcceptedValues));
-        }
-
-        void OnItemIndexChanged(int arg1, int arg2)
-        {
-            Debug.LogWarning(string.Join(", ", AcceptedValues));
         }
     }
 }

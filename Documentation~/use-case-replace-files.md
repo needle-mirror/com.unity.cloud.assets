@@ -76,12 +76,7 @@ To create UI for re-uploading file content, follow these steps:
 
 6. Open the `AssetManagementUI` script you created and replace the contents of the `Awake` function with the following code:
 
-```cs
-   m_UI.Add(new OrganizationSelectionExampleUI(m_Behaviour));
-   m_UI.Add(new ProjectSelectionExampleUI(m_Behaviour));
-   m_UI.Add(new AssetSelectionExampleUI(m_Behaviour));
-   m_UI.Add(new UseCaseFileReuploadExampleUI(m_Behaviour));
-```
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseSetupExamples.cs#UseCaseReplaceFiles)
 
 The script does the following:
 

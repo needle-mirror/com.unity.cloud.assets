@@ -1,4 +1,4 @@
-# Use case: Create and upload files
+# Use case: Create and upload files to a dataset
 
 You can use the Unity Cloud Assets package to:
 
@@ -49,8 +49,9 @@ To upload a file to an asset's dataset, follow these steps:
 
 The code snippet does the following:
 
-* Creates a new definition for a file.
-* Uploads the file content to the cloud.
+* Displays a UI button for creating a new file.
+* When the button is clicked, a file dialog opens to select a file.
+* When a file is selected, a new file definition is created and the file content is uploaded.
 * Prints a progress log for the upload to the console.
 * Prints a message to the console when the upload is complete OR an error message if the upload fails.
 
@@ -99,17 +100,14 @@ To create UI for creating files, follow these steps:
 
 6. Open the `AssetManagementUI` script you created and replace the contents of the `Awake` function with the following code:
 
-```cs
-   m_UI.Add(new OrganizationSelectionExampleUI(m_Behaviour));
-   m_UI.Add(new ProjectSelectionExampleUI(m_Behaviour));
-   m_UI.Add(new AssetSelectionExampleUI(m_Behaviour));
-   m_UI.Add(new UseCaseFileCreationExampleUI(m_Behaviour));
-```
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseSetupExamples.cs#UseCaseCreateFiles)
 
 The code snippet does the following:
 
-* Provides UI buttons to trigger the creation of a new file on the asset.
-* Displays a list of created files and provides a UI button to upload the file content.
+* Provides a UI button to refresh the list of files within each dataset.
+* Provides UI buttons to trigger the creation of a new file within a dataset.
+* Provides a UI button to link an existing file to a dataset.
+* Provides a UI button for each existing file to unlink it from its dataset.
 
 ## Going further
 

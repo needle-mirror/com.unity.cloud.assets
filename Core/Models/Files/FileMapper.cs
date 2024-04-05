@@ -7,8 +7,10 @@ namespace Unity.Cloud.Assets
 {
     static partial class EntityMapper
     {
-        internal static void MapFrom(this FileEntity file, IAssetDataSource assetDataSource, IFileData fileData, FileFields includeFields)
+        internal static void MapFrom(this FileEntity file, IAssetDataSource assetDataSource, AssetDescriptor assetDescriptor, IFileData fileData, FileFields includeFields)
         {
+            file.m_LinkedDatasets = fileData.DatasetIds?.Select(id => new DatasetDescriptor(assetDescriptor, id)).ToArray() ?? Array.Empty<DatasetDescriptor>();
+
             file.Tags = fileData.Tags;
             file.SystemTags = fileData.SystemTags;
             file.Status = fileData.Status;
@@ -17,6 +19,7 @@ namespace Unity.Cloud.Assets
                 file.Description = fileData.Description ?? string.Empty;
             if (includeFields.HasFlag(FileFields.authoring))
                 file.AuthoringInfo = new AuthoringInfo(fileData.CreatedBy, fileData.Created, fileData.UpdatedBy, fileData.Updated);
+
             if (includeFields.HasFlag(FileFields.downloadUrl))
             {
                 if (Uri.TryCreate(fileData.DownloadUrl, UriKind.RelativeOrAbsolute, out var downloadUrl))
@@ -34,6 +37,7 @@ namespace Unity.Cloud.Assets
             {
                 file.IsDownloadable = fileData.Status == "Uploaded";
             }
+
             if (includeFields.HasFlag(FileFields.previewUrl))
             {
                 Uri.TryCreate(fileData.PreviewUrl, UriKind.RelativeOrAbsolute, out var previewUrl);
@@ -50,8 +54,8 @@ namespace Unity.Cloud.Assets
 
         internal static FileEntity From(this IFileData fileData, IAssetDataSource assetDataSource, FileDescriptor fileDescriptor, FileFields includeFields)
         {
-            var file = new FileEntity(assetDataSource, fileDescriptor, fileData.DatasetIds);
-            file.MapFrom(assetDataSource, fileData, includeFields);
+            var file = new FileEntity(assetDataSource, fileDescriptor);
+            file.MapFrom(assetDataSource, fileDescriptor.DatasetDescriptor.AssetDescriptor, fileData, includeFields);
             return file;
         }
 

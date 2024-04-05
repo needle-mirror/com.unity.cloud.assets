@@ -34,6 +34,7 @@ namespace Unity.Cloud.Assets
         /// Returns the full path to the collection.
         /// </summary>
         /// <returns>The path of the collection. </returns>
+        [Obsolete("Use Descriptor.Path instead.")]
         string GetFullCollectionPath();
 
         /// <summary>

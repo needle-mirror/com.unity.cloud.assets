@@ -44,7 +44,7 @@ namespace Unity.Cloud.Assets
     class SearchConditionValue
     {
         [DataMember(Name = "value")]
-        string ValueString => ValueToString();
+        internal string ValueString => ValueToString();
 
         [DataMember(Name = "conditionType")]
         public string Type { get; private set; }

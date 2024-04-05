@@ -1,6 +1,6 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
     <Style src="../StyleSheets/OrganizationsStyleSheet.uss?fileID=7433441132597879392&amp;guid=fa56df2968d0d43119d7eed582301ab4&amp;type=3#OrganizationsStyleSheet" />
-    <ui:VisualElement name="OrganizationsContainer">
-        <ui:DropdownField label="Organizations" name="OrganizationsDropdown" index="-1" />
+    <ui:VisualElement name="OrganizationsContainer" style="align-self: flex-end;">
+        <ui:DropdownField label="Organizations" name="OrganizationsDropdown" index="0" choices="Organization 1,Organization 2,Organization 3 with a really long name, Organization 4" style="flex-direction: column; overflow: visible;" />
     </ui:VisualElement>
 </ui:UXML>

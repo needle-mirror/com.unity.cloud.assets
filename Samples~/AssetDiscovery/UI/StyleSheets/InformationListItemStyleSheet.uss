@@ -1,4 +1,4 @@
-Label {
+#InformationValue Label {
     font-size: 14px;
     color: rgb(210, 210, 210);
 }
@@ -6,8 +6,4 @@ Label {
 #InformationValueLabel {
     white-space: normal;
     -unity-font-style: bold;
-}
-
-#ProjectListItemContainer {
-    margin: 5px;
 }

@@ -1,4 +1,5 @@
-﻿using Unity.Cloud.Common;
+﻿using System.Linq;
+using Unity.Cloud.Common;
 
 namespace Unity.Cloud.Assets
 {
@@ -14,10 +15,17 @@ namespace Unity.Cloud.Assets
         /// <param name="projectId">ID of the project.</param>
         /// <param name="assetId">The id of the asset the file is linked to.</param>
         /// <param name="assetVersion">The version of the asset the file is linked to.</param>
-        public GetAssetDownloadUrlsRequest(ProjectId projectId, AssetId assetId, AssetVersion assetVersion)
+        /// <param name="datasetIds">An optional collection of datasets with which to limit the search.</param>
+        /// <param name="maxDimension">The desired length to resize the larger image dimension to, while maintaining the same aspect ratio. </param>
+        public GetAssetDownloadUrlsRequest(ProjectId projectId, AssetId assetId, AssetVersion assetVersion, DatasetId[] datasetIds, int? maxDimension)
             : base(projectId, assetId, assetVersion)
         {
             m_RequestUrl += $"/download-urls";
+
+            if (datasetIds != null)
+                AddParamToQuery("datasets", datasetIds.Select(x => x.ToString()));
+            if (maxDimension.HasValue)
+                AddParamToQuery("maxDimension", maxDimension.Value.ToString());
         }
     }
 }

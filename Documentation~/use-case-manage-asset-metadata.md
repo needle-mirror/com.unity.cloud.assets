@@ -38,6 +38,9 @@ The code snippet populates a dictionary of metadata.
 
 ### Add or update entries in an asset's metadata
 
+> [!NOTE] The keys for metadata must already exist in your organization's library.
+> To add and remove metadata keys, see the [Manage the field definitions in an organization](use-case-manage-fields.md).
+
 To add or update an entry in the metadata of an asset, follow these steps:
 
 1. Open the `AssetManagementBehaviour` script you created.
@@ -103,12 +106,7 @@ To complete the UI, follow these steps:
 
 6. Open the `AssetManagementUI` script you created and replace the content of the `Awake` function with the following code:
 
-```cs
-   m_UI.Add(new OrganizationSelectionExampleUI(m_Behaviour));
-   m_UI.Add(new ProjectSelectionExampleUI(m_Behaviour));
-   m_UI.Add(new AssetSelectionExampleUI(m_Behaviour));
-   m_UI.Add(new UseCaseAssetMetadataExampleUI(m_Behaviour));
-```
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseSetupExamples.cs#UseCaseAssetMetadata)
 
 The code snippet displays the following UI elements:
 

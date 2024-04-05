@@ -63,6 +63,16 @@ namespace Unity.Cloud.Documentation.Assets
 
             GUILayout.BeginVertical();
 
+            GUILayout.BeginHorizontal();
+
+            m_NewDatasetName = GUILayout.TextField(m_NewDatasetName, GUILayout.MinWidth(100f));
+            if (GUILayout.Button("Create Dataset"))
+            {
+                _ = m_Behaviour.CreateDataset(m_NewDatasetName);
+            }
+
+            GUILayout.EndHorizontal();
+
             if (GUILayout.Button("Refresh") || m_Behaviour.Datasets == null)
             {
                 _ = m_Behaviour.GetDatasets();
@@ -71,14 +81,7 @@ namespace Unity.Cloud.Documentation.Assets
             GUILayout.Label("Asset datasets:");
             DisplayDatasets(m_Behaviour.Datasets?.ToArray() ?? Array.Empty<IDataset>());
 
-            GUILayout.BeginHorizontal();
-            m_NewDatasetName = GUILayout.TextField(m_NewDatasetName, GUILayout.MinWidth(100f));
-            if (GUILayout.Button("Create Dataset"))
-            {
-                _ = m_Behaviour.CreateDataset(m_NewDatasetName);
-            }
-
-            GUILayout.EndHorizontal();
+            GUILayout.FlexibleSpace();
 
             GUILayout.EndVertical();
         }
@@ -91,12 +94,12 @@ namespace Unity.Cloud.Documentation.Assets
             }
             else
             {
-                m_DatasetListScrollPosition = GUILayout.BeginScrollView(m_DatasetListScrollPosition, GUILayout.Height(Screen.height * 0.8f));
+                m_DatasetListScrollPosition = GUILayout.BeginScrollView(m_DatasetListScrollPosition);
 
                 for (var i = 0; i < datasets.Count; ++i)
                 {
                     var dataset = datasets[i];
-                    GUILayout.Label($"{dataset.Name}, {dataset.Status} - {(dataset.IsVisible ? "visible" : "hidden")}");
+                    GUILayout.Label($"{dataset.Name} ({dataset.Status})");
                 }
 
                 GUILayout.EndScrollView();

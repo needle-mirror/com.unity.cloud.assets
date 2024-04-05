@@ -8,7 +8,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using UnityEditor;
 using UnityEngine;
-using Range = System.Range;
 
 namespace Unity.Cloud.Assets.Samples.AssetDatabaseUploader
 {
@@ -242,13 +241,7 @@ namespace Unity.Cloud.Assets.Samples.AssetDatabaseUploader
         {
             assetPaths = null;
 
-            if (string.IsNullOrEmpty(m_AssetsSourcePath))
-            {
-                Debug.LogError("Assets to upload path is null or empty.");
-                return false;
-            }
-
-            var assetGuids = AssetDatabase.FindAssets("", new[] {m_AssetsSourcePath});
+            var assetGuids = AssetDatabase.FindAssets("", new[] {$"Assets/{m_AssetsSourcePath}"});
             if (assetGuids.Length == 0)
             {
                 Debug.Log("No assets found to create and upload.");
@@ -345,14 +338,14 @@ namespace Unity.Cloud.Assets.Samples.AssetDatabaseUploader
             {
                 var assetFileType = GetAssetType(assetPath);
 
-                var fileCreation = new FileCreation
+                var fileCreation = new FileCreation(filePath)
                 {
-                    Path = filePath,
                     Description = $"Uploaded using {nameof(AssetDatabaseUploaderSample)}",
                     Tags = GetAssetFileTags(assetFileType)
                 };
 
-                var fileStream = File.OpenRead(Application.dataPath + assetPath.Replace("Assets/", "/"));
+                // The file is uploaded from the Assets folder, so we need to remove the "Assets" part of the path.
+                var fileStream = File.OpenRead(Application.dataPath + assetPath[6..]);
 
                 file = await dataset.UploadFileAsync(fileCreation, fileStream, null, cancellationTokenSource.Token);
             }

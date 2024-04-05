@@ -47,7 +47,7 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
             }
         }
 
-        public IEnumerable<IAssetCollection> Collections => m_Entries;
+        public IEnumerable<IAssetCollection> Collections => m_ListController.AllItems;
 
         protected override string VisualElementName => "CollectionsPanel";
         protected override string EmptyListMessage => "No collections available.";
@@ -65,8 +65,8 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
 
             if (m_SelectedCollection != null)
             {
-                var collectionPath = m_SelectedCollection.GetFullCollectionPath();
-                if (collections.All(x => x.GetFullCollectionPath() != collectionPath))
+                var collectionPath = m_SelectedCollection.Descriptor.Path;
+                if (collections.All(x => x.Descriptor.Path != collectionPath))
                 {
                     SelectedCollection = null;
                 }

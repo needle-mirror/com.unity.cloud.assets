@@ -37,7 +37,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
         CancellationTokenSource m_GetDatasetsCancellationTokenSource;
 
-        public event Action<IDataset> OnDatasetOpen;
+        public event Action<IDataset, bool> OnDatasetOpen;
         public event Action<IAsset> OnAssetUpdated;
         public Func<Task> PrepareAssetUpdateAsync { get; set; }
 
@@ -61,8 +61,8 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             m_AssetStatusLastEditLabel = assetCreationPanel.Q<Label>("LastEditDate");
 
             var scrollView = m_RightPanel.Q<ScrollView>();
-            var content = m_RightPanel.Q("Content");
-            scrollView.Add(content);
+            scrollView.horizontalScrollerVisibility = ScrollerVisibility.Hidden;
+            scrollView.verticalScrollerVisibility = ScrollerVisibility.Hidden;
 
             m_AssetDescriptionField = assetCreationPanel.Q<TextField>("AssetDescriptionField");
             m_AssetTypeDropdown = assetCreationPanel.Q<EnumField>("AssetTypeDropdown");
@@ -119,18 +119,30 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
             m_AssetLastEdit?.Show();
 
+            var canUpdate = asset.Status == "Draft";
+
+            m_AssetPublishButton.SetEnabled(canUpdate);
+            m_AssetSaveButton.SetEnabled(canUpdate);
+            m_CreateDatasetButton.SetEnabled(canUpdate);
+            m_AssetTagsField.style.display = canUpdate ? DisplayStyle.Flex : DisplayStyle.None;
+
             m_AssetNameField.SetValueWithoutNotify(asset.Name);
+            m_AssetNameField.SetEnabled(canUpdate);
             m_AssetStatusLastEditLabel.text = asset.AuthoringInfo.Updated.ToString("MMM dd, yyyy h:mm tt GMT");
+            m_AssetStatusLastEditLabel.visible = true;
             m_AssetTypeDropdown.SetValueWithoutNotify(asset.Type);
+            m_AssetTypeDropdown.SetEnabled(canUpdate);
             m_AssetDescriptionField.SetValueWithoutNotify(asset.Description);
+            m_AssetDescriptionField.SetEnabled(canUpdate);
 
-            ((Action<string>) AddTag).AddTags(m_AssetUpdate.Tags);
+            Action<string> addTagAction = tag => AddTag(tag, canUpdate);
+            addTagAction.AddTags(m_AssetUpdate.Tags);
 
-            _ = ListDatasets(asset);
+            _ = ListDatasets(asset, canUpdate);
 
             UpdateStatus();
 
-            _ = m_MetadataController.PopulateMetadataAsync(asset);
+            _ = m_MetadataController.PopulateMetadataAsync(asset, canUpdate);
         }
 
         public void Clear()
@@ -140,7 +152,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             ClearAssetInformation();
         }
 
-        async Task ListDatasets(IAsset asset)
+        async Task ListDatasets(IAsset asset, bool canUpdate)
         {
             if (m_GetDatasetsCancellationTokenSource != null)
             {
@@ -152,18 +164,18 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
             await foreach (var dataset in asset.ListDatasetsAsync(Range.All, m_GetDatasetsCancellationTokenSource.Token))
             {
-                AddDatasetRow(dataset);
+                AddDatasetRow(dataset, canUpdate);
             }
         }
 
-        void AddDatasetRow(IDataset dataset)
+        void AddDatasetRow(IDataset dataset, bool canUpdate)
         {
             var datasetItem = m_DatasetListItemTemplate.Instantiate();
             datasetItem.Q<Label>("DatasetNameLabel").text = dataset.Name;
             datasetItem.Q<Label>("DatasetDescriptionLabel").text = dataset.Description;
             datasetItem.RegisterCallback<ClickEvent>(_ =>
             {
-                OnDatasetOpen?.Invoke(dataset);
+                OnDatasetOpen?.Invoke(dataset, canUpdate);
             });
             m_DatasetScrollView.Add(datasetItem);
         }
@@ -212,6 +224,8 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
                 if (updateTasks.TrueForAll(x => x.IsCompletedSuccessfully))
                     DialogService.ShowMessage("Success", "The asset has been saved successfully.");
 
+                await m_CurrentAsset.RefreshAsync(cancellationTokenSource.Token);
+
                 OnAssetUpdated?.Invoke(m_CurrentAsset);
             }
             catch (Exception e)
@@ -242,28 +256,25 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
             try
             {
-                var cancellationTokenSource = new CancellationTokenSource();
-
                 // Successful publishing workflow
                 //Draft -> Review -> Approved -> Published
                 switch (m_CurrentAsset.Status)
                 {
                     case "Draft":
-                        await m_CurrentAsset.UpdateStatusAsync(AssetStatusAction.SendForReview, cancellationTokenSource.Token);
-                        await m_CurrentAsset.UpdateStatusAsync(AssetStatusAction.Approve, cancellationTokenSource.Token);
-                        await m_CurrentAsset.UpdateStatusAsync(AssetStatusAction.Publish, cancellationTokenSource.Token);
+                        await m_CurrentAsset.UpdateStatusAsync(AssetStatusAction.SendForReview, CancellationToken.None);
+                        await m_CurrentAsset.UpdateStatusAsync(AssetStatusAction.Approve, CancellationToken.None);
+                        await m_CurrentAsset.UpdateStatusAsync(AssetStatusAction.Publish, CancellationToken.None);
                         break;
                     case "Ingestion": // Status when asset is in review
-                        await m_CurrentAsset.UpdateStatusAsync(AssetStatusAction.Approve, cancellationTokenSource.Token);
-                        await m_CurrentAsset.UpdateStatusAsync(AssetStatusAction.Publish, cancellationTokenSource.Token);
+                        await m_CurrentAsset.UpdateStatusAsync(AssetStatusAction.Approve, CancellationToken.None);
+                        await m_CurrentAsset.UpdateStatusAsync(AssetStatusAction.Publish, CancellationToken.None);
                         break;
                     case "Approved":
-                        await m_CurrentAsset.UpdateStatusAsync(AssetStatusAction.Publish, cancellationTokenSource.Token);
+                        await m_CurrentAsset.UpdateStatusAsync(AssetStatusAction.Publish, CancellationToken.None);
                         break;
                 }
 
-                // Asset will have refreshed after publishing
-                m_AssetUpdate = new AssetUpdate(m_CurrentAsset);
+                await m_CurrentAsset.RefreshAsync(CancellationToken.None);
 
                 OpenAsset(m_CurrentAsset);
                 OnAssetUpdated?.Invoke(m_CurrentAsset);
@@ -290,7 +301,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             var cancellationTokenSource = new CancellationTokenSource();
             var dataset = await m_CurrentAsset.CreateDatasetAsync(new DatasetCreation($"Dataset_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}"), cancellationTokenSource.Token);
             if (dataset != null)
-                AddDatasetRow(dataset);
+                AddDatasetRow(dataset, true);
         }
 
         void UpdateStatus()
@@ -340,12 +351,12 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
         void AddTags(FocusInEvent evt)
         {
-            m_AssetTagsField.ParseTags(m_AssetUpdate.Tags, AddTag);
+            m_AssetTagsField.ParseTags(m_AssetUpdate.Tags, tag =>  AddTag(tag, true));
         }
 
-        void AddTag(string tag)
+        void AddTag(string tag, bool canRemove)
         {
-            m_AssetTagsContainer.AddTag(tag, m_AssetUpdate.Tags, m_AssetTagsTemplate);
+            m_AssetTagsContainer.AddTag(tag, m_AssetUpdate.Tags, m_AssetTagsTemplate, canRemove);
         }
     }
 }

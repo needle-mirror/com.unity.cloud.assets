@@ -2,22 +2,23 @@
 
 Asset Manager is a Unity Cloud service that allows you to manage your assets in the cloud. You can use Assets SDK to:
 
-* Create an Asset Project
-* List your Assets from an Organization
-* Get the information of an Asset Project
-* Create, read, update, and delete:
-  * asset collections
+* Create and read an Asset Project.
+* Create, read, and update:
   * assets
-  * dataset
-* Get an asset
-* Search for assets
-* Aggregate assets based on a set of criteria
-* Create, read, update, delete, upload, and download files
-* Add and remove assets from collections
-* Link and unlink assets from Projects
+  * datasets
+  * files
+* Download files.
+* Create, read, update, and delete collections.
+* Search your Assets in an Asset Project or Organization based on a set of criteria.
+* Group and count Assets based on a set of criteria.
+* Link and unlink Assets from Projects.
+* Link and unlink Assets from Collections.
+* Start transformations on datasets.
+* Create, read, update and delete the Field Definitions of an Organization.
+* Add and remove the accepted values of Field Definitions of the `Selection` type.
 
 This section explains how to set up a basic scene and script to initialize and use the Unity Assets package with Asset Manager.
-It performs a basic search for all assets of the selected project and displays the results in a simple GUI. 
+It performs a basic search for all assets of the selected project and displays the results in a simple GUI.
 
 Before you begin, make sure you meet the [prerequisites](prerequisites.md).
 
@@ -189,7 +190,7 @@ To create a simple UI for CRUD operations on assets, do the following:
 
 The scripts do the following:
 
-* Provides a UI button to create a new asset.
+* Provide UI buttons to select an asset type and a UI button to create a new asset.
 * Provide UI to update the name, type and tags of the selected asset.
 
 ### Integrate the UI scripts

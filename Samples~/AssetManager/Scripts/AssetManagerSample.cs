@@ -214,16 +214,17 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             m_AssetController.OnAssetUpdated(asset);
         }
 
-        void OnDatasetPanelOpen(IDataset dataset)
+        void OnDatasetPanelOpen(IDataset dataset, bool canUpdate)
         {
             m_AssetPanel?.Hide();
             m_AssetCreationController.Hide();
-            m_DatasetPanelController.OpenDataset(dataset);
+            m_DatasetPanelController.OpenDataset(dataset, canUpdate);
             m_DatasetPanel?.Show();
         }
 
         void OnDatasetPanelClosed(IAsset asset)
         {
+            m_AssetCreationController.Hide();
             m_DatasetPanel?.Hide();
 
             if (asset != null)

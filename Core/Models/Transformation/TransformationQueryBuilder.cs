@@ -59,6 +59,7 @@ namespace Unity.Cloud.Assets
                 AssetVersion = m_SearchFilter.AssetVersion.GetValue() == AssetVersion.None ? null : m_SearchFilter.AssetVersion.GetValue().ToString(),
                 DatasetId = m_SearchFilter.DatasetId.GetValue() == DatasetId.None ? null : m_SearchFilter.DatasetId.GetValue().ToString(),
                 Status = m_SearchFilter.Status.GetValue() == null ? null : m_SearchFilter.Status.GetValue(),
+                UserId = m_SearchFilter.UserId.GetValue() == UserId.None ? null : m_SearchFilter.UserId.GetValue().ToString()
             };
 
             var (start, length) = m_Range.GetValidatedOffsetAndLength(int.MaxValue);

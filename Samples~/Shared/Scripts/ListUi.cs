@@ -17,8 +17,6 @@ namespace Unity.Cloud.Assets.Samples
         VisualElement m_DisplayMessageContainer;
         Label m_DisplayMessage;
 
-        protected List<U> m_Entries;
-
         protected readonly T m_ListController = new();
 
         protected abstract string VisualElementName { get; }
@@ -55,9 +53,9 @@ namespace Unity.Cloud.Assets.Samples
             m_ListController.ClearSelection();
         }
 
-        protected async Task UpdateList(IEnumerable<U> existingEntries, IAsyncEnumerable<U> asyncEntries, CancellationToken token)
+        protected async Task UpdateList(IEnumerable<U> existingEntries, IAsyncEnumerable<U> asyncEntries, CancellationToken cancellationToken)
         {
-            if (token.IsCancellationRequested) return;
+            if (cancellationToken.IsCancellationRequested) return;
 
             var startTime = DateTime.UtcNow;
 
@@ -70,18 +68,25 @@ namespace Unity.Cloud.Assets.Samples
                 UpdateList(entries);
             }
 
-            await foreach (var entry in asyncEntries.WithCancellation(token))
+            try
             {
-                entries.Add(entry);
-
-                if (DateTime.UtcNow - startTime > TimeSpan.FromSeconds(0.6f))
+                await foreach (var entry in asyncEntries.WithCancellation(cancellationToken))
                 {
-                    startTime = DateTime.UtcNow;
-                    UpdateList(entries);
+                    entries.Add(entry);
+
+                    if (DateTime.UtcNow - startTime > TimeSpan.FromSeconds(0.6f))
+                    {
+                        startTime = DateTime.UtcNow;
+                        UpdateList(entries);
+                    }
                 }
             }
+            catch (Exception e)
+            {
+                e.LogException();
+            }
 
-            if (!token.IsCancellationRequested)
+            if (!cancellationToken.IsCancellationRequested)
             {
                 UpdateList(entries);
             }
@@ -90,9 +95,7 @@ namespace Unity.Cloud.Assets.Samples
         protected void UpdateList(IEnumerable<U> entries)
         {
             var entryArray = entries as U[] ?? entries.ToArray();
-            m_Entries = entryArray.ToList();
-
-            if (entryArray.Any())
+            if (entryArray.Length > 0)
             {
                 m_DisplayMessageContainer.style.display = DisplayStyle.None;
 

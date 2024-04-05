@@ -36,11 +36,9 @@ namespace Unity.Cloud.Assets
         }
 
         /// <inheritdoc/>
-        public async Task UpdateAsync(IFieldDefinitionUpdate definitionUpdate, CancellationToken cancellationToken)
+        public Task UpdateAsync(IFieldDefinitionUpdate definitionUpdate, CancellationToken cancellationToken)
         {
-            await m_DataSource.UpdateFieldDefinitionAsync(Descriptor, definitionUpdate.From(), cancellationToken);
-            if (cancellationToken.IsCancellationRequested) return;
-            await RefreshAsync(cancellationToken);
+            return m_DataSource.UpdateFieldDefinitionAsync(Descriptor, definitionUpdate.From(), cancellationToken);
         }
     }
 }

@@ -39,7 +39,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
             var searchBarPanel = RootVisualElement.Q<VisualElement>("SearchBarContainer");
 
-            m_SearchBarUi.Initialize(RootVisualElement, searchBarPanel);
+            m_SearchBarUi.Initialize(RootVisualElement, searchBarPanel, AssetRepository);
             m_SearchBarUi.DeleteSearchQuery += OnSearchQueryChanged;
             m_SearchBarUi.AddSearchQuery += OnSearchQueryChanged;
             m_SearchBarUi.ClearSearchQuery += OnClearSearchQuery;
@@ -58,6 +58,8 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             m_AssetListUi.Initialize(AssetListPanel, m_AssetListItemTemplate);
 
             ProjectSelected += OnProjectSelected;
+
+            Application.lowMemory += OnLowMemory;
         }
 
         protected override void OnDestroy()
@@ -85,20 +87,12 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
         public void OnAssetUpdated(IAsset asset)
         {
             m_AssetListUi.UpdateAsset(asset);
-
-            if (IsAllProjectSelected)
-            {
-                m_SearchBarUi.UpdateSearchBarValues(AssetRepository, GetAllProjects().Select(x => x.Descriptor));
-            }
-            else if (SelectedProject != null)
-            {
-                m_SearchBarUi.UpdateSearchBarValues(SelectedProject);
-            }
+            m_SearchBarUi.UpdateSearchBarValues();
         }
 
         async void OnProjectSelected()
         {
-             await OnProjectSelectedAsync();
+            await OnProjectSelectedAsync();
         }
 
         async Task OnProjectSelectedAsync()
@@ -108,8 +102,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
             m_SearchBarUi.DisplaySearchBar(SelectedProject);
 
-            m_NewListCancellationTokenSource.Cancel();
-            m_NewListCancellationTokenSource.Dispose();
+            CancelNewList();
             m_NewListCancellationTokenSource = new CancellationTokenSource();
 
             var newListToken = m_NewListCancellationTokenSource.Token;
@@ -119,27 +112,33 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
             if (SelectedProject == null) return;
 
-            var token = m_SearchBarUi.GetSearchCancellationToken();
+            var updateToken = m_SearchBarUi.GetSearchCancellationToken();
 
             var assets = GetAssetsAsync(newListToken);
 
             var nextDisplayTrigger = 40;
             var assetList = new List<IAsset>();
-            await foreach (var asset in assets.WithCancellation(token))
+            try
             {
-                m_ProjectAssetsList.Add(asset);
-                assetList.Add(asset);
-
-                if (m_ProjectAssetsList.Count > nextDisplayTrigger)
+                await foreach (var asset in assets)
                 {
-                    nextDisplayTrigger *= 2;
+                    m_ProjectAssetsList.Add(asset);
+                    assetList.Add(asset);
 
-                    m_AssetListUi.PopulateAssetsList(assetList);
-                    assetList.Clear();
+                    if (m_ProjectAssetsList.Count > nextDisplayTrigger && !updateToken.IsCancellationRequested)
+                    {
+                        nextDisplayTrigger *= 2;
+
+                        m_AssetListUi.PopulateAssetsList(assetList);
+                    }
                 }
             }
+            catch (Exception e)
+            {
+                e.LogException();
+            }
 
-            if (!token.IsCancellationRequested)
+            if (!updateToken.IsCancellationRequested)
             {
                 m_AssetListUi.PopulateAssetsList(assetList);
             }
@@ -151,17 +150,23 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             RefreshAssetList(assetList);
 
             var nextDisplayTrigger = 40;
-            await foreach (var asset in assets.WithCancellation(cancellationToken))
+            try
             {
-                assetList.Add(asset);
-
-                if (assetList.Count > nextDisplayTrigger)
+                await foreach (var asset in assets.WithCancellation(cancellationToken))
                 {
-                    nextDisplayTrigger *= 2;
+                    assetList.Add(asset);
 
-                    m_AssetListUi.PopulateAssetsList(assetList);
-                    assetList.Clear();
+                    if (assetList.Count > nextDisplayTrigger)
+                    {
+                        nextDisplayTrigger *= 2;
+
+                        m_AssetListUi.PopulateAssetsList(assetList);
+                    }
                 }
+            }
+            catch (Exception e)
+            {
+                e.LogException();
             }
 
             // Attempt final refresh
@@ -182,6 +187,23 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
         {
             m_AssetListUi.ClearAssetList();
             m_AssetListUi.PopulateAssetsList(assetsList);
+        }
+
+        void CancelNewList()
+        {
+            m_NewListCancellationTokenSource?.Cancel();
+            m_NewListCancellationTokenSource?.Dispose();
+            m_NewListCancellationTokenSource = null;
+        }
+
+        void OnLowMemory()
+        {
+            CancelNewList();
+            _ = m_SearchBarUi.GetSearchCancellationToken();
+
+            Resources.UnloadUnusedAssets();
+
+            DialogService.ShowMessage("Low Memory", "The application is running low on memory. Some assets may not be displayed correctly.");
         }
     }
 }

@@ -26,7 +26,6 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
         AssetPanelUi m_AssetPanelUi = new();
 
         CollectionsContextMenuController m_ContextMenu;
-        MessagePopupController m_MessagePopupController;
 
         IAssetProject SelectedProject => m_ProjectController.SelectedProject;
         IAssetCollection SelectedCollection => m_CollectionListUi.SelectedCollection;
@@ -56,8 +55,6 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
             m_ProjectController.HideContent += HideContent;
             m_ProjectController.OrganizationSelected += OnOrganizationSelected;
             m_ProjectController.ProjectSelected += OnProjectSelected;
-
-            m_MessagePopupController = new MessagePopupController(uiDocumentRoot);
 
             HideContent();
         }
@@ -119,7 +116,7 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
             }
             catch (Exception e)
             {
-                m_MessagePopupController.ShowMessage("Failed to create collection", $"{e.Message}");
+                DialogService.ShowMessage("Failed to create collection", $"{e.Message}");
             }
 
             // Force refresh the list of collections
@@ -142,7 +139,7 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
 
         async void OnCollectionDeleted(IAssetCollection assetCollection)
         {
-            await SelectedProject.DeleteCollectionAsync(assetCollection.GetFullCollectionPath(), CancellationToken.None);
+            await SelectedProject.DeleteCollectionAsync(assetCollection.Descriptor.Path, CancellationToken.None);
 
             // Force refresh the list of collections
             OnProjectSelected();

@@ -72,11 +72,6 @@ To create UI for updating the status of assets, follow these steps:
 
 6. Open the `AssetManagementUI` script you created and replace the contents of the `Awake` function with the following code:
 
-```cs
-   m_UI.Add(new OrganizationSelectionExampleUI(m_Behaviour));
-   m_UI.Add(new ProjectSelectionExampleUI(m_Behaviour));
-   m_UI.Add(new AssetSelectionExampleUI(m_Behaviour));
-   m_UI.Add(new UseCaseSendToReviewApproveRejectAssetExampleUI(m_Behaviour));
-```
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseSetupExamples.cs#UseCaseSendToReviewApproveRejectAsset)
 
-The code snippet provides UI buttons to trigger the send to review or approve in-review or reject in-review an asset.
+The code snippet provides UI buttons to send an asset to review or approve or reject an asset in review.

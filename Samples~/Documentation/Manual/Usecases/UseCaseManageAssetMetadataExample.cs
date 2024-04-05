@@ -1,7 +1,3 @@
-using System.Linq;
-using Unity.Cloud.Common;
-using Unity.Cloud.Identity;
-
 namespace Unity.Cloud.Documentation.Assets
 {
 #pragma warning disable S4487 // Unread "private" fields should be removed
@@ -11,10 +7,12 @@ namespace Unity.Cloud.Documentation.Assets
 
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
     using UnityEngine;
     using Unity.Cloud.Assets;
+    using Unity.Cloud.Identity;
 
     public class UseCaseAssetMetadataExampleUI : IAssetManagementUI
     {
@@ -404,7 +402,9 @@ namespace Unity.Cloud.Documentation.Assets
 
             GUILayout.BeginVertical();
 
+            GUILayout.Label("Key:");
             m_NewKey = GUILayout.TextField(m_NewKey);
+            GUILayout.Label("Value:");
             m_NewValue = GUILayout.TextField(m_NewValue);
 
             GUI.enabled = !string.IsNullOrWhiteSpace(m_NewKey) && !string.IsNullOrWhiteSpace(m_NewValue);

@@ -208,12 +208,16 @@ namespace Unity.Cloud.Assets
         /// Returns a JSON serialized string of the asset's identifiers.
         /// </summary>
         /// <returns>The serialized identifiers of the asset. </returns>
+        [Obsolete("Use Descriptor.ToJson() instead.")]
         string SerializeIdentifiers();
 
         /// <summary>
-        /// Returns a JSON serialized string of the asset.
+        /// Returns a JSON string of the asset.
         /// </summary>
-        /// <returns>The serialized asset. </returns>
+        /// <remarks>
+        /// To deserialize the asset use <see cref="IAssetRepository.DeserializeAsset"/>. The <see cref="IAssetRepository"/> is responsible for injecting the necessary dependencies into the asset.
+        /// </remarks>
+        /// <returns>The asset serialized as a JSON string. </returns>
         string Serialize();
     }
 }

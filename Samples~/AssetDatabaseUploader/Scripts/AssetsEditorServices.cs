@@ -6,7 +6,6 @@ using Unity.Cloud.Common;
 using Unity.Cloud.Common.Runtime;
 using Unity.Cloud.Identity;
 using Unity.Cloud.Identity.Editor;
-using Unity.Cloud.Identity.Runtime;
 
 namespace Unity.Cloud.Assets.Samples.AssetDatabaseUploader
 {
@@ -26,7 +25,7 @@ namespace Unity.Cloud.Assets.Samples.AssetDatabaseUploader
 
         public static bool IsInitialized { get; private set; }
 
-        public static async Task Create(bool isDiscovery)
+        public static async Task Create()
         {
             var httpClient = new UnityHttpClient();
             var serviceHostResolver = UnityRuntimeServiceHostResolverFactory.Create();

@@ -15,7 +15,7 @@ namespace Unity.Cloud.Assets
         readonly IAssetDataSource m_DataSource;
 
         /// <inheritdoc />
-        public CollectionDescriptor Descriptor { get; }
+        public CollectionDescriptor Descriptor { get; set; }
 
         /// <inheritdoc />
         public string Name { get; private set; }
@@ -59,13 +59,13 @@ namespace Unity.Cloud.Assets
             var data = await m_DataSource.GetCollectionAsync(Descriptor, cancellationToken);
             Name = data.Name;
             Description = data.Description;
-            ParentPath = new CollectionPath(data.ParentPath);
         }
 
         /// <inheritdoc />
-        public Task UpdateAsync(IAssetCollectionUpdate assetCollectionUpdate, CancellationToken cancellationToken)
+        public async Task UpdateAsync(IAssetCollectionUpdate assetCollectionUpdate, CancellationToken cancellationToken)
         {
-            return m_DataSource.UpdateCollectionAsync(Descriptor, assetCollectionUpdate.From(), cancellationToken);
+            await m_DataSource.UpdateCollectionAsync(Descriptor, assetCollectionUpdate.From(), cancellationToken);
+            Descriptor = new CollectionDescriptor(Descriptor.ProjectDescriptor, CollectionPath.CombinePaths(ParentPath, assetCollectionUpdate.Name));
         }
 
         /// <inheritdoc />
@@ -85,6 +85,7 @@ namespace Unity.Cloud.Assets
         {
             await m_DataSource.MoveCollectionToNewPathAsync(Descriptor, newCollectionPath, cancellationToken);
             ParentPath = newCollectionPath;
+            Descriptor = new CollectionDescriptor(Descriptor.ProjectDescriptor, CollectionPath.CombinePaths(ParentPath, Name));
         }
 
         static AssetId SelectAssetId(IAsset asset)

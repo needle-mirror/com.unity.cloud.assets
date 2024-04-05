@@ -9,7 +9,6 @@ namespace Unity.Cloud.Documentation.Assets
     /// A Mono behaviour class to initialize services and dependencies for the Unity Cloud platform.
     /// </summary>
     [DefaultExecutionOrder(int.MinValue)]
-    [AddComponentMenu("Assets/Manual/Platform Services Initialization")]
     public class PlatformServicesInitialization : MonoBehaviour
     {
         void Awake()

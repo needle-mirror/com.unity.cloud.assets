@@ -49,20 +49,20 @@ To create UI for displaying aggregation information, follow these steps:
 
 6. Open the `AssetManagementUI` script you created and replace the contents of the `Awake` function with the following code:
 
-```cs
-   m_UI.Add(new OrganizationSelectionExampleUI(m_Behaviour));
-   m_UI.Add(new ProjectSelectionExampleUI(m_Behaviour));
-   m_UI.Add(new UseCaseAggregationExampleUI(m_Behaviour));
-```
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseSetupExamples.cs#UseCaseAggregateAssets)]
 
 The code snippet provides UI buttons to trigger the aggregation function with different criteria and displays the results of the aggregation.
 The UI can aggregate assets by:
 
-* Asset type
-* Asset tags
-* Asset status
-
-An additional text field allows you to specify a custom aggregation field.
+* Name
+* Version
+* Type
+* Status
+* Tags and system tags
+* Preview file
+* Created by
+* Updated by
+* Collections
 
 The results of the aggregation are displayed below the buttons.
 

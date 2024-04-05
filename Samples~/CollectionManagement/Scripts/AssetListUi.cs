@@ -16,11 +16,6 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
             {
                 element.Q<Label>("ItemNameLabel").text = m_List[i].Name;
             }
-
-            protected override bool AreEqual(IAsset item1, IAsset item2)
-            {
-                return item1.Descriptor.Equals(item2.Descriptor);
-            }
         }
 
         CancellationTokenSource m_ListAssetsCancellationTokenSource = new();
@@ -33,7 +28,7 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
 
         public void ApplyFilter(IEnumerable<IAsset> itemsToFilter)
         {
-            m_ListController.ApplyFilter(itemsToFilter);
+            m_ListController.ApplyFilter(x => !itemsToFilter.Any(y => x.Descriptor.Equals(y.Descriptor)));
         }
 
         public async Task Populate(IAssetProject project)

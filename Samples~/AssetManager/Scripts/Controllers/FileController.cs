@@ -65,8 +65,10 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             m_FileUploadButton.SetEnabled(state);
         }
 
-        public async Task ListExistingFiles(IDataset dataset)
+        public async Task ListExistingFiles(IDataset dataset, bool canUpdate)
         {
+            m_FileUpload.style.display = canUpdate ? DisplayStyle.Flex : DisplayStyle.None;
+
             if (m_GetFilesCancellationTokenSource != null)
             {
                 m_GetFilesCancellationTokenSource.Cancel();
@@ -77,7 +79,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
             await foreach (var file in dataset.ListFilesAsync(Range.All, m_GetFilesCancellationTokenSource.Token))
             {
-                AddFileRow(file);
+                AddFileRow(file, canUpdate);
             }
         }
 
@@ -152,19 +154,22 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             }
         }
 
-        void AddFileRow(IFile file)
+        void AddFileRow(IFile file, bool canUpdate)
         {
             var fileItem = m_FileListItemTemplate.Instantiate();
             fileItem.Q<Label>("FileNameLabel").text = file.Descriptor.Path;
             fileItem.Q<Label>("FileSizeLabel").text = GetSizeAsUserFriendlyFormat(file.SizeBytes);
 
             var deleteButton = fileItem.Q<VisualElement>("DeleteIcon");
-            deleteButton.style.display = DisplayStyle.Flex;
-            deleteButton.RegisterCallback<ClickEvent>(_ =>
+            deleteButton.style.display = canUpdate ? DisplayStyle.Flex : DisplayStyle.None;
+            if (canUpdate)
             {
-                m_FilesToDelete.Add(file);
-                fileItem.RemoveFromHierarchy();
-            });
+                deleteButton.RegisterCallback<ClickEvent>(_ =>
+                {
+                    m_FilesToDelete.Add(file);
+                    fileItem.RemoveFromHierarchy();
+                });
+            }
 
             m_FileScrollView.Add(fileItem);
         }
@@ -230,9 +235,8 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
         static async Task<IFile> UploadAssetFileAsync(IDataset dataset, string filePath)
         {
-            var fileCreation = new FileCreation
+            var fileCreation = new FileCreation(Path.GetFileName(filePath))
             {
-                Path = Path.GetFileName(filePath),
                 Description = "",
                 Tags = GetAssetFileTags(filePath)
             };

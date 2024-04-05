@@ -78,6 +78,7 @@ public class AssetManagementExample
     async Task UpdateAsset(IAsset asset, IAssetUpdate assetUpdate, CancellationToken cancellationToken)
     {
         await asset.UpdateAsync(assetUpdate, cancellationToken);
+        await asset.RefreshAsync(cancellationToken);
     }
 
     #endregion

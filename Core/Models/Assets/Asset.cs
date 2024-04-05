@@ -21,7 +21,7 @@ namespace Unity.Cloud.Assets
         public AssetDescriptor Descriptor { get; }
 
         /// <inheritdoc />
-        public ProjectDescriptor SourceProject { get; private set; }
+        public ProjectDescriptor SourceProject { get; set; }
 
         /// <inheritdoc />
         public IEnumerable<ProjectDescriptor> LinkedProjects => m_LinkedProjects;
@@ -64,16 +64,10 @@ namespace Unity.Cloud.Assets
         internal FileEntity[] Files { get; set; }
         internal MetadataContainerEntity MetadataEntity { get; }
 
-        internal Asset(IAssetDataSource dataSource, AssetDescriptor assetDescriptor, ProjectId sourceProjectId, IEnumerable<ProjectId> linkedProjectIds)
+        internal Asset(IAssetDataSource dataSource, AssetDescriptor assetDescriptor)
         {
             m_DataSource = dataSource;
             Descriptor = assetDescriptor;
-            if (linkedProjectIds != null)
-            {
-                m_LinkedProjects = linkedProjectIds.Select(projectId => new ProjectDescriptor(assetDescriptor.OrganizationId, projectId)).ToArray();
-            }
-
-            SourceProject = new ProjectDescriptor(assetDescriptor.OrganizationId, sourceProjectId);
 
             MetadataEntity = new AssetMetadataContainer(Descriptor, AssetFields.metadata, m_DataSource);
         }
@@ -94,9 +88,10 @@ namespace Unity.Cloud.Assets
             if (!m_LinkedProjects.Contains(projectDescriptor))
                 throw new InvalidArgumentException("The asset does not belong to the specified project.");
 
-            var linkedProjectIds = m_LinkedProjects.Select(x => x.ProjectId);
-            return new Asset(m_DataSource, new AssetDescriptor(projectDescriptor, Descriptor.AssetId, Descriptor.AssetVersion), SourceProject.ProjectId, linkedProjectIds)
+            return new Asset(m_DataSource, new AssetDescriptor(projectDescriptor, Descriptor.AssetId, Descriptor.AssetVersion))
             {
+                m_LinkedProjects = m_LinkedProjects.ToArray(),
+                SourceProject = SourceProject,
                 Name = Name,
                 Description = Description,
                 Tags = Tags?.ToArray(),
@@ -127,7 +122,7 @@ namespace Unity.Cloud.Assets
         async Task RefreshAsync(FieldsFilter fieldsFilter, CancellationToken cancellationToken)
         {
             var assetData = await m_DataSource.GetAssetAsync(Descriptor, fieldsFilter, cancellationToken);
-            this.MapFrom(m_DataSource, assetData, fieldsFilter);
+            this.MapFrom(m_DataSource, Descriptor.OrganizationId, assetData, fieldsFilter);
         }
 
         /// <inheritdoc />
@@ -200,7 +195,7 @@ namespace Unity.Cloud.Assets
             {
                 var fieldsFilter = new FieldsFilter {AssetFields = AssetFields.previewFileUrl};
                 var assetData = await m_DataSource.GetAssetAsync(Descriptor, fieldsFilter, cancellationToken);
-                this.MapFrom(m_DataSource, assetData, fieldsFilter);
+                this.MapFrom(m_DataSource, Descriptor.OrganizationId, assetData, fieldsFilter);
             }
 
             return PreviewFileUrl;
@@ -209,7 +204,7 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc />
         public async Task<IDictionary<string, Uri>> GetAssetDownloadUrlsAsync(CancellationToken cancellationToken)
         {
-            var fileUrls = await m_DataSource.GetAssetDownloadUrlsAsync(Descriptor, cancellationToken);
+            var fileUrls = await m_DataSource.GetAssetDownloadUrlsAsync(Descriptor, null, cancellationToken);
 
             var urls = new Dictionary<string, Uri>();
             foreach (var url in fileUrls)
@@ -321,7 +316,7 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc />
         public string SerializeIdentifiers()
         {
-            return IsolatedSerialization.SerializeWithDefaultConverters(GetIdentifier());
+            return Descriptor.ToJson();
         }
 
         /// <inheritdoc />
@@ -329,35 +324,24 @@ namespace Unity.Cloud.Assets
         {
             var data = new AssetDataWithIdentifiers
             {
-                Identifier = GetIdentifier(),
+                Descriptor = Descriptor.ToJson(),
                 Data = this.From()
             };
             return IsolatedSerialization.SerializeWithDefaultConverters(data);
-        }
-
-        AssetIdentifier GetIdentifier()
-        {
-            return new AssetIdentifier
-            {
-                OrganizationId = Descriptor.OrganizationId,
-                ProjectId = Descriptor.ProjectId,
-                Id = Descriptor.AssetId,
-                Version = Descriptor.AssetVersion
-            };
         }
 
         async Task RefreshDatasets(CancellationToken cancellationToken)
         {
             var data = await m_DataSource.GetAssetAsync(Descriptor, FieldsFilter.DefaultDatasetIncludes, cancellationToken);
 
-            this.MapFrom(m_DataSource, data, FieldsFilter.DefaultDatasetIncludes);
+            this.MapFrom(m_DataSource, Descriptor.OrganizationId, data, FieldsFilter.DefaultDatasetIncludes);
         }
 
         async Task RefreshFiles(CancellationToken cancellationToken)
         {
             var data = await m_DataSource.GetAssetAsync(Descriptor, FieldsFilter.DefaultFileIncludes, cancellationToken);
 
-            this.MapFrom(m_DataSource, data, FieldsFilter.DefaultFileIncludes);
+            this.MapFrom(m_DataSource, Descriptor.OrganizationId, data, FieldsFilter.DefaultFileIncludes);
         }
     }
 }
