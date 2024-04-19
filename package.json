@@ -1,6 +1,6 @@
 {
   "name": "com.unity.cloud.assets",
-  "version": "1.1.0",
+  "version": "1.2.0-exp.1",
   "displayName": "Unity Cloud Assets",
   "description": "Unity Cloud Assets makes it easy to discover, create, update, delete, and manage Unity assets through the Assets service interface.",
   "unity": "2022.3",
@@ -8,26 +8,21 @@
     "com.unity.cloud.common": "1.1.0"
   },
   "relatedPackages": {
-    "com.unity.cloud.assets.tests": "1.1.0"
+    "com.unity.cloud.assets.tests": "1.2.0-exp.1"
   },
   "_upm": {
-    "changelog": "### Added\n- `UserId` property in `TransformationSearchFilter`.\n- `GreaterThan` and `LessThanOrEqual` to `SearchConditionRange`.\n- `WithValueGreaterThan`, `WithValueGreaterThanOrEqualTo`, `WithValueLessThan`, and `WithValueLessThanOrEqualTo` to `ConditionalSearchCriteria`.\n- `GenerateTagsAsync` method to `IFile`.\n- Default constructor to `DatasetUpdate` class.\n- String search queries recognize '?' as wildcard character.\n- Memory warning popups in Discovery and Management samples.\n- Added Apple Privacy Manifest file to `/Plugins` directory.\n\n### Changed\n- Improved Discovery and Management samples search bar.\n- Improved samples' UI and cleaned up debug logs.\n- Updated use case documentation.\n- Modified the `LogLevel` for several log messages to reduce the default amount of logs in the console.\n- FieldDefinitions no longer auto-refresh properties on update; use `RefreshAsync`.\n- Reviewed manual documentation\n- Manual documentation code-snippets set to compile only in editor.\n- Documentation updates.\n- Updated deprecated endpoints.\n\n### Fixed\n- Bubbles up exceptions in `IFile.UploadAsync`.\n- Updated deprecated endpoints.\n- Upgrade to Common 1.1.0.\n\n### Removed\n- Removes `com.unity.editorcoroutines` dependency from package.\n\n### Deprecated\n- Deprecated `IAssetCollection.GetFullCollectionPath`; use `IAssetCollection.Descriptor.Path`.\n- Deprecated default constructor of `FileCreation` class; use `FileCreation(string path)`.\n- Deprecated `IAsset.SerializeIdentifiers` and `IAssetRepository.DeserializeAssetIdentifiers`; use `AssetDescriptor.ToJson` and `AssetDescriptor.FromJson` respectively."
+    "changelog": "### Added\n- Added a section on code stripping in troubleshooting documentation.\n- [Experimental] Adding support for Asset Versioning.\n\n### Removed\n- Removed Asset Database Uploader sample."
   },
   "upmCi": {
-    "footprint": "b5ba54e7a74d22f46d8aee8ca9990c04a5182eeb"
+    "footprint": "ce09731bfad37202d8ca211fa41a1fddaaeff1a5"
   },
-  "documentationUrl": "https://docs.unity3d.com/Packages/com.unity.cloud.assets@1.1/manual/index.html",
+  "documentationUrl": "https://docs.unity3d.com/Packages/com.unity.cloud.assets@1.2/manual/index.html",
   "repository": {
     "url": "https://github.cds.internal.unity3d.com/unity/digital-twins-sdk.git",
     "type": "git",
-    "revision": "1a7fa1a2eab17a06bce740d95954ad7a22e7ca92"
+    "revision": "1c6531322e754003bbb1dbe7a0620ae21b869775"
   },
   "samples": [
-    {
-      "displayName": "Asset Database Uploader",
-      "description": "Provide a simple uploader to upload Assets from the AssetDatabase to the Unity Cloud.",
-      "path": "Samples~/AssetDatabaseUploader"
-    },
     {
       "displayName": "Asset Discovery",
       "description": "Search for published assets.",

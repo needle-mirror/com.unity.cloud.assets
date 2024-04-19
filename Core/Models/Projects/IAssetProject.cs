@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Unity.Cloud.Common;
@@ -35,6 +36,15 @@ namespace Unity.Cloud.Assets
         Task<IAsset> GetAssetAsync(AssetId assetId, AssetVersion assetVersion, CancellationToken cancellationToken);
 
         /// <summary>
+        /// Retrieves an asset by its ID and label.
+        /// </summary>
+        /// <param name="assetId">The id of the asset. </param>
+        /// <param name="versionLabel">The label associated to the asset version. </param>
+        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
+        /// <returns>A task whose result is the requested asset. </returns>
+        Task<IAsset> GetAssetAsync(AssetId assetId, string versionLabel, CancellationToken cancellationToken) => throw new NotImplementedException();
+
+        /// <summary>
         /// Creates an asset.
         /// </summary>
         /// <param name="assetCreation">The object containing all the necessary information to create the asset. </param>
@@ -53,6 +63,13 @@ namespace Unity.Cloud.Assets
         /// </summary>
         /// <returns>An <see cref="GroupAndCountAssetsQueryBuilder"/>. </returns>
         GroupAndCountAssetsQueryBuilder GroupAndCountAssets();
+
+        /// <summary>
+        /// Returns a builder to create a query to search the versions of an <see cref="IAsset"/>.
+        /// </summary>
+        /// <param name="assetId">The id of the asset to query. </param>
+        /// <returns>An <see cref="AssetVersionQueryBuilder"/>. </returns>
+        AssetVersionQueryBuilder QueryAssetVersions(AssetId assetId) => throw new NotImplementedException();
 
         /// <summary>
         /// Returns a builder to create a query to search a project's <see cref="IAssetCollection"/>.

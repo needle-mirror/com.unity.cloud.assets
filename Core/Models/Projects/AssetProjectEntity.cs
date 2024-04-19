@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Unity.Cloud.Common;
@@ -23,12 +21,6 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc />
         public IDeserializable Metadata { get; set; }
 
-        internal AssetProjectEntity(string id, string name)
-        {
-            Name = name;
-            Descriptor = new ProjectDescriptor(OrganizationId.None, new ProjectId(id));
-        }
-
         internal AssetProjectEntity(IAssetDataSource dataSource, ProjectDescriptor projectDescriptor)
         {
             m_DataSource = dataSource;
@@ -39,6 +31,13 @@ namespace Unity.Cloud.Assets
         public async Task<IAsset> GetAssetAsync(AssetId assetId, AssetVersion assetVersion, CancellationToken cancellationToken)
         {
             var data = await m_DataSource.GetAssetAsync(new AssetDescriptor(Descriptor, assetId, assetVersion), FieldsFilter.DefaultAssetIncludes, cancellationToken);
+            return data.From(m_DataSource, Descriptor, FieldsFilter.DefaultAssetIncludes);
+        }
+
+        /// <inheritdoc />
+        public async Task<IAsset> GetAssetAsync(AssetId assetId, string versionLabel, CancellationToken cancellationToken)
+        {
+            var data = await m_DataSource.GetAssetAsync(Descriptor, assetId, versionLabel, FieldsFilter.DefaultAssetIncludes, cancellationToken);
             return data.From(m_DataSource, Descriptor, FieldsFilter.DefaultAssetIncludes);
         }
 
@@ -59,6 +58,12 @@ namespace Unity.Cloud.Assets
         public GroupAndCountAssetsQueryBuilder GroupAndCountAssets()
         {
             return new GroupAndCountAssetsQueryBuilder(m_DataSource, Descriptor);
+        }
+
+        /// <inheritdoc />
+        public AssetVersionQueryBuilder QueryAssetVersions(AssetId assetId)
+        {
+            return new AssetVersionQueryBuilder(m_DataSource, Descriptor, assetId);
         }
 
         /// <inheritdoc />

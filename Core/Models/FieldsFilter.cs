@@ -7,13 +7,15 @@ namespace Unity.Cloud.Assets
     enum AssetFields
     {
         /// <summary>
-        /// Only the default fields will be populated
+        /// Only the default fields will be populated.
+        /// Also included are a list of pre-determined defaults, <see cref="FieldsFilterUtilities.s_DefaultAssetFields"/>.
         /// </summary>
         none = 0,
         all = ~none,
         description = 1,
         authoring = 2,
         metadata = 4,
+        labels = 8,
         previewFile = 16,
         previewFileUrl = 32,
         /// <summary>
@@ -74,7 +76,7 @@ namespace Unity.Cloud.Assets
 
         public static FieldsFilter DefaultAssetIncludes => new()
         {
-            AssetFields = AssetFields.description | AssetFields.authoring | AssetFields.previewFile,
+            AssetFields = AssetFields.description | AssetFields.authoring | AssetFields.previewFile | AssetFields.labels,
             DatasetFields = DatasetFields.none,
             FileFields = FileFields.none,
         };

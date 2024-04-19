@@ -9,7 +9,7 @@ namespace Unity.Cloud.Assets
     /// The asset read filter.
     /// </summary>
     [DataContract]
-    class SearchRequestFilter
+    class SearchRequestFilter : ISearchRequestFilter
     {
         /// <summary>
         /// The asset read filter.

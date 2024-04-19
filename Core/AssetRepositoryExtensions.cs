@@ -49,5 +49,18 @@ namespace Unity.Cloud.Assets
         {
             return assetRepository.QueryFieldDefinitions(organizationId).LimitTo(range).ExecuteAsync(cancellationToken);
         }
+
+        /// <summary>
+        /// Lists an organization's <see cref="IVersionLabel"/>.
+        /// </summary>
+        /// <param name="assetRepository">The <see cref="IAssetRepository"/>. </param>
+        /// <param name="organizationId">The id of the organization. </param>
+        /// <param name="range">The range of results to return. </param>
+        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
+        /// <returns>An async enumeration of <see cref="IVersionLabel"/>. </returns>
+        public static IAsyncEnumerable<IVersionLabel> ListLabelsAsync(this IAssetRepository assetRepository, OrganizationId organizationId, Range range, CancellationToken cancellationToken)
+        {
+            return assetRepository.QueryVersionLabels(organizationId).LimitTo(range).ExecuteAsync(cancellationToken);
+        }
     }
 }

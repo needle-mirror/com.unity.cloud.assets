@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Unity.Cloud.Common;
@@ -13,7 +15,7 @@ namespace Unity.Cloud.Assets
             cancellationToken.ThrowIfCancellationRequested();
 
             var request = new StartTransformationRequest(workflowType, inputFiles, datasetDescriptor.ProjectId, datasetDescriptor.AssetId, datasetDescriptor.AssetVersion, datasetDescriptor.DatasetId);
-            var response = await m_ServiceHttpClient.PostAsync(GetPublicRequestUri(request), request.ConstructBody(),
+            var response = await RateLimitedServiceClient(request, HttpMethod.Post).PostAsync(GetPublicRequestUri(request), request.ConstructBody(),
                 ServiceHttpClientOptions.Default(), cancellationToken);
 
             var jsonContent = await response.GetContentAsString();
@@ -34,7 +36,7 @@ namespace Unity.Cloud.Assets
                 transformationDescriptor.ProjectId, transformationDescriptor.AssetId,
                 transformationDescriptor.AssetVersion, transformationDescriptor.DatasetId);
 
-            var response = await m_ServiceHttpClient.GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(), cancellationToken);
+            var response = await RateLimitedServiceClient(request, HttpMethod.Get).GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(), cancellationToken);
 
             var jsonContent = await response.GetContentAsString();
 
@@ -49,7 +51,7 @@ namespace Unity.Cloud.Assets
             cancellationToken.ThrowIfCancellationRequested();
 
             var request = new SearchTransformationRequest(projectDescriptor.ProjectId, searchData);
-            var response = await m_ServiceHttpClient.GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(), cancellationToken);
+            var response = await RateLimitedServiceClient(request, HttpMethod.Get).GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(), cancellationToken);
 
             var jsonContent = await response.GetContentAsString();
             cancellationToken.ThrowIfCancellationRequested();

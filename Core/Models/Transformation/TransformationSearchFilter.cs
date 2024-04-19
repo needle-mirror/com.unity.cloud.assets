@@ -29,7 +29,7 @@ namespace Unity.Cloud.Assets
 
         /// <summary>
         /// Sets the user id to use for the query.
-        /// </summary
+        /// </summary>
         public QueryParameter<UserId> UserId { get; } = new(Common.UserId.None);
     }
 }

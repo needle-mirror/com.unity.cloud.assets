@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Unity.Cloud.Common;
 
 namespace Unity.Cloud.Assets
 {
@@ -61,12 +62,28 @@ namespace Unity.Cloud.Assets
         Task LinkAssetsAsync(IEnumerable<IAsset> assets, CancellationToken cancellationToken);
 
         /// <summary>
+        /// Adds a set of asset references to the collection.
+        /// </summary>
+        /// <param name="assetIds">The ids of the assets to link to the collection. </param>
+        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
+        /// <returns>A task with no result. </returns>
+        Task LinkAssetsAsync(IEnumerable<AssetId> assetIds, CancellationToken cancellationToken) => throw new NotImplementedException();
+
+        /// <summary>
         /// Removes a set of asset references from the collection.
         /// </summary>
         /// <param name="assets">The assets to unlink from the collection. </param>
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task with no result. </returns>
         Task UnlinkAssetsAsync(IEnumerable<IAsset> assets, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Removes a set of asset references from the collection.
+        /// </summary>
+        /// <param name="assetIds">The ids of the assets to unlink from the collection. </param>
+        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
+        /// <returns>A task with no result. </returns>
+        Task UnlinkAssetsAsync(IEnumerable<AssetId> assetIds, CancellationToken cancellationToken) => throw new NotImplementedException();
 
         /// <summary>
         /// Creates a new path for the collection.

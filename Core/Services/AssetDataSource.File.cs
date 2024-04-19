@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Unity.Cloud.Common;
@@ -15,8 +16,7 @@ namespace Unity.Cloud.Assets
             cancellationToken.ThrowIfCancellationRequested();
 
             var request = new CreateFileRequest(datasetDescriptor.ProjectId, datasetDescriptor.AssetId, datasetDescriptor.AssetVersion, datasetDescriptor.DatasetId, fileCreation);
-
-            var response = await m_ServiceHttpClient.PostAsync(GetPublicRequestUri(request), request.ConstructBody(),
+            var response = await RateLimitedServiceClient(request, HttpMethod.Post).PostAsync(GetPublicRequestUri(request), request.ConstructBody(),
                 ServiceHttpClientOptions.Default(), cancellationToken);
 
             var jsonContent = await response.GetContentAsString();
@@ -59,7 +59,7 @@ namespace Unity.Cloud.Assets
                 fileDescriptor.Path,
                 fileUpdate);
 
-            return m_ServiceHttpClient.PatchAsync(GetPublicRequestUri(request), request.ConstructBody(),
+            return RateLimitedServiceClient(request, HttpClientExtensions.HttpMethodPatch).PatchAsync(GetPublicRequestUri(request), request.ConstructBody(),
                 ServiceHttpClientOptions.Default(), cancellationToken);
         }
 
@@ -74,8 +74,7 @@ namespace Unity.Cloud.Assets
                 fileDescriptor.DatasetId,
                 fileDescriptor.Path,
                 null);
-            var response = await m_ServiceHttpClient.GetAsync(GetPublicRequestUri(request),
-                ServiceHttpClientOptions.Default(), cancellationToken);
+            var response = await RateLimitedServiceClient(request, HttpMethod.Get).GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(), cancellationToken);
 
             var jsonContent = await response.GetContentAsString();
             cancellationToken.ThrowIfCancellationRequested();
@@ -96,7 +95,7 @@ namespace Unity.Cloud.Assets
                 fileDescriptor.DatasetId,
                 fileDescriptor.Path,
                 fileData);
-            var response = await m_ServiceHttpClient.GetAsync(GetPublicRequestUri(request),
+            var response = await RateLimitedServiceClient(request, HttpMethod.Get).GetAsync(GetPublicRequestUri(request),
                 ServiceHttpClientOptions.Default(), cancellationToken);
 
             var jsonContent = await response.GetContentAsString();
@@ -114,7 +113,7 @@ namespace Unity.Cloud.Assets
                 fileDescriptor.AssetId,
                 fileDescriptor.AssetVersion,
                 fileDescriptor.Path);
-            return m_ServiceHttpClient.PostAsync(GetPublicRequestUri(request), request.ConstructBody(),
+            return RateLimitedServiceClient(request, HttpMethod.Post).PostAsync(GetPublicRequestUri(request), request.ConstructBody(),
                 ServiceHttpClientOptions.Default(), cancellationToken);
         }
 
@@ -128,7 +127,7 @@ namespace Unity.Cloud.Assets
                 fileDescriptor.AssetVersion,
                 fileDescriptor.DatasetId,
                 fileDescriptor.Path);
-            var response = await m_ServiceHttpClient.GetAsync(GetPublicRequestUri(request),
+            var response = await RateLimitedServiceClient(request, HttpMethod.Get).GetAsync(GetPublicRequestUri(request),
                 ServiceHttpClientOptions.Default(), cancellationToken);
 
             var jsonContent = await response.GetContentAsString();
@@ -149,7 +148,7 @@ namespace Unity.Cloud.Assets
                 fileDescriptor.Path,
                 metadataType,
                 keys);
-            return m_ServiceHttpClient.DeleteAsync(GetPublicRequestUri(request), request.ConstructBody(),
+            return RateLimitedServiceClient(request, HttpMethod.Delete).DeleteAsync(GetPublicRequestUri(request), request.ConstructBody(),
                 ServiceHttpClientOptions.Default(), cancellationToken);
         }
     }

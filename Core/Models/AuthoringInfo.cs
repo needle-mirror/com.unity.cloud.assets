@@ -3,6 +3,9 @@ using Unity.Cloud.Common;
 
 namespace Unity.Cloud.Assets
 {
+    /// <summary>
+    /// Contains information about the author and the editor.
+    /// </summary>
     public class AuthoringInfo
     {
         /// <summary>

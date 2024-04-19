@@ -122,6 +122,30 @@ namespace Unity.Cloud.Assets
         Task DeleteFieldDefinitionAsync(FieldDefinitionDescriptor fieldDefinitionDescriptor, CancellationToken cancellationToken);
 
         /// <summary>
+        /// Creates a new version label within an organization.
+        /// </summary>
+        /// <param name="organizationId">The id of the organization in which to add the version label. </param>
+        /// <param name="versionLabelCreation">The object containing the necessary information to create a version label. </param>
+        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
+        /// <returns>A task whose result is an <see cref="IVersionLabel"/>. </returns>
+        Task<IVersionLabel> CreateVersionLabelAsync(OrganizationId organizationId, IVersionLabelCreation versionLabelCreation, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Returns a builder to create a query to search an organization's version labels.
+        /// </summary>
+        /// <param name="organizationId">The id of the organization. </param>
+        /// <returns>A <see cref="VersionLabelQueryBuilder"/>. </returns>
+        VersionLabelQueryBuilder QueryVersionLabels(OrganizationId organizationId);
+
+        /// <summary>
+        /// Retrieves a version label by name.
+        /// </summary>
+        /// <param name="versionLabelDescriptor">The descriptor containing the indentifiers for the version label. </param>
+        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
+        /// <returns>A task whose result is an <see cref="IVersionLabel"/>. </returns>
+        Task<IVersionLabel> GetVersionLabelAsync(VersionLabelDescriptor versionLabelDescriptor, CancellationToken cancellationToken);
+
+        /// <summary>
         /// Implement this method to get an <see cref="AssetDescriptor"/> given a serialized json of asset identifiers.
         /// </summary>
         /// <param name="jsonSerialization">The serialization of an asset's identifiers. Accepts the result of <see cref="IAsset.SerializeIdentifiers"/>. </param>

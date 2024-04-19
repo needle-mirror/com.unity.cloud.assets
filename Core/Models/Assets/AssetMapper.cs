@@ -14,12 +14,19 @@ namespace Unity.Cloud.Assets
             asset.m_LinkedProjects = assetData.LinkedProjectIds?.Select(projectId => new ProjectDescriptor(organizationId, projectId)).ToArray() ?? Array.Empty<ProjectDescriptor>();
             asset.SourceProject = new ProjectDescriptor(organizationId, assetData.SourceProjectId);
 
+            asset.IsFrozen = assetData.IsFrozen;
+            asset.VersionNumber = assetData.VersionNumber;
+            asset.Changelog = assetData.Changelog;
+            asset.ParentVersion = assetData.ParentVersion;
+            asset.ParentVersionNumber = assetData.ParentVersionNumber;
+
             asset.Name = assetData.Name;
             asset.Tags = assetData.Tags ?? Array.Empty<string>();
+            asset.SystemTags = assetData.SystemTags ?? Array.Empty<string>();
             asset.Type = assetData.Type ?? AssetType.Other;
             asset.Status = assetData.Status;
-            asset.SystemTags = assetData.SystemTags;
-            asset.Labels = assetData.Labels;
+            asset.Labels = assetData.Labels?.Select(x => new VersionLabelDescriptor(organizationId, x)) ?? Array.Empty<VersionLabelDescriptor>();
+            asset.ArchivedLabels = assetData.ArchivedLabels?.Select(x => new VersionLabelDescriptor(organizationId, x)) ?? Array.Empty<VersionLabelDescriptor>();
 
             if (includeFields.AssetFields.HasFlag(AssetFields.description))
                 asset.Description = assetData.Description;
@@ -140,7 +147,8 @@ namespace Unity.Cloud.Assets
                 LinkedProjectIds = asset.LinkedProjects.Select(project => project.ProjectId).ToList(),
                 Metadata = asset.MetadataEntity.From(),
                 SystemTags = asset.SystemTags,
-                Labels = asset.Labels,
+                Labels = asset.Labels?.Select(x => x.LabelName),
+                ArchivedLabels = asset.ArchivedLabels?.Select(x => x.LabelName)
             };
         }
     }

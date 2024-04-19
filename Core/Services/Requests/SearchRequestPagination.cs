@@ -14,10 +14,15 @@ namespace Unity.Cloud.Assets
         /// </summary>
         /// <param name="sortingField">The field with which to sort the assets.</param>
         /// <param name="sortingOrder">The order in which to sort the assets.</param>
-        public SearchRequestPagination(string sortingField, string sortingOrder)
+        public SearchRequestPagination(string sortingField, SortingOrder sortingOrder = SortingOrder.Ascending)
         {
             SortingField = sortingField;
-            SortingOrder = sortingOrder;
+            SortingOrderStr = sortingOrder switch
+            {
+                SortingOrder.Ascending => "Ascending",
+                SortingOrder.Descending => "Descending",
+                _ => throw new ArgumentOutOfRangeException(nameof(sortingOrder), sortingOrder, null)
+            };
         }
 
         /// <summary>
@@ -42,6 +47,6 @@ namespace Unity.Cloud.Assets
         /// The order to sort the assets from the page.
         /// </summary>
         [DataMember(Name = "sortingOrder", IsRequired = true, EmitDefaultValue = true)]
-        public string SortingOrder { get; }
+        public string SortingOrderStr { get; }
     }
 }

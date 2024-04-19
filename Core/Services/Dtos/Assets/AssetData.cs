@@ -15,16 +15,31 @@ namespace Unity.Cloud.Assets
         public AssetVersion Version { get; set; }
 
         /// <inheritdoc />
+        public bool IsFrozen { get; set; }
+
+        /// <inheritdoc />
+        public int VersionNumber { get; set; }
+
+        /// <inheritdoc />
+        public string Changelog { get; set; }
+
+        /// <inheritdoc />
+        public AssetVersion ParentVersion { get; set; }
+
+        /// <inheritdoc />
+        public int ParentVersionNumber { get; set; }
+
+        /// <inheritdoc />
         public IEnumerable<string> SystemTags { get; set; }
 
         /// <inheritdoc />
         public IEnumerable<string> Labels { get; set; }
 
         /// <inheritdoc />
-        public string Status { get; set; }
+        public IEnumerable<string> ArchivedLabels { get; set; }
 
         /// <inheritdoc />
-        public bool IsFrozen { get; set; }
+        public string Status { get; set; }
 
         /// <inheritdoc />
         public DateTime? Created { get; set; }

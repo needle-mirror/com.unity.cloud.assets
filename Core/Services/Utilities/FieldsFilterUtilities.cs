@@ -5,6 +5,17 @@ namespace Unity.Cloud.Assets
 {
     static class FieldsFilterUtilities
     {
+        /// <summary>
+        /// A list of fields that are optional in service requests, but will always be included when an asset is requested.
+        /// </summary>
+        static readonly string[] s_DefaultAssetFields =
+        {
+            "versionNumber",
+            "changelog",
+            "parentAssetVersion",
+            "parentVersionNumber",
+        };
+
         public delegate void OnFieldFilterSelected(string field);
 
         internal static void Parse(this FieldsFilter fieldsFilter, OnFieldFilterSelected select)
@@ -17,6 +28,10 @@ namespace Unity.Cloud.Assets
             }
             else
             {
+                foreach (var defaultField in s_DefaultAssetFields)
+                {
+                    select(defaultField);
+                }
                 fieldsFilter.AssetFields.Parse(select);
             }
 

@@ -87,13 +87,6 @@ namespace Unity.Cloud.Assets
             // Serialization adds quotes around the string, so we need to remove them.
             aggregationFieldString = aggregationFieldString.Trim('"');
 
-            var aggregateData = new AggregationData
-            {
-                AssetSearchFilter = m_AssetSearchFilter ?? new AssetSearchFilter(),
-                AggregationField = aggregationFieldString,
-                ResultLimit = m_Limit
-            };
-
             var projectIds = m_ProjectIds.ToArray();
 
             AggregateDto[] aggregations;
@@ -102,13 +95,23 @@ namespace Unity.Cloud.Assets
             {
                 case 1:
                 {
+                    var parameters = new SearchAndAggregateRequestParameters(aggregationFieldString)
+                    {
+                        Filter = m_AssetSearchFilter?.From(),
+                        MaximumNumberOfItems = m_Limit,
+                    };
                     var descriptor = new ProjectDescriptor(m_OrganizationId, projectIds[0]);
-                    aggregations = await m_AssetDataSource.GetAssetAggregateAsync(descriptor, aggregateData, cancellationToken);
+                    aggregations = await m_AssetDataSource.GetAssetAggregateAsync(descriptor, parameters, cancellationToken);
                     break;
                 }
                 default:
                 {
-                    aggregations = await m_AssetDataSource.GetAssetAggregateAsync(m_OrganizationId, projectIds, aggregateData, cancellationToken);
+                    var parameters = new AcrossProjectsSearchAndAggregateRequestParameters(projectIds, aggregationFieldString)
+                    {
+                        Filter = m_AssetSearchFilter?.From(),
+                        MaximumNumberOfItems = m_Limit,
+                    };
+                    aggregations = await m_AssetDataSource.GetAssetAggregateAsync(m_OrganizationId, parameters, cancellationToken);
                     break;
                 }
             }
@@ -131,13 +134,6 @@ namespace Unity.Cloud.Assets
         {
             const string collectionGroup = "collections";
 
-            var aggregateData = new AggregationData
-            {
-                AssetSearchFilter = m_AssetSearchFilter ?? new AssetSearchFilter(),
-                AggregationField = collectionGroup,
-                ResultLimit = m_Limit
-            };
-
             var projectIds = m_ProjectIds.ToArray();
 
             AggregateDto[] aggregations;
@@ -146,13 +142,23 @@ namespace Unity.Cloud.Assets
             {
                 case 1:
                 {
+                    var parameters = new SearchAndAggregateRequestParameters(collectionGroup)
+                    {
+                        Filter = m_AssetSearchFilter?.From(),
+                        MaximumNumberOfItems = m_Limit,
+                    };
                     var descriptor = new ProjectDescriptor(m_OrganizationId, projectIds[0]);
-                    aggregations = await m_AssetDataSource.GetAssetAggregateAsync(descriptor, aggregateData, cancellationToken);
+                    aggregations = await m_AssetDataSource.GetAssetAggregateAsync(descriptor, parameters, cancellationToken);
                     break;
                 }
                 default:
                 {
-                    aggregations = await m_AssetDataSource.GetAssetAggregateAsync(m_OrganizationId, projectIds, aggregateData, cancellationToken);
+                    var parameters = new AcrossProjectsSearchAndAggregateRequestParameters(projectIds, collectionGroup)
+                    {
+                        Filter = m_AssetSearchFilter?.From(),
+                        MaximumNumberOfItems = m_Limit,
+                    };
+                    aggregations = await m_AssetDataSource.GetAssetAggregateAsync(m_OrganizationId, parameters, cancellationToken);
                     break;
                 }
             }

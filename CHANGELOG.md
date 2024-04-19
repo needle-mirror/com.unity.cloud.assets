@@ -5,6 +5,15 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [1.2.0-exp.1] - 2024-04-19
+
+### Added
+- Added a section on code stripping in troubleshooting documentation.
+- [Experimental] Adding support for Asset Versioning.
+
+### Removed
+- Removed Asset Database Uploader sample.
+
 ## [1.1.0] - 2024-04-05
 
 ### Added
@@ -15,6 +24,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Default constructor to `DatasetUpdate` class.
 - String search queries recognize '?' as wildcard character.
 - Memory warning popups in Discovery and Management samples.
+- Added rate limiter to API calls to avoid 429 errors when doing multiple operations in parallel. 
 - Added Apple Privacy Manifest file to `/Plugins` directory.
 
 ### Changed

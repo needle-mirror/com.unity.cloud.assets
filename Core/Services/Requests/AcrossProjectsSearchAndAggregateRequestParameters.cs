@@ -11,15 +11,8 @@ namespace Unity.Cloud.Assets
     [DataContract]
     class AcrossProjectsSearchAndAggregateRequestParameters : SearchAndAggregateRequestParameters
     {
-        /// <summary>
-        /// The across projects search and aggregate request parameters.
-        /// </summary>
-        /// <param name="projectIds">project ids param</param>
-        /// <param name="filter">filter param</param>
-        /// <param name="aggregateBy">The field that can be used in the aggregation.</param>
-        /// <param name="maximumNumberOfItems">The maximum number of items to be returned.</param>
-        public AcrossProjectsSearchAndAggregateRequestParameters(IEnumerable<ProjectId> projectIds, SearchRequestFilter filter = default, string aggregateBy = default, int? maximumNumberOfItems = default)
-            : base(filter, aggregateBy, maximumNumberOfItems)
+        public AcrossProjectsSearchAndAggregateRequestParameters(IEnumerable<ProjectId> projectIds, string aggregateBy)
+            : base(aggregateBy)
         {
             ProjectIds = projectIds.ToArray();
         }
@@ -28,6 +21,6 @@ namespace Unity.Cloud.Assets
         /// Parameter project ids of AcrossProjectsSearchAndAggregateRequest
         /// </summary>
         [DataMember(Name = "projectIds", EmitDefaultValue = false)]
-        public ProjectId[] ProjectIds { get; set; }
+        public ProjectId[] ProjectIds { get; }
     }
 }

@@ -71,13 +71,25 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc />
         public Task LinkAssetsAsync(IEnumerable<IAsset> assets, CancellationToken cancellationToken)
         {
-            return m_DataSource.AddAssetsToCollectionAsync(Descriptor, assets.Select(SelectAssetId), cancellationToken);
+            return LinkAssetsAsync(assets.Select(SelectAssetId), cancellationToken);
+        }
+
+        /// <inheritdoc />
+        public Task LinkAssetsAsync(IEnumerable<AssetId> assetIds, CancellationToken cancellationToken)
+        {
+            return m_DataSource.AddAssetsToCollectionAsync(Descriptor, assetIds, cancellationToken);
         }
 
         /// <inheritdoc />
         public Task UnlinkAssetsAsync(IEnumerable<IAsset> assets, CancellationToken cancellationToken)
         {
-            return m_DataSource.RemoveAssetsFromCollectionAsync(Descriptor, assets.Select(SelectAssetId), cancellationToken);
+            return UnlinkAssetsAsync(assets.Select(SelectAssetId), cancellationToken);
+        }
+
+        /// <inheritdoc />
+        public Task UnlinkAssetsAsync(IEnumerable<AssetId> assetIds, CancellationToken cancellationToken)
+        {
+            return m_DataSource.RemoveAssetsFromCollectionAsync(Descriptor, assetIds, cancellationToken);
         }
 
         /// <inheritdoc />

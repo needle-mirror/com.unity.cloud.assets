@@ -13,13 +13,31 @@ namespace Unity.Cloud.Assets
 {
     partial class AssetDataSource : IAssetDataSource
     {
+        const int k_QueueLimit = 100000;
+        const int k_DefaultTokensPerPeriod = 100;
+        const int k_DefaultTokenLimit = 100;
+        const int k_SlowTokensPerPeriod = 20;
+        const int k_SlowTokenLimit = 20;
+        const double k_ReplenishmentPeriod = 1.25;
         const string k_PublicApiPath = "/assets/v1";
+
+        static readonly UCLogger k_Logger = LoggerProvider.GetLogger<AssetDataSource>();
 
         readonly IServiceHttpClient m_ServiceHttpClient;
         readonly IServiceHostResolver m_PublicServiceHostResolver;
+        readonly Dictionary<string, IServiceHttpClient> m_HttpClients = new();
 
         internal AssetDataSource(IServiceHttpClient serviceHttpClient, IServiceHostResolver serviceHostResolver)
         {
+            if (serviceHostResolver.GetResolvedEnvironment() == ServiceEnvironment.Test)
+            {
+                var headers = new Dictionary<string, string>
+                {
+                    {"x-backend-host", "https://api.fd.amc.test.transformation.unity.com"}
+                };
+                serviceHttpClient = new ServiceHttpClientHeaderModifier(serviceHttpClient, headers);
+            }
+
             m_ServiceHttpClient = serviceHttpClient;
             m_PublicServiceHostResolver = serviceHostResolver;
         }
@@ -34,8 +52,23 @@ namespace Unity.Cloud.Assets
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var request = new GetAssetByIdAndVersionRequest(assetDescriptor.ProjectId, assetDescriptor.AssetId, assetDescriptor.AssetVersion, includedFieldsFilter);
-            var response = await m_ServiceHttpClient.GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(),
+            var request = new AssetRequest(assetDescriptor.ProjectId, assetDescriptor.AssetId, assetDescriptor.AssetVersion, includedFieldsFilter);
+            var response = await RateLimitedServiceClient(request, HttpMethod.Get).GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(),
+                cancellationToken);
+
+            var jsonContent = await response.GetContentAsString();
+            cancellationToken.ThrowIfCancellationRequested();
+
+            return IsolatedSerialization.DeserializeWithDefaultConverters<AssetData>(jsonContent);
+        }
+
+        /// <inheritdoc/>
+        public async Task<IAssetData> GetAssetAsync(ProjectDescriptor projectDescriptor, AssetId assetId, string versionLabel, FieldsFilter includedFieldsFilter, CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var request = new AssetRequest(projectDescriptor.ProjectId, assetId, versionLabel, includedFieldsFilter);
+            var response = await RateLimitedServiceClient(request, HttpMethod.Get).GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(),
                 cancellationToken);
 
             var jsonContent = await response.GetContentAsString();
@@ -45,25 +78,15 @@ namespace Unity.Cloud.Assets
         }
 
         /// <inheritdoc />
-        public async IAsyncEnumerable<IAssetData> ListAssetsAsync(ProjectDescriptor projectDescriptor, SearchData searchData, [EnumeratorCancellation] CancellationToken cancellationToken)
+        public async IAsyncEnumerable<IAssetData> ListAssetsAsync(ProjectDescriptor projectDescriptor, SearchRequestParameters parameters, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            // Set up the request.
-            var requestFilter = GetRequestFilter(searchData.AssetSearchFilter);
-            var searchPagination = new SearchRequestPagination(searchData.Pagination.SortingField, searchData.Pagination.SortingOrder.ToString());
-
-            // Still missing definitions for optional params:
-            // - SearchRequestResultFields resultFields
-            // - bool includeThumbnailDownloadURLs
-            var requestParams = new SearchRequestParameters(requestFilter, searchData.IncludedFields, searchPagination);
-
-            var request = new SearchRequest(projectDescriptor.ProjectId, requestParams);
-
-            var (offset, length) = await searchData.Pagination.Range.GetOffsetAndLengthAsync(token => GetTotalCount(projectDescriptor, token), cancellationToken);
+            var (offset, length) = await parameters.PaginationRange.GetOffsetAndLengthAsync(token => GetTotalCount(projectDescriptor, token), cancellationToken);
             if (length == 0) yield break;
 
-            var results = ListAssetsAsync(request, requestParams, searchPagination, offset, length, cancellationToken);
+            var request = new SearchRequest(projectDescriptor.ProjectId, parameters);
+            var results = ListAssetsAsync(request, parameters, offset, length, cancellationToken);
             await foreach (var asset in results)
             {
                 yield return asset;
@@ -71,26 +94,15 @@ namespace Unity.Cloud.Assets
         }
 
         /// <inheritdoc />
-        public async IAsyncEnumerable<IAssetData> ListAssetsAsync(OrganizationId organizationId, IEnumerable<ProjectId> projectIds, SearchData searchData, [EnumeratorCancellation] CancellationToken cancellationToken)
+        public async IAsyncEnumerable<IAssetData> ListAssetsAsync(OrganizationId organizationId, IEnumerable<ProjectId> projectIds, SearchRequestParameters parameters, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            // Set up the request.
-            var requestFilter = GetRequestFilter(searchData.AssetSearchFilter);
-            var searchPagination = new SearchRequestPagination(searchData.Pagination.SortingField, searchData.Pagination.SortingOrder.ToString());
-
-            // Still missing definitions for optional params:
-            // - SearchRequestResultFields resultFields
-            // - bool includeThumbnailDownloadURLs
-            var enumerable = projectIds?.ToArray() ?? Array.Empty<ProjectId>();
-            var requestParams = new AcrossProjectsSearchRequestParameters(enumerable, requestFilter, searchData.IncludedFields, searchPagination);
-
-            var request = new AcrossProjectsSearchRequest(organizationId, requestParams);
-
-            var (offset, length) = await searchData.Pagination.Range.GetOffsetAndLengthAsync(token => GetAcrossProjectsTotalCount(organizationId, enumerable, token), cancellationToken);
+            var (offset, length) = await parameters.PaginationRange.GetOffsetAndLengthAsync(token => GetAcrossProjectsTotalCount(organizationId, projectIds, token), cancellationToken);
             if (length == 0) yield break;
 
-            var results = ListAssetsAsync(request, requestParams, searchPagination, offset, length, cancellationToken);
+            var request = new AcrossProjectsSearchRequest(organizationId, parameters);
+            var results = ListAssetsAsync(request, parameters, offset, length, cancellationToken);
             await foreach (var asset in results)
             {
                 yield return asset;
@@ -98,14 +110,12 @@ namespace Unity.Cloud.Assets
         }
 
         /// <inheritdoc />
-        public async Task<AggregateDto[]> GetAssetAggregateAsync(ProjectDescriptor projectDescriptor, AggregationData aggregationData, CancellationToken cancellationToken)
+        public async Task<AggregateDto[]> GetAssetAggregateAsync(ProjectDescriptor projectDescriptor, SearchAndAggregateRequestParameters parameters, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var requestFilter = GetRequestFilter(aggregationData.AssetSearchFilter);
-            var requestParams = new SearchAndAggregateRequestParameters(requestFilter, aggregationData.AggregationField, aggregationData.ResultLimit);
-            var request = new SearchAndAggregateRequest(projectDescriptor.ProjectId, requestParams);
-            var response = await m_ServiceHttpClient.PostAsync(GetPublicRequestUri(request), request.ConstructBody(),
+            var request = new SearchAndAggregateRequest(projectDescriptor.ProjectId, parameters);
+            var response = await RateLimitedServiceClient(request, HttpMethod.Post).PostAsync(GetPublicRequestUri(request), request.ConstructBody(),
                 ServiceHttpClientOptions.Default(), cancellationToken);
 
             var jsonContent = await response.GetContentAsString();
@@ -115,14 +125,12 @@ namespace Unity.Cloud.Assets
         }
 
         /// <inheritdoc />
-        public async Task<AggregateDto[]> GetAssetAggregateAsync(OrganizationId organizationId, IEnumerable<ProjectId> projectIds, AggregationData aggregationData, CancellationToken cancellationToken)
+        public async Task<AggregateDto[]> GetAssetAggregateAsync(OrganizationId organizationId, AcrossProjectsSearchAndAggregateRequestParameters parameters, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var requestFilter = GetRequestFilter(aggregationData.AssetSearchFilter);
-            var requestParams = new AcrossProjectsSearchAndAggregateRequestParameters(projectIds, requestFilter, aggregationData.AggregationField, aggregationData.ResultLimit);
-            var request = new AcrossProjectsSearchAndAggregateRequest(organizationId, requestParams);
-            var response = await m_ServiceHttpClient.PostAsync(GetPublicRequestUri(request), request.ConstructBody(),
+            var request = new AcrossProjectsSearchAndAggregateRequest(organizationId, parameters);
+            var response = await RateLimitedServiceClient(request, HttpMethod.Post).PostAsync(GetPublicRequestUri(request), request.ConstructBody(),
                 ServiceHttpClientOptions.Default(), cancellationToken);
 
             var jsonContent = await response.GetContentAsString();
@@ -137,7 +145,7 @@ namespace Unity.Cloud.Assets
             cancellationToken.ThrowIfCancellationRequested();
 
             var request = new CreateAssetRequest(projectDescriptor.ProjectId, assetCreation);
-            var response = await m_ServiceHttpClient.PostAsync(GetPublicRequestUri(request), request.ConstructBody(),
+            var response = await RateLimitedServiceClient(request, HttpMethod.Post).PostAsync(GetPublicRequestUri(request), request.ConstructBody(),
                 ServiceHttpClientOptions.Default(), cancellationToken);
 
             var jsonContent = await response.GetContentAsString();
@@ -160,8 +168,10 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc />
         public Task UpdateAssetAsync(AssetDescriptor assetDescriptor, IAssetUpdateData data, CancellationToken cancellationToken)
         {
-            var request = new UpdateAssetRequest(assetDescriptor.ProjectId, assetDescriptor.AssetId, assetDescriptor.AssetVersion, data);
-            return m_ServiceHttpClient.PatchAsync(GetPublicRequestUri(request), request.ConstructBody(),
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var request = new AssetRequest(assetDescriptor.ProjectId, assetDescriptor.AssetId, assetDescriptor.AssetVersion, data);
+            return RateLimitedServiceClient(request, HttpClientExtensions.HttpMethodPatch).PatchAsync(GetPublicRequestUri(request), request.ConstructBody(),
                 ServiceHttpClientOptions.Default(), cancellationToken);
         }
 
@@ -171,8 +181,7 @@ namespace Unity.Cloud.Assets
             cancellationToken.ThrowIfCancellationRequested();
 
             var request = new GetAssetDownloadUrlsRequest(assetDescriptor.ProjectId, assetDescriptor.AssetId, assetDescriptor.AssetVersion, datasetIds, null);
-            var response = await m_ServiceHttpClient.GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(),
-                cancellationToken);
+            var response = await RateLimitedServiceClient(request, HttpMethod.Get).GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(), cancellationToken);
 
             var jsonContent = await response.GetContentAsString();
             cancellationToken.ThrowIfCancellationRequested();
@@ -188,7 +197,7 @@ namespace Unity.Cloud.Assets
         public Task LinkAssetToProjectAsync(AssetDescriptor assetDescriptor, ProjectDescriptor destinationProject, CancellationToken cancellationToken)
         {
             var request = new LinkAssetToProjectRequest(assetDescriptor.ProjectId, assetDescriptor.AssetId, destinationProject.ProjectId);
-            return m_ServiceHttpClient.PostAsync(GetPublicRequestUri(request), request.ConstructBody(),
+            return RateLimitedServiceClient(request, HttpMethod.Post).PostAsync(GetPublicRequestUri(request), request.ConstructBody(),
                 ServiceHttpClientOptions.Default(), cancellationToken);
         }
 
@@ -196,7 +205,7 @@ namespace Unity.Cloud.Assets
         public Task UnlinkAssetFromProjectAsync(AssetDescriptor assetDescriptor, ProjectDescriptor destinationProject, CancellationToken cancellationToken)
         {
             var request = new UnlinkAssetFromProjectRequest(destinationProject.ProjectId, assetDescriptor.AssetId);
-            return m_ServiceHttpClient.PostAsync(GetPublicRequestUri(request), request.ConstructBody(),
+            return RateLimitedServiceClient(request, HttpMethod.Post).PostAsync(GetPublicRequestUri(request), request.ConstructBody(),
                 ServiceHttpClientOptions.Default(), cancellationToken);
         }
 
@@ -206,7 +215,7 @@ namespace Unity.Cloud.Assets
             cancellationToken.ThrowIfCancellationRequested();
 
             var request = new CheckProjectIsAssetSourceProjectRequest(assetDescriptor.ProjectId, assetDescriptor.AssetId);
-            var response = await m_ServiceHttpClient.GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(),
+            var response = await RateLimitedServiceClient(request, HttpMethod.Get).GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(),
                 cancellationToken);
 
             return bool.Parse(await response.GetContentAsString());
@@ -218,7 +227,7 @@ namespace Unity.Cloud.Assets
             cancellationToken.ThrowIfCancellationRequested();
 
             var request = new CheckAssetBelongsToProjectRequest(assetDescriptor.ProjectId, assetDescriptor.AssetId);
-            var response = await m_ServiceHttpClient.GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(),
+            var response = await RateLimitedServiceClient(request, HttpMethod.Get).GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(),
                 cancellationToken);
 
             return bool.Parse(await response.GetContentAsString());
@@ -228,30 +237,14 @@ namespace Unity.Cloud.Assets
         public Task UpdateAssetStatusAsync(AssetDescriptor assetDescriptor, AssetStatusAction assetStatusAction, CancellationToken cancellationToken)
         {
             var request = new ChangeAssetStatusRequest(assetDescriptor.ProjectId, assetDescriptor.AssetId, assetDescriptor.AssetVersion, assetStatusAction);
-            return m_ServiceHttpClient.PatchAsync(GetPublicRequestUri(request), request.ConstructBody(),
+            return RateLimitedServiceClient(request, HttpClientExtensions.HttpMethodPatch).PatchAsync(GetPublicRequestUri(request), request.ConstructBody(),
                 ServiceHttpClientOptions.Default(), cancellationToken);
-        }
-
-        static SearchRequestFilter GetRequestFilter(IAssetSearchFilter assetSearchFilter)
-        {
-            var anyQuery = assetSearchFilter.AccumulateAnyCriteria();
-
-            return new SearchRequestFilter(assetSearchFilter.AccumulateIncludedCriteria(),
-                assetSearchFilter.AccumulateExcludedCriteria(),
-                anyQuery.criteria,
-                anyQuery.criteria is {Count: > 0} ? anyQuery.minimumMatches : null,
-                assetSearchFilter.Collections.GetValue());
         }
 
         async Task<int> GetTotalCount(ProjectDescriptor projectDescriptor, CancellationToken cancellationToken)
         {
-            var aggregateData = new AggregationData
-            {
-                AssetSearchFilter = new AssetSearchFilter(),
-                AggregationField = AssetTypeSearchCriteria.SearchKey,
-                ResultLimit = int.MaxValue
-            };
-            var aggregations = await GetAssetAggregateAsync(projectDescriptor, aggregateData, cancellationToken);
+            var parameters = new SearchAndAggregateRequestParameters(AssetTypeSearchCriteria.SearchKey);
+            var aggregations = await GetAssetAggregateAsync(projectDescriptor, parameters, cancellationToken);
             var total = 0;
             foreach (var aggregate in aggregations)
             {
@@ -262,13 +255,8 @@ namespace Unity.Cloud.Assets
 
         async Task<int> GetAcrossProjectsTotalCount(OrganizationId organizationId, IEnumerable<ProjectId> projectIds, CancellationToken cancellationToken)
         {
-            var aggregateData = new AggregationData
-            {
-                AssetSearchFilter = new AssetSearchFilter(),
-                AggregationField = AssetTypeSearchCriteria.SearchKey,
-                ResultLimit = int.MaxValue
-            };
-            var aggregations = await GetAssetAggregateAsync(organizationId, projectIds, aggregateData, cancellationToken);
+            var parameters = new AcrossProjectsSearchAndAggregateRequestParameters(projectIds.ToArray(), AssetTypeSearchCriteria.SearchKey);
+            var aggregations = await GetAssetAggregateAsync(organizationId, parameters, cancellationToken);
             var total = 0;
             foreach (var aggregate in aggregations)
             {
@@ -355,7 +343,8 @@ namespace Unity.Cloud.Assets
                 assetDescriptor.AssetVersion,
                 metadataType,
                 keys);
-            return m_ServiceHttpClient.DeleteAsync(GetPublicRequestUri(request), request.ConstructBody(),
+
+            return RateLimitedServiceClient(request, HttpMethod.Delete).DeleteAsync(GetPublicRequestUri(request), request.ConstructBody(),
                 ServiceHttpClientOptions.Default(), cancellationToken);
         }
 
@@ -365,11 +354,13 @@ namespace Unity.Cloud.Assets
             return new Uri(m_PublicServiceHostResolver.GetResolvedAddress());
         }
 
-        async IAsyncEnumerable<IAssetData> ListAssetsAsync(ApiRequest request, SearchRequestParameters parameters, SearchRequestPagination pagination, int offset, int length, [EnumeratorCancellation] CancellationToken cancellationToken)
+        async IAsyncEnumerable<IAssetData> ListAssetsAsync(ApiRequest request, SearchRequestParameters parameters, int offset, int length, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
             if (length == 0) yield break;
 
             const int maxPageSize = 99;
+
+            var pagination = parameters.Pagination;
 
             var lastIndex = offset + length;
             var pageSize = Math.Min(maxPageSize, lastIndex);
@@ -409,7 +400,7 @@ namespace Unity.Cloud.Assets
 
             var currentPage = 0;
 
-            var response = await m_ServiceHttpClient.PostAsync(requestUri, request.ConstructBody(),
+            var response = await RateLimitedServiceClient(request, HttpMethod.Post).PostAsync(requestUri, request.ConstructBody(),
                 ServiceHttpClientOptions.Default(), cancellationToken);
 
             string jsonContent;
@@ -425,7 +416,7 @@ namespace Unity.Cloud.Assets
 
                 cancellationToken.ThrowIfCancellationRequested();
 
-                response = await m_ServiceHttpClient.PostAsync(requestUri, request.ConstructBody(),
+                response = await RateLimitedServiceClient(request, HttpMethod.Post).PostAsync(requestUri, request.ConstructBody(),
                     ServiceHttpClientOptions.Default(), cancellationToken);
             }
 
@@ -446,7 +437,7 @@ namespace Unity.Cloud.Assets
 
                 if (string.IsNullOrEmpty(pagination.Token)) break;
 
-                var response = await m_ServiceHttpClient.PostAsync(requestUri, request.ConstructBody(),
+                var response = await RateLimitedServiceClient(request, HttpMethod.Post).PostAsync(requestUri, request.ConstructBody(),
                     ServiceHttpClientOptions.Default(), cancellationToken);
 
                 var jsonContent = await response.GetContentAsString();
@@ -469,6 +460,29 @@ namespace Unity.Cloud.Assets
 
                 pagination.Token = dto.Token;
             }
+        }
+
+        IServiceHttpClient RateLimitedServiceClient(ApiRequest request, HttpMethod httpMethod)
+        {
+            var requestType = request.GetType().ToString() + httpMethod;
+
+            if (m_HttpClients.TryGetValue(request.GetType().ToString(), out var client)) return client;
+
+            if (IsSearchRequest(request))
+            {
+                client = new RateLimitedServiceHttpClient(m_ServiceHttpClient, k_QueueLimit, k_SlowTokensPerPeriod, k_SlowTokenLimit, TimeSpan.FromSeconds(k_ReplenishmentPeriod));
+            }
+            else
+            {
+                client = new RateLimitedServiceHttpClient(m_ServiceHttpClient, k_QueueLimit, k_DefaultTokensPerPeriod, k_DefaultTokenLimit, TimeSpan.FromSeconds(k_ReplenishmentPeriod));
+            }
+            m_HttpClients[requestType] = client;
+            return client;
+        }
+
+        bool IsSearchRequest(ApiRequest request)
+        {
+            return request is SearchRequest or AcrossProjectsSearchRequest or SearchAndAggregateRequest or AcrossProjectsSearchAndAggregateRequest;
         }
     }
 }

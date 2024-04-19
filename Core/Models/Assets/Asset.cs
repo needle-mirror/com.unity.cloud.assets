@@ -21,6 +21,21 @@ namespace Unity.Cloud.Assets
         public AssetDescriptor Descriptor { get; }
 
         /// <inheritdoc />
+        public bool IsFrozen { get; set; }
+
+        /// <inheritdoc />
+        public int VersionNumber { get; set; }
+
+        /// <inheritdoc />
+        public string Changelog { get; set; }
+
+        /// <inheritdoc />
+        public AssetVersion ParentVersion { get; set; }
+
+        /// <inheritdoc />
+        public int ParentVersionNumber { get; set; }
+
+        /// <inheritdoc />
         public ProjectDescriptor SourceProject { get; set; }
 
         /// <inheritdoc />
@@ -38,8 +53,11 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc />
         public IEnumerable<string> SystemTags { get; set; }
 
-        /// Not exposed in the interface.
-        public IEnumerable<string> Labels { get; set; }
+        /// <inheritdoc />
+        public IEnumerable<VersionLabelDescriptor> Labels { get; set; }
+
+        /// <inheritdoc />
+        public IEnumerable<VersionLabelDescriptor> ArchivedLabels { get; set; }
 
         /// <inheritdoc />
         public AssetType Type { get; set; } = AssetType.Other;
@@ -52,9 +70,6 @@ namespace Unity.Cloud.Assets
 
         /// <inheritdoc />
         public string Status { get; set; }
-
-        /// Not exposed in the interface.
-        public bool IsFrozen { get; set; }
 
         /// <inheritdoc />
         public AuthoringInfo AuthoringInfo { get; set; }
@@ -88,24 +103,7 @@ namespace Unity.Cloud.Assets
             if (!m_LinkedProjects.Contains(projectDescriptor))
                 throw new InvalidArgumentException("The asset does not belong to the specified project.");
 
-            return new Asset(m_DataSource, new AssetDescriptor(projectDescriptor, Descriptor.AssetId, Descriptor.AssetVersion))
-            {
-                m_LinkedProjects = m_LinkedProjects.ToArray(),
-                SourceProject = SourceProject,
-                Name = Name,
-                Description = Description,
-                Tags = Tags?.ToArray(),
-                SystemTags = SystemTags?.ToArray(),
-                Labels = Labels?.ToArray(),
-                Type = Type,
-                PreviewFile = PreviewFile,
-                Status = Status,
-                IsFrozen = IsFrozen,
-                AuthoringInfo = AuthoringInfo,
-                Datasets = Datasets?.ToArray(),
-                Files = Files?.ToArray(),
-                MetadataEntity = {Properties = MetadataEntity.Properties},
-            };
+            return Copy(new AssetDescriptor(projectDescriptor, Descriptor.AssetId, Descriptor.AssetVersion));
         }
 
         /// <inheritdoc />
@@ -135,6 +133,30 @@ namespace Unity.Cloud.Assets
         public Task UpdateStatusAsync(AssetStatusAction statusAction, CancellationToken cancellationToken)
         {
             return m_DataSource.UpdateAssetStatusAsync(Descriptor, statusAction, cancellationToken);
+        }
+
+        /// <inheritdoc />
+        public async Task<IAsset> CreateUnfrozenVersionAsync(CancellationToken cancellationToken)
+        {
+            var version = await m_DataSource.CreateUnfrozenAssetVersionAsync(Descriptor, cancellationToken);
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var assetDescriptor = new AssetDescriptor(Descriptor.ProjectDescriptor, Descriptor.AssetId, version);
+            var assetData = await m_DataSource.GetAssetAsync(assetDescriptor, FieldsFilter.DefaultAssetIncludes, cancellationToken);
+            return assetData.From(m_DataSource, assetDescriptor, FieldsFilter.DefaultAssetIncludes);
+        }
+
+        /// <inheritdoc />
+        public async Task<int> FreezeAsync(string changeLog, CancellationToken cancellationToken)
+        {
+            return await m_DataSource.FreezeAssetVersionAsync(Descriptor, changeLog, cancellationToken);
+        }
+
+        /// <inheritdoc />
+        public AssetVersionQueryBuilder QueryAssetVersions()
+        {
+            return new AssetVersionQueryBuilder(m_DataSource, Descriptor.ProjectDescriptor, Descriptor.AssetId);
         }
 
         /// <inheritdoc />
@@ -314,6 +336,24 @@ namespace Unity.Cloud.Assets
         }
 
         /// <inheritdoc />
+        public AssetLabelQueryBuilder QueryVersionLabels()
+        {
+            return new AssetLabelQueryBuilder(m_DataSource, Descriptor.ProjectDescriptor, Descriptor.AssetId);
+        }
+
+        /// <inheritdoc />
+        public Task AssignVersionLabelsAsync(IEnumerable<string> labels, CancellationToken cancellationToken)
+        {
+            return m_DataSource.AssignVersionLabelsAsync(Descriptor, labels, cancellationToken);
+        }
+
+        /// <inheritdoc />
+        public Task UnassignVersionLabelsAsync(IEnumerable<string> labels, CancellationToken cancellationToken)
+        {
+            return m_DataSource.UnassignVersionLabelsAsync(Descriptor, labels, cancellationToken);
+        }
+
+        /// <inheritdoc />
         public string SerializeIdentifiers()
         {
             return Descriptor.ToJson();
@@ -342,6 +382,29 @@ namespace Unity.Cloud.Assets
             var data = await m_DataSource.GetAssetAsync(Descriptor, FieldsFilter.DefaultFileIncludes, cancellationToken);
 
             this.MapFrom(m_DataSource, Descriptor.OrganizationId, data, FieldsFilter.DefaultFileIncludes);
+        }
+
+        IAsset Copy(AssetDescriptor assetDescriptor)
+        {
+            return new Asset(m_DataSource, assetDescriptor)
+            {
+                m_LinkedProjects = m_LinkedProjects.ToArray(),
+                SourceProject = SourceProject,
+                Name = Name,
+                Description = Description,
+                Tags = Tags?.ToArray(),
+                SystemTags = SystemTags?.ToArray(),
+                Labels = Labels?.ToArray(),
+                ArchivedLabels = ArchivedLabels?.ToArray(),
+                Type = Type,
+                PreviewFile = PreviewFile,
+                Status = Status,
+                IsFrozen = IsFrozen,
+                AuthoringInfo = AuthoringInfo,
+                Datasets = Datasets?.ToArray(),
+                Files = Files?.ToArray(),
+                MetadataEntity = {Properties = MetadataEntity.Properties},
+            };
         }
     }
 }

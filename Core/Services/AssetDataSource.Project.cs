@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -32,7 +33,7 @@ namespace Unity.Cloud.Assets
                 cancellationToken.ThrowIfCancellationRequested();
 
                 var request = new ListProjectsRequest(organizationId, pageNumber, pageSize);
-                var response = await m_ServiceHttpClient.GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(),
+                var response = await RateLimitedServiceClient(request, HttpMethod.Get).GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(),
                     cancellationToken);
 
                 var jsonContent = await response.GetContentAsString();
@@ -64,7 +65,7 @@ namespace Unity.Cloud.Assets
             cancellationToken.ThrowIfCancellationRequested();
 
             var request = new ProjectRequest(projectDescriptor.ProjectId);
-            var response = await m_ServiceHttpClient.GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(),
+            var response = await RateLimitedServiceClient(request, HttpMethod.Get).GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(),
                 cancellationToken);
 
             var jsonContent = await response.GetContentAsString();
@@ -80,7 +81,7 @@ namespace Unity.Cloud.Assets
             cancellationToken.ThrowIfCancellationRequested();
 
             var request = new CreateProjectRequest(organizationId, projectCreation);
-            var response = await m_ServiceHttpClient.PostAsync(GetPublicRequestUri(request), request.ConstructBody(),
+            var response = await RateLimitedServiceClient(request, HttpMethod.Post).PostAsync(GetPublicRequestUri(request), request.ConstructBody(),
                 ServiceHttpClientOptions.Default(), cancellationToken);
 
             var jsonContent = await response.GetContentAsString();

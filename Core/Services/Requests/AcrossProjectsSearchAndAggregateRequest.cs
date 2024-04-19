@@ -10,8 +10,7 @@ namespace Unity.Cloud.Assets
     /// </summary>
     class AcrossProjectsSearchAndAggregateRequest : OrganizationRequest
     {
-        /// <summary>Accessor for CrossProjectsSearchAndAggregateRequestParameters </summary>
-        AcrossProjectsSearchAndAggregateRequestParameters Parameters { get; }
+        readonly SearchAndAggregateRequestParameters m_Parameters;
 
         /// <summary>
         /// Search Request Object.
@@ -19,13 +18,12 @@ namespace Unity.Cloud.Assets
         /// </summary>
         /// <param name="organizationId">Genesis ID of the organization</param>
         /// <param name="parameters">The search asset request criteria.</param>
-        public AcrossProjectsSearchAndAggregateRequest(OrganizationId organizationId,
-            AcrossProjectsSearchAndAggregateRequestParameters parameters = default)
+        public AcrossProjectsSearchAndAggregateRequest(OrganizationId organizationId, SearchAndAggregateRequestParameters parameters = default)
             : base(organizationId)
         {
             m_RequestUrl += $"/assets/aggregations/search";
 
-            Parameters = parameters;
+            m_Parameters = parameters;
         }
 
         /// <summary>
@@ -34,7 +32,7 @@ namespace Unity.Cloud.Assets
         /// <returns>A </returns>
         public override HttpContent ConstructBody()
         {
-            var body = IsolatedSerialization.SerializeWithDefaultConverters(Parameters);
+            var body = IsolatedSerialization.SerializeWithDefaultConverters(m_Parameters);
             return new StringContent(body, Encoding.UTF8, "application/json");
         }
     }

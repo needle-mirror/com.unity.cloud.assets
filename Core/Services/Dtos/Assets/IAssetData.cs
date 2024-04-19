@@ -23,6 +23,36 @@ namespace Unity.Cloud.Assets
         AssetVersion Version { get; }
 
         /// <summary>
+        /// Whether the asset is frozen.
+        /// </summary>
+        [DataMember(Name = "isFrozen")]
+        bool IsFrozen { get; set; }
+
+        /// <summary>
+        /// The version number of the asset.
+        /// </summary>
+        [DataMember(Name = "versionNumber")]
+        int VersionNumber { get; set; }
+
+        /// <summary>
+        /// The change log of this asset version.
+        /// </summary>
+        [DataMember(Name = "changeLog")]
+        string Changelog { get; set; }
+
+        /// <summary>
+        /// The parent version of the asset.
+        /// </summary>
+        [DataMember(Name = "paraentAssetVersion")]
+        AssetVersion ParentVersion { get; set; }
+
+        /// <summary>
+        /// The parent version number of the asset.
+        /// </summary>
+        [DataMember(Name = "parentVersionNumber")]
+        int ParentVersionNumber { get; set; }
+
+        /// <summary>
         /// The tags of the asset.
         /// </summary>
         [DataMember(Name = "systemTags")]
@@ -35,16 +65,16 @@ namespace Unity.Cloud.Assets
         IEnumerable<string> Labels { get; set; }
 
         /// <summary>
+        /// The labels of the asset.
+        /// </summary>
+        [DataMember(Name = "archivedLabels")]
+        IEnumerable<string> ArchivedLabels { get; set; }
+
+        /// <summary>
         /// The status of the asset.
         /// </summary>
         [DataMember(Name = "status")]
         string Status { get; set; }
-
-        /// <summary>
-        /// Whether the asset is frozen.
-        /// </summary>
-        [DataMember(Name = "isFrozen")]
-        bool IsFrozen { get; set; }
 
         /// <summary>
         /// The source id of the project the asset belongs to.

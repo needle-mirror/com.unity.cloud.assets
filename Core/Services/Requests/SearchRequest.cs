@@ -11,8 +11,7 @@ namespace Unity.Cloud.Assets
     /// </summary>
     class SearchRequest : ProjectRequest
     {
-        /// <summary>Accessor for searchRequestParameter </summary>
-        public SearchRequestParameters Parameters { get; }
+        readonly SearchRequestParameters m_RequestParameters;
 
         /// <summary>
         /// Search Request Object.
@@ -25,7 +24,7 @@ namespace Unity.Cloud.Assets
         {
             m_RequestUrl += $"/assets/search";
 
-            Parameters = parameters;
+            m_RequestParameters = parameters;
         }
 
         /// <summary>
@@ -34,7 +33,7 @@ namespace Unity.Cloud.Assets
         /// <returns>A </returns>
         public override HttpContent ConstructBody()
         {
-            var body = IsolatedSerialization.SerializeWithDefaultConverters(Parameters);
+            var body = IsolatedSerialization.SerializeWithDefaultConverters(m_RequestParameters);
             return new StringContent(body, Encoding.UTF8, "application/json");
         }
     }

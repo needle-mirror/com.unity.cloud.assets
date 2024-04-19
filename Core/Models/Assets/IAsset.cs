@@ -17,6 +17,31 @@ namespace Unity.Cloud.Assets
         AssetDescriptor Descriptor { get; }
 
         /// <summary>
+        /// Whether the asset version is frozen.
+        /// </summary>
+        bool IsFrozen => false;
+
+        /// <summary>
+        /// The sequenced version number of the asset. This will only be populated if the version is frozen.
+        /// </summary>
+        int VersionNumber => -1;
+
+        /// <summary>
+        /// The change log of the asset version.
+        /// </summary>
+        string Changelog => string.Empty;
+
+        /// <summary>
+        /// The version id from which this version was branched.
+        /// </summary>
+        AssetVersion ParentVersion => AssetVersion.None;
+
+        /// <summary>
+        /// The sequence id from which this version was branched.
+        /// </summary>
+        int ParentVersionNumber => -1;
+
+        /// <summary>
         /// The source project of the asset.
         /// </summary>
         ProjectDescriptor SourceProject { get; }
@@ -47,10 +72,14 @@ namespace Unity.Cloud.Assets
         IEnumerable<string> SystemTags { get; }
 
         /// <summary>
-        /// The tags of the asset.
+        /// The labels associated to the asset version.
         /// </summary>
-        /// Disabled until we have versioning support.
-        // IEnumerable<string> Labels { get; }
+        IEnumerable<VersionLabelDescriptor> Labels { get; }
+
+        /// <summary>
+        /// The labels no longer associated to the asset version.
+        /// </summary>
+        IEnumerable<VersionLabelDescriptor> ArchivedLabels { get; }
 
         /// <summary>
         /// The type of the asset.
@@ -68,12 +97,6 @@ namespace Unity.Cloud.Assets
         string Status { get; }
 
         /// <summary>
-        /// Whether the asset is frozen.
-        /// </summary>
-        /// Disabled until we have versioning support.
-        // bool IsFrozen { get; }
-
-        /// <summary>
         /// The creation and update information of the asset.
         /// </summary>
         AuthoringInfo AuthoringInfo { get; }
@@ -87,11 +110,11 @@ namespace Unity.Cloud.Assets
         /// Returns an asset in the context of the specified project.
         /// </summary>
         /// <param name="projectDescriptor">The descriptor of the project. </param>
-        /// <returns></returns>
+        /// <returns>A copy of the asset with a different parent project. </returns>
         IAsset WithProject(ProjectDescriptor projectDescriptor);
 
         /// <summary>
-        /// Refreshes the asset with the specified fields.
+        /// Fetches the latest changes.
         /// </summary>
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task with no result. </returns>
@@ -100,7 +123,7 @@ namespace Unity.Cloud.Assets
         /// <summary>
         /// Updates the asset.
         /// </summary>
-        /// <param name="assetUpdate">The object containing the asset information to update. </param>
+        /// <param name="assetUpdate">The object containing information to update this version of the asset. </param>
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task with no result. </returns>
         Task UpdateAsync(IAssetUpdate assetUpdate, CancellationToken cancellationToken);
@@ -112,6 +135,27 @@ namespace Unity.Cloud.Assets
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task with no result. </returns>
         Task UpdateStatusAsync(AssetStatusAction statusAction, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Creates a new unfrozen version of the asset.
+        /// </summary>
+        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
+        /// <returns>A task whose result is a new version of the asset. </returns>
+        Task<IAsset> CreateUnfrozenVersionAsync(CancellationToken cancellationToken) => throw new NotImplementedException();
+
+        /// <summary>
+        /// Submits the asset to freeze the current version.
+        /// </summary>
+        /// <param name="changeLog">The change log for the new version. </param>
+        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
+        /// <returns>A task whose result is a version number. </returns>
+        Task<int> FreezeAsync(string changeLog, CancellationToken cancellationToken) => throw new NotImplementedException();
+
+        /// <summary>
+        /// Returns an object that can be used to query asset versions.
+        /// </summary>
+        /// <returns>A <see cref="AssetVersionQueryBuilder"/>. </returns>
+        AssetVersionQueryBuilder QueryAssetVersions() => throw new NotImplementedException();
 
         /// <summary>
         /// Returns an enumeration of the asset's linked <see cref="IAssetProject"/>.
@@ -203,6 +247,28 @@ namespace Unity.Cloud.Assets
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task whose result is an async enumeration of <see cref="IFile"/> referenced by the asset. </returns>
         IAsyncEnumerable<IFile> ListFilesAsync(Range range, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Returns an object that can be used to query asset labels across versions.
+        /// </summary>
+        /// <returns>A <see cref="AssetLabelQueryBuilder"/>. </returns>
+        AssetLabelQueryBuilder QueryVersionLabels() => throw new NotImplementedException();
+
+        /// <summary>
+        /// Adds labels to this asset.
+        /// </summary>
+        /// <param name="labels">The collection of labels to add. </param>
+        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
+        /// <returns>A task with no result. </returns>
+        Task AssignVersionLabelsAsync(IEnumerable<string> labels, CancellationToken cancellationToken) => throw new NotImplementedException();
+
+        /// <summary>
+        /// Remove labels from this asset.
+        /// </summary>
+        /// <param name="labels">The collection of labels to remove. </param>
+        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
+        /// <returns>A task with no result. </returns>
+        Task UnassignVersionLabelsAsync(IEnumerable<string> labels, CancellationToken cancellationToken) => throw new NotImplementedException();
 
         /// <summary>
         /// Returns a JSON serialized string of the asset's identifiers.

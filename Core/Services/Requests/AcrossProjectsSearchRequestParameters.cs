@@ -14,12 +14,10 @@ namespace Unity.Cloud.Assets
         /// <summary>
         /// The across projects search request parameters.
         /// </summary>
-        /// <param name="projectIds">project ids param</param>
-        /// <param name="filter">filter param</param>
+        /// <param name="projectIds"></param>
         /// <param name="includeFields">The fields to be returned.</param>
-        /// <param name="pagination">pagination param</param>
-        public AcrossProjectsSearchRequestParameters(IEnumerable<ProjectId> projectIds, SearchRequestFilter filter = default, FieldsFilter includeFields = default, SearchRequestPagination pagination = default)
-            : base(filter, includeFields, pagination)
+        public AcrossProjectsSearchRequestParameters(IEnumerable<ProjectId> projectIds, FieldsFilter includeFields = default)
+            : base(includeFields)
         {
             ProjectIds = projectIds.ToArray();
         }
@@ -28,6 +26,6 @@ namespace Unity.Cloud.Assets
         /// Parameter project ids of AcrossProjectsSearchRequest
         /// </summary>
         [DataMember(Name = "projectIds", EmitDefaultValue = false)]
-        public ProjectId[] ProjectIds { get; set; }
+        public ProjectId[] ProjectIds { get; }
     }
 }

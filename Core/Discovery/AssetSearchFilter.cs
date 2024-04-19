@@ -16,7 +16,6 @@ namespace Unity.Cloud.Assets
         public QueryListParameter<CollectionPath> Collections { get; } = new();
 
         public AssetSearchCriteria Include() => m_Include;
-
         public AssetSearchCriteria Exclude() => m_Exclude;
         public AssetSearchCriteriaWithMinimumMatch Any() => m_Any;
 

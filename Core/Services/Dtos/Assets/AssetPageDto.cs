@@ -9,6 +9,15 @@ namespace Unity.Cloud.Assets
         public string Token { get; set; }
 
         [DataMember(Name = "assets")]
-        public AssetData[] Assets { get; set; }
+        AssetData[] m_Assets;
+
+        [DataMember(Name = "results")]
+        AssetData[] m_Results;
+
+        public AssetData[] Assets
+        {
+            get => m_Results ?? m_Assets;
+            set => m_Assets = value;
+        }
     }
 }

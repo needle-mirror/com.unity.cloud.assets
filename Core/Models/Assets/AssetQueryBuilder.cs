@@ -86,7 +86,7 @@ namespace Unity.Cloud.Assets
         }
 
         /// <summary>
-        /// Executes the query and returns the results.
+        /// Executes the query and returns the assets that satisfy the critiera.
         /// </summary>
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>An async enumeration of <see cref="IAsset"/>. </returns>
@@ -95,19 +95,7 @@ namespace Unity.Cloud.Assets
             var includeFields = FieldsFilter.DefaultAssetIncludes;
             includeFields.AssetFields |= AssetFields.metadata | AssetFields.previewFileUrl;
 
-            var pagination = new PaginationData
-            {
-                Range = m_Range,
-                SortingField = m_SortingField,
-                SortingOrder = m_SortingOrder
-            };
-
-            var searchData = new SearchData
-            {
-                AssetSearchFilter = m_AssetSearchFilter ?? new AssetSearchFilter(),
-                IncludedFields = includeFields,
-                Pagination = pagination,
-            };
+            var pagination = new SearchRequestPagination(m_SortingField, m_SortingOrder);
 
             var projectIds = m_ProjectIds.ToArray();
 
@@ -115,21 +103,33 @@ namespace Unity.Cloud.Assets
             {
                 case 1:
                 {
+                    var parameters = new SearchRequestParameters(includeFields)
+                    {
+                        Filter = m_AssetSearchFilter?.From(),
+                        Pagination = pagination,
+                        PaginationRange = m_Range
+                    };
                     var descriptor = new ProjectDescriptor(m_OrganizationId, projectIds[0]);
-                    var enumerator = m_AssetDataSource.ListAssetsAsync(descriptor, searchData, cancellationToken);
+                    var enumerator = m_AssetDataSource.ListAssetsAsync(descriptor, parameters, cancellationToken);
                     await foreach (var assetData in enumerator)
                     {
-                        yield return assetData.From(m_AssetDataSource, descriptor, searchData.IncludedFields);
+                        yield return assetData.From(m_AssetDataSource, descriptor, includeFields);
                     }
 
                     break;
                 }
                 default:
                 {
-                    var enumerator = m_AssetDataSource.ListAssetsAsync(m_OrganizationId, projectIds, searchData, cancellationToken);
+                    var parameters = new AcrossProjectsSearchRequestParameters(projectIds, includeFields)
+                    {
+                        Filter = m_AssetSearchFilter?.From(),
+                        Pagination = pagination,
+                        PaginationRange = m_Range
+                    };
+                    var enumerator = m_AssetDataSource.ListAssetsAsync(m_OrganizationId, projectIds, parameters, cancellationToken);
                     await foreach (var assetData in enumerator)
                     {
-                        yield return assetData.From(m_AssetDataSource, m_OrganizationId, projectIds, searchData.IncludedFields);
+                        yield return assetData.From(m_AssetDataSource, m_OrganizationId, projectIds, includeFields);
                     }
 
                     break;

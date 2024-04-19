@@ -120,6 +120,26 @@ namespace Unity.Cloud.Assets
         }
 
         /// <inheritdoc />
+        public async Task<IVersionLabel> CreateVersionLabelAsync(OrganizationId organizationId, IVersionLabelCreation versionLabelCreation, CancellationToken cancellationToken)
+        {
+            var data = await m_DataSource.CreateVersionLabelAsync(organizationId, versionLabelCreation.From(), cancellationToken);
+            return data.From(m_DataSource, organizationId);
+        }
+
+        /// <inheritdoc />
+        public VersionLabelQueryBuilder QueryVersionLabels(OrganizationId organizationId)
+        {
+            return new VersionLabelQueryBuilder(m_DataSource, organizationId);
+        }
+
+        /// <inheritdoc />
+        public async Task<IVersionLabel> GetVersionLabelAsync(VersionLabelDescriptor versionLabelDescriptor, CancellationToken cancellationToken)
+        {
+            var data = await m_DataSource.GetVersionLabelAsync(versionLabelDescriptor, cancellationToken);
+            return data.From(m_DataSource, versionLabelDescriptor);
+        }
+
+        /// <inheritdoc />
         public AssetDescriptor DeserializeAssetIdentifiers(string jsonSerialization)
         {
             // Verify old deprecated serialization format first

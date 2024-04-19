@@ -14,6 +14,15 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc cref="AssetVersion"/>
         public SearchCriteria<string> Version { get; } = new(nameof(AssetDescriptor.AssetVersion), "assetVersion");
 
+        /// <inheritdoc cref="IAsset.IsFrozen"/>
+        public NullableSearchCriteria<bool> IsFrozen { get; } = new(nameof(IAsset.IsFrozen), "isFrozen");
+
+        /// <inheritdoc cref="IAsset.ParentVersion"/>
+        public SearchCriteria<string> ParentVersion { get; } = new(nameof(IAsset.ParentVersion), "parentAssetVersion");
+
+        /// <inheritdoc cref="IAsset.ParentVersionNumber"/>
+        public NullableSearchCriteria<int> ParentVersionNumber { get; } = new(nameof(IAsset.ParentVersionNumber), "parentVersionNumber");
+
         /// <inheritdoc cref="IAsset.Name"/>
         public StringSearchCriteria Name { get; } = new(nameof(IAsset.Name), "name");
 
@@ -31,6 +40,12 @@ namespace Unity.Cloud.Assets
 
         /// <inheritdoc cref="IAsset.SystemTags"/>
         public ListSearchCriteria<string> SystemTags { get; } = new(nameof(IAsset.SystemTags), "systemTags");
+
+        /// <inheritdoc cref="IAsset.Labels"/>
+        public ListSearchCriteria<string> Labels { get; } = new(nameof(IAsset.Labels), "labels");
+
+        /// <inheritdoc cref="IAsset.ArchivedLabels"/>
+        public ListSearchCriteria<string> ArchivedLabels { get; } = new(nameof(IAsset.ArchivedLabels), "archivedLabels");
 
         /// <inheritdoc cref="Asset.Metadata"/>
         public MetadataSearchCriteria Metadata { get; } = new(nameof(Asset.Metadata), "metadata");

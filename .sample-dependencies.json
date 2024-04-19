@@ -18,7 +18,6 @@
   ],
   "PackageDependencies": {
     "com.unity.cloud.identity": "1.0.0",
-    "com.unity.editorcoroutines": "1.0.0",
     "com.unity.modules.uielements": "1.0.0",
     "com.unity.modules.unitywebrequesttexture": "1.0.0"
   }

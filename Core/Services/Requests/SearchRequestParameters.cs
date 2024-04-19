@@ -13,21 +13,17 @@ namespace Unity.Cloud.Assets
         /// <summary>
         /// The request to read the assets.
         /// </summary>
-        /// <param name="filter">filter param</param>
         /// <param name="includeFields">The fields to be returned.</param>
-        /// <param name="pagination">pagination param</param>
-        public SearchRequestParameters(SearchRequestFilter filter = default, FieldsFilter includeFields = default, SearchRequestPagination pagination = default)
+        public SearchRequestParameters(FieldsFilter includeFields = default)
         {
-            Filter = filter;
             includeFields?.Parse(AddIncludeField);
-            Pagination = pagination;
         }
 
         /// <summary>
         /// Parameter filter of SearchRequest
         /// </summary>
         [DataMember(Name = "filter", EmitDefaultValue = false)]
-        public SearchRequestFilter Filter { get; }
+        public ISearchRequestFilter Filter { get; set; }
 
         /// <summary>
         /// The fields to be returned.
@@ -39,7 +35,9 @@ namespace Unity.Cloud.Assets
         /// Parameter pagination of SearchRequest
         /// </summary>
         [DataMember(Name = "pagination", EmitDefaultValue = false)]
-        public SearchRequestPagination Pagination { get; }
+        public SearchRequestPagination Pagination { get; set; }
+
+        public Range PaginationRange { get; set; } = Range.All;
 
         void AddIncludeField(string field)
         {
