@@ -48,7 +48,7 @@ namespace Unity.Cloud.Documentation.Assets
             CurrentOrganization = organization;
             if (CurrentOrganization != null)
             {
-                GetProjects();
+                _ = GetProjectsAsync();
             }
         }
 
@@ -58,7 +58,7 @@ namespace Unity.Cloud.Documentation.Assets
             CurrentProject = project;
             if (CurrentProject != null)
             {
-                GetAssets();
+                _ = GetAssetsAsync();
             }
         }
 
@@ -74,6 +74,7 @@ namespace Unity.Cloud.Documentation.Assets
                 {
                     organizations.Add(organization);
                 }
+
                 m_AvailableOrganizations = organizations.ToArray();
             }
             catch (OperationCanceledException oe)
@@ -105,7 +106,7 @@ namespace Unity.Cloud.Documentation.Assets
                 var asset = await CurrentProject.CreateAssetAsync(assetCreation, cancellationTokenSrc.Token);
                 if (asset != null)
                 {
-                    GetAssets();
+                    _ = GetAssetsAsync();
                 }
             }
             catch (Exception e)
@@ -137,7 +138,7 @@ namespace Unity.Cloud.Documentation.Assets
             }
         }
 
-        public void GetProjects()
+        public async Task GetProjectsAsync()
         {
             m_ProjectCancellationTokenSrc.Cancel();
             m_ProjectCancellationTokenSrc.Dispose();
@@ -145,8 +146,16 @@ namespace Unity.Cloud.Documentation.Assets
 
             try
             {
-                var projects = PlatformServices.AssetRepository.ListAssetProjectsAsync(CurrentOrganization.Id, Range.All, m_ProjectCancellationTokenSrc.Token);
-                _ = PopulateProjectsAsync(projects);
+                var token = m_ProjectCancellationTokenSrc.Token;
+                var projects = PlatformServices.AssetRepository.ListAssetProjectsAsync(CurrentOrganization.Id, Range.All, token);
+
+                AvailableProjects.Clear();
+                CurrentProject = null;
+
+                await foreach (var project in projects)
+                {
+                    AvailableProjects.Add(project);
+                }
             }
             catch (OperationCanceledException oe)
             {
@@ -162,18 +171,7 @@ namespace Unity.Cloud.Documentation.Assets
             }
         }
 
-        async Task PopulateProjectsAsync(IAsyncEnumerable<IAssetProject> projects)
-        {
-            AvailableProjects.Clear();
-            CurrentProject = null;
-
-            await foreach (var project in projects.WithCancellation(m_ProjectCancellationTokenSrc.Token))
-            {
-                AvailableProjects.Add(project);
-            }
-        }
-
-        void GetAssets()
+        async Task GetAssetsAsync()
         {
             m_AssetCancellationTokenSrc.Cancel();
             m_AssetCancellationTokenSrc.Dispose();
@@ -183,7 +181,14 @@ namespace Unity.Cloud.Documentation.Assets
             {
                 var token = m_AssetCancellationTokenSrc.Token;
                 var assets = CurrentProject.QueryAssets().ExecuteAsync(token);
-                _ = PopulateAssetsAsync(assets, token);
+
+                AvailableAssets.Clear();
+                CurrentAsset = null;
+
+                await foreach (var asset in assets)
+                {
+                    AvailableAssets.Add(asset);
+                }
             }
             catch (OperationCanceledException oe)
             {
@@ -196,25 +201,6 @@ namespace Unity.Cloud.Documentation.Assets
             catch (Exception e)
             {
                 Debug.LogError(e);
-            }
-        }
-
-        async Task PopulateAssetsAsync(IAsyncEnumerable<IAsset> assets, CancellationToken token)
-        {
-            AvailableAssets.Clear();
-            CurrentAsset = null;
-
-            try
-            {
-                await foreach (var asset in assets.WithCancellation(token))
-                {
-                    AvailableAssets.Add(asset);
-                }
-            }
-            catch (Exception e)
-            {
-                Debug.LogError("Could not load assets: " + e);
-                throw;
             }
         }
     }

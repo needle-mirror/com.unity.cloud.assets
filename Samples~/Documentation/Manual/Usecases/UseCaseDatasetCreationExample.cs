@@ -149,11 +149,9 @@ namespace Unity.Cloud.Documentation.Assets
                 Tags = new List<string> {"Custom"}
             };
 
-            var cancellationTokenSrc = new CancellationTokenSource();
-
             try
             {
-                var dataset = await CurrentAsset.CreateDatasetAsync(datasetCreation, cancellationTokenSrc.Token);
+                var dataset = await CurrentAsset.CreateDatasetAsync(datasetCreation, default);
                 Datasets.Add(dataset);
 
                 Debug.Log($"Asset dataset creation: {dataset.Name} added.");

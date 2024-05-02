@@ -30,7 +30,7 @@ namespace Unity.Cloud.Assets
         public IEnumerable<string> InputFiles { get; set; }
 
         /// <inheritdoc/>
-        public WorkflowType WorkflowType { get; set; }
+        public string WorkflowType { get; set; }
 
         /// <inheritdoc/>
         public TransformationStatus Status { get; set; }

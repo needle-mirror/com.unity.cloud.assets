@@ -161,11 +161,10 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
                 return;
             }
 
-            var cancellationTokenSource = new CancellationTokenSource();
             var updateTasks = new List<Task>
             {
-                m_CurrentDataset.UpdateAsync(m_DatasetUpdate, cancellationTokenSource.Token),
-                m_MetadataController.UpdateMetadataAsync(cancellationTokenSource.Token),
+                m_CurrentDataset.UpdateAsync(m_DatasetUpdate, default),
+                m_MetadataController.UpdateMetadataAsync(default),
             };
 
             try
@@ -175,7 +174,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
                 if (updateTasks.TrueForAll(x => x.IsCompletedSuccessfully))
                     DialogService.ShowMessage("Update complete", "The dataset has been saved successfully.");
 
-                await m_CurrentDataset.RefreshAsync(cancellationTokenSource.Token);
+                await m_CurrentDataset.RefreshAsync(default);
 
                 OpenDataset(m_CurrentDataset, true);
             }
@@ -277,13 +276,11 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
             try
             {
-                var cancellationTokenSource = new CancellationTokenSource();
-
-                var creation = new TransformationCreation()
+                var creation = new TransformationCreation
                 {
                     WorkflowType = workflowType
                 };
-                var transformation = await m_CurrentDataset.StartTransformationAsync(creation, cancellationTokenSource.Token);
+                var transformation = await m_CurrentDataset.StartTransformationAsync(creation, default);
                 m_TransformationController.AddTransformationProgress(transformation);
             }
             catch (OperationCanceledException oe)

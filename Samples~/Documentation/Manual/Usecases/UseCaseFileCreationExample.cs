@@ -280,13 +280,12 @@ namespace Unity.Cloud.Documentation.Assets
                 Tags = new List<string> {"Texture", "Gray"}
             };
 
-            var cancellationTokenSrc = new CancellationTokenSource();
             try
             {
                 var progress = new LogProgress();
 
                 var fileStream = File.OpenRead(filePath);
-                var file = await dataset.UploadFileAsync(fileCreation, fileStream, progress, cancellationTokenSrc.Token);
+                var file = await dataset.UploadFileAsync(fileCreation, fileStream, progress, default);
                 Files.Add(file);
 
                 Debug.Log($"Asset file upload: {file.Descriptor.Path} added and uploaded.");

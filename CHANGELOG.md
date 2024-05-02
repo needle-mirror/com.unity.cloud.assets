@@ -5,6 +5,20 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [1.2.0-exp.2] - 2024-05-02
+
+### Added
+- Added Apple Privacy Manifest documentation.
+
+### Changed
+- Changed slightly the rate limitation algorithm to completely prevent any rate-limit exceptions while keeping the throughput almost optimal.
+
+### Fixed
+- `IsFrozen` property in `IAsset` now returns the correct value.
+- Asset versioning related properties in `IAsset` are serialized correctly by `IAsset.Serialize()`
+- Fixed overlapping text in the Asset Manager sample.
+- Fixed video transformations not starting.
+
 ## [1.2.0-exp.1] - 2024-04-19
 
 ### Added

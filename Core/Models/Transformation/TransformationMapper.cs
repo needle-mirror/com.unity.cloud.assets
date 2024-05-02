@@ -9,7 +9,7 @@ namespace Unity.Cloud.Assets
             transformation.OutputDatasetId = data.OutputDatasetId;
             transformation.LinkDatasetId = data.LinkDatasetId;
             transformation.InputFiles = data.InputFiles;
-            transformation.WorkflowType = data.WorkflowType;
+            transformation.WorkflowType = WorkflowTypeUtilities.FromJsonValue(data.WorkflowType);
             transformation.Status = data.Status;
             transformation.ErrorMessage = data.ErrorMessage;
             transformation.Progress = data.Progress;

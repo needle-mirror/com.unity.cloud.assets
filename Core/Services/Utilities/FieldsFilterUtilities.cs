@@ -10,6 +10,7 @@ namespace Unity.Cloud.Assets
         /// </summary>
         static readonly string[] s_DefaultAssetFields =
         {
+            "isFrozen",
             "versionNumber",
             "changelog",
             "parentAssetVersion",

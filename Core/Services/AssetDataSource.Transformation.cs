@@ -14,7 +14,7 @@ namespace Unity.Cloud.Assets
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var request = new StartTransformationRequest(workflowType, inputFiles, datasetDescriptor.ProjectId, datasetDescriptor.AssetId, datasetDescriptor.AssetVersion, datasetDescriptor.DatasetId);
+            var request = new StartTransformationRequest(workflowType.ToJsonValue(), inputFiles, datasetDescriptor.ProjectId, datasetDescriptor.AssetId, datasetDescriptor.AssetVersion, datasetDescriptor.DatasetId);
             var response = await RateLimitedServiceClient(request, HttpMethod.Post).PostAsync(GetPublicRequestUri(request), request.ConstructBody(),
                 ServiceHttpClientOptions.Default(), cancellationToken);
 

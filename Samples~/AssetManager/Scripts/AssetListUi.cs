@@ -48,13 +48,34 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             protected override void OnBindItem(VisualElement element, int i)
             {
                 var asset = m_List[i];
+
+                string versionText;
+                if (asset.IsFrozen)
+                {
+                    versionText = $"Ver. {asset.VersionNumber}";
+                }
+                else if (asset.ParentVersionNumber < 1)
+                {
+                    versionText = $"New";
+                }
+                else
+                {
+                    versionText = $"Editing Ver. {asset.ParentVersionNumber}";
+                }
+                var version = asset.Descriptor.AssetVersion.ToString();
+                if (version.Length > 8)
+                {
+                    version = version[..8];
+                }
+                versionText = $"{version}\n<color=#888888>{versionText}</color>";
+
                 element.Q<Label>("TitleLabel").text = asset.Name;
                 element.Q<Label>("IngestedDateLabel").text = asset.AuthoringInfo?.Updated.ToString("MMM dd, yyyy") ?? "unknown";
                 element.Q<Label>("IngestedTimeLabel").text = asset.AuthoringInfo?.Updated.ToString("h:mm tt GMT") ?? "unknown";
                 element.Q<Label>("DescriptionLabel").text = asset.Description;
                 element.Q<Label>("TagsLabel").text = asset.Tags.FirstOrDefault();
                 element.Q<Label>("TypeLabel").text = asset.Type.ToString();
-                element.Q<Label>("VersionLabel").text = asset.Descriptor.AssetVersion.ToString();
+                element.Q<Label>("VersionLabel").text = versionText;
                 element.Q<Label>("StatusLabel").text = asset.Status;
 
                 var expandButton = element.Q<Button>("ExpandButton");

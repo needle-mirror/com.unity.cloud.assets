@@ -167,7 +167,6 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
         void OnAssetSelected(IAsset asset)
         {
-            m_AssetController.AssetListPanel?.Hide();
             m_DatasetPanel?.Hide();
             m_DatasetPanelController.Clear();
 
@@ -175,9 +174,11 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             {
                 m_AssetPanel?.Hide();
                 m_AssetPanelController.Clear();
+                m_AssetController.AssetListPanel?.Show();
             }
             else
             {
+                m_AssetController.AssetListPanel?.Hide();
                 m_AssetPanelController.OpenAsset(asset);
                 m_AssetPanel?.Show();
             }

@@ -210,11 +210,10 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
             if (PrepareAssetUpdateAsync != null) await PrepareAssetUpdateAsync.Invoke();
 
-            var cancellationTokenSource = new CancellationTokenSource();
             var updateTasks = new List<Task>
             {
-                m_CurrentAsset.UpdateAsync(m_AssetUpdate, cancellationTokenSource.Token),
-                m_MetadataController.UpdateMetadataAsync(cancellationTokenSource.Token),
+                m_CurrentAsset.UpdateAsync(m_AssetUpdate, default),
+                m_MetadataController.UpdateMetadataAsync(default),
             };
 
             try
@@ -224,7 +223,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
                 if (updateTasks.TrueForAll(x => x.IsCompletedSuccessfully))
                     DialogService.ShowMessage("Success", "The asset has been saved successfully.");
 
-                await m_CurrentAsset.RefreshAsync(cancellationTokenSource.Token);
+                await m_CurrentAsset.RefreshAsync(default);
 
                 OnAssetUpdated?.Invoke(m_CurrentAsset);
             }
@@ -298,8 +297,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             if (m_CurrentAsset == null)
                 return;
 
-            var cancellationTokenSource = new CancellationTokenSource();
-            var dataset = await m_CurrentAsset.CreateDatasetAsync(new DatasetCreation($"Dataset_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}"), cancellationTokenSource.Token);
+            var dataset = await m_CurrentAsset.CreateDatasetAsync(new DatasetCreation($"Dataset_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}"), default);
             if (dataset != null)
                 AddDatasetRow(dataset, true);
         }

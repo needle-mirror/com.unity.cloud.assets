@@ -97,7 +97,7 @@ namespace Unity.Cloud.Documentation.Assets
 
         public async Task SendAssetToReview()
         {
-            var cancellationTokenSrc = new CancellationTokenSource(k_DefaultCancellationTimeout);
+            using var cancellationTokenSrc = new CancellationTokenSource(k_DefaultCancellationTimeout);
             try
             {
                 await CurrentAsset.UpdateStatusAsync(AssetStatusAction.SendForReview, cancellationTokenSrc.Token);
@@ -114,7 +114,7 @@ namespace Unity.Cloud.Documentation.Assets
 
         public async Task ApproveInReviewAsset()
         {
-            var cancellationTokenSrc = new CancellationTokenSource(k_DefaultCancellationTimeout);
+            using var cancellationTokenSrc = new CancellationTokenSource(k_DefaultCancellationTimeout);
             try
             {
                 await CurrentAsset.UpdateStatusAsync(AssetStatusAction.Approve, cancellationTokenSrc.Token);
@@ -131,7 +131,7 @@ namespace Unity.Cloud.Documentation.Assets
 
         public async Task RejectInReviewAsset()
         {
-            var cancellationTokenSrc = new CancellationTokenSource(k_DefaultCancellationTimeout);
+            using var cancellationTokenSrc = new CancellationTokenSource(k_DefaultCancellationTimeout);
             try
             {
                 await CurrentAsset.UpdateStatusAsync(AssetStatusAction.Reject, cancellationTokenSrc.Token);

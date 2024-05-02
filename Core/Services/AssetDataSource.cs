@@ -14,11 +14,11 @@ namespace Unity.Cloud.Assets
     partial class AssetDataSource : IAssetDataSource
     {
         const int k_QueueLimit = 100000;
-        const int k_DefaultTokensPerPeriod = 100;
-        const int k_DefaultTokenLimit = 100;
-        const int k_SlowTokensPerPeriod = 20;
-        const int k_SlowTokenLimit = 20;
-        const double k_ReplenishmentPeriod = 1.25;
+        const int k_DefaultTokensPerPeriod = 50;
+        const int k_DefaultTokenLimit = 50;
+        const int k_SlowTokensPerPeriod = 10;
+        const int k_SlowTokenLimit = 10;
+        const double k_ReplenishmentPeriod = 0.55; // we add 0.05s to each period to have a safety margin
         const string k_PublicApiPath = "/assets/v1";
 
         static readonly UCLogger k_Logger = LoggerProvider.GetLogger<AssetDataSource>();
@@ -466,7 +466,7 @@ namespace Unity.Cloud.Assets
         {
             var requestType = request.GetType().ToString() + httpMethod;
 
-            if (m_HttpClients.TryGetValue(request.GetType().ToString(), out var client)) return client;
+            if (m_HttpClients.TryGetValue(requestType, out var client)) return client;
 
             if (IsSearchRequest(request))
             {

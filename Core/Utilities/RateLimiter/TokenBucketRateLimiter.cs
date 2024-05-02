@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // From https://github.com/dotnet/runtime/ at commit 06062e79faab44195f56cd7e4079b22d2380aedd
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -85,7 +86,7 @@ namespace Unity.Cloud.Assets
         private long _successfulLeasesCount;
 
         private readonly double _fillRate;
-        private readonly Timer? _renewTimer;
+        private Timer? _renewTimer;
         private readonly TokenBucketRateLimiterOptions _options;
         private readonly Deque<RequestRegistration> _queue = new Deque<RequestRegistration>();
 
@@ -154,10 +155,6 @@ namespace Unity.Cloud.Assets
 
             _idleSince = _lastReplenishmentTick = Stopwatch.GetTimestamp();
 
-            if (_options.AutoReplenishment)
-            {
-                _renewTimer = new Timer(Replenish, this, _options.ReplenishmentPeriod, _options.ReplenishmentPeriod);
-            }
         }
 
         /// <inheritdoc/>
@@ -230,6 +227,11 @@ namespace Unity.Cloud.Assets
             using var disposer = default(RequestRegistration.Disposer);
             lock (Lock)
             {
+                if (_options.AutoReplenishment && _renewTimer is null)
+                {
+                    _renewTimer = new Timer(Replenish, this, _options.ReplenishmentPeriod, _options.ReplenishmentPeriod);
+                }
+
                 if (TryLeaseUnsynchronized(tokenCount, out RateLimitLease? lease))
                 {
                     return new ValueTask<RateLimitLease>(lease);
@@ -341,14 +343,20 @@ namespace Unity.Cloud.Assets
             return true;
         }
 
-        private static void Replenish(object? state)
+        private void Replenish(object? state)
         {
             TokenBucketRateLimiter limiter = (state as TokenBucketRateLimiter)!;
             Debug.Assert(limiter is not null);
 
             // Use Stopwatch instead of DateTime.UtcNow to avoid issues on systems where the clock can change
             long nowTicks = Stopwatch.GetTimestamp();
+
             limiter!.ReplenishInternal(nowTicks);
+
+            if (!_options.AutoReplenishment || _renewTimer is null) return;
+
+            _renewTimer?.Dispose();
+            _renewTimer = null;
         }
 
         // Used in tests to avoid dealing with real time

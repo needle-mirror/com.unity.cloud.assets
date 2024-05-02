@@ -8,7 +8,6 @@
     * [Asset management](asset-management-sample.md)
     * [Collection management](asset-collection-management-sample.md)
     * [Metadata field definition management](metadata-management-sample.md)
-    * [Asset database uploader](asset-database-uploader-sample.md)
 * Use cases
     * [Aggregate assets](use-case-aggregate-assets.md)
     * [Publish and/or withdraw assets](use-case-publish-withdraw-assets.md)
@@ -27,3 +26,4 @@
     * [Modify the accepted values of field definitions](use-case-modify-fields-values.md)
     * [Start a transformation on a dataset](use-case-start-transformation-on-dataset.md)
 * [Troubleshooting](troubleshooting.md)
+* [Apple privacy manifest](apple-privacy-manifest.md)

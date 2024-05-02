@@ -131,13 +131,11 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
         {
             try
             {
-                var cancellationTokenSource = new CancellationTokenSource();
-
-                var datasets = file.GetLinkedDatasetsAsync(Range.All, cancellationTokenSource.Token);
+                var datasets = file.GetLinkedDatasetsAsync(Range.All, default);
                 var taskList = new List<Task>();
                 await foreach (var dataset in datasets)
                 {
-                    taskList.Add(dataset.RemoveFileAsync(file.Descriptor.Path, cancellationTokenSource.Token));
+                    taskList.Add(dataset.RemoveFileAsync(file.Descriptor.Path, default));
                 }
 
                 await Task.WhenAll(taskList);

@@ -1,3 +1,5 @@
+using Unity.Cloud.Common;
+
 namespace Unity.Cloud.Documentation.Assets
 {
 #pragma warning disable S4487 // Unread "private" fields should be removed
@@ -13,11 +15,11 @@ namespace Unity.Cloud.Documentation.Assets
     using Unity.Cloud.Assets;
     using UnityEngine;
 
-    public class UseCaseAggregationExampleUI : IAssetManagementUI
+    public class UseCaseAggregationAcrossProjectsExampleUI : IAssetManagementUI
     {
         readonly AssetManagementBehaviour m_Behaviour;
 
-        public UseCaseAggregationExampleUI(AssetManagementBehaviour behaviour)
+        public UseCaseAggregationAcrossProjectsExampleUI(AssetManagementBehaviour behaviour)
         {
             m_Behaviour = behaviour;
         }
@@ -30,13 +32,13 @@ namespace Unity.Cloud.Documentation.Assets
 #pragma warning restore S1186 // Methods should not be empty
 #pragma warning restore S4487 // Unread "private" fields should be removed
 
-    public class UseCaseAggregationExample : IAssetManagementUI
+    public class UseCaseAggregationAcrossProjectsExample : IAssetManagementUI
     {
-        readonly UseCaseAggregationExampleBehaviour m_Behaviour;
+        readonly UseCaseAggregationAcrossProjectsExampleBehaviour m_Behaviour;
 
-        public UseCaseAggregationExample(AssetManagementBehaviour behaviour)
+        public UseCaseAggregationAcrossProjectsExample(AssetManagementBehaviour behaviour)
         {
-            m_Behaviour = new UseCaseAggregationExampleBehaviour(behaviour);
+            m_Behaviour = new UseCaseAggregationAcrossProjectsExampleBehaviour(behaviour);
         }
 
         #region Example_UIContent
@@ -46,15 +48,19 @@ namespace Unity.Cloud.Documentation.Assets
 
         public void OnGUI()
         {
-            if (!m_Behaviour.IsProjectSelected)
+            if (!m_Behaviour.IsOrganizationSelected)
             {
                 m_SelectedIndex = -1;
                 return;
             }
 
+            if (m_Behaviour.IsProjectSelected) return;
+
             GUILayout.Space(15f);
 
             GUILayout.BeginVertical();
+
+            GUI.enabled = m_Behaviour.AvailableProjects.Any();
 
             GUILayout.Label("Aggregate by: ");
             var selection = GUILayout.SelectionGrid(m_SelectedIndex, m_AggregationFields, 4);
@@ -86,20 +92,23 @@ namespace Unity.Cloud.Documentation.Assets
                 GUILayout.Label("Empty.");
             }
 
+            GUI.enabled = true;
+
             GUILayout.EndVertical();
         }
 
         #endregion
     }
 
-    class UseCaseAggregationExampleBehaviour
+    class UseCaseAggregationAcrossProjectsExampleBehaviour
     {
         readonly AssetManagementBehaviour m_Behaviour;
 
+        public bool IsOrganizationSelected => m_Behaviour.IsOrganizationSelected;
         public bool IsProjectSelected => m_Behaviour.IsProjectSelected;
-        IAssetProject CurrentProject => m_Behaviour.CurrentProject;
+        public IEnumerable<IAssetProject> AvailableProjects => m_Behaviour.AvailableProjects;
 
-        public UseCaseAggregationExampleBehaviour(AssetManagementBehaviour behaviour)
+        public UseCaseAggregationAcrossProjectsExampleBehaviour(AssetManagementBehaviour behaviour)
         {
             m_Behaviour = behaviour;
         }
@@ -109,17 +118,21 @@ namespace Unity.Cloud.Documentation.Assets
         public IReadOnlyDictionary<string, int> GroupCounters { get; private set; }
         public int Total { get; private set; }
 
+        IEnumerable<ProjectDescriptor> AvailableProjectDescriptors => m_Behaviour.AvailableProjects.Select(x => x.Descriptor);
+
         public async Task AggregateByField(GroupableField groupableField)
         {
             GroupCounters = null;
-            GroupCounters = await CurrentProject.GroupAndCountAssets().ExecuteAsync(groupableField, CancellationToken.None);
+            GroupCounters = await PlatformServices.AssetRepository.GroupAndCountAssets(AvailableProjectDescriptors)
+                .ExecuteAsync(groupableField, CancellationToken.None);
             Total = GroupCounters.Values.Sum();
         }
 
         public async Task AggregateByCollection()
         {
             GroupCounters = null;
-            var collections = await CurrentProject.GroupAndCountAssets().GroupByCollectionAndExecuteAsync(CancellationToken.None);
+            var collections = await PlatformServices.AssetRepository.GroupAndCountAssets(AvailableProjectDescriptors)
+                .GroupByCollectionAndExecuteAsync(CancellationToken.None);
             GroupCounters = collections.ToDictionary(x => x.Key.Path.ToString(), x => x.Value);
             Total = GroupCounters.Values.Sum();
         }

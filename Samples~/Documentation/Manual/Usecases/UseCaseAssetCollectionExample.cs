@@ -131,16 +131,14 @@ namespace Unity.Cloud.Documentation.Assets
 
         public async Task RemoveAssetFromCollectionAsync(CollectionPath collectionPath)
         {
-            var cancellationTokenSrc = new CancellationTokenSource();
-
-            var collection = await CurrentProject.GetCollectionAsync(collectionPath, cancellationTokenSrc.Token);
+            var collection = await CurrentProject.GetCollectionAsync(collectionPath, default);
             if (collection == null)
             {
                 Debug.LogError($"Collection {collectionPath} not found.");
                 return;
             }
 
-            await collection.UnlinkAssetsAsync(new[] {CurrentAsset}, cancellationTokenSrc.Token);
+            await collection.UnlinkAssetsAsync(new[] {CurrentAsset}, default);
             await RefreshAssetCollections();
             Debug.Log("Asset removed from collection.");
         }

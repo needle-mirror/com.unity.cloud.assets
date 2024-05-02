@@ -59,7 +59,7 @@ namespace Unity.Cloud.Assets
         /// The type of workflow used by the transformation.
         /// </summary>
         [DataMember(Name = "workflowType")]
-        WorkflowType WorkflowType { get; }
+        string WorkflowType { get; }
 
         /// <summary>
         /// The status of the transformation.

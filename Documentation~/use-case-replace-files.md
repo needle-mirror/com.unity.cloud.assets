@@ -25,7 +25,6 @@ Before you start, you must:
 2. Have some assets in the cloud. There are several ways to do so:
 
    * You can create assets through the [Get started with Assets](get-started-management.md).
-   * You can upload assets from existing Unity assets, see the [Asset Database Uploader sample](./asset-database-uploader-sample.md).
    * You can create assets through the dashboard, see the [Managing assets on the dashboard](https://docs.unity3d.com/docs-asset-manager/manual/add-asset.html) documentation.
 
 You should also have uploaded files to an asset, see the [Create files use case](use-case-create-files.md).
@@ -76,7 +75,7 @@ To create UI for re-uploading file content, follow these steps:
 
 6. Open the `AssetManagementUI` script you created and replace the contents of the `Awake` function with the following code:
 
-[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseSetupExamples.cs#UseCaseReplaceFiles)
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseSetupExamples.cs#UseCaseReplaceFiles)]
 
 The script does the following:
 

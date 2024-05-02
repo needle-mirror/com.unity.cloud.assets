@@ -33,9 +33,9 @@ To install the sample, follow these steps:
 
    ![Screenshot of the samples import section of the package manager window](images/sample-import-metadata-management.png)
 
-After the import process is complete, you can view your imported samples under the `Assets/Samples/Unity Cloud Assets` folder.
+4. After the import process is complete, you can view your imported samples under the `Assets/Samples/Unity Cloud Assets` folder.
 
-  ![Screenshot of the imported sample](images/tac-sample-metadata-scene.png)
+   ![Screenshot of the imported sample](images/tac-sample-metadata-scene.png)
 
 ## Run the sample
 

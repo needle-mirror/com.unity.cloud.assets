@@ -86,8 +86,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
             try
             {
-                var cancellationTokenSource = new CancellationTokenSource();
-                var createdAsset = await m_AssetProject.CreateAssetAsync(m_CurrentAssetCreation, cancellationTokenSource.Token);
+                var createdAsset = await m_AssetProject.CreateAssetAsync(m_CurrentAssetCreation, default);
                 if (createdAsset == null)
                 {
                     DialogService.ShowMessage("Error", "Failed to create asset.");

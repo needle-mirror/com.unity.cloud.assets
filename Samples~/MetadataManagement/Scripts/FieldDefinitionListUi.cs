@@ -80,8 +80,7 @@ namespace Unity.Cloud.Assets.Samples.MetadataManagement
         {
             try
             {
-                var cancellationTokenSource = new CancellationTokenSource();
-                return assetRepository.ListFieldDefinitionsAsync(organizationId, Range.All, cancellationTokenSource.Token);
+                return assetRepository.ListFieldDefinitionsAsync(organizationId, Range.All, default);
             }
             catch (OperationCanceledException oe)
             {

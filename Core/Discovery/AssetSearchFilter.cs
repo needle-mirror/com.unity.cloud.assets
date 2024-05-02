@@ -15,8 +15,20 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc />
         public QueryListParameter<CollectionPath> Collections { get; } = new();
 
+        /// <summary>
+        /// All properties populated here will be considered for exact matching when searching for assets.
+        /// </summary>
         public AssetSearchCriteria Include() => m_Include;
+
+        /// <summary>
+        /// All properties populated here will be considered for exact matching when excluding assets.
+        /// </summary>
         public AssetSearchCriteria Exclude() => m_Exclude;
+
+        /// <summary>
+        /// Any properties populated here will be considered when searching for assets.
+        /// The minimum number of matches required can be set using <see cref="AssetSearchCriteriaWithMinimumMatch.MinimumMatch"/>.
+        /// </summary>
         public AssetSearchCriteriaWithMinimumMatch Any() => m_Any;
 
         /// <inheritdoc/>

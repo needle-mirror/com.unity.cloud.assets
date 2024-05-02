@@ -148,7 +148,12 @@ namespace Unity.Cloud.Assets
                 Metadata = asset.MetadataEntity.From(),
                 SystemTags = asset.SystemTags,
                 Labels = asset.Labels?.Select(x => x.LabelName),
-                ArchivedLabels = asset.ArchivedLabels?.Select(x => x.LabelName)
+                ArchivedLabels = asset.ArchivedLabels?.Select(x => x.LabelName),
+                ParentVersion = asset.ParentVersion,
+                ParentVersionNumber = asset.ParentVersionNumber,
+                IsFrozen = asset.IsFrozen,
+                VersionNumber = asset.VersionNumber,
+                Changelog = asset.Changelog,
             };
         }
     }

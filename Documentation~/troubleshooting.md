@@ -30,7 +30,6 @@ If you have dependency issues with the samples, refer to the **Before you start*
 * [Asset Discovery sample](asset-discovery-sample.md#before-you-start)
 * [Asset Management sample](asset-management-sample.md#before-you-start)
 * [Collection Management sample](asset-collection-management-sample.md#before-you-start)
-* [Asset Database Uploader sample](asset-database-uploader-sample.md#before-you-start)
 
 **The automatic browser redirection doesn't work**
 

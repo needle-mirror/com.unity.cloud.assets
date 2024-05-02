@@ -20,7 +20,7 @@
             <ui:VisualElement name="TypeContainer" class="AssetListItem" style="width: 80px;">
                 <ui:Label text="Type" display-tooltip-when-elided="true" name="TypeLabel" class="AssetListItemLabel" />
             </ui:VisualElement>
-            <ui:VisualElement name="VersionContainer" class="AssetListItem" style="width: 80px;">
+            <ui:VisualElement name="VersionContainer" class="AssetListItem" style="width: 100px;">
                 <ui:Label text="Version" display-tooltip-when-elided="true" name="VersionLabel" class="AssetListItemLabel" />
             </ui:VisualElement>
             <ui:VisualElement name="StatusContainer" class="AssetListItem" style="width: 80px;">

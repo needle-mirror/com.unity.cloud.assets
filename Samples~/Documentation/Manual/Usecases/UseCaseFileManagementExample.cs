@@ -276,7 +276,6 @@ namespace Unity.Cloud.Documentation.Assets
 
             if (string.IsNullOrEmpty(folder)) return;
 
-            var cancellationTokenSrc = new CancellationTokenSource();
             try
             {
                 var filePath = Path.Combine(folder, assetFile.Descriptor.Path);
@@ -291,7 +290,7 @@ namespace Unity.Cloud.Documentation.Assets
                 await using var destination = File.OpenWrite(filePath);
 
                 var progress = new LogProgress();
-                await assetFile.DownloadAsync(destination, progress, cancellationTokenSrc.Token);
+                await assetFile.DownloadAsync(destination, progress, default);
 
                 Debug.Log($"Asset file downloaded: {assetFile.Descriptor.Path}.");
             }

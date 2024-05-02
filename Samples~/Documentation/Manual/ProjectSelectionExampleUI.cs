@@ -32,7 +32,7 @@ namespace Unity.Cloud.Documentation.Assets
             // Refresh the project list
             if (GUILayout.Button("Refresh"))
             {
-                m_Behaviour.GetProjects();
+                _ = m_Behaviour.GetProjectsAsync();
                 return;
             }
 
