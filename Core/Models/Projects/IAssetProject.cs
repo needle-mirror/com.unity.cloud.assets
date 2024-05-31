@@ -39,10 +39,10 @@ namespace Unity.Cloud.Assets
         /// Retrieves an asset by its ID and label.
         /// </summary>
         /// <param name="assetId">The id of the asset. </param>
-        /// <param name="versionLabel">The label associated to the asset version. </param>
+        /// <param name="label">The label associated to the asset version. </param>
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task whose result is the requested asset. </returns>
-        Task<IAsset> GetAssetAsync(AssetId assetId, string versionLabel, CancellationToken cancellationToken) => throw new NotImplementedException();
+        Task<IAsset> GetAssetAsync(AssetId assetId, string label, CancellationToken cancellationToken) => throw new NotImplementedException();
 
         /// <summary>
         /// Creates an asset.

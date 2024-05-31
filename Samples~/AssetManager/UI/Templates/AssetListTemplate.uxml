@@ -30,7 +30,7 @@
                             <ui:Label text="Type" display-tooltip-when-elided="true" name="TypeLabel" />
                         </ui:VisualElement>
                         <ui:VisualElement name="VersionContainer" class="AssetListItem" style="width: 100px;">
-                            <ui:Label text="Version" display-tooltip-when-elided="true" name="VersionLabel" />
+                            <ui:Label text="Version" display-tooltip-when-elided="true" name="Label" />
                         </ui:VisualElement>
                         <ui:VisualElement name="StatusContainer" class="AssetListItem" style="width: 80px;">
                             <ui:Label text="Status" display-tooltip-when-elided="true" name="StatusLabel" />

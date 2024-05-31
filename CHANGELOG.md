@@ -5,6 +5,23 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [1.2.0-exp.3] - 2024-05-31
+
+### Added
+- Added `ITransformation.TerminateAsync` to cancel a transformation.
+- Added `IAsset.WithProjectAsync` to change the project path of the asset.
+- Added `IAsset.WithVersionAsync` to switch to another version of the asset.
+- `IAsset.WithLatestVersionAsync` and `IAssetProject.GetAssetWithLatestVersionAsync` to get the latest version of an asset.
+
+### Changed
+- Removed internal caching of files and datasets in `IAsset`.
+- [Experimental][Breaking] Renames all instances of `VersionLabel` to `Label`.
+- [Experimental][Breaking] Renames `IAsset.VersionNumber` and `IAsset.ParentVersionNumber` to `IAsset.FrozenSequenceNumber` and `IAsset.ParentFrozenSequenceNumber` respectively.
+
+### Deprecated
+- Deprecated `IAsset.GetFileAsync` and `IAsset.ListFilesAsync`; use `IDataset.GetFileAsync` and `IDataset.ListFilesAsync` instead.
+- Deprecated `IAsset.WithProject`; use `IAsset.WithProjectAsync` instead.
+
 ## [1.2.0-exp.2] - 2024-05-02
 
 ### Added

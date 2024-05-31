@@ -120,23 +120,23 @@ namespace Unity.Cloud.Assets
         }
 
         /// <inheritdoc />
-        public async Task<IVersionLabel> CreateVersionLabelAsync(OrganizationId organizationId, IVersionLabelCreation versionLabelCreation, CancellationToken cancellationToken)
+        public async Task<ILabel> CreateLabelAsync(OrganizationId organizationId, ILabelCreation labelCreation, CancellationToken cancellationToken)
         {
-            var data = await m_DataSource.CreateVersionLabelAsync(organizationId, versionLabelCreation.From(), cancellationToken);
+            var data = await m_DataSource.CreateLabelAsync(organizationId, labelCreation.From(), cancellationToken);
             return data.From(m_DataSource, organizationId);
         }
 
         /// <inheritdoc />
-        public VersionLabelQueryBuilder QueryVersionLabels(OrganizationId organizationId)
+        public LabelQueryBuilder QueryLabels(OrganizationId organizationId)
         {
-            return new VersionLabelQueryBuilder(m_DataSource, organizationId);
+            return new LabelQueryBuilder(m_DataSource, organizationId);
         }
 
         /// <inheritdoc />
-        public async Task<IVersionLabel> GetVersionLabelAsync(VersionLabelDescriptor versionLabelDescriptor, CancellationToken cancellationToken)
+        public async Task<ILabel> GetLabelAsync(LabelDescriptor labelDescriptor, CancellationToken cancellationToken)
         {
-            var data = await m_DataSource.GetVersionLabelAsync(versionLabelDescriptor, cancellationToken);
-            return data.From(m_DataSource, versionLabelDescriptor);
+            var data = await m_DataSource.GetLabelAsync(labelDescriptor, cancellationToken);
+            return data.From(m_DataSource, labelDescriptor);
         }
 
         /// <inheritdoc />

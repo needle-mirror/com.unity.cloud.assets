@@ -52,15 +52,15 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
                 string versionText;
                 if (asset.IsFrozen)
                 {
-                    versionText = $"Ver. {asset.VersionNumber}";
+                    versionText = $"Ver. {asset.FrozenSequenceNumber}";
                 }
-                else if (asset.ParentVersionNumber < 1)
+                else if (asset.ParentFrozenSequenceNumber < 1)
                 {
                     versionText = $"New";
                 }
                 else
                 {
-                    versionText = $"Editing Ver. {asset.ParentVersionNumber}";
+                    versionText = $"Editing Ver. {asset.ParentFrozenSequenceNumber}";
                 }
                 var version = asset.Descriptor.AssetVersion.ToString();
                 if (version.Length > 8)
@@ -75,7 +75,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
                 element.Q<Label>("DescriptionLabel").text = asset.Description;
                 element.Q<Label>("TagsLabel").text = asset.Tags.FirstOrDefault();
                 element.Q<Label>("TypeLabel").text = asset.Type.ToString();
-                element.Q<Label>("VersionLabel").text = versionText;
+                element.Q<Label>("Label").text = versionText;
                 element.Q<Label>("StatusLabel").text = asset.Status;
 
                 var expandButton = element.Q<Button>("ExpandButton");

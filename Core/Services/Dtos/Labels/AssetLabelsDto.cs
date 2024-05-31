@@ -3,25 +3,25 @@ using System.Runtime.Serialization;
 namespace Unity.Cloud.Assets
 {
     [DataContract]
-    class AssetVersionLabelListDto
+    class AssetLabelListDto
     {
         [DataMember(Name = "assetVersionLabels")]
-        public AssetVersionLabelsDto[] AssetVersionLabels { get; set; }
+        public AssetLabelsDto[] AssetLabels { get; set; }
 
         [DataMember(Name = "total")]
         public int Total { get; set; }
     }
 
     [DataContract]
-    class AssetVersionLabelsDto
+    class AssetLabelsDto
     {
         [DataMember(Name = "assetVersion")]
         public string AssetVersion { get; set; }
 
         [DataMember(Name = "labels")]
-        public VersionLabelData[] Labels { get; set; }
+        public LabelData[] Labels { get; set; }
 
         [DataMember(Name = "archivedLabels")]
-        public VersionLabelData[] ArchivedLabels { get; set; }
+        public LabelData[] ArchivedLabels { get; set; }
     }
 }

@@ -59,5 +59,14 @@ namespace Unity.Cloud.Assets
             var transformations = IsolatedSerialization.DeserializeWithDefaultConverters<TransformationData[]>(jsonContent);
             return transformations.Select(x => (ITransformationData)x).ToArray();
         }
+
+        /// <inheritdoc/>
+        public async Task TerminateTransformationAsync(ProjectDescriptor projectDescriptor, TransformationId transformationId, CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var request = new TerminateTransformationRequest(projectDescriptor.ProjectId, transformationId);
+            await RateLimitedServiceClient(request, HttpMethod.Post).PostAsync(GetPublicRequestUri(request), request.ConstructBody(), ServiceHttpClientOptions.Default(), cancellationToken);
+        }
     }
 }

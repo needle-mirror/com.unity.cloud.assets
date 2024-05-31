@@ -126,12 +126,12 @@ namespace Unity.Cloud.Assets
 
             if (options.TokensPerPeriod <= 0)
             {
-                throw new ArgumentException("Negative Refresh Value", nameof(options.TokensPerPeriod));
+                throw new ArgumentException("Negative Refresh Value", nameof(options));
             }
 
             if (options.QueueLimit < 0)
             {
-                throw new ArgumentException("Negative Queue Size", nameof(options.QueueLimit));
+                throw new ArgumentException("Negative Queue Size", nameof(options));
             }
 
             if (options.ReplenishmentPeriod <= TimeSpan.Zero)

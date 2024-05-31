@@ -32,5 +32,14 @@ namespace Unity.Cloud.Assets
         /// <param name="cancellationToken">A token that can be used to cancel the request.</param>
         /// <returns>A task whose result is an array of transformation DTOs satisfying the search. </returns>
         Task<ITransformationData[]> GetTransformationsAsync(ProjectDescriptor projectDescriptor, TransformationSearchData searchData, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Cancels a transformation.
+        /// </summary>
+        /// <param name="projectDescriptor">The project to search in. </param>
+        /// <param name="transformationId">The id of the transformation. </param>
+        /// <param name="cancellationToken">A token that can be used to cancel the request.</param>
+        /// <returns>A task with no result.</returns>
+        Task TerminateTransformationAsync(ProjectDescriptor projectDescriptor, TransformationId transformationId, CancellationToken cancellationToken);
     }
 }

@@ -122,28 +122,28 @@ namespace Unity.Cloud.Assets
         Task DeleteFieldDefinitionAsync(FieldDefinitionDescriptor fieldDefinitionDescriptor, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Creates a new version label within an organization.
+        /// Creates a new label within an organization.
         /// </summary>
-        /// <param name="organizationId">The id of the organization in which to add the version label. </param>
-        /// <param name="versionLabelCreation">The object containing the necessary information to create a version label. </param>
+        /// <param name="organizationId">The id of the organization in which to add the label. </param>
+        /// <param name="labelCreation">The object containing the necessary information to create a label. </param>
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
-        /// <returns>A task whose result is an <see cref="IVersionLabel"/>. </returns>
-        Task<IVersionLabel> CreateVersionLabelAsync(OrganizationId organizationId, IVersionLabelCreation versionLabelCreation, CancellationToken cancellationToken);
+        /// <returns>A task whose result is an <see cref="ILabel"/>. </returns>
+        Task<ILabel> CreateLabelAsync(OrganizationId organizationId, ILabelCreation labelCreation, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Returns a builder to create a query to search an organization's version labels.
+        /// Returns a builder to create a query to search an organization's labels.
         /// </summary>
         /// <param name="organizationId">The id of the organization. </param>
-        /// <returns>A <see cref="VersionLabelQueryBuilder"/>. </returns>
-        VersionLabelQueryBuilder QueryVersionLabels(OrganizationId organizationId);
+        /// <returns>A <see cref="LabelQueryBuilder"/>. </returns>
+        LabelQueryBuilder QueryLabels(OrganizationId organizationId);
 
         /// <summary>
-        /// Retrieves a version label by name.
+        /// Retrieves a label by name.
         /// </summary>
-        /// <param name="versionLabelDescriptor">The descriptor containing the indentifiers for the version label. </param>
+        /// <param name="labelDescriptor">The descriptor containing the indentifiers for the label. </param>
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
-        /// <returns>A task whose result is an <see cref="IVersionLabel"/>. </returns>
-        Task<IVersionLabel> GetVersionLabelAsync(VersionLabelDescriptor versionLabelDescriptor, CancellationToken cancellationToken);
+        /// <returns>A task whose result is an <see cref="ILabel"/>. </returns>
+        Task<ILabel> GetLabelAsync(LabelDescriptor labelDescriptor, CancellationToken cancellationToken);
 
         /// <summary>
         /// Implement this method to get an <see cref="AssetDescriptor"/> given a serialized json of asset identifiers.

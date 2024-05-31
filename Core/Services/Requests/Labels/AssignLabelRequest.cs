@@ -8,17 +8,17 @@ using Unity.Cloud.Common;
 namespace Unity.Cloud.Assets
 {
     [DataContract]
-    class AssignVersionLabelRequest : AssetRequest
+    class AssignLabelRequest : AssetRequest
     {
         [DataMember(Name = "labelNames")]
-        readonly string[] m_VersionLabels;
+        readonly string[] m_Labels;
 
-        public AssignVersionLabelRequest(ProjectId projectId, AssetId assetId, AssetVersion assetVersion, bool assign, IEnumerable<string> versionLabels)
+        public AssignLabelRequest(ProjectId projectId, AssetId assetId, AssetVersion assetVersion, bool assign, IEnumerable<string> labels)
             : base(projectId, assetId, assetVersion)
         {
             m_RequestUrl += $"/labels/{(assign ? "assign" : "unassign")}";
 
-            m_VersionLabels = versionLabels.ToArray();
+            m_Labels = labels.ToArray();
         }
 
         public override HttpContent ConstructBody()

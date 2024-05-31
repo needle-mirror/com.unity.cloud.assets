@@ -45,12 +45,12 @@ namespace Unity.Cloud.Assets
         /// </summary>
         /// <param name="projectId">ID of the project</param>
         /// <param name="assetId">ID of the asset</param>
-        /// <param name="versionLabel">The labelled version of the asset</param>
+        /// <param name="label">The labelled version of the asset</param>
         /// <param name="includedFieldsFilter">Sets the fields to be included in the response.</param>
-        public AssetRequest(ProjectId projectId, AssetId assetId, string versionLabel, FieldsFilter includedFieldsFilter)
+        public AssetRequest(ProjectId projectId, AssetId assetId, string label, FieldsFilter includedFieldsFilter)
             : base(projectId)
         {
-            m_RequestUrl += $"/assets/{assetId}/labels/{Uri.EscapeDataString(versionLabel)}";
+            m_RequestUrl += $"/assets/{assetId}/labels/{Uri.EscapeDataString(label)}";
 
             includedFieldsFilter?.Parse(AddFieldFilterToQueryParams);
         }
@@ -70,7 +70,7 @@ namespace Unity.Cloud.Assets
             return new StringContent(body, Encoding.UTF8, "application/json");
         }
 
-        void AddFieldFilterToQueryParams(string value)
+        protected void AddFieldFilterToQueryParams(string value)
         {
             AddParamToQuery("IncludeFields", value);
         }

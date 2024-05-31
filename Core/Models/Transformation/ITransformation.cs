@@ -74,5 +74,12 @@ namespace Unity.Cloud.Assets
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task with no result. </returns>
         Task RefreshAsync(CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Cancels the transformation.
+        /// </summary>
+        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
+        /// <returns>A task with no result. </returns>
+        Task TerminateAsync(CancellationToken cancellationToken) => throw new NotImplementedException();
     }
 }

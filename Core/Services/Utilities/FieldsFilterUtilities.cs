@@ -36,8 +36,8 @@ namespace Unity.Cloud.Assets
                 fieldsFilter.AssetFields.Parse(select);
             }
 
-            fieldsFilter.DatasetFields.Parse(select);
-            fieldsFilter.FileFields.Parse(select);
+            fieldsFilter.DatasetFields.Parse(select, "datasets.");
+            fieldsFilter.FileFields.Parse(select, "files.");
 
             fieldsFilter.MetadataFields.Select(select, "metadata",
                 fieldsFilter.AssetFields.HasFlag(AssetFields.metadata),
@@ -45,14 +45,14 @@ namespace Unity.Cloud.Assets
                 fieldsFilter.FileFields.HasFlag(FileFields.metadata));
         }
 
-        static void Parse(this FileFields fileFields, OnFieldFilterSelected select)
+        internal static void Parse(this FileFields fileFields, OnFieldFilterSelected select, string prefix = "")
         {
             if (fileFields.HasFlag(FileFields.all))
             {
-                select("files.*");
+                select($"{prefix}*");
                 // Explicitly include these as they fail to be returned when using the wildcard.
-                select("files.downloadURL");
-                select("files.previewURL");
+                select($"{prefix}downloadURL");
+                select($"{prefix}previewURL");
                 return;
             }
 
@@ -63,29 +63,21 @@ namespace Unity.Cloud.Assets
                 {
                     if (value == FileFields.authoring)
                     {
-                        IncludeAuthoringFields("files.", select);
-                    }
-                    else if (value == FileFields.downloadUrl)
-                    {
-                        select("files.downloadURL");
-                    }
-                    else if (value == FileFields.previewUrl)
-                    {
-                        select("files.previewURL");
+                        IncludeAuthoringFields(prefix, select);
                     }
                     else
                     {
-                        select($"files.{value.ToString()}");
+                        select($"{prefix}{value.ToString()}");
                     }
                 }
             }
         }
 
-        static void Parse(this DatasetFields datasetFields, OnFieldFilterSelected select)
+        internal static void Parse(this DatasetFields datasetFields, OnFieldFilterSelected select, string prefix = "")
         {
             if (datasetFields.HasFlag(DatasetFields.all))
             {
-                select("datasets.*");
+                select($"{prefix}*");
                 return;
             }
 
@@ -96,11 +88,11 @@ namespace Unity.Cloud.Assets
                 {
                     if (value == DatasetFields.authoring)
                     {
-                        IncludeAuthoringFields("datasets.", select);
+                        IncludeAuthoringFields(prefix, select);
                     }
                     else
                     {
-                        select($"datasets.{value.ToString()}");
+                        select($"{prefix}{value.ToString()}");
                     }
                 }
             }

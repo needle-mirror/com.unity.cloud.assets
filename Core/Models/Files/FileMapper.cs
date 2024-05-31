@@ -20,7 +20,7 @@ namespace Unity.Cloud.Assets
             if (includeFields.HasFlag(FileFields.authoring))
                 file.AuthoringInfo = new AuthoringInfo(fileData.CreatedBy, fileData.Created, fileData.UpdatedBy, fileData.Updated);
 
-            if (includeFields.HasFlag(FileFields.downloadUrl))
+            if (includeFields.HasFlag(FileFields.downloadURL))
             {
                 if (Uri.TryCreate(fileData.DownloadUrl, UriKind.RelativeOrAbsolute, out var downloadUrl))
                 {
@@ -38,7 +38,7 @@ namespace Unity.Cloud.Assets
                 file.IsDownloadable = fileData.Status == "Uploaded";
             }
 
-            if (includeFields.HasFlag(FileFields.previewUrl))
+            if (includeFields.HasFlag(FileFields.previewURL))
             {
                 Uri.TryCreate(fileData.PreviewUrl, UriKind.RelativeOrAbsolute, out var previewUrl);
                 file.PreviewUrl = previewUrl;

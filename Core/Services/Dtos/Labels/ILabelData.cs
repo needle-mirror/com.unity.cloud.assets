@@ -2,7 +2,7 @@ using System.Runtime.Serialization;
 
 namespace Unity.Cloud.Assets
 {
-    interface IVersionLabelData : IVersionLabelBaseData, IAuthoringData
+    interface ILabelData : ILabelBaseData, IAuthoringData
     {
         [DataMember(Name = "isSystemLabel")]
         bool IsSystemLabel { get; }

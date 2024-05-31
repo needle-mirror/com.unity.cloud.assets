@@ -53,11 +53,11 @@ namespace Unity.Cloud.Assets
         all = ~none,
         description = 1,
         authoring = 2,
-        downloadUrl = 4,
+        downloadURL = 4,
         metadata = 16,
         userChecksum = 64,
         fileSize = 128,
-        previewUrl = 256,
+        previewURL = 256,
     }
 
     class FieldsFilter

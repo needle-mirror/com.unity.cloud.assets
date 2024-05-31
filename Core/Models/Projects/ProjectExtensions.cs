@@ -4,11 +4,24 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Unity.Cloud.Common;
 
 namespace Unity.Cloud.Assets
 {
     public static class ProjectExtensions
     {
+        /// <summary>
+        /// Returns the latest version of the asset.
+        /// </summary>
+        /// <param name="assetProject">The project to query. </param>
+        /// <param name="assetId">The id of the asset. </param>
+        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
+        /// <returns>A task whose result is an <see cref="IAsset"/>. </returns>
+        public static Task<IAsset> GetAssetWithLatestVersionAsync(this IAssetProject assetProject, AssetId assetId, CancellationToken cancellationToken)
+        {
+            return assetProject.GetAssetAsync(assetId, "Latest", cancellationToken);
+        }
+
         /// <summary>
         /// Returns the total count of assets in the specified projects based on the provided criteria.
         /// </summary>

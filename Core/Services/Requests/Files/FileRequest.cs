@@ -13,8 +13,7 @@ namespace Unity.Cloud.Assets
         readonly IFileBaseData m_Data;
 
         /// <summary>
-        /// Creates an Asset File Request Object.
-        /// Creates a single asset file.
+        /// Gets a single file by path.
         /// </summary>
         /// <param name="projectId">ID of the project.</param>
         /// <param name="assetId">The id of the asset the file will linked to.</param>
@@ -31,8 +30,22 @@ namespace Unity.Cloud.Assets
         }
 
         /// <summary>
-        /// Creates an Asset File Request Object.
-        /// Creates a single asset file.
+        /// Gets a single file by path.
+        /// </summary>
+        /// <param name="projectId">ID of the project.</param>
+        /// <param name="assetId">The id of the asset the file will linked to.</param>
+        /// <param name="assetVersion">The version of the asset the file will linked to.</param>
+        /// <param name="datasetId">The id of the dataset. </param>
+        /// <param name="filePath">The path to the file in the dataset.</param>
+        /// <param name="includedFileFields">Sets the fields to be included in the response.</param>
+        public FileRequest(ProjectId projectId, AssetId assetId, AssetVersion assetVersion, DatasetId datasetId, string filePath, FileFields includedFileFields)
+            : this(projectId, assetId, assetVersion, datasetId, filePath)
+        {
+            includedFileFields.Parse(AddFieldFilterToQueryParams);
+        }
+
+        /// <summary>
+        /// Gets a single file by path.
         /// </summary>
         /// <param name="projectId">ID of the project.</param>
         /// <param name="assetId">The id of the asset the file will linked to.</param>
@@ -45,6 +58,17 @@ namespace Unity.Cloud.Assets
             m_RequestUrl += $"/files/{Uri.EscapeDataString(filePath)}";
 
             m_Data = data;
+        }
+
+        public FileRequest(ProjectId projectId, AssetId assetId, AssetVersion assetVersion, DatasetId datasetId, FileFields includedFieldsFilter, string token = null, int? limit = null)
+            : base(projectId, assetId, assetVersion)
+        {
+            m_RequestUrl += $"/datasets/{datasetId}/files";
+
+            includedFieldsFilter.Parse(AddFieldFilterToQueryParams);
+
+            AddParamToQuery("Limit", limit?.ToString());
+            AddParamToQuery("Token", token);
         }
 
         /// <summary>

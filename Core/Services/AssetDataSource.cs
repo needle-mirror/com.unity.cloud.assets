@@ -63,11 +63,11 @@ namespace Unity.Cloud.Assets
         }
 
         /// <inheritdoc/>
-        public async Task<IAssetData> GetAssetAsync(ProjectDescriptor projectDescriptor, AssetId assetId, string versionLabel, FieldsFilter includedFieldsFilter, CancellationToken cancellationToken)
+        public async Task<IAssetData> GetAssetAsync(ProjectDescriptor projectDescriptor, AssetId assetId, string label, FieldsFilter includedFieldsFilter, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var request = new AssetRequest(projectDescriptor.ProjectId, assetId, versionLabel, includedFieldsFilter);
+            var request = new AssetRequest(projectDescriptor.ProjectId, assetId, label, includedFieldsFilter);
             var response = await RateLimitedServiceClient(request, HttpMethod.Get).GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(),
                 cancellationToken);
 

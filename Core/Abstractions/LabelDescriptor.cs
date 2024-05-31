@@ -3,12 +3,12 @@ using Unity.Cloud.Common;
 namespace Unity.Cloud.Assets
 {
     /// <summary>
-    /// This struct contains the identifiers for a version label.
+    /// This struct contains the identifiers for a label.
     /// </summary>
-    public readonly struct VersionLabelDescriptor
+    public readonly struct LabelDescriptor
     {
         /// <summary>
-        /// The version label's organization genesis ID.
+        /// The label's organization genesis ID.
         /// </summary>
         public readonly OrganizationId OrganizationId;
 
@@ -18,39 +18,39 @@ namespace Unity.Cloud.Assets
         public readonly string LabelName;
 
         /// <summary>
-        /// Creates an instance of the <see cref="VersionLabelDescriptor"/> struct.
+        /// Creates an instance of the <see cref="LabelDescriptor"/> struct.
         /// </summary>
-        /// <param name="organizationId">The version label's organization genesis ID.</param>
-        /// <param name="labelName">The unique name of the version label.</param>
-        public VersionLabelDescriptor(OrganizationId organizationId, string labelName)
+        /// <param name="organizationId">The label's organization genesis ID.</param>
+        /// <param name="labelName">The unique name of the label.</param>
+        public LabelDescriptor(OrganizationId organizationId, string labelName)
         {
             OrganizationId = organizationId;
             LabelName = labelName;
         }
 
         /// <summary>
-        /// Returns whether two <see cref="VersionLabelDescriptor"/> objects are equals.
+        /// Returns whether two <see cref="LabelDescriptor"/> objects are equals.
         /// </summary>
         /// <param name="other">Compare the values with this instance.</param>
         /// <returns>
         /// <see langword="true"/> if both instance have the same values;
         /// <see langword="false"/> otherwise.
         /// </returns>
-        public bool Equals(VersionLabelDescriptor other)
+        public bool Equals(LabelDescriptor other)
         {
             return OrganizationId.Equals(other.OrganizationId) &&
                 LabelName.Equals(other.LabelName);
         }
 
         /// <summary>
-        /// Validate <paramref name="obj"/> is a <see cref="VersionLabelDescriptor"/> instance and have the same values as this instance.
+        /// Validate <paramref name="obj"/> is a <see cref="LabelDescriptor"/> instance and have the same values as this instance.
         /// </summary>
         /// <param name="obj">Compare the values with this instance.</param>
         /// <returns>
         /// <see langword="true"/> if both instance have the same values;
         /// <see langword="false"/> otherwise.
         /// </returns>
-        public override bool Equals(object obj) => obj is VersionLabelDescriptor other && Equals(other);
+        public override bool Equals(object obj) => obj is LabelDescriptor other && Equals(other);
 
         /// <summary>
         /// Compute a hash code for the object.
@@ -72,7 +72,7 @@ namespace Unity.Cloud.Assets
         }
 
         /// <summary>
-        /// Get if two <see cref="VersionLabelDescriptor"/> represent the same.
+        /// Get if two <see cref="LabelDescriptor"/> represent the same.
         /// </summary>
         /// <param name="left">Compare with this first instance.</param>
         /// <param name="right">Compare with this other instance.</param>
@@ -80,10 +80,10 @@ namespace Unity.Cloud.Assets
         /// <see langword="true"/> if both instances represent the same;
         /// <see langword="false"/> otherwise.
         /// </returns>
-        public static bool operator ==(VersionLabelDescriptor left, VersionLabelDescriptor right) => left.Equals(right);
+        public static bool operator ==(LabelDescriptor left, LabelDescriptor right) => left.Equals(right);
 
         /// <summary>
-        /// Get if two <see cref="VersionLabelDescriptor"/> does not represent the same.
+        /// Get if two <see cref="LabelDescriptor"/> does not represent the same.
         /// </summary>
         /// <param name="left">Compare with this first instance.</param>
         /// <param name="right">Compare with this other instance.</param>
@@ -91,6 +91,6 @@ namespace Unity.Cloud.Assets
         /// <see langword="true"/> if both instances are not the same;
         /// <see langword="false"/> if both instances are the same.
         /// </returns>
-        public static bool operator !=(VersionLabelDescriptor left, VersionLabelDescriptor right) => !left.Equals(right);
+        public static bool operator !=(LabelDescriptor left, LabelDescriptor right) => !left.Equals(right);
     }
 }

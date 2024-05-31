@@ -7,28 +7,28 @@ using Unity.Cloud.Common;
 namespace Unity.Cloud.Assets
 {
     /// <summary>
-    /// A class that builds and executes a query to return a set of version labels.
+    /// A class that builds and executes a query to return a set of labels.
     /// </summary>
-    public sealed class VersionLabelQueryBuilder
+    public sealed class LabelQueryBuilder
     {
         readonly IAssetDataSource m_DataSource;
         readonly OrganizationId m_OrganizationId;
 
-        VersionLabelSearchFilter m_Filter;
+        LabelSearchFilter m_Filter;
         Range m_Range = Range.All;
 
-        internal VersionLabelQueryBuilder(IAssetDataSource dataSource, OrganizationId organizationId)
+        internal LabelQueryBuilder(IAssetDataSource dataSource, OrganizationId organizationId)
         {
             m_DataSource = dataSource;
             m_OrganizationId = organizationId;
         }
 
         /// <summary>
-        /// Sets the filter to be used when querying version labels.
+        /// Sets the filter to be used when querying labels.
         /// </summary>
         /// <param name="filter">The query filter. </param>
-        /// <returns>The calling <see cref="VersionLabelQueryBuilder"/>. </returns>
-        public VersionLabelQueryBuilder SelectWhereMatchesFilter(VersionLabelSearchFilter filter)
+        /// <returns>The calling <see cref="LabelQueryBuilder"/>. </returns>
+        public LabelQueryBuilder SelectWhereMatchesFilter(LabelSearchFilter filter)
         {
             m_Filter = filter;
             return this;
@@ -38,28 +38,28 @@ namespace Unity.Cloud.Assets
         /// Sets the range of results to return.
         /// </summary>
         /// <param name="range">The range of results. </param>
-        /// <returns>The calling <see cref="VersionLabelQueryBuilder"/>. </returns>
-        public VersionLabelQueryBuilder LimitTo(Range range)
+        /// <returns>The calling <see cref="LabelQueryBuilder"/>. </returns>
+        public LabelQueryBuilder LimitTo(Range range)
         {
             m_Range = range;
             return this;
         }
 
         /// <summary>
-        /// Executes the query and returns the version labels that satisfy the criteria.
+        /// Executes the query and returns the labels that satisfy the criteria.
         /// </summary>
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
-        /// <returns>An async enumeration of <see cref="IVersionLabel"/>. </returns>
-        public async IAsyncEnumerable<IVersionLabel> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
+        /// <returns>An async enumeration of <see cref="ILabel"/>. </returns>
+        public async IAsyncEnumerable<ILabel> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            m_Filter ??= new VersionLabelSearchFilter();
+            m_Filter ??= new LabelSearchFilter();
 
             var pagination = new PaginationData
             {
                 Range = m_Range
             };
 
-            var results = m_DataSource.ListVersionLabelsAsync(m_OrganizationId,
+            var results = m_DataSource.ListLabelsAsync(m_OrganizationId,
                 pagination,
                 m_Filter.IsArchived.GetValue(),
                 m_Filter.IsSystemLabel.GetValue(),

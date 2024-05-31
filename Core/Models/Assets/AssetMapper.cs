@@ -15,18 +15,18 @@ namespace Unity.Cloud.Assets
             asset.SourceProject = new ProjectDescriptor(organizationId, assetData.SourceProjectId);
 
             asset.IsFrozen = assetData.IsFrozen;
-            asset.VersionNumber = assetData.VersionNumber;
+            asset.FrozenSequenceNumber = assetData.VersionNumber;
             asset.Changelog = assetData.Changelog;
             asset.ParentVersion = assetData.ParentVersion;
-            asset.ParentVersionNumber = assetData.ParentVersionNumber;
+            asset.ParentFrozenSequenceNumber = assetData.ParentVersionNumber;
 
             asset.Name = assetData.Name;
             asset.Tags = assetData.Tags ?? Array.Empty<string>();
             asset.SystemTags = assetData.SystemTags ?? Array.Empty<string>();
             asset.Type = assetData.Type ?? AssetType.Other;
             asset.Status = assetData.Status;
-            asset.Labels = assetData.Labels?.Select(x => new VersionLabelDescriptor(organizationId, x)) ?? Array.Empty<VersionLabelDescriptor>();
-            asset.ArchivedLabels = assetData.ArchivedLabels?.Select(x => new VersionLabelDescriptor(organizationId, x)) ?? Array.Empty<VersionLabelDescriptor>();
+            asset.Labels = assetData.Labels?.Select(x => new LabelDescriptor(organizationId, x)) ?? Array.Empty<LabelDescriptor>();
+            asset.ArchivedLabels = assetData.ArchivedLabels?.Select(x => new LabelDescriptor(organizationId, x)) ?? Array.Empty<LabelDescriptor>();
 
             if (includeFields.AssetFields.HasFlag(AssetFields.description))
                 asset.Description = assetData.Description;
@@ -38,27 +38,6 @@ namespace Unity.Cloud.Assets
             {
                 Uri.TryCreate(assetData.PreviewFileUrl, UriKind.RelativeOrAbsolute, out var previewFileDownloadUrl);
                 asset.PreviewFileUrl = previewFileDownloadUrl;
-            }
-
-            FileEntity[] files = null;
-            if (includeFields.AssetFields.HasFlag(AssetFields.files))
-            {
-                // Ignore files not linked to a dataset, many operations will not be supported on these files.
-                files = assetData.Files?
-                    .Where(fileData => fileData.DatasetIds != null && fileData.DatasetIds.Any())
-                    .Select(fileData => fileData.From(assetDataSource, asset.Descriptor, includeFields.FileFields))
-                    .ToArray();
-
-                asset.Files = files is {Length: 0} ? null : files;
-            }
-
-            if (includeFields.AssetFields.HasFlag(AssetFields.datasets))
-            {
-                var datasets = assetData.Datasets?
-                    .Select(datasetData => datasetData.From(assetDataSource, asset.Descriptor, includeFields.DatasetFields, files))
-                    .ToArray();
-
-                asset.Datasets = datasets is {Length: 0} ? null : datasets;
             }
 
             if (includeFields.AssetFields.HasFlag(AssetFields.authoring))
@@ -141,8 +120,6 @@ namespace Unity.Cloud.Assets
                 CreatedBy = asset.AuthoringInfo?.CreatedBy.ToString(),
                 Updated = asset.AuthoringInfo?.Updated,
                 UpdatedBy = asset.AuthoringInfo?.UpdatedBy.ToString(),
-                Files = asset.Files?.Select(file => file.From()),
-                Datasets = asset.Datasets?.Select(dataset => dataset.From()),
                 SourceProjectId = asset.SourceProject.ProjectId,
                 LinkedProjectIds = asset.LinkedProjects.Select(project => project.ProjectId).ToList(),
                 Metadata = asset.MetadataEntity.From(),
@@ -150,9 +127,9 @@ namespace Unity.Cloud.Assets
                 Labels = asset.Labels?.Select(x => x.LabelName),
                 ArchivedLabels = asset.ArchivedLabels?.Select(x => x.LabelName),
                 ParentVersion = asset.ParentVersion,
-                ParentVersionNumber = asset.ParentVersionNumber,
+                ParentVersionNumber = asset.ParentFrozenSequenceNumber,
                 IsFrozen = asset.IsFrozen,
-                VersionNumber = asset.VersionNumber,
+                VersionNumber = asset.FrozenSequenceNumber,
                 Changelog = asset.Changelog,
             };
         }

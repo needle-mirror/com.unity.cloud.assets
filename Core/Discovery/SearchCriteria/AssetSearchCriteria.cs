@@ -17,11 +17,14 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc cref="IAsset.IsFrozen"/>
         public NullableSearchCriteria<bool> IsFrozen { get; } = new(nameof(IAsset.IsFrozen), "isFrozen");
 
+        /// <inheritdoc cref="IAsset.FrozenSequenceNumber"/>
+        public NullableSearchCriteria<int> FrozenSequenceNumber { get; } = new(nameof(IAsset.FrozenSequenceNumber), "versionNumber");
+
         /// <inheritdoc cref="IAsset.ParentVersion"/>
         public SearchCriteria<string> ParentVersion { get; } = new(nameof(IAsset.ParentVersion), "parentAssetVersion");
 
-        /// <inheritdoc cref="IAsset.ParentVersionNumber"/>
-        public NullableSearchCriteria<int> ParentVersionNumber { get; } = new(nameof(IAsset.ParentVersionNumber), "parentVersionNumber");
+        /// <inheritdoc cref="IAsset.ParentFrozenSequenceNumber"/>
+        public NullableSearchCriteria<int> ParentFrozenSequenceNumber { get; } = new(nameof(IAsset.ParentFrozenSequenceNumber), "parentVersionNumber");
 
         /// <inheritdoc cref="IAsset.Name"/>
         public StringSearchCriteria Name { get; } = new(nameof(IAsset.Name), "name");
@@ -60,10 +63,10 @@ namespace Unity.Cloud.Assets
         public AuthoringInfoSearchFilter AuthoringInfo { get; } = new(nameof(IAsset.AuthoringInfo), string.Empty);
 
         /// <inheritdoc cref="IFile"/>
-        public FileSearchCriteria Files { get; } = new(nameof(Asset.Files), "files");
+        public FileSearchCriteria Files { get; } = new("Files", "files");
 
         /// <inheritdoc cref="IDataset"/>
-        public DatasetSearchCriteria Datasets { get; } = new(nameof(Asset.Datasets), "datasets");
+        public DatasetSearchCriteria Datasets { get; } = new("Datasets", "datasets");
 
         internal AssetSearchCriteria()
             : base(string.Empty, string.Empty) { }

@@ -10,7 +10,7 @@ namespace Unity.Cloud.Assets
         readonly IDatasetBaseData m_Data;
 
         /// <summary>
-        /// AssetRequest Request Object.
+        /// Get a single dataset by id.
         /// </summary>
         /// <param name="projectId">ID of the project</param>
         /// <param name="assetId">ID of the asset</param>
@@ -23,6 +23,31 @@ namespace Unity.Cloud.Assets
             m_RequestUrl += $"/datasets/{datasetId}";
 
             m_Data = data;
+        }
+
+        /// <summary>
+        /// Get a single dataset by id.
+        /// </summary>
+        /// <param name="projectId">ID of the project</param>
+        /// <param name="assetId">ID of the asset</param>
+        /// <param name="assetVersion">Version of the asset</param>
+        /// <param name="datasetId">ID of the dataset</param>
+        /// <param name="includedDatasetFields">Sets the fields to be included in the response.</param>
+        public DatasetRequest(ProjectId projectId, AssetId assetId, AssetVersion assetVersion, DatasetId datasetId, DatasetFields includedDatasetFields)
+            : this(projectId, assetId, assetVersion, datasetId)
+        {
+            includedDatasetFields.Parse(AddFieldFilterToQueryParams);
+        }
+
+        public DatasetRequest(ProjectId projectId, AssetId assetId, AssetVersion assetVersion, DatasetFields includedFieldsFilter, string token = null, int? limit = null)
+            : base(projectId, assetId, assetVersion)
+        {
+            m_RequestUrl += "/datasets";
+
+            includedFieldsFilter.Parse(AddFieldFilterToQueryParams);
+
+            AddParamToQuery("Limit", limit?.ToString());
+            AddParamToQuery("Token", token);
         }
 
         public override HttpContent ConstructBody()

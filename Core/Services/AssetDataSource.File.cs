@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Unity.Cloud.Common;
@@ -36,18 +37,34 @@ namespace Unity.Cloud.Assets
         }
 
         /// <inheritdoc />
+        public async IAsyncEnumerable<IFileData> ListFilesAsync(DatasetDescriptor datasetDescriptor, Range range, FieldsFilter includedFieldsFilter, [EnumeratorCancellation] CancellationToken cancellationToken)
+        {
+            var countRequest = new FileRequest(datasetDescriptor.ProjectId, datasetDescriptor.AssetId, datasetDescriptor.AssetVersion, datasetDescriptor.DatasetId, FileFields.none, limit: 1);
+
+            var fileFields = includedFieldsFilter?.FileFields ?? FileFields.none;
+
+            Func<string, int, ApiRequest> getListRequest = (next, pageSize) => new FileRequest(datasetDescriptor.ProjectId, datasetDescriptor.AssetId, datasetDescriptor.AssetVersion, datasetDescriptor.DatasetId, fileFields, next, pageSize);
+
+            await foreach (var data in ListEntitiesAsync<FileData>(countRequest, getListRequest, range, cancellationToken))
+            {
+                yield return data;
+            }
+        }
+
+        /// <inheritdoc />
         public async Task<IFileData> GetFileAsync(FileDescriptor fileDescriptor, FieldsFilter includedFieldsFilter, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var assetData = await GetAssetAsync(fileDescriptor.DatasetDescriptor.AssetDescriptor, includedFieldsFilter, cancellationToken);
-            var file = assetData.Files.FirstOrDefault(f => f.Path == fileDescriptor.Path);
-            if (file == null)
-            {
-                throw new NotFoundException($"File with path \"{fileDescriptor.Path}\" not found at that location.");
-            }
+            var request = new FileRequest(fileDescriptor.ProjectId, fileDescriptor.AssetId, fileDescriptor.AssetVersion, fileDescriptor.DatasetId, fileDescriptor.Path,
+                includedFieldsFilter?.FileFields ?? FileFields.none);
+            var response = await RateLimitedServiceClient(request, HttpMethod.Get).GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(),
+                cancellationToken);
 
-            return file;
+            var jsonContent = await response.GetContentAsString();
+            cancellationToken.ThrowIfCancellationRequested();
+
+            return IsolatedSerialization.DeserializeWithDefaultConverters<FileData>(jsonContent);
         }
 
         /// <inheritdoc />

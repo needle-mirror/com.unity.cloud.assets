@@ -3,9 +3,9 @@ using System;
 namespace Unity.Cloud.Assets
 {
     /// <summary>
-    /// A class the defines the search criteria for a <see cref="IVersionLabel"/> query.
+    /// A class the defines the search criteria for a <see cref="ILabel"/> query.
     /// </summary>
-    public sealed class VersionLabelSearchFilter
+    public sealed class LabelSearchFilter
     {
         /// <summary>
         /// Whether the results should include archived labels.

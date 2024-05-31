@@ -1,3 +1,6 @@
+using System.Linq;
+using UnityEditor;
+
 namespace Unity.Cloud.Documentation.Assets
 {
 #pragma warning disable S4487 // Unread "private" fields should be removed
@@ -42,9 +45,9 @@ namespace Unity.Cloud.Documentation.Assets
 
         #region Example_UIContent
 
-        string m_FilePath = string.Empty;
-
         IAsset m_CurrentAsset;
+
+        Dictionary<DatasetId, bool> m_Expanded = new();
 
         public void OnGUI()
         {
@@ -59,57 +62,116 @@ namespace Unity.Cloud.Documentation.Assets
             if (m_CurrentAsset != m_Behaviour.CurrentAsset)
             {
                 m_CurrentAsset = m_Behaviour.CurrentAsset;
-                m_Behaviour.AssetFiles = null;
+                m_Behaviour.DatasetFiles.Clear();
+                _ = m_Behaviour.GetDataSetsAsync();
+            }
+
+            if (m_Behaviour.Datasets == null)
+            {
+                GUILayout.Label("Loading datasets...");
+                return;
             }
 
             GUILayout.BeginVertical();
 
-            if (GUILayout.Button("Refresh Files") || m_Behaviour.AssetFiles == null)
+            if (GUILayout.Button("Refresh Datasets"))
             {
-                _ = m_Behaviour.GetAssetFiles();
+                _ = m_Behaviour.GetDataSetsAsync();
             }
 
-            GUILayout.Label("Upload file full path:");
-            m_FilePath = GUILayout.TextField(m_FilePath);
+            GUILayout.Space(5f);
 
-            GUI.enabled = m_Behaviour.CanCancel;
-            if (GUILayout.Button("Cancel"))
-            {
-                m_Behaviour.Cancel();
-            }
-
-            GUI.enabled = true;
-
-            GUILayout.Label("Asset files:");
-
-            // Get a local copy of the list of asset files to avoid concurrent modification exceptions.
-            var assetFiles = m_Behaviour.AssetFiles?.ToArray() ?? Array.Empty<IFile>();
-            foreach (var assetFile in assetFiles)
-            {
-                DisplayAssetFile(assetFile);
-            }
+            DisplayDatasets(m_Behaviour.Datasets.ToArray());
 
             GUILayout.EndVertical();
         }
 
-        void DisplayAssetFile(IFile assetFile)
+        void DisplayDatasets(IReadOnlyCollection<IDataset> datasets)
         {
-            GUILayout.BeginHorizontal();
-
-            GUILayout.Label($"{assetFile.Descriptor.Path}");
-            GUILayout.Space(5f);
-
-            GUI.enabled = !string.IsNullOrEmpty(m_FilePath) && File.Exists(m_FilePath);
-
-            if (GUILayout.Button("Upload new content"))
+            if (datasets.Count == 0)
             {
-                var memoryStream = new MemoryStream(File.ReadAllBytes(m_FilePath));
-                _ = m_Behaviour.ReplaceFileAsync(assetFile, memoryStream);
+                GUILayout.Label("No datasets.");
             }
 
-            GUI.enabled = true;
+            foreach (var dataset in datasets)
+            {
+                GUILayout.BeginHorizontal();
 
-            GUILayout.EndHorizontal();
+                GUILayout.Label($"{dataset.Name}");
+
+                var expanded = m_Expanded.GetValueOrDefault(dataset.Descriptor.DatasetId);
+                if (GUILayout.Button(expanded ? "-" : "+", GUILayout.Width(20f)))
+                {
+                    expanded = !expanded;
+                    m_Expanded[dataset.Descriptor.DatasetId] = expanded;
+
+                    if (!expanded)
+                    {
+                        m_Behaviour.DatasetFiles.Remove(dataset.Descriptor.DatasetId);
+                    }
+                }
+
+                GUILayout.EndHorizontal();
+
+                if (expanded)
+                {
+                    GUILayout.BeginHorizontal();
+
+                    GUILayout.Space(25);
+
+                    DisplayFiles(dataset.Descriptor.DatasetId);
+
+                    GUILayout.EndHorizontal();
+                }
+            }
+        }
+
+        void DisplayFiles(DatasetId datasetId)
+        {
+            if (!m_Behaviour.DatasetFiles.ContainsKey(datasetId))
+            {
+                _ = m_Behaviour.GetFilesAsync(datasetId);
+            }
+
+            var files = m_Behaviour.DatasetFiles.GetValueOrDefault(datasetId);
+
+            if (files == null)
+            {
+                GUILayout.Label("Loading files...");
+                return;
+            }
+
+            var enumerable = files.ToArray();
+            if (!enumerable.Any())
+            {
+                GUILayout.Label("No files.");
+                return;
+            }
+
+            GUILayout.BeginVertical();
+
+            foreach (var file in enumerable)
+            {
+                GUILayout.BeginHorizontal();
+
+                GUILayout.Label($"{file.Descriptor.Path}");
+
+                GUILayout.Space(5f);
+
+                if (GUILayout.Button("Upload new content", GUILayout.Width(150)))
+                {
+                    var path = EditorUtility.OpenFilePanel("Choose a file to upload.", Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "");
+                    if (!string.IsNullOrEmpty(path))
+                    {
+                        var memoryStream = new MemoryStream(File.ReadAllBytes(path));
+                        _ = m_Behaviour.ReplaceFileAsync(file, memoryStream);
+                    }
+                }
+
+                GUILayout.EndHorizontal();
+            }
+
+            GUILayout.EndVertical();
         }
 
         #endregion
@@ -129,17 +191,42 @@ namespace Unity.Cloud.Documentation.Assets
 
         #region Example_Behaviour_RefreshFiles
 
-        public List<IFile> AssetFiles { get; set; }
+        public IEnumerable<IDataset> Datasets { get; private set; }
+        public Dictionary<DatasetId, IEnumerable<IFile>> DatasetFiles { get; } = new();
 
-        public async Task GetAssetFiles()
+        public async Task GetDataSetsAsync()
         {
-            AssetFiles = new List<IFile>();
+            Datasets = null;
 
-            var fileList = CurrentAsset.ListFilesAsync(Range.All, CancellationToken.None);
+            if (CurrentAsset == null) return;
+
+            var datasets = new List<IDataset>();
+            var datasetList = CurrentAsset.ListDatasetsAsync(Range.All, CancellationToken.None);
+            await foreach (var dataset in datasetList)
+            {
+                datasets.Add(dataset);
+            }
+
+            Datasets = datasets;
+        }
+
+        public async Task GetFilesAsync(DatasetId datasetId)
+        {
+            DatasetFiles.Remove(datasetId);
+
+            var dataset = Datasets?.FirstOrDefault(d => d.Descriptor.DatasetId == datasetId);
+            if (dataset == null) return;
+
+            DatasetFiles[datasetId] = null;
+
+            var files = new List<IFile>();
+            var fileList = dataset.ListFilesAsync(Range.All, CancellationToken.None);
             await foreach (var file in fileList)
             {
-                AssetFiles.Add(file);
+                files.Add(file);
             }
+
+            DatasetFiles[datasetId] = files;
         }
 
         #endregion

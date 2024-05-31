@@ -2,9 +2,9 @@ using Unity.Cloud.Common;
 
 namespace Unity.Cloud.Assets
 {
-    class UpdateVersionLabelStatusRequest : VersionLabelRequest
+    class UpdateLabelStatusRequest : LabelRequest
     {
-        public UpdateVersionLabelStatusRequest(OrganizationId organizationId, string labelName, bool archive)
+        public UpdateLabelStatusRequest(OrganizationId organizationId, string labelName, bool archive)
             : base(organizationId, labelName)
         {
             m_RequestUrl += archive ? "/archive" : "/unarchive";

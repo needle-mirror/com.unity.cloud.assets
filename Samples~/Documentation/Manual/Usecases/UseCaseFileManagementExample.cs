@@ -44,8 +44,10 @@ namespace Unity.Cloud.Documentation.Assets
         #region Example_UIContent
 
         IAsset m_CurrentAsset;
+        Vector2 m_DatasetsScrollPosition;
         Vector2 m_FilesScrollPosition;
 
+        IDataset m_CurrentDataset;
         IFile m_CurrentFile;
         FileUpdate m_FileUpdate;
         IEnumerable<GeneratedTag> m_GeneratedTags;
@@ -63,26 +65,30 @@ namespace Unity.Cloud.Documentation.Assets
             if (m_CurrentAsset != m_Behaviour.CurrentAsset)
             {
                 m_CurrentAsset = m_Behaviour.CurrentAsset;
+                m_CurrentDataset = null;
                 m_Behaviour.Files = null;
                 m_CurrentFile = null;
                 m_FileUpdate = null;
+                m_Behaviour.CancelTagGeneration();
                 m_GeneratedTags = null;
+                _ = m_Behaviour.GetDataSetsAsync();
+            }
+
+            if (m_Behaviour.Datasets == null)
+            {
+                GUILayout.Label("Loading datasets...");
+                return;
             }
 
             GUILayout.BeginVertical();
 
-            if (GUILayout.Button("Refresh Files") || m_Behaviour.Files == null)
-            {
-                _ = m_Behaviour.GetFilesAsync();
-            }
+            DisplayDatasetSelection();
 
-            GUILayout.Space(5f);
+            GUILayout.EndVertical();
 
-            m_FilesScrollPosition = GUILayout.BeginScrollView(m_FilesScrollPosition, GUILayout.MaxHeight(Screen.height * 0.8f), GUILayout.Width(Screen.width * 0.3f));
+            GUILayout.BeginVertical();
 
-            DisplayFiles();
-
-            GUILayout.EndScrollView();
+            DisplayFileSelection();
 
             GUILayout.EndVertical();
 
@@ -93,17 +99,95 @@ namespace Unity.Cloud.Documentation.Assets
             GUILayout.EndVertical();
         }
 
-        void DisplayFiles()
+        void DisplayDatasetSelection()
         {
+            if (GUILayout.Button("Refresh Datasets"))
+            {
+                _ = m_Behaviour.GetDataSetsAsync();
+            }
+
+            GUILayout.Space(5f);
+
+            m_DatasetsScrollPosition = GUILayout.BeginScrollView(m_DatasetsScrollPosition, GUILayout.MaxHeight(Screen.height * 0.8f), GUILayout.Width(Screen.width * 0.15f));
+
+            DisplayDatasets(m_Behaviour.Datasets.ToArray());
+
+            GUILayout.EndScrollView();
+        }
+
+        void DisplayDatasets(IReadOnlyCollection<IDataset> datasets)
+        {
+            if (datasets.Count == 0)
+            {
+                GUILayout.Label("No datasets.");
+                return;
+            }
+
             // Get a local copy of the list of asset files to avoid concurrent modification exceptions.
-            var assetFiles = m_Behaviour.Files?.ToArray() ?? Array.Empty<IFile>();
-            foreach (var assetFile in assetFiles)
+            foreach (var dataset in datasets)
+            {
+                GUILayout.BeginHorizontal();
+
+                GUILayout.Label($"{dataset.Name}");
+
+                if (GUILayout.Button("Select", GUILayout.Width(80)))
+                {
+                    m_CurrentFile = null;
+                    m_FileUpdate = null;
+                    m_Behaviour.CancelTagGeneration();
+                    m_GeneratedTags = null;
+                    m_CurrentDataset = dataset;
+                    _ = m_Behaviour.GetFilesAsync(dataset);
+                }
+
+                GUILayout.EndHorizontal();
+            }
+        }
+
+        void DisplayFileSelection()
+        {
+            if (m_CurrentDataset == null)
+            {
+                GUILayout.Label("! No dataset selected !");
+                return;
+            }
+
+            if (m_Behaviour.Files == null)
+            {
+                GUILayout.Label("Loading files...");
+                return;
+            }
+
+            if (GUILayout.Button("Refresh Files"))
+            {
+                _ = m_Behaviour.GetFilesAsync(m_CurrentDataset);
+            }
+
+            GUILayout.Space(5f);
+
+            m_FilesScrollPosition = GUILayout.BeginScrollView(m_FilesScrollPosition, GUILayout.MaxHeight(Screen.height * 0.8f), GUILayout.Width(Screen.width * 0.2f));
+
+            DisplayFiles(m_Behaviour.Files.ToArray());
+
+            GUILayout.EndScrollView();
+        }
+
+        void DisplayFiles(IReadOnlyCollection<IFile> files)
+        {
+            if (files.Count == 0)
+            {
+                GUILayout.Label("No files.");
+                return;
+            }
+
+            // Get a local copy of the list of asset files to avoid concurrent modification exceptions.
+            foreach (var assetFile in files)
             {
                 GUILayout.BeginHorizontal();
 
                 GUILayout.Label($"{assetFile.Descriptor.Path}");
 
-                if (GUILayout.Button("Select"))
+                if (GUILayout.Button("Select", GUILayout.Width(80)))
                 {
                     m_CurrentFile = assetFile;
                     m_FileUpdate = new FileUpdate(assetFile);
@@ -112,7 +196,7 @@ namespace Unity.Cloud.Documentation.Assets
                     m_GeneratedTags = null;
                 }
 
-                if (GUILayout.Button("Download"))
+                if (GUILayout.Button("Download", GUILayout.Width(80)))
                 {
                     _ = m_Behaviour.DownloadFileAsync(assetFile);
                 }
@@ -123,6 +207,8 @@ namespace Unity.Cloud.Documentation.Assets
 
         void DisplaySelectedFile()
         {
+            if (m_Behaviour.Files == null || !m_Behaviour.Files.Any()) return;
+
             if (m_CurrentFile == null)
             {
                 GUILayout.Label("! No file selected !");
@@ -220,26 +306,79 @@ namespace Unity.Cloud.Documentation.Assets
 
         #region Example_Behaviour_RefreshFiles
 
-        public List<IFile> Files { get; set; }
+        CancellationTokenSource m_DatasetCancellationSource;
+        CancellationTokenSource m_FileCancellationSource;
 
-        public async Task GetFilesAsync()
+        public IEnumerable<IDataset> Datasets { get; private set; }
+
+        public IEnumerable<IFile> Files { get; set; }
+
+        public async Task GetDataSetsAsync()
         {
-            Files = new List<IFile>();
+            CleanDatasetCancellation();
 
-            try
+            Datasets = null;
+
+            if (CurrentAsset == null) return;
+
+            m_DatasetCancellationSource = new CancellationTokenSource();
+            var token = m_DatasetCancellationSource.Token;
+
+            var datasets = new List<IDataset>();
+            var datasetList = CurrentAsset.ListDatasetsAsync(Range.All, token);
+            await foreach (var dataset in datasetList)
             {
-                _ = CurrentAsset.RefreshAsync(CancellationToken.None);
-                var fileList = CurrentAsset.ListFilesAsync(Range.All, CancellationToken.None);
-                await foreach (var file in fileList)
-                {
-                    Files.Add(file);
-                }
+                if (token.IsCancellationRequested) break;
+
+                datasets.Add(dataset);
             }
-            catch (Exception e)
+
+            if (token.IsCancellationRequested) return;
+
+            Datasets = datasets;
+            CleanDatasetCancellation();
+        }
+
+        public async Task GetFilesAsync(IDataset dataset)
+        {
+            CleanFileCancellation();
+
+            Files = null;
+
+            if (dataset == null) return;
+
+            m_FileCancellationSource = new CancellationTokenSource();
+            var token = m_FileCancellationSource.Token;
+
+            var files = new List<IFile>();
+            var fileList = dataset.ListFilesAsync(Range.All, token);
+            await foreach (var file in fileList)
             {
-                Debug.LogError(e);
-                throw;
+                files.Add(file);
             }
+
+            Files = files;
+            CleanFileCancellation();
+        }
+
+        void CleanDatasetCancellation()
+        {
+            if (m_DatasetCancellationSource != null)
+            {
+                m_DatasetCancellationSource.Cancel();
+                m_DatasetCancellationSource.Dispose();
+            }
+            m_DatasetCancellationSource = null;
+        }
+
+        void CleanFileCancellation()
+        {
+            if (m_FileCancellationSource != null)
+            {
+                m_FileCancellationSource.Cancel();
+                m_FileCancellationSource.Dispose();
+            }
+            m_FileCancellationSource = null;
         }
 
         #endregion

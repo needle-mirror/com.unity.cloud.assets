@@ -52,8 +52,6 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc />
         public bool IsVisible { get; set; }
 
-        internal FileEntity[] Files { get; set; }
-
         internal MetadataContainerEntity MetadataEntity { get; }
 
         /// <summary>
@@ -61,15 +59,10 @@ namespace Unity.Cloud.Assets
         /// </summary>
         internal string WorkflowName { get; set; }
 
-        internal DatasetEntity(IAssetDataSource assetDataSource, DatasetDescriptor datasetDescriptor, IEnumerable<FileEntity> files = null)
+        internal DatasetEntity(IAssetDataSource assetDataSource, DatasetDescriptor datasetDescriptor)
             : this(datasetDescriptor)
         {
             m_DataSource = assetDataSource;
-
-            if (files != null)
-            {
-                Files = files.ToArray();
-            }
 
             MetadataEntity = new DatasetMetadataContainer(Descriptor, DatasetFields.metadata, m_DataSource);
         }
@@ -84,7 +77,6 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc />
         public Task RefreshAsync(CancellationToken cancellationToken)
         {
-            Files = null;
             MetadataEntity.Refresh();
 
             return RefreshAsync(FieldsFilter.DefaultDatasetIncludes, cancellationToken);
@@ -107,45 +99,30 @@ namespace Unity.Cloud.Assets
         {
             await m_DataSource.ReferenceFileFromDatasetAsync(Descriptor, sourceDatasetId, filePath, cancellationToken);
 
-            await RefreshFiles(cancellationToken);
-            return Files?.FirstOrDefault(x => x.Descriptor.Path == filePath);
+            return await GetFileAsync(filePath, cancellationToken);
         }
 
         /// <inheritdoc />
         public async Task RemoveFileAsync(string filePath, CancellationToken cancellationToken)
         {
             await m_DataSource.RemoveFileFromDatasetAsync(Descriptor, filePath, cancellationToken);
-
-            Files = null; // Will force a refresh of the files the next time they are accessed.
         }
 
         /// <inheritdoc />
         public async Task<IFile> GetFileAsync(string filePath, CancellationToken cancellationToken)
         {
-            if (Files == null) await RefreshFiles(cancellationToken);
-
-            var file = Files?.FirstOrDefault(x => x.Descriptor.Path == filePath);
-            if (file == null)
-            {
-                throw new NotFoundException($"File with path \"{filePath}\" not found at that location.");
-            }
-
-            return file;
+            var fileDescriptor = new FileDescriptor(Descriptor, filePath);
+            var data = await m_DataSource.GetFileAsync(fileDescriptor, FieldsFilter.DefaultFileIncludes, cancellationToken);
+            return data?.From(m_DataSource, fileDescriptor, FieldsFilter.DefaultFileIncludes.FileFields);
         }
 
         /// <inheritdoc />
         public async IAsyncEnumerable<IFile> ListFilesAsync(Range range, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            if (Files == null) await RefreshFiles(cancellationToken);
-
-            if (Files == null || Files.Length == 0) yield break;
-
-            var (start, length) = range.GetValidatedOffsetAndLength(Files.Length);
-            for (var i = start; i < start + length; ++i)
+            var data = m_DataSource.ListFilesAsync(Descriptor, range, FieldsFilter.DefaultFileIncludes, cancellationToken);
+            await foreach (var fileData in data)
             {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                yield return Files[i];
+                yield return fileData.From(m_DataSource, new FileDescriptor(Descriptor, fileData.Path), FieldsFilter.DefaultFileIncludes.FileFields);
             }
         }
 
@@ -196,8 +173,7 @@ namespace Unity.Cloud.Assets
                 }
             }
 
-            await RefreshFiles(cancellationToken);
-            return Files?.FirstOrDefault(x => x.Descriptor.Path == path);
+            return await GetFileAsync(path, cancellationToken);
         }
 
         /// <inheritdoc />
@@ -290,44 +266,6 @@ namespace Unity.Cloud.Assets
 
             md5.TransformFinalBlock(buffer, 0, 0);
             await Task.CompletedTask;
-        }
-
-        async Task RefreshFiles(CancellationToken cancellationToken)
-        {
-            var data = await m_DataSource.GetAssetAsync(Descriptor.AssetDescriptor, FieldsFilter.DefaultFileIncludes, cancellationToken);
-
-            var fileList = data.Files?
-                .Where(f => f.DatasetIds.Contains(Descriptor.DatasetId))
-                .Select(fileData => fileData.From(m_DataSource, new FileDescriptor(Descriptor, fileData.Path), FieldsFilter.DefaultFileIncludes.FileFields))
-                .ToList();
-
-            if (m_FileOrder.Count > 0)
-            {
-                fileList?.Sort(CompareFilesWithFileOrder);
-            }
-            else
-            {
-                fileList?.Sort(CompareFiles);
-            }
-
-            Files = fileList?.ToArray() ?? Array.Empty<FileEntity>();
-        }
-
-        int CompareFilesWithFileOrder(IFile x, IFile y)
-        {
-            var indexX = m_FileOrder.IndexOf(x.Descriptor.Path);
-            var indexY = m_FileOrder.IndexOf(y.Descriptor.Path);
-            if (indexX >= 0)
-            {
-                return indexY >= 0 ? indexX - indexY : -1;
-            }
-
-            return indexY >= 0 ? 1 : CompareFiles(x, y);
-        }
-
-        static int CompareFiles(IFile x, IFile y)
-        {
-            return string.Compare(x.Descriptor.Path, y.Descriptor.Path, StringComparison.Ordinal);
         }
     }
 }

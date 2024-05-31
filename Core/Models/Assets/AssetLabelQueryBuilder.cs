@@ -8,7 +8,7 @@ using Unity.Cloud.Common;
 namespace Unity.Cloud.Assets
 {
     /// <summary>
-    /// A class that builds and executes a query to return a the version labels assigned to an asset.
+    /// A class that builds and executes a query to return a set of labels assigned to an asset.
     /// </summary>
     public sealed class AssetLabelQueryBuilder
     {

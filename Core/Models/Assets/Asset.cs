@@ -18,13 +18,13 @@ namespace Unity.Cloud.Assets
         internal ProjectDescriptor[] m_LinkedProjects = Array.Empty<ProjectDescriptor>();
 
         /// <inheritdoc />
-        public AssetDescriptor Descriptor { get; }
+        public AssetDescriptor Descriptor { get; private set; }
 
         /// <inheritdoc />
         public bool IsFrozen { get; set; }
 
         /// <inheritdoc />
-        public int VersionNumber { get; set; }
+        public int FrozenSequenceNumber { get; set; }
 
         /// <inheritdoc />
         public string Changelog { get; set; }
@@ -33,7 +33,7 @@ namespace Unity.Cloud.Assets
         public AssetVersion ParentVersion { get; set; }
 
         /// <inheritdoc />
-        public int ParentVersionNumber { get; set; }
+        public int ParentFrozenSequenceNumber { get; set; }
 
         /// <inheritdoc />
         public ProjectDescriptor SourceProject { get; set; }
@@ -54,10 +54,10 @@ namespace Unity.Cloud.Assets
         public IEnumerable<string> SystemTags { get; set; }
 
         /// <inheritdoc />
-        public IEnumerable<VersionLabelDescriptor> Labels { get; set; }
+        public IEnumerable<LabelDescriptor> Labels { get; set; }
 
         /// <inheritdoc />
-        public IEnumerable<VersionLabelDescriptor> ArchivedLabels { get; set; }
+        public IEnumerable<LabelDescriptor> ArchivedLabels { get; set; }
 
         /// <inheritdoc />
         public AssetType Type { get; set; } = AssetType.Other;
@@ -75,8 +75,6 @@ namespace Unity.Cloud.Assets
         public AuthoringInfo AuthoringInfo { get; set; }
 
         internal Uri PreviewFileUrl { get; set; }
-        internal DatasetEntity[] Datasets { get; set; }
-        internal FileEntity[] Files { get; set; }
         internal MetadataContainerEntity MetadataEntity { get; }
 
         internal Asset(IAssetDataSource dataSource, AssetDescriptor assetDescriptor)
@@ -107,10 +105,28 @@ namespace Unity.Cloud.Assets
         }
 
         /// <inheritdoc />
+        public async Task WithProjectAsync(ProjectDescriptor projectDescriptor, CancellationToken cancellationToken)
+        {
+            var descriptor = new AssetDescriptor(projectDescriptor, Descriptor.AssetId, Descriptor.AssetVersion);
+            var data = await m_DataSource.GetAssetAsync(descriptor, FieldsFilter.DefaultAssetIncludes, cancellationToken);
+
+            Descriptor = descriptor;
+            this.MapFrom(m_DataSource, projectDescriptor.OrganizationId, data, FieldsFilter.DefaultAssetIncludes);
+        }
+
+        /// <inheritdoc />
+        public async Task WithVersionAsync(AssetVersion assetVersion, CancellationToken cancellationToken)
+        {
+            var descriptor = new AssetDescriptor(Descriptor.ProjectDescriptor, Descriptor.AssetId, assetVersion);
+            var data = await m_DataSource.GetAssetAsync(descriptor, FieldsFilter.DefaultAssetIncludes, cancellationToken);
+
+            Descriptor = descriptor;
+            this.MapFrom(m_DataSource, Descriptor.OrganizationId, data, FieldsFilter.DefaultAssetIncludes);
+        }
+
+        /// <inheritdoc />
         public Task RefreshAsync(CancellationToken cancellationToken)
         {
-            Datasets = null;
-            Files = null;
             PreviewFileUrl = null;
             MetadataEntity.Refresh();
 
@@ -232,12 +248,6 @@ namespace Unity.Cloud.Assets
             foreach (var url in fileUrls)
             {
                 urls.Add(url.FilePath, url.DownloadUrl);
-
-                var file = Files?.FirstOrDefault(f => f.Descriptor.Path == url.FilePath);
-                if (file != null)
-                {
-                    file.DownloadUrl = url.DownloadUrl;
-                }
             }
 
             return urls;
@@ -267,49 +277,40 @@ namespace Unity.Cloud.Assets
             var datasetData = await m_DataSource.CreateDatasetAsync(Descriptor, datasetCreation.From(), cancellationToken);
             var dataset = datasetData.From(m_DataSource, Descriptor, DatasetFields.all);
 
-            // Clear datasets to force a refresh the next time they are accessed.
-            Datasets = null;
-
             return dataset;
         }
 
         /// <inheritdoc />
         public async Task<IDataset> GetDatasetAsync(DatasetId datasetId, CancellationToken cancellationToken)
         {
-            if (Datasets == null) await RefreshDatasets(cancellationToken);
-
-            var dataset = Datasets?.FirstOrDefault(x => x.Descriptor.DatasetId == datasetId);
-            if (dataset == null)
-            {
-                throw new NotFoundException($"Dataset {datasetId} not found.");
-            }
-
-            return dataset;
+            var datasetDescriptor = new DatasetDescriptor(Descriptor, datasetId);
+            var data = await m_DataSource.GetDatasetAsync(datasetDescriptor, FieldsFilter.DefaultDatasetIncludes, cancellationToken);
+            return data?.From(m_DataSource, datasetDescriptor, FieldsFilter.DefaultDatasetIncludes.DatasetFields);
         }
 
         /// <inheritdoc />
         public async IAsyncEnumerable<IDataset> ListDatasetsAsync(Range range, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            if (Datasets == null) await RefreshDatasets(cancellationToken);
-
-            if (Datasets != null)
+            var data = m_DataSource.ListDatasetsAsync(Descriptor, range, FieldsFilter.DefaultDatasetIncludes, cancellationToken);
+            await foreach (var datasetData in data)
             {
-                var (start, length) = range.GetValidatedOffsetAndLength(Datasets.ToArray().Length);
-                for (var i = start; i < start + length; ++i)
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-
-                    yield return Datasets[i];
-                }
+                yield return datasetData.From(m_DataSource, Descriptor, FieldsFilter.DefaultDatasetIncludes.DatasetFields);
             }
         }
 
         /// <inheritdoc />
         public async Task<IFile> GetFileAsync(string filePath, CancellationToken cancellationToken)
         {
-            if (Files == null) await RefreshFiles(cancellationToken);
+            var asset = await m_DataSource.GetAssetAsync(Descriptor, FieldsFilter.DefaultFileIncludes, cancellationToken);
 
-            var file = Files?.FirstOrDefault(x => x.Descriptor.Path == filePath);
+            IFile file = null;
+
+            var data = asset.Files?.FirstOrDefault(x => x.Path == filePath);
+            if (data != null)
+            {
+                file = data.From(m_DataSource, Descriptor, FieldsFilter.DefaultFileIncludes.FileFields);
+            }
+
             if (file == null)
             {
                 throw new NotFoundException($"File {filePath} not found.");
@@ -321,36 +322,34 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc />
         public async IAsyncEnumerable<IFile> ListFilesAsync(Range range, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            if (Files == null) await RefreshFiles(cancellationToken);
+            var asset = await m_DataSource.GetAssetAsync(Descriptor, FieldsFilter.DefaultFileIncludes, cancellationToken);
 
-            if (Files != null)
+            var files = asset.Files?.ToArray() ?? Array.Empty<IFileData>();
+            var (start, length) = range.GetValidatedOffsetAndLength(files.Length);
+            for (var i = start; i < start + length; ++i)
             {
-                var (start, length) = range.GetValidatedOffsetAndLength(Files.Length);
-                for (var i = start; i < start + length; ++i)
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
+                cancellationToken.ThrowIfCancellationRequested();
 
-                    yield return Files[i];
-                }
+                yield return files[i].From(m_DataSource, Descriptor, FieldsFilter.DefaultFileIncludes.FileFields);
             }
         }
 
         /// <inheritdoc />
-        public AssetLabelQueryBuilder QueryVersionLabels()
+        public AssetLabelQueryBuilder QueryLabels()
         {
             return new AssetLabelQueryBuilder(m_DataSource, Descriptor.ProjectDescriptor, Descriptor.AssetId);
         }
 
         /// <inheritdoc />
-        public Task AssignVersionLabelsAsync(IEnumerable<string> labels, CancellationToken cancellationToken)
+        public Task AssignLabelsAsync(IEnumerable<string> labels, CancellationToken cancellationToken)
         {
-            return m_DataSource.AssignVersionLabelsAsync(Descriptor, labels, cancellationToken);
+            return m_DataSource.AssignLabelsAsync(Descriptor, labels, cancellationToken);
         }
 
         /// <inheritdoc />
-        public Task UnassignVersionLabelsAsync(IEnumerable<string> labels, CancellationToken cancellationToken)
+        public Task UnassignLabelsAsync(IEnumerable<string> labels, CancellationToken cancellationToken)
         {
-            return m_DataSource.UnassignVersionLabelsAsync(Descriptor, labels, cancellationToken);
+            return m_DataSource.UnassignLabelsAsync(Descriptor, labels, cancellationToken);
         }
 
         /// <inheritdoc />
@@ -370,20 +369,6 @@ namespace Unity.Cloud.Assets
             return IsolatedSerialization.SerializeWithDefaultConverters(data);
         }
 
-        async Task RefreshDatasets(CancellationToken cancellationToken)
-        {
-            var data = await m_DataSource.GetAssetAsync(Descriptor, FieldsFilter.DefaultDatasetIncludes, cancellationToken);
-
-            this.MapFrom(m_DataSource, Descriptor.OrganizationId, data, FieldsFilter.DefaultDatasetIncludes);
-        }
-
-        async Task RefreshFiles(CancellationToken cancellationToken)
-        {
-            var data = await m_DataSource.GetAssetAsync(Descriptor, FieldsFilter.DefaultFileIncludes, cancellationToken);
-
-            this.MapFrom(m_DataSource, Descriptor.OrganizationId, data, FieldsFilter.DefaultFileIncludes);
-        }
-
         IAsset Copy(AssetDescriptor assetDescriptor)
         {
             return new Asset(m_DataSource, assetDescriptor)
@@ -401,8 +386,6 @@ namespace Unity.Cloud.Assets
                 Status = Status,
                 IsFrozen = IsFrozen,
                 AuthoringInfo = AuthoringInfo,
-                Datasets = Datasets?.ToArray(),
-                Files = Files?.ToArray(),
                 MetadataEntity = {Properties = MetadataEntity.Properties},
             };
         }

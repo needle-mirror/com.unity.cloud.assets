@@ -26,11 +26,11 @@ namespace Unity.Cloud.Assets
         /// </summary>
         /// <param name="projectDescriptor">The object containing the necessary information to identify the project. </param>
         /// <param name="assetId">The id of the asset. </param>
-        /// <param name="versionLabel">The label associated to the asset version. </param>
+        /// <param name="label">The label associated to the asset version. </param>
         /// <param name="includedFieldsFilter">The fields that should be included in the response. </param>
         /// <param name="cancellationToken">A token that can be used to cancel the request.</param>
         /// <returns>A task whose result is a <see cref="IAssetData"/>. </returns>
-        Task<IAssetData> GetAssetAsync(ProjectDescriptor projectDescriptor, AssetId assetId, string versionLabel, FieldsFilter includedFieldsFilter, CancellationToken cancellationToken);
+        Task<IAssetData> GetAssetAsync(ProjectDescriptor projectDescriptor, AssetId assetId, string label, FieldsFilter includedFieldsFilter, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves a subset of <see cref="IAssetData"/>.

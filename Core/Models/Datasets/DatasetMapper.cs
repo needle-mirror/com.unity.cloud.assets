@@ -26,11 +26,14 @@ namespace Unity.Cloud.Assets
                 dataset.FileOrder = datasetData.FileOrder;
         }
 
-        internal static DatasetEntity From(this IDatasetData datasetData, IAssetDataSource assetDataSource, AssetDescriptor assetDescriptor, DatasetFields includeFields, IEnumerable<FileEntity> files = null)
+        internal static DatasetEntity From(this IDatasetData datasetData, IAssetDataSource assetDataSource, AssetDescriptor assetDescriptor, DatasetFields includeFields)
         {
-            // Filter files for the current dataset.
-            files = files?.Where(file => file.LinkedDatasets.Select(descriptor => descriptor.DatasetId).Contains(datasetData.DatasetId));
-            var dataset = new DatasetEntity(assetDataSource, new DatasetDescriptor(assetDescriptor, datasetData.DatasetId), files);
+            return datasetData.From(assetDataSource, new DatasetDescriptor(assetDescriptor, datasetData.DatasetId), includeFields);
+        }
+
+        internal static DatasetEntity From(this IDatasetData datasetData, IAssetDataSource assetDataSource, DatasetDescriptor datasetDescriptor, DatasetFields includeFields)
+        {
+            var dataset = new DatasetEntity(assetDataSource, datasetDescriptor);
             dataset.MapFrom(assetDataSource, datasetData, includeFields);
             return dataset;
         }

@@ -4,12 +4,12 @@ using System.Threading.Tasks;
 
 namespace Unity.Cloud.Assets
 {
-    class VersionLabelEntity : IVersionLabel
+    class LabelEntity : ILabel
     {
         readonly IAssetDataSource m_AssetDataSource;
 
         /// <inheritdoc/>
-        public VersionLabelDescriptor Descriptor { get; set; }
+        public LabelDescriptor Descriptor { get; set; }
 
         /// <inheritdoc/>
         public string Description { get; set; }
@@ -26,7 +26,7 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc/>
         public AuthoringInfo AuthoringInfo { get; set; }
 
-        public VersionLabelEntity(IAssetDataSource assetDataSource, VersionLabelDescriptor descriptor)
+        public LabelEntity(IAssetDataSource assetDataSource, LabelDescriptor descriptor)
         {
             m_AssetDataSource = assetDataSource;
             Descriptor = descriptor;
@@ -35,37 +35,37 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc/>
         public async Task RefreshAsync(CancellationToken cancellationToken)
         {
-            var data = await m_AssetDataSource.GetVersionLabelAsync(Descriptor, cancellationToken);
+            var data = await m_AssetDataSource.GetLabelAsync(Descriptor, cancellationToken);
             if (data != null)
                 this.MapFrom(data);
         }
 
         /// <inheritdoc/>
-        public Task UpdateAsync(IVersionLabelUpdate versionLabelUpdate, CancellationToken cancellationToken)
+        public Task UpdateAsync(ILabelUpdate labelUpdate, CancellationToken cancellationToken)
         {
-            return m_AssetDataSource.UpdateVersionLabelAsync(Descriptor, versionLabelUpdate.From(), cancellationToken);
+            return m_AssetDataSource.UpdateLabelAsync(Descriptor, labelUpdate.From(), cancellationToken);
         }
 
         /// <inheritdoc/>
         public async Task RenameAsync(string labelName, CancellationToken cancellationToken)
         {
-            var versionLabelUpdate = new VersionLabelBaseData {Name = labelName};
-            await m_AssetDataSource.UpdateVersionLabelAsync(Descriptor, versionLabelUpdate, cancellationToken);
+            var labelUpdate = new LabelBaseData {Name = labelName};
+            await m_AssetDataSource.UpdateLabelAsync(Descriptor, labelUpdate, cancellationToken);
 
             // On success, the descriptor must be modified immediately.
-            Descriptor = new VersionLabelDescriptor(Descriptor.OrganizationId, versionLabelUpdate.Name);
+            Descriptor = new LabelDescriptor(Descriptor.OrganizationId, labelUpdate.Name);
         }
 
         /// <inheritdoc/>
         public Task ArchiveAsync(CancellationToken cancellationToken)
         {
-            return m_AssetDataSource.UpdateVersionLabelStatusAsync(Descriptor, true, cancellationToken);
+            return m_AssetDataSource.UpdateLabelStatusAsync(Descriptor, true, cancellationToken);
         }
 
         /// <inheritdoc/>
         public Task UnarchiveAsync(CancellationToken cancellationToken)
         {
-            return m_AssetDataSource.UpdateVersionLabelStatusAsync(Descriptor, false, cancellationToken);
+            return m_AssetDataSource.UpdateLabelStatusAsync(Descriptor, false, cancellationToken);
         }
     }
 }

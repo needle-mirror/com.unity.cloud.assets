@@ -5,7 +5,7 @@ namespace Unity.Cloud.Assets
 {
     static partial class EntityMapper
     {
-        internal static void MapFrom(this VersionLabelEntity label, IVersionLabelData labelData)
+        internal static void MapFrom(this LabelEntity label, ILabelData labelData)
         {
             label.Description = labelData.Description;
             label.DisplayColor = labelData.DisplayColor ?? Color.White;
@@ -14,9 +14,9 @@ namespace Unity.Cloud.Assets
             label.AuthoringInfo = new AuthoringInfo(labelData.CreatedBy, labelData.Created, labelData.UpdatedBy, labelData.Updated);
         }
 
-        internal static IVersionLabelBaseData From(this IVersionLabelCreation labelCreation)
+        internal static ILabelBaseData From(this ILabelCreation labelCreation)
         {
-            return new VersionLabelBaseData
+            return new LabelBaseData
             {
                 Name = labelCreation.Name,
                 Description = labelCreation.Description,
@@ -24,23 +24,23 @@ namespace Unity.Cloud.Assets
             };
         }
 
-        internal static IVersionLabelBaseData From(this IVersionLabelUpdate labelUpdate)
+        internal static ILabelBaseData From(this ILabelUpdate labelUpdate)
         {
-            return new VersionLabelBaseData
+            return new LabelBaseData
             {
                 Description = labelUpdate.Description,
                 DisplayColor = labelUpdate.DisplayColor
             };
         }
 
-        internal static VersionLabelEntity From(this IVersionLabelData data, IAssetDataSource assetDataSource, OrganizationId organizationId)
+        internal static LabelEntity From(this ILabelData data, IAssetDataSource assetDataSource, OrganizationId organizationId)
         {
-            return data.From(assetDataSource, new VersionLabelDescriptor(organizationId, data.Name));
+            return data.From(assetDataSource, new LabelDescriptor(organizationId, data.Name));
         }
 
-        internal static VersionLabelEntity From(this IVersionLabelData data, IAssetDataSource assetDataSource, VersionLabelDescriptor versionLabelDescriptor)
+        internal static LabelEntity From(this ILabelData data, IAssetDataSource assetDataSource, LabelDescriptor labelDescriptor)
         {
-            var label = new VersionLabelEntity(assetDataSource, versionLabelDescriptor);
+            var label = new LabelEntity(assetDataSource, labelDescriptor);
             label.MapFrom(data);
             return label;
         }

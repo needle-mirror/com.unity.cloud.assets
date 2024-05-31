@@ -22,9 +22,9 @@ namespace Unity.Cloud.Assets
         bool IsFrozen => false;
 
         /// <summary>
-        /// The sequenced version number of the asset. This will only be populated if the version is frozen.
+        /// The sequence number of the asset. This will only be populated if the version is frozen.
         /// </summary>
-        int VersionNumber => -1;
+        int FrozenSequenceNumber => -1;
 
         /// <summary>
         /// The change log of the asset version.
@@ -37,9 +37,9 @@ namespace Unity.Cloud.Assets
         AssetVersion ParentVersion => AssetVersion.None;
 
         /// <summary>
-        /// The sequence id from which this version was branched.
+        /// The sequence number from which this version was branched.
         /// </summary>
-        int ParentVersionNumber => -1;
+        int ParentFrozenSequenceNumber => -1;
 
         /// <summary>
         /// The source project of the asset.
@@ -74,12 +74,12 @@ namespace Unity.Cloud.Assets
         /// <summary>
         /// The labels associated to the asset version.
         /// </summary>
-        IEnumerable<VersionLabelDescriptor> Labels { get; }
+        IEnumerable<LabelDescriptor> Labels { get; }
 
         /// <summary>
         /// The labels no longer associated to the asset version.
         /// </summary>
-        IEnumerable<VersionLabelDescriptor> ArchivedLabels { get; }
+        IEnumerable<LabelDescriptor> ArchivedLabels { get; }
 
         /// <summary>
         /// The type of the asset.
@@ -111,7 +111,24 @@ namespace Unity.Cloud.Assets
         /// </summary>
         /// <param name="projectDescriptor">The descriptor of the project. </param>
         /// <returns>A copy of the asset with a different parent project. </returns>
+        [Obsolete("Use WithProjectAsync instead.")]
         IAsset WithProject(ProjectDescriptor projectDescriptor);
+
+        /// <summary>
+        /// Changes the path of this asset to the specified project.
+        /// </summary>
+        /// <param name="projectDescriptor">The descriptor of the project. </param>
+        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
+        /// <returns>A task with no result. </returns>
+        Task WithProjectAsync(ProjectDescriptor projectDescriptor, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Switches this asset to the specified version.
+        /// </summary>
+        /// <param name="assetVersion">The version of the asset to fetch. </param>
+        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
+        /// <returns>A task with no result. </returns>
+        Task WithVersionAsync(AssetVersion assetVersion, CancellationToken cancellationToken);
 
         /// <summary>
         /// Fetches the latest changes.
@@ -148,7 +165,7 @@ namespace Unity.Cloud.Assets
         /// </summary>
         /// <param name="changeLog">The change log for the new version. </param>
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
-        /// <returns>A task whose result is a version number. </returns>
+        /// <returns>A task whose result is a frozen sequence number. </returns>
         Task<int> FreezeAsync(string changeLog, CancellationToken cancellationToken) => throw new NotImplementedException();
 
         /// <summary>
@@ -238,6 +255,7 @@ namespace Unity.Cloud.Assets
         /// <param name="filePath">The id of the file</param>
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task whose result is an <see cref="IFile"/>. </returns>
+        [Obsolete("Use IDataset.GetFileAsync instead.")]
         Task<IFile> GetFileAsync(string filePath, CancellationToken cancellationToken);
 
         /// <summary>
@@ -246,13 +264,14 @@ namespace Unity.Cloud.Assets
         /// <param name="range"></param>
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task whose result is an async enumeration of <see cref="IFile"/> referenced by the asset. </returns>
+        [Obsolete("Use IDataset.ListFilesAsync instead.")]
         IAsyncEnumerable<IFile> ListFilesAsync(Range range, CancellationToken cancellationToken);
 
         /// <summary>
         /// Returns an object that can be used to query asset labels across versions.
         /// </summary>
         /// <returns>A <see cref="AssetLabelQueryBuilder"/>. </returns>
-        AssetLabelQueryBuilder QueryVersionLabels() => throw new NotImplementedException();
+        AssetLabelQueryBuilder QueryLabels() => throw new NotImplementedException();
 
         /// <summary>
         /// Adds labels to this asset.
@@ -260,7 +279,7 @@ namespace Unity.Cloud.Assets
         /// <param name="labels">The collection of labels to add. </param>
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task with no result. </returns>
-        Task AssignVersionLabelsAsync(IEnumerable<string> labels, CancellationToken cancellationToken) => throw new NotImplementedException();
+        Task AssignLabelsAsync(IEnumerable<string> labels, CancellationToken cancellationToken) => throw new NotImplementedException();
 
         /// <summary>
         /// Remove labels from this asset.
@@ -268,7 +287,7 @@ namespace Unity.Cloud.Assets
         /// <param name="labels">The collection of labels to remove. </param>
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task with no result. </returns>
-        Task UnassignVersionLabelsAsync(IEnumerable<string> labels, CancellationToken cancellationToken) => throw new NotImplementedException();
+        Task UnassignLabelsAsync(IEnumerable<string> labels, CancellationToken cancellationToken) => throw new NotImplementedException();
 
         /// <summary>
         /// Returns a JSON serialized string of the asset's identifiers.

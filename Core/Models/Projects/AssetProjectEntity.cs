@@ -35,9 +35,9 @@ namespace Unity.Cloud.Assets
         }
 
         /// <inheritdoc />
-        public async Task<IAsset> GetAssetAsync(AssetId assetId, string versionLabel, CancellationToken cancellationToken)
+        public async Task<IAsset> GetAssetAsync(AssetId assetId, string label, CancellationToken cancellationToken)
         {
-            var data = await m_DataSource.GetAssetAsync(Descriptor, assetId, versionLabel, FieldsFilter.DefaultAssetIncludes, cancellationToken);
+            var data = await m_DataSource.GetAssetAsync(Descriptor, assetId, label, FieldsFilter.DefaultAssetIncludes, cancellationToken);
             return data.From(m_DataSource, Descriptor, FieldsFilter.DefaultAssetIncludes);
         }
 

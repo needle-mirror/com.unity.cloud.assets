@@ -21,7 +21,9 @@
         "Newtonsoft.Json.dll"
     ],
     "autoReferenced": true,
-    "defineConstraints": [],
+    "defineConstraints": [
+        "!UC_EXCLUDE_SAMPLES"
+    ],
     "versionDefines": [],
     "noEngineReferences": false
 }

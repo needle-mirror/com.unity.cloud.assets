@@ -5,11 +5,11 @@ using Unity.Cloud.Common;
 
 namespace Unity.Cloud.Assets
 {
-    class VersionLabelRequest : OrganizationRequest
+    class LabelRequest : OrganizationRequest
     {
-        readonly IVersionLabelBaseData m_Data;
+        readonly ILabelBaseData m_Data;
 
-        public VersionLabelRequest(OrganizationId organizationId, string labelName, IVersionLabelBaseData data = null)
+        public LabelRequest(OrganizationId organizationId, string labelName, ILabelBaseData data = null)
             : base(organizationId)
         {
             m_RequestUrl += $"/labels/{Uri.EscapeDataString(labelName)}";

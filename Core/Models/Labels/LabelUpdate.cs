@@ -2,7 +2,7 @@ using System.Drawing;
 
 namespace Unity.Cloud.Assets
 {
-    public class VersionLabelUpdate : IVersionLabelUpdate
+    public class LabelUpdate : ILabelUpdate
     {
         /// <inheritdoc />
         public string Description { get; set; }

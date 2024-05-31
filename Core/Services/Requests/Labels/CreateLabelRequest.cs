@@ -4,16 +4,16 @@ using Unity.Cloud.Common;
 
 namespace Unity.Cloud.Assets
 {
-    class CreateVersionLabelRequest : OrganizationRequest
+    class CreateLabelRequest : OrganizationRequest
     {
-        readonly IVersionLabelBaseData m_Data;
+        readonly ILabelBaseData m_Data;
 
-        public CreateVersionLabelRequest(OrganizationId organizationId, IVersionLabelBaseData versionLabelData)
+        public CreateLabelRequest(OrganizationId organizationId, ILabelBaseData labelData)
             : base(organizationId)
         {
             m_RequestUrl += "/labels";
 
-            m_Data = versionLabelData;
+            m_Data = labelData;
         }
 
         public override HttpContent ConstructBody()

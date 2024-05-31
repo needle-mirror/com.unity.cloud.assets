@@ -133,7 +133,7 @@ namespace Unity.Cloud.Assets
                 {
                     AssetFields = AssetFields.files,
                     DatasetFields = DatasetFields.none,
-                    FileFields = FileFields.previewUrl
+                    FileFields = FileFields.previewURL
                 };
 
                 var fileData = await m_DataSource.GetFileAsync(Descriptor, filter, cancellationToken);

@@ -3,7 +3,7 @@ using System.Runtime.Serialization;
 
 namespace Unity.Cloud.Assets
 {
-    interface IVersionLabelBaseData
+    interface ILabelBaseData
     {
         [DataMember(Name = "name")]
         string Name { get; }

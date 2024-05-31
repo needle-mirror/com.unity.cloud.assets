@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Unity.Cloud.Common;
@@ -39,29 +39,85 @@ namespace Unity.Cloud.Assets
         }
 
         /// <inheritdoc />
-        public async Task<IDatasetData> GetDatasetAsync(DatasetDescriptor datasetDescriptor, FieldsFilter includedFieldsFilter, CancellationToken cancellationToken)
+        public async IAsyncEnumerable<IDatasetData> ListDatasetsAsync(AssetDescriptor assetDescriptor, Range range, FieldsFilter includedFieldsFilter, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
-            var assetData = await GetAssetAsync(datasetDescriptor.AssetDescriptor, includedFieldsFilter, cancellationToken);
-            var dataset = assetData.Datasets.FirstOrDefault(d => d.DatasetId == datasetDescriptor.DatasetId);
-            if (dataset == null)
-            {
-                throw new NotFoundException($"Dataset with id \"{datasetDescriptor.DatasetId}\" not found at that location.");
-            }
+            var countRequest = new DatasetRequest(assetDescriptor.ProjectId, assetDescriptor.AssetId, assetDescriptor.AssetVersion, DatasetFields.none, limit: 1);
 
-            return dataset;
+            var datasetFields = includedFieldsFilter?.DatasetFields ?? DatasetFields.none;
+
+            Func<string, int, ApiRequest> getListRequest = (next, pageSize) => new DatasetRequest(assetDescriptor.ProjectId, assetDescriptor.AssetId, assetDescriptor.AssetVersion, datasetFields, next, pageSize);
+
+            await foreach (var data in ListEntitiesAsync<DatasetData>(countRequest, getListRequest, range, cancellationToken))
+            {
+                yield return data;
+            }
+        }
+
+        async IAsyncEnumerable<T> ListEntitiesAsync<T>(ApiRequest countRequest, Func<string, int, ApiRequest> getListRequest, Range range, [EnumeratorCancellation] CancellationToken cancellationToken)
+        {
+            const int maxPageSize = 1000;
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var (offset, length) = await range.GetOffsetAndLengthAsync(token => GetTotalCount(countRequest, token), cancellationToken);
+
+            if (length == 0) yield break;
+
+            var pageSize = Math.Min(maxPageSize, Math.Max(offset, length));
+
+            string next = null;
+
+            var count = 0;
+            do
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                    var request = getListRequest(next, pageSize);
+                var response = await m_ServiceHttpClient.GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(), cancellationToken);
+
+                var jsonContent = await response.GetContentAsString();
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                var pageDto = IsolatedSerialization.DeserializeWithDefaultConverters<EntityPageDto<T>>(jsonContent);
+
+                if (pageDto.Results == null || pageDto.Results.Length == 0) break;
+
+                // Cap the length to the total number of results.
+                length = Math.Min(length, pageDto.Total);
+
+                // Update the next token.
+                next = pageDto.Next;
+
+                for (var i = 0; i < pageDto.Results.Length; ++i)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    // Bring offset to 0 before starting to yield results.
+                    if (offset-- > 0) continue;
+
+                    // Stop yielding results if we have reached the desired count.
+                    if (count >= length) break;
+
+                    ++count;
+                    yield return pageDto.Results[i];
+                }
+            } while (count < length && !string.IsNullOrEmpty(next));
         }
 
         /// <inheritdoc />
-        public async Task<IDatasetData> GetDatasetBySystemTagAsync(AssetDescriptor assetDescriptor, string systemTag, FieldsFilter includedFieldsFilter, CancellationToken cancellationToken)
+        public async Task<IDatasetData> GetDatasetAsync(DatasetDescriptor datasetDescriptor, FieldsFilter includedFieldsFilter, CancellationToken cancellationToken)
         {
-            var assetData = await GetAssetAsync(assetDescriptor, includedFieldsFilter, cancellationToken);
-            var dataset = assetData.Datasets.FirstOrDefault(d => d.SystemTags != null && d.SystemTags.Contains(systemTag));
-            if (dataset == null)
-            {
-                throw new NotFoundException($"Dataset with system tag \"{systemTag}\" not found at that location.");
-            }
+            cancellationToken.ThrowIfCancellationRequested();
 
-            return dataset;
+            var request = new DatasetRequest(datasetDescriptor.ProjectId, datasetDescriptor.AssetId, datasetDescriptor.AssetVersion, datasetDescriptor.DatasetId,
+                includedFieldsFilter?.DatasetFields ?? DatasetFields.none);
+            var response = await RateLimitedServiceClient(request, HttpMethod.Get).GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(),
+                cancellationToken);
+
+            var jsonContent = await response.GetContentAsString();
+            cancellationToken.ThrowIfCancellationRequested();
+
+            return IsolatedSerialization.DeserializeWithDefaultConverters<DatasetData>(jsonContent);
         }
 
         /// <inheritdoc />

@@ -4,14 +4,14 @@ using System.Threading.Tasks;
 
 namespace Unity.Cloud.Assets
 {
-    public interface IVersionLabel
+    public interface ILabel
     {
         /// <summary>
-        /// The descriptor for the version label.
+        /// The descriptor for the label.
         /// </summary>
-        VersionLabelDescriptor Descriptor { get; }
+        LabelDescriptor Descriptor { get; }
 
-        /// <inheritdoc cref="VersionLabelDescriptor.LabelName"/>
+        /// <inheritdoc cref="LabelDescriptor.LabelName"/>
         string Name => Descriptor.LabelName;
 
         /// <summary>
@@ -49,10 +49,10 @@ namespace Unity.Cloud.Assets
         /// <summary>
         /// Updates the label.
         /// </summary>
-        /// <param name="versionLabelUpdate">The object containing information to update the label. </param>
+        /// <param name="labelUpdate">The object containing information to update the label. </param>
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task with no result. </returns>
-        Task UpdateAsync(IVersionLabelUpdate versionLabelUpdate, CancellationToken cancellationToken);
+        Task UpdateAsync(ILabelUpdate labelUpdate, CancellationToken cancellationToken);
 
         /// <summary>
         /// Updates the label name.

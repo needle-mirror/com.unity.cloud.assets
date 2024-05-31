@@ -49,10 +49,17 @@ namespace Unity.Cloud.Assets
             Descriptor = descriptor;
         }
 
+        /// <inheritdoc />
         public async Task RefreshAsync(CancellationToken cancellationToken)
         {
             var data = await m_DataSource.GetTransformationAsync(Descriptor, cancellationToken);
             this.MapFrom(data);
+        }
+
+        /// <inheritdoc />
+        public async Task TerminateAsync(CancellationToken cancellationToken)
+        {
+            await m_DataSource.TerminateTransformationAsync(Descriptor.DatasetDescriptor.AssetDescriptor.ProjectDescriptor, Descriptor.TransformationId, cancellationToken);
         }
     }
 }

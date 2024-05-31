@@ -5,7 +5,7 @@ using System.Runtime.Serialization;
 namespace Unity.Cloud.Assets
 {
     [DataContract]
-    class VersionLabelBaseData : IVersionLabelBaseData
+    class LabelBaseData : ILabelBaseData
     {
         /// <inheritdoc/>
         public string Name { get; set; }

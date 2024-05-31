@@ -3,10 +3,10 @@ using System.Runtime.Serialization;
 namespace Unity.Cloud.Assets
 {
     [DataContract]
-    class VersionLabelListDto
+    class LabelListDto
     {
         [DataMember(Name = "results")]
-        public VersionLabelData[] Versionlabels { get; set; }
+        public LabelData[] Labels { get; set; }
 
         [DataMember(Name = "total")]
         public int Total { get; set; }

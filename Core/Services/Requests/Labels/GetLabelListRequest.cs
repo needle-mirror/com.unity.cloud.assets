@@ -2,9 +2,9 @@ using Unity.Cloud.Common;
 
 namespace Unity.Cloud.Assets
 {
-    class GetVersionLabelListRequest : OrganizationRequest
+    class GetLabelListRequest : OrganizationRequest
     {
-        public GetVersionLabelListRequest(OrganizationId organizationId, int offset, int limit, bool? archived, bool? systemLabels)
+        public GetLabelListRequest(OrganizationId organizationId, int offset, int limit, bool? archived, bool? systemLabels)
             : base(organizationId)
         {
             m_RequestUrl += "/labels";
