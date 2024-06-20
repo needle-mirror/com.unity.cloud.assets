@@ -43,6 +43,12 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc />
         public DateTime StartedAt { get; set; }
 
+        /// <inheritdoc />
+        public UserId UserId { get; set; }
+
+        /// <inheritdoc/>
+        public string JobId { get; set; }
+
         internal TransformationEntity(IAssetDataSource dataSource, TransformationDescriptor descriptor)
         {
             m_DataSource = dataSource;

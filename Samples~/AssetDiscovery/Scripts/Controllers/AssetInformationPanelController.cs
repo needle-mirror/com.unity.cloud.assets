@@ -29,6 +29,7 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
             nameof(IAsset.LinkedProjects),
             nameof(IAsset.Name),
             nameof(IAsset.Metadata),
+            nameof(IAsset.SystemMetadata),
         };
 
         static readonly Type k_DatasetType = typeof(IDataset);
@@ -124,7 +125,8 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
 
             m_CancelPopulateAsset = new CancellationTokenSource();
 
-            m_AssetInformationContainer.Q<Label>("AssetInformationLabel").text = asset.Name;
+            m_AssetInformationContainer.Q<Label>("Name").text = asset.Name;
+            m_AssetInformationContainer.Q<Label>("Version").text = asset.IsFrozen ? $"Ver. {asset.FrozenSequenceNumber}" : "Pending";
 
             m_AssetInformationScrollView.Clear();
 
@@ -153,7 +155,8 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
                 }
             }
 
-            _ = PopulateMetadata(asset.Metadata, m_AssetInformationScrollView, m_CancelPopulateAsset.Token);
+            _ = PopulateMetadata(asset.SystemMetadata, m_AssetInformationScrollView, "SystemMetadata", m_CancelPopulateAsset.Token);
+            _ = PopulateMetadata(asset.Metadata as IReadOnlyMetadataContainer, m_AssetInformationScrollView, "Metadata", m_CancelPopulateAsset.Token);
 
             m_AssetDownloadButton.tooltip = "";
 
@@ -193,7 +196,8 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
                     }
                 }
 
-                _ = PopulateMetadata(dataset.Metadata, dataSetInformationScrollView, m_CancelPopulateAsset.Token);
+                _ = PopulateMetadata(dataset.SystemMetadata, dataSetInformationScrollView, "System Metadata", m_CancelPopulateAsset.Token);
+                _ = PopulateMetadata(dataset.Metadata as IReadOnlyMetadataContainer, dataSetInformationScrollView, "Metadata", m_CancelPopulateAsset.Token);
 
                 var datasetDownloadButton = item.Q<Button>("DatasetDownloadButton");
                 datasetDownloadButton.clickable.clicked += () =>
@@ -246,6 +250,9 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
                     var collectionEntry = AddItem(items, propertyName, string.Empty);
                     _ = ListAssetCollections(collectionEntry);
                     break;
+                case IEnumerable<LabelDescriptor> labelDescriptors:
+                    AddItemList(items, propertyName, labelDescriptors.Select(label => label.LabelName));
+                    break;
                 case IEnumerable<string> enumerable:
                     AddItemList(items, propertyName, enumerable);
                     break;
@@ -257,12 +264,12 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
             return items;
         }
 
-        async Task PopulateMetadata(IMetadataContainer metadataContainer, VisualElement scrollView, CancellationToken cancellationToken)
+        async Task PopulateMetadata(IReadOnlyMetadataContainer metadataContainer, VisualElement scrollView, string sectionTitle, CancellationToken cancellationToken)
         {
             if (cancellationToken.IsCancellationRequested) return;
 
             var result = metadataContainer.Query().ExecuteAsync(cancellationToken);
-            await PopulateMetadata(result, "Metadata", scrollView);
+            await PopulateMetadata(result, sectionTitle, scrollView);
         }
 
         async Task PopulateMetadata(IAsyncEnumerable<KeyValuePair<string, MetadataValue>> metadata, string sectionTitle, VisualElement scrollView)

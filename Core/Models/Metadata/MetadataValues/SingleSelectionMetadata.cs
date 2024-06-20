@@ -19,7 +19,7 @@ namespace Unity.Cloud.Assets
         }
 
         internal SingleSelectionMetadata(MetadataValueType valueType, object value)
-            : base(valueType, value)
+            : base(valueType)
         {
             SelectedValue = value?.ToString() ?? string.Empty;
         }

@@ -9,7 +9,7 @@ namespace Unity.Cloud.Assets
         readonly IAssetDataSource m_AssetDataSource;
 
         /// <inheritdoc/>
-        public LabelDescriptor Descriptor { get; set; }
+        public LabelDescriptor Descriptor { get; private set; }
 
         /// <inheritdoc/>
         public string Description { get; set; }

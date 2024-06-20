@@ -124,12 +124,13 @@ namespace Unity.Cloud.Assets
         }
 
         /// <inheritdoc />
-        public Task FinalizeFileUploadAsync(FileDescriptor fileDescriptor, CancellationToken cancellationToken)
+        public Task FinalizeFileUploadAsync(FileDescriptor fileDescriptor, bool disableAutomaticTransformations, CancellationToken cancellationToken)
         {
             var request = new FinalizeFileUploadRequest(fileDescriptor.ProjectId,
                 fileDescriptor.AssetId,
                 fileDescriptor.AssetVersion,
-                fileDescriptor.Path);
+                fileDescriptor.Path,
+                disableAutomaticTransformations);
             return RateLimitedServiceClient(request, HttpMethod.Post).PostAsync(GetPublicRequestUri(request), request.ConstructBody(),
                 ServiceHttpClientOptions.Default(), cancellationToken);
         }

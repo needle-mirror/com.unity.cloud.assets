@@ -63,6 +63,11 @@ namespace Unity.Cloud.Assets
         IMetadataContainer Metadata { get; }
 
         /// <summary>
+        /// The system metadata of the file.
+        /// </summary>
+        IReadOnlyMetadataContainer SystemMetadata => throw new NotImplementedException();
+
+        /// <summary>
         /// Refreshes the file with the specified fields.
         /// </summary>
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
@@ -121,6 +126,8 @@ namespace Unity.Cloud.Assets
         /// <param name="progress">The progress of the upload. </param>
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task with no result. </returns>
+        /// <exception cref="InvalidArgumentException">If this version of the asset is frozen, because it cannot be modified. </exception>
+        /// <remarks>Can only be called if the version of the asset is not frozen. </remarks>
         Task UploadAsync(Stream sourceStream, IProgress<HttpProgress> progress, CancellationToken cancellationToken);
 
         /// <summary>
@@ -129,6 +136,8 @@ namespace Unity.Cloud.Assets
         /// <param name="fileUpdate">The object containing the necessary information to update the file. </param>
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task with no result. </returns>
+        /// <exception cref="InvalidArgumentException">If this version of the asset is frozen, because it cannot be modified. </exception>
+        /// <remarks>Can only be called if the version of the asset is not frozen. </remarks>
         Task UpdateAsync(IFileUpdate fileUpdate, CancellationToken cancellationToken);
 
         /// <summary>

@@ -15,7 +15,7 @@ namespace Unity.Cloud.Assets
 
         internal override void Include(Dictionary<string, object> includedValues, string prefix = "")
         {
-            m_Included.Clean();
+            m_Included.Validate();
             if (m_Included.Conditions.Count > 0)
             {
                 includedValues.Add(SearchKey.BuildSearchKey(prefix), m_Included);

@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -29,6 +30,11 @@ namespace Unity.Cloud.Assets
         /// The creation and update information of the field.
         /// </summary>
         AuthoringInfo AuthoringInfo { get; }
+
+        /// <summary>
+        /// The originator of the field.
+        /// </summary>
+        FieldDefinitionOrigin Origin => throw new NotImplementedException();
 
         /// <summary>
         /// Refreshes the field to retrieve the latest values.

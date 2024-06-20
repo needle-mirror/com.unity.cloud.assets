@@ -45,6 +45,9 @@ namespace Unity.Cloud.Assets
 
             if (includeFields.AssetFields.HasFlag(AssetFields.metadata))
                 asset.MetadataEntity.Properties = assetData.Metadata?.From(assetDataSource, asset.Descriptor.OrganizationId);
+
+            if (includeFields.AssetFields.HasFlag(AssetFields.systemMetadata))
+                asset.SystemMetadataEntity.Properties = assetData.SystemMetadata?.From();
         }
 
         internal static AssetCreateData From(this IAssetCreation assetCreation)

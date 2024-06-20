@@ -20,7 +20,7 @@ namespace Unity.Cloud.Assets
 
         Task<Uri> GetFileUploadUrlAsync(FileDescriptor fileDescriptor, IFileData fileData, CancellationToken cancellationToken);
 
-        Task FinalizeFileUploadAsync(FileDescriptor fileDescriptor, CancellationToken cancellationToken);
+        Task FinalizeFileUploadAsync(FileDescriptor fileDescriptor, bool disableAutomaticTransformations, CancellationToken cancellationToken);
 
         Task<FileTag[]> GenerateFileTagsAsync(FileDescriptor fileDescriptor, CancellationToken cancellationToken);
 

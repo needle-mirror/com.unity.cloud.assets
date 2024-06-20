@@ -22,7 +22,7 @@ namespace Unity.Cloud.Assets
         }
 
         internal MultiSelectionMetadata(MetadataValueType valueType, object value)
-            : base(valueType, value)
+            : base(valueType)
         {
             SelectedValues = value switch
             {

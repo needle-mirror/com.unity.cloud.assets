@@ -27,6 +27,14 @@ namespace Unity.Cloud.Assets
         IDeserializable Metadata { get; set; }
 
         /// <summary>
+        /// Retrieves an asset by its ID.
+        /// </summary>
+        /// <param name="assetId">The id of the asset. </param>
+        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
+        /// <returns>A task whose result is the asset with its default version. </returns>
+        Task<IAsset> GetAssetAsync(AssetId assetId, CancellationToken cancellationToken) => throw new NotImplementedException();
+
+        /// <summary>
         /// Retrieves an asset by its ID and version.
         /// </summary>
         /// <param name="assetId">The id of the asset. </param>
@@ -65,11 +73,21 @@ namespace Unity.Cloud.Assets
         GroupAndCountAssetsQueryBuilder GroupAndCountAssets();
 
         /// <summary>
-        /// Returns a builder to create a query to search the versions of an <see cref="IAsset"/>.
+        /// Links the assets to the project.
         /// </summary>
-        /// <param name="assetId">The id of the asset to query. </param>
-        /// <returns>An <see cref="AssetVersionQueryBuilder"/>. </returns>
-        AssetVersionQueryBuilder QueryAssetVersions(AssetId assetId) => throw new NotImplementedException();
+        /// <param name="sourceProjectDescriptor">The id of the project the assets come from. </param>
+        /// <param name="assetIds">The ids of assets to link. </param>
+        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
+        /// <returns>A task with no result. </returns>
+        Task LinkAssetsAsync(ProjectDescriptor sourceProjectDescriptor, IEnumerable<AssetId> assetIds, CancellationToken cancellationToken) => throw new NotImplementedException();
+
+        /// <summary>
+        /// Unlinks the assets from the project.
+        /// </summary>
+        /// <param name="assetIds">The ids of assets to unlink from the project. </param>
+        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
+        /// <returns>A task with no result. </returns>
+        Task UnlinkAssetsAsync(IEnumerable<AssetId> assetIds, CancellationToken cancellationToken) => throw new NotImplementedException();
 
         /// <summary>
         /// Returns a builder to create a query to search a project's <see cref="IAssetCollection"/>.

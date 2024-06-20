@@ -6,5 +6,8 @@ namespace Unity.Cloud.Assets
     {
         [DataMember(Name = "status")]
         string Status { get; }
+
+        [DataMember(Name = "fieldOrigin")]
+        string Origin { get; }
     }
 }

@@ -13,7 +13,7 @@ namespace Unity.Cloud.Assets
         }
 
         internal UserMetadata(MetadataValueType valueType, object value)
-            : base(valueType, value)
+            : base(valueType)
         {
             var userId = value?.ToString() ?? string.Empty;
             UserId = string.IsNullOrEmpty(userId) ? UserId.None : new UserId(userId);

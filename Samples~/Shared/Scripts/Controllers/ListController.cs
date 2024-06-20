@@ -62,7 +62,7 @@ namespace Unity.Cloud.Assets.Samples
         {
             m_List = m_Filter == null ? m_OriginalList.ToList() : m_OriginalList.Where(m_Filter).ToList();
             m_ListView.itemsSource = m_List;
-            m_ListView.RefreshItems();
+            m_ListView.Rebuild();
         }
 
         public void ClearList()

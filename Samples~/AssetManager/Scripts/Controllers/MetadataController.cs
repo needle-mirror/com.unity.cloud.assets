@@ -40,22 +40,26 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
         {
             var cancellationToken = RefreshCancellationToken();
 
+            await PopulateMetadataAsync(asset.SystemMetadata, cancellationToken, false);
+
             m_MetadataContainer = asset.Metadata;
 
             m_AddButton.style.display = canUpdate ? DisplayStyle.Flex : DisplayStyle.None;
 
-            await PopulateMetadataAsync(cancellationToken, canUpdate);
+            await PopulateMetadataAsync(m_MetadataContainer as IReadOnlyMetadataContainer, cancellationToken, canUpdate);
         }
 
         public async Task PopulateMetadataAsync(IDataset dataset, bool canUpdate)
         {
             var cancellationToken = RefreshCancellationToken();
 
+            await PopulateMetadataAsync(dataset.SystemMetadata, cancellationToken, false);
+
             m_MetadataContainer = dataset.Metadata;
 
             m_AddButton.style.display = canUpdate ? DisplayStyle.Flex : DisplayStyle.None;
 
-            await PopulateMetadataAsync(cancellationToken, canUpdate);
+            await PopulateMetadataAsync(m_MetadataContainer as IReadOnlyMetadataContainer, cancellationToken, canUpdate);
         }
 
         public void Hide()
@@ -103,9 +107,9 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             }
         }
 
-        async Task PopulateMetadataAsync(CancellationToken cancellationToken, bool canUpdate)
+        async Task PopulateMetadataAsync(IReadOnlyMetadataContainer metadataContainer, CancellationToken cancellationToken, bool canUpdate)
         {
-            var metadata = m_MetadataContainer.Query().ExecuteAsync(cancellationToken);
+            var metadata = metadataContainer.Query().ExecuteAsync(cancellationToken);
 
             await foreach (var kvp in metadata)
             {

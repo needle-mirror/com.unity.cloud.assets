@@ -18,7 +18,7 @@ namespace Unity.Cloud.Assets
         internal ProjectDescriptor[] m_LinkedProjects = Array.Empty<ProjectDescriptor>();
 
         /// <inheritdoc />
-        public AssetDescriptor Descriptor { get; private set; }
+        public AssetDescriptor Descriptor { get; }
 
         /// <inheritdoc />
         public bool IsFrozen { get; set; }
@@ -66,6 +66,9 @@ namespace Unity.Cloud.Assets
         public IMetadataContainer Metadata => MetadataEntity;
 
         /// <inheritdoc />
+        public IReadOnlyMetadataContainer SystemMetadata => SystemMetadataEntity;
+
+        /// <inheritdoc />
         public string PreviewFile { get; set; }
 
         /// <inheritdoc />
@@ -76,21 +79,15 @@ namespace Unity.Cloud.Assets
 
         internal Uri PreviewFileUrl { get; set; }
         internal MetadataContainerEntity MetadataEntity { get; }
+        internal ReadOnlyMetadataContainerEntity SystemMetadataEntity { get; }
 
         internal Asset(IAssetDataSource dataSource, AssetDescriptor assetDescriptor)
         {
             m_DataSource = dataSource;
             Descriptor = assetDescriptor;
 
-            MetadataEntity = new AssetMetadataContainer(Descriptor, AssetFields.metadata, m_DataSource);
-        }
-
-        internal Asset(string id, string version = "1")
-        {
-            var projectDescriptor = new ProjectDescriptor(OrganizationId.None, ProjectId.None);
-            Descriptor = new AssetDescriptor(projectDescriptor, new AssetId(id), new AssetVersion(version));
-
-            MetadataEntity = new AssetMetadataContainer(Descriptor, AssetFields.metadata, null);
+            MetadataEntity = new MetadataContainerEntity(new AssetMetadataDataSource(Descriptor, m_DataSource, MetadataDataSourceSpecification.metadata));
+            SystemMetadataEntity = new ReadOnlyMetadataContainerEntity(new AssetMetadataDataSource(Descriptor, m_DataSource, MetadataDataSourceSpecification.systemMetadata));
         }
 
         /// <inheritdoc />
@@ -105,23 +102,36 @@ namespace Unity.Cloud.Assets
         }
 
         /// <inheritdoc />
-        public async Task WithProjectAsync(ProjectDescriptor projectDescriptor, CancellationToken cancellationToken)
+        public async Task<IAsset> WithProjectAsync(ProjectDescriptor projectDescriptor, CancellationToken cancellationToken)
         {
-            var descriptor = new AssetDescriptor(projectDescriptor, Descriptor.AssetId, Descriptor.AssetVersion);
-            var data = await m_DataSource.GetAssetAsync(descriptor, FieldsFilter.DefaultAssetIncludes, cancellationToken);
+            var assetDescriptor = new AssetDescriptor(projectDescriptor, Descriptor.AssetId, Descriptor.AssetVersion);
+            var data = await m_DataSource.GetAssetAsync(assetDescriptor, FieldsFilter.DefaultAssetIncludes, cancellationToken);
 
-            Descriptor = descriptor;
-            this.MapFrom(m_DataSource, projectDescriptor.OrganizationId, data, FieldsFilter.DefaultAssetIncludes);
+            return data.From(m_DataSource, assetDescriptor, FieldsFilter.DefaultAssetIncludes);
         }
 
         /// <inheritdoc />
-        public async Task WithVersionAsync(AssetVersion assetVersion, CancellationToken cancellationToken)
+        public async Task<IAsset> WithVersionAsync(AssetVersion assetVersion, CancellationToken cancellationToken)
         {
-            var descriptor = new AssetDescriptor(Descriptor.ProjectDescriptor, Descriptor.AssetId, assetVersion);
-            var data = await m_DataSource.GetAssetAsync(descriptor, FieldsFilter.DefaultAssetIncludes, cancellationToken);
+            var assetDescriptor = new AssetDescriptor(Descriptor.ProjectDescriptor, Descriptor.AssetId, assetVersion);
+            var data = await m_DataSource.GetAssetAsync(assetDescriptor, FieldsFilter.DefaultAssetIncludes, cancellationToken);
 
-            Descriptor = descriptor;
-            this.MapFrom(m_DataSource, Descriptor.OrganizationId, data, FieldsFilter.DefaultAssetIncludes);
+            return data.From(m_DataSource, assetDescriptor, FieldsFilter.DefaultAssetIncludes);
+        }
+
+        /// <inheritdoc />
+        /// <exception cref="NotFoundException">If a version with the corresponding <paramref name="label"/> is not found. </exception>
+        public async Task<IAsset> WithVersionAsync(string label, CancellationToken cancellationToken)
+        {
+            var data = await m_DataSource.GetAssetAsync(Descriptor.ProjectDescriptor, Descriptor.AssetId, label, FieldsFilter.DefaultAssetIncludes, cancellationToken);
+
+            if (data == null)
+            {
+                throw new NotFoundException($"Could not retrieve asset with label '{label}'.");
+            }
+
+            var assetDescriptor = new AssetDescriptor(Descriptor.ProjectDescriptor, Descriptor.AssetId, data.Version);
+            return data.From(m_DataSource, assetDescriptor, FieldsFilter.DefaultAssetIncludes);
         }
 
         /// <inheritdoc />
@@ -129,6 +139,7 @@ namespace Unity.Cloud.Assets
         {
             PreviewFileUrl = null;
             MetadataEntity.Refresh();
+            SystemMetadataEntity.Refresh();
 
             return RefreshAsync(FieldsFilter.DefaultAssetIncludes, cancellationToken);
         }
@@ -170,9 +181,9 @@ namespace Unity.Cloud.Assets
         }
 
         /// <inheritdoc />
-        public AssetVersionQueryBuilder QueryAssetVersions()
+        public VersionQueryBuilder QueryVersions()
         {
-            return new AssetVersionQueryBuilder(m_DataSource, Descriptor.ProjectDescriptor, Descriptor.AssetId);
+            return new VersionQueryBuilder(m_DataSource, Descriptor.ProjectDescriptor, Descriptor.AssetId);
         }
 
         /// <inheritdoc />
@@ -188,9 +199,9 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc />
         public async Task LinkToProjectAsync(ProjectDescriptor projectDescriptor, CancellationToken cancellationToken)
         {
-            if (m_LinkedProjects.Contains(projectDescriptor)) return;
-
             await m_DataSource.LinkAssetToProjectAsync(Descriptor, projectDescriptor, cancellationToken);
+
+            // We shouldn't be auto-refreshing
 
             var filter = new FieldsFilter
             {
@@ -208,9 +219,10 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc />
         public async Task UnlinkFromProjectAsync(ProjectDescriptor projectDescriptor, CancellationToken cancellationToken)
         {
-            if (!m_LinkedProjects.Contains(projectDescriptor)) return;
+            var assetDescriptor = new AssetDescriptor(projectDescriptor, Descriptor.AssetId, Descriptor.AssetVersion);
+            await m_DataSource.UnlinkAssetFromProjectAsync(assetDescriptor, cancellationToken);
 
-            await m_DataSource.UnlinkAssetFromProjectAsync(Descriptor, projectDescriptor, cancellationToken);
+            // We shouldn't be auto-refreshing
 
             // If we are not unlinking from the current descriptor, we can fetch to refresh the linked projects.
             if (Descriptor.ProjectId != projectDescriptor.ProjectId)
@@ -227,6 +239,7 @@ namespace Unity.Cloud.Assets
             }
         }
 
+        /// <inheritdoc />
         public async Task<Uri> GetPreviewUrlAsync(CancellationToken cancellationToken)
         {
             if (PreviewFileUrl == null)
@@ -387,6 +400,7 @@ namespace Unity.Cloud.Assets
                 IsFrozen = IsFrozen,
                 AuthoringInfo = AuthoringInfo,
                 MetadataEntity = {Properties = MetadataEntity.Properties},
+                SystemMetadataEntity = {Properties = SystemMetadataEntity.Properties}
             };
         }
     }

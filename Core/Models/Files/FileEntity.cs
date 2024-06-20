@@ -15,17 +15,12 @@ namespace Unity.Cloud.Assets
         internal DatasetDescriptor[] m_LinkedDatasets = Array.Empty<DatasetDescriptor>();
 
         internal FileEntity(IAssetDataSource dataSource, FileDescriptor descriptor)
-            : this(descriptor)
         {
             m_DataSource = dataSource;
-            MetadataEntity = new FileMetadataContainer(Descriptor, FileFields.metadata, m_DataSource);
-        }
+            Descriptor = descriptor;
 
-        internal FileEntity(FileDescriptor fileDescriptor)
-        {
-            Descriptor = fileDescriptor;
-
-            MetadataEntity = new FileMetadataContainer(Descriptor, FileFields.metadata, null);
+            MetadataEntity = new MetadataContainerEntity(new FileMetadataDataSource(Descriptor, m_DataSource, MetadataDataSourceSpecification.metadata));
+            SystemMetadataEntity = new ReadOnlyMetadataContainerEntity(new FileMetadataDataSource(Descriptor, m_DataSource, MetadataDataSourceSpecification.systemMetadata));
         }
 
         /// <inheritdoc />
@@ -50,6 +45,9 @@ namespace Unity.Cloud.Assets
         public IMetadataContainer Metadata => MetadataEntity;
 
         /// <inheritdoc />
+        public IReadOnlyMetadataContainer SystemMetadata => SystemMetadataEntity;
+
+        /// <inheritdoc />
         public IEnumerable<DatasetDescriptor> LinkedDatasets => m_LinkedDatasets;
 
         /// <inheritdoc />
@@ -66,6 +64,7 @@ namespace Unity.Cloud.Assets
         internal bool IsDownloadable { get; set; } = true;
 
         internal MetadataContainerEntity MetadataEntity { get; }
+        internal ReadOnlyMetadataContainerEntity SystemMetadataEntity { get; }
 
         AssetDescriptor AssetDescriptor => Descriptor.DatasetDescriptor.AssetDescriptor;
 
@@ -87,6 +86,7 @@ namespace Unity.Cloud.Assets
                 Tags = Tags?.ToArray(),
                 SystemTags = SystemTags?.ToArray(),
                 MetadataEntity = { Properties = MetadataEntity.Properties },
+                SystemMetadataEntity = { Properties = SystemMetadataEntity.Properties },
                 SizeBytes = SizeBytes,
                 UserChecksum = UserChecksum,
                 PreviewUrl = PreviewUrl,
@@ -103,6 +103,7 @@ namespace Unity.Cloud.Assets
             DownloadUrl = null;
             UploadUrl = null;
             MetadataEntity.Refresh();
+            SystemMetadataEntity.Refresh();
 
             return RefreshAsync(FieldsFilter.DefaultFileIncludes, cancellationToken);
         }

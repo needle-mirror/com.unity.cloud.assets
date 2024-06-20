@@ -12,6 +12,7 @@ namespace Unity.Cloud.Assets
             entity.IsDeleted = data.Status == "Deleted";
             entity.DisplayName = data.DisplayName;
             entity.AuthoringInfo = new AuthoringInfo(data.CreatedBy, data.Created, data.UpdatedBy, data.Updated);
+            entity.Origin = new FieldDefinitionOrigin(data.Origin);
 
             if (entity is SelectionFieldDefinitionEntity selectionFieldDefinition)
             {
@@ -35,27 +36,6 @@ namespace Unity.Cloud.Assets
         internal static FieldDefinitionEntity From(this IFieldDefinitionData data, IAssetDataSource assetDataSource, OrganizationId organizationId)
         {
             return data.From(assetDataSource, new FieldDefinitionDescriptor(organizationId, data.Name));
-        }
-
-        internal static FieldDefinitionData From(this FieldDefinitionEntity entity)
-        {
-            var data = new FieldDefinitionData
-            {
-                Type = entity.Type,
-                Status = entity.IsDeleted ? "Deleted" : "Active",
-                DisplayName = entity.DisplayName,
-                CreatedBy = entity.AuthoringInfo?.CreatedBy.ToString(),
-                Created = entity.AuthoringInfo?.Created,
-                UpdatedBy = entity.AuthoringInfo?.UpdatedBy.ToString(),
-                Updated = entity.AuthoringInfo?.Updated,
-            };
-            if (entity is SelectionFieldDefinitionEntity selectionFieldDefinition)
-            {
-                data.AcceptedValues = selectionFieldDefinition.AcceptedValues?.ToArray() ?? Array.Empty<string>();
-                data.Multiselection = selectionFieldDefinition.Multiselection;
-            }
-
-            return data;
         }
 
         internal static IFieldDefinitionBaseData From(this IFieldDefinitionUpdate update)

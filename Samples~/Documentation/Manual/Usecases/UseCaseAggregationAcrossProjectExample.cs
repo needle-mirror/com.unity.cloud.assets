@@ -1,5 +1,3 @@
-using Unity.Cloud.Common;
-
 namespace Unity.Cloud.Documentation.Assets
 {
 #pragma warning disable S4487 // Unread "private" fields should be removed
@@ -13,6 +11,7 @@ namespace Unity.Cloud.Documentation.Assets
     using System.Threading;
     using System.Threading.Tasks;
     using Unity.Cloud.Assets;
+    using Unity.Cloud.Common;
     using UnityEngine;
 
     public class UseCaseAggregationAcrossProjectsExampleUI : IAssetManagementUI

@@ -287,7 +287,8 @@ namespace Unity.Cloud.Documentation.Assets
         enum MetadataType
         {
             none,
-            metadata
+            metadata,
+            systemMetadata
         }
 
         IAsset m_CurrentAsset;
@@ -307,9 +308,14 @@ namespace Unity.Cloud.Documentation.Assets
             if (m_CurrentAsset != m_Behaviour.CurrentAsset)
             {
                 m_CurrentAsset = m_Behaviour.CurrentAsset;
-                m_MetadataType = MetadataType.none;
                 m_CurrentMetadataKey = null;
                 m_MetadataValueDisplayer = null;
+                _ = m_MetadataType switch
+                {
+                    MetadataType.metadata => m_Behaviour.GetMetadataAsync(m_Behaviour.CurrentAsset?.Metadata as IReadOnlyMetadataContainer),
+                    MetadataType.systemMetadata => m_Behaviour.GetMetadataAsync(m_Behaviour.CurrentAsset?.SystemMetadata),
+                    _ => m_Behaviour.GetMetadataAsync(null)
+                };
             }
 
             if (m_CurrentAsset == null)
@@ -349,11 +355,23 @@ namespace Unity.Cloud.Documentation.Assets
         {
             GUILayout.BeginHorizontal();
 
-            if (GUILayout.Button("Refresh"))
+            GUI.enabled = m_MetadataType != MetadataType.metadata;
+
+            if (GUILayout.Button("Metadata", GUILayout.Width(130)))
             {
                 m_MetadataType = MetadataType.metadata;
-                _ = m_Behaviour.GetMetadataAsync(m_Behaviour.CurrentAsset.Metadata);
+                _ = m_Behaviour.GetMetadataAsync(m_Behaviour.CurrentAsset.Metadata as IReadOnlyMetadataContainer);
             }
+
+            GUI.enabled = m_MetadataType != MetadataType.systemMetadata;
+
+            if (GUILayout.Button("System Metadata", GUILayout.Width(130)))
+            {
+                m_MetadataType = MetadataType.systemMetadata;
+                _ = m_Behaviour.GetMetadataAsync(m_Behaviour.CurrentAsset.SystemMetadata);
+            }
+
+            GUI.enabled = true;
 
             GUILayout.EndHorizontal();
         }
@@ -361,13 +379,19 @@ namespace Unity.Cloud.Documentation.Assets
         void ListAssetMetadata()
         {
             m_MetadataListScrollPosition = GUILayout.BeginScrollView(m_MetadataListScrollPosition);
+
+            if (m_Behaviour.Metadata.Count == 0)
+            {
+                GUILayout.Label("No metadata.");
+            }
+
             foreach (var key in m_Behaviour.Metadata.Keys)
             {
                 GUILayout.BeginHorizontal();
 
-                GUILayout.Label(key);
+                GUILayout.Label(key, GUILayout.ExpandWidth(true));
 
-                if (GUILayout.Button("Select"))
+                if (GUILayout.Button("Select", GUILayout.Width(60)))
                 {
                     m_CurrentMetadataKey = key;
 
@@ -385,7 +409,7 @@ namespace Unity.Cloud.Documentation.Assets
                     };
                 }
 
-                if (GUILayout.Button("Remove"))
+                if (m_MetadataType == MetadataType.metadata && GUILayout.Button("Remove", GUILayout.Width(60)))
                 {
                     _ = m_Behaviour.RemoveMetadata(key);
                 }
@@ -400,6 +424,8 @@ namespace Unity.Cloud.Documentation.Assets
         {
             if (m_Behaviour.Metadata == null) return;
 
+            GUI.enabled = m_MetadataType == MetadataType.metadata;
+
             GUILayout.BeginVertical();
 
             GUILayout.Label("Key:");
@@ -407,7 +433,7 @@ namespace Unity.Cloud.Documentation.Assets
             GUILayout.Label("Value:");
             m_NewValue = GUILayout.TextField(m_NewValue);
 
-            GUI.enabled = !string.IsNullOrWhiteSpace(m_NewKey) && !string.IsNullOrWhiteSpace(m_NewValue);
+            GUI.enabled &= !string.IsNullOrWhiteSpace(m_NewKey) && !string.IsNullOrWhiteSpace(m_NewValue);
 
             try
             {
@@ -450,6 +476,8 @@ namespace Unity.Cloud.Documentation.Assets
 
         void DisplayCurrentMetadataValue()
         {
+            if (m_Behaviour.Metadata == null || m_Behaviour.Metadata.Count == 0) return;
+
             if (m_CurrentMetadataKey == null)
             {
                 GUILayout.Label(" ! No metadata value selected !");
@@ -460,9 +488,11 @@ namespace Unity.Cloud.Documentation.Assets
 
             GUILayout.Label(m_CurrentMetadataKey);
 
+            GUI.enabled = m_MetadataType == MetadataType.metadata;
+
             m_MetadataValueDisplayer.Display();
 
-            GUI.enabled = m_MetadataValueDisplayer.IsValid;
+            GUI.enabled &= m_MetadataValueDisplayer.IsValid;
 
             if (GUILayout.Button("Update"))
             {
@@ -492,11 +522,11 @@ namespace Unity.Cloud.Documentation.Assets
 
         #region Example_Behaviour_FetchMetadata
 
-        IMetadataContainer MetadataContainer { get; set; }
+        IReadOnlyMetadataContainer MetadataContainer { get; set; }
 
         public IReadOnlyDictionary<string, MetadataValue> Metadata { get; private set; }
 
-        public async Task GetMetadataAsync(IMetadataContainer metadataContainer)
+        public async Task GetMetadataAsync(IReadOnlyMetadataContainer metadataContainer)
         {
             MetadataContainer = metadataContainer;
             Metadata = null;
@@ -522,7 +552,12 @@ namespace Unity.Cloud.Documentation.Assets
         {
             try
             {
-                await MetadataContainer.AddOrUpdateAsync(key, value, CancellationToken.None);
+                if (MetadataContainer is not IMetadataContainer metadataContainer)
+                {
+                    throw new NotSupportedException();
+                }
+
+                await metadataContainer.AddOrUpdateAsync(key, value, CancellationToken.None);
                 Debug.Log("Successfully updated metadata.");
             }
             catch (Exception e)
@@ -539,7 +574,12 @@ namespace Unity.Cloud.Documentation.Assets
         {
             try
             {
-                await MetadataContainer.RemoveAsync(new[] {key}, CancellationToken.None);
+                if (MetadataContainer is not IMetadataContainer metadataContainer)
+                {
+                    throw new NotSupportedException();
+                }
+
+                await metadataContainer.RemoveAsync(new[] {key}, CancellationToken.None);
                 Debug.Log("Successfully removed metadata.");
             }
             catch (Exception e)

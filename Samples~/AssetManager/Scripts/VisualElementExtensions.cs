@@ -13,6 +13,11 @@ namespace Unity.Cloud.Assets.Samples
             element.style.display = DisplayStyle.Flex;
         }
 
+        public static void Show(this VisualElement element, bool show)
+        {
+            element.style.display = show ? DisplayStyle.Flex : DisplayStyle.None;
+        }
+
         public static void Hide(this VisualElement element)
         {
             element.style.display = DisplayStyle.None;
@@ -55,15 +60,32 @@ namespace Unity.Cloud.Assets.Samples
             container.Add(chip);
 
             var removeButton = chip.Q<Button>();
-            removeButton.style.display = canRemove ? DisplayStyle.Flex : DisplayStyle.None;
+            removeButton.Show(canRemove);
             if (canRemove)
             {
                 removeButton.clicked += () =>
                 {
-                    tags.Remove(tag);
+                    tags?.Remove(tag);
                     chip.RemoveFromHierarchy();
                 };
             }
+        }
+
+        public static string GetVersionText(this IAsset asset, bool includeParentVersion = false)
+        {
+            var versionText = asset.IsFrozen ? $"Ver. {asset.FrozenSequenceNumber}" : $"Pending";
+            if (!asset.IsFrozen && includeParentVersion)
+            {
+                versionText += $" from Ver. {asset.ParentFrozenSequenceNumber}";
+            }
+
+            var version = asset.Descriptor.AssetVersion.ToString();
+            if (version.Length > 8)
+            {
+                version = version[..8];
+            }
+
+            return $"{versionText}\n<color=#888888>{version}</color>";
         }
     }
 }

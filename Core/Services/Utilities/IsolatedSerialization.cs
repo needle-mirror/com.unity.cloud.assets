@@ -36,6 +36,7 @@ namespace Unity.Cloud.Assets
             new ProjectIdConverter(),
             new AssetIdConverter(),
             new AssetVersionConverter(),
+            new UserIdConverter(),
             DatasetIdConverter,
             TransformationIdConverter,
             CollectionPathConverter,

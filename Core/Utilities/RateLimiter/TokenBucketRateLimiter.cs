@@ -8,13 +8,15 @@ using System.Threading;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
+// ReSharper disable SuggestVarOrType_SimpleTypes
+// ReSharper disable SuggestVarOrType_BuiltInTypes
 
 namespace Unity.Cloud.Assets
 {
     /// <summary>
     /// Controls the behavior of <see cref="RateLimiter.AcquireAsync"/> when not enough resources can be leased.
     /// </summary>
-    internal enum QueueProcessingOrder
+    enum QueueProcessingOrder
     {
         /// <summary>
         /// Lease the oldest queued <see cref="RateLimiter.AcquireAsync"/> call.
@@ -27,7 +29,7 @@ namespace Unity.Cloud.Assets
         NewestFirst
     }
 
-    internal sealed class TokenBucketRateLimiterOptions
+    sealed class TokenBucketRateLimiterOptions
     {
         /// <summary>
         /// Specifies the minimum period between replenishments.
@@ -74,7 +76,7 @@ namespace Unity.Cloud.Assets
     /// <summary>
     /// <see cref="RateLimiter"/> implementation that replenishes tokens periodically instead of via a release mechanism.
     /// </summary>
-    internal sealed class TokenBucketRateLimiter : ReplenishingRateLimiter
+    sealed class TokenBucketRateLimiter : ReplenishingRateLimiter
     {
         private double _tokenCount;
         private int _queueCount;
@@ -95,12 +97,12 @@ namespace Unity.Cloud.Assets
 
         private static readonly RateLimitLease SuccessfulLease = new TokenBucketLease(true, null);
         private static readonly RateLimitLease FailedLease = new TokenBucketLease(false, null);
-        private static readonly double TickFrequency = (double)TimeSpan.TicksPerSecond / Stopwatch.Frequency;
+        private static readonly double TickFrequency = (double) TimeSpan.TicksPerSecond / Stopwatch.Frequency;
 
         /// <inheritdoc />
         public override TimeSpan? IdleDuration => _idleSince is null
             ? null
-            : new TimeSpan((long)((Stopwatch.GetTimestamp() - _idleSince) * TickFrequency));
+            : new TimeSpan((long) ((Stopwatch.GetTimestamp() - _idleSince) * TickFrequency));
 
         /// <inheritdoc />
         public override bool IsAutoReplenishing => _options.AutoReplenishment;
@@ -151,19 +153,19 @@ namespace Unity.Cloud.Assets
             };
 
             _tokenCount = options.TokenLimit;
-            _fillRate = (double)options.TokensPerPeriod / options.ReplenishmentPeriod.Ticks;
+            _fillRate = (double) options.TokensPerPeriod / options.ReplenishmentPeriod.Ticks;
 
             _idleSince = _lastReplenishmentTick = Stopwatch.GetTimestamp();
 
         }
 
         /// <inheritdoc/>
-        public override RateLimiterStatistics? GetStatistics()
+        public override RateLimiterStatistics GetStatistics()
         {
             ThrowIfDisposed();
-            return new RateLimiterStatistics()
+            return new RateLimiterStatistics
             {
-                CurrentAvailablePermits = (long)_tokenCount,
+                CurrentAvailablePermits = (long) _tokenCount,
                 CurrentQueuedCount = _queueCount,
                 TotalFailedLeases = Interlocked.Read(ref _failedLeasesCount),
                 TotalSuccessfulLeases = Interlocked.Read(ref _successfulLeasesCount),
@@ -171,17 +173,17 @@ namespace Unity.Cloud.Assets
         }
 
         /// <inheritdoc/>
-        protected override RateLimitLease AttemptAcquireCore(int tokenCount)
+        protected override RateLimitLease AttemptAcquireCore(int permitCount)
         {
             // These amounts of resources can never be acquired
-            if (tokenCount > _options.TokenLimit)
+            if (permitCount > _options.TokenLimit)
             {
-                throw new ArgumentOutOfRangeException(nameof(tokenCount), tokenCount,
-                    $"{nameof(tokenCount)} exceeds {nameof(_options.TokenLimit)} {_tokenCount} > {_options.TokenLimit}");
+                throw new ArgumentOutOfRangeException(nameof(permitCount), permitCount,
+                    $"{nameof(permitCount)} exceeds {nameof(_options.TokenLimit)} {_tokenCount} > {_options.TokenLimit}");
             }
 
             // Return SuccessfulLease or FailedLease depending to indicate limiter state
-            if (tokenCount == 0 && !_disposed)
+            if (permitCount == 0 && !_disposed)
             {
                 if (_tokenCount > 0)
                 {
@@ -190,27 +192,27 @@ namespace Unity.Cloud.Assets
                 }
 
                 Interlocked.Increment(ref _failedLeasesCount);
-                return CreateFailedTokenLease(tokenCount);
+                return CreateFailedTokenLease(permitCount);
             }
 
             lock (Lock)
             {
-                if (TryLeaseUnsynchronized(tokenCount, out RateLimitLease? lease))
+                if (TryLeaseUnsynchronized(permitCount, out RateLimitLease? lease))
                 {
                     return lease;
                 }
 
                 Interlocked.Increment(ref _failedLeasesCount);
-                return CreateFailedTokenLease(tokenCount);
+                return CreateFailedTokenLease(permitCount);
             }
         }
 
         /// <inheritdoc/>
-        protected override ValueTask<RateLimitLease> AcquireAsyncCore(int tokenCount,
-            CancellationToken cancellationToken = default)
+        protected override ValueTask<RateLimitLease> AcquireAsyncCore(int permitCount,
+            CancellationToken cancellationToken)
         {
             // These amounts of resources can never be acquired
-            if (tokenCount > _options.TokenLimit)
+            if (permitCount > _options.TokenLimit)
             {
                 throw new ArgumentOutOfRangeException();
             }
@@ -218,7 +220,7 @@ namespace Unity.Cloud.Assets
             ThrowIfDisposed();
 
             // Return SuccessfulAcquisition if requestedCount is 0 and resources are available
-            if (tokenCount == 0 && _tokenCount > 0)
+            if (permitCount == 0 && _tokenCount > 0)
             {
                 Interlocked.Increment(ref _successfulLeasesCount);
                 return new ValueTask<RateLimitLease>(SuccessfulLease);
@@ -229,20 +231,20 @@ namespace Unity.Cloud.Assets
             {
                 if (_options.AutoReplenishment && _renewTimer is null)
                 {
-                    _renewTimer = new Timer(Replenish, this, _options.ReplenishmentPeriod, _options.ReplenishmentPeriod);
+                    _renewTimer = new Timer(Replenish, this, _options.ReplenishmentPeriod, Timeout.InfiniteTimeSpan);
                 }
 
-                if (TryLeaseUnsynchronized(tokenCount, out RateLimitLease? lease))
+                if (TryLeaseUnsynchronized(permitCount, out RateLimitLease? lease))
                 {
                     return new ValueTask<RateLimitLease>(lease);
                 }
 
                 // Avoid integer overflow by using subtraction instead of addition
                 Debug.Assert(_options.QueueLimit >= _queueCount);
-                if (_options.QueueLimit - _queueCount < tokenCount)
+                if (_options.QueueLimit - _queueCount < permitCount)
                 {
                     if (_options.QueueProcessingOrder == QueueProcessingOrder.NewestFirst &&
-                        tokenCount <= _options.QueueLimit)
+                        permitCount <= _options.QueueLimit)
                     {
                         // remove oldest items from queue until there is space for the newest acquisition request
                         do
@@ -261,19 +263,20 @@ namespace Unity.Cloud.Assets
                             }
 
                             disposer.Add(oldestRequest);
-                        } while (_options.QueueLimit - _queueCount < tokenCount);
+                        } while (_options.QueueLimit - _queueCount < permitCount);
                     }
                     else
                     {
                         Interlocked.Increment(ref _failedLeasesCount);
+
                         // Don't queue if queue limit reached and QueueProcessingOrder is OldestFirst
-                        return new ValueTask<RateLimitLease>(CreateFailedTokenLease(tokenCount));
+                        return new ValueTask<RateLimitLease>(CreateFailedTokenLease(permitCount));
                     }
                 }
 
-                var registration = new RequestRegistration(tokenCount, this, cancellationToken);
+                var registration = new RequestRegistration(permitCount, this, cancellationToken);
                 _queue.EnqueueTail(registration);
-                _queueCount += tokenCount;
+                _queueCount += permitCount;
                 Debug.Assert(_queueCount <= _options.QueueLimit);
 
                 return new ValueTask<RateLimitLease>(registration.Task);
@@ -282,7 +285,8 @@ namespace Unity.Cloud.Assets
 
         private TokenBucketLease CreateFailedTokenLease(int tokenCount)
         {
-            int replenishAmount = tokenCount - (int)_tokenCount + _queueCount;
+            int replenishAmount = tokenCount - (int) _tokenCount + _queueCount;
+
             // can't have 0 replenish periods, that would mean it should be a successful lease
             // if TokensPerPeriod is larger than the replenishAmount needed then it would be 0
             Debug.Assert(_options.TokensPerPeriod > 0);
@@ -302,6 +306,7 @@ namespace Unity.Cloud.Assets
                 if (tokenCount == 0)
                 {
                     Interlocked.Increment(ref _successfulLeasesCount);
+
                     // Edge case where the check before the lock showed 0 available permits but when we got the lock some permits were now available
                     lease = SuccessfulLease;
                     return true;
@@ -345,18 +350,21 @@ namespace Unity.Cloud.Assets
 
         private void Replenish(object? state)
         {
+            _renewTimer?.Dispose();
+            _renewTimer = null;
+
+            if (_disposed || (int) _tokenCount == _options.TokenLimit)
+            {
+                return;
+            }
+
             TokenBucketRateLimiter limiter = (state as TokenBucketRateLimiter)!;
             Debug.Assert(limiter is not null);
 
             // Use Stopwatch instead of DateTime.UtcNow to avoid issues on systems where the clock can change
             long nowTicks = Stopwatch.GetTimestamp();
 
-            limiter!.ReplenishInternal(nowTicks);
-
-            if (!_options.AutoReplenishment || _renewTimer is null) return;
-
-            _renewTimer?.Dispose();
-            _renewTimer = null;
+            limiter.ReplenishInternal(nowTicks);
         }
 
         // Used in tests to avoid dealing with real time
@@ -367,24 +375,9 @@ namespace Unity.Cloud.Assets
             // method is re-entrant (from Timer), lock to avoid multiple simultaneous replenishes
             lock (Lock)
             {
-                if (_disposed)
-                {
-                    return;
-                }
-
-                if (_tokenCount == _options.TokenLimit)
-                {
-                    return;
-                }
-
-                double add;
-
                 // Trust the timer to be close enough to when we want to replenish, this avoids issues with Timer jitter where it might be .99 seconds instead of 1, and 1.1 seconds the next time etc.
-                if (_options.AutoReplenishment)
-                {
-                    add = _options.TokensPerPeriod;
-                }
-                else
+                double add = _options.TokensPerPeriod;
+                if (!_options.AutoReplenishment)
                 {
                     add = _fillRate * (nowTicks - _lastReplenishmentTick) * TickFrequency;
                 }
@@ -394,33 +387,21 @@ namespace Unity.Cloud.Assets
                 _lastReplenishmentTick = nowTicks;
 
                 // Process queued requests
-                Deque<RequestRegistration> queue = _queue;
-
                 Debug.Assert(_tokenCount <= _options.TokenLimit);
-                while (queue.Count > 0)
+                while (_queue.Count > 0)
                 {
-                    RequestRegistration nextPendingRequest =
-                        _options.QueueProcessingOrder == QueueProcessingOrder.OldestFirst
-                            ? queue.PeekHead()
-                            : queue.PeekTail();
+                    RequestRegistration nextPendingRequest = PeekRequest();
 
                     // Request was handled already, either via cancellation or being kicked from the queue due to a newer request being queued.
                     // We just need to remove the item and let the next queued item be considered for completion.
                     if (nextPendingRequest.Task.IsCompleted)
                     {
-                        nextPendingRequest =
-                            _options.QueueProcessingOrder == QueueProcessingOrder.OldestFirst
-                                ? queue.DequeueHead()
-                                : queue.DequeueTail();
-                        disposer.Add(nextPendingRequest);
+                        DequeueRequest(disposer);
                     }
                     else if (_tokenCount >= nextPendingRequest.Count)
                     {
                         // Request can be fulfilled
-                        nextPendingRequest =
-                            _options.QueueProcessingOrder == QueueProcessingOrder.OldestFirst
-                                ? queue.DequeueHead()
-                                : queue.DequeueTail();
+                        nextPendingRequest = DequeueRequest(disposer);
 
                         _queueCount -= nextPendingRequest.Count;
                         _tokenCount -= nextPendingRequest.Count;
@@ -430,6 +411,7 @@ namespace Unity.Cloud.Assets
                         {
                             // Queued item was canceled so add count back
                             _tokenCount += nextPendingRequest.Count;
+
                             // Updating queue count is handled by the cancellation code
                             _queueCount += nextPendingRequest.Count;
                         }
@@ -438,22 +420,42 @@ namespace Unity.Cloud.Assets
                             Interlocked.Increment(ref _successfulLeasesCount);
                         }
 
-                        disposer.Add(nextPendingRequest);
                         Debug.Assert(_queueCount >= 0);
                     }
                     else
                     {
-                        // Request cannot be fulfilled
+                        // Request cannot be fulfilled; if auto-replenish, wait until next renewal
+                        if (_options.AutoReplenishment && _renewTimer is null)
+                        {
+                            _renewTimer = new Timer(Replenish, this, _options.ReplenishmentPeriod, Timeout.InfiniteTimeSpan);
+                        }
+
                         break;
                     }
                 }
 
-                if (_tokenCount == _options.TokenLimit)
+                if ((int) _tokenCount == _options.TokenLimit)
                 {
                     Debug.Assert(_idleSince is null);
                     _idleSince = Stopwatch.GetTimestamp();
                 }
             }
+        }
+
+        RequestRegistration PeekRequest()
+        {
+            return _options.QueueProcessingOrder == QueueProcessingOrder.OldestFirst
+                ? _queue.PeekHead()
+                : _queue.PeekTail();
+        }
+
+        RequestRegistration DequeueRequest(RequestRegistration.Disposer disposer)
+        {
+            var request = _options.QueueProcessingOrder == QueueProcessingOrder.OldestFirst
+                ? _queue.DequeueHead()
+                : _queue.DequeueTail();
+            disposer.Add(request);
+            return request;
         }
 
         /// <inheritdoc />
@@ -476,10 +478,7 @@ namespace Unity.Cloud.Assets
                 _renewTimer?.Dispose();
                 while (_queue.Count > 0)
                 {
-                    RequestRegistration next = _options.QueueProcessingOrder == QueueProcessingOrder.OldestFirst
-                        ? _queue.DequeueHead()
-                        : _queue.DequeueTail();
-                    disposer.Add(next);
+                    RequestRegistration next = DequeueRequest(disposer);
                     next.TrySetResult(FailedLease);
                 }
             }
@@ -503,7 +502,7 @@ namespace Unity.Cloud.Assets
 
         private sealed class TokenBucketLease : RateLimitLease
         {
-            private static readonly string[] s_allMetadataNames = new[] { MetadataName.RetryAfter.Name };
+            private static readonly string[] s_allMetadataNames = new[] {MetadataName.RetryAfter.Name};
 
             private readonly TimeSpan? _retryAfter;
 
@@ -560,7 +559,7 @@ namespace Unity.Cloud.Assets
                 if (state is RequestRegistration registration &&
                     registration.TrySetCanceled(registration._cancellationToken))
                 {
-                    var limiter = (TokenBucketRateLimiter)registration.Task.AsyncState!;
+                    var limiter = (TokenBucketRateLimiter) registration.Task.AsyncState!;
                     lock (limiter.Lock)
                     {
                         limiter._queueCount -= registration.Count;

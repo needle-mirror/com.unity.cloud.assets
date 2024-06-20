@@ -71,7 +71,7 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc />
         public Task LinkAssetsAsync(IEnumerable<IAsset> assets, CancellationToken cancellationToken)
         {
-            return LinkAssetsAsync(assets.Select(SelectAssetId), cancellationToken);
+            return LinkAssetsAsync(assets.Select(AssetExtensions.SelectId), cancellationToken);
         }
 
         /// <inheritdoc />
@@ -83,7 +83,7 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc />
         public Task UnlinkAssetsAsync(IEnumerable<IAsset> assets, CancellationToken cancellationToken)
         {
-            return UnlinkAssetsAsync(assets.Select(SelectAssetId), cancellationToken);
+            return UnlinkAssetsAsync(assets.Select(AssetExtensions.SelectId), cancellationToken);
         }
 
         /// <inheritdoc />
@@ -98,11 +98,6 @@ namespace Unity.Cloud.Assets
             await m_DataSource.MoveCollectionToNewPathAsync(Descriptor, newCollectionPath, cancellationToken);
             ParentPath = newCollectionPath;
             Descriptor = new CollectionDescriptor(Descriptor.ProjectDescriptor, CollectionPath.CombinePaths(ParentPath, Name));
-        }
-
-        static AssetId SelectAssetId(IAsset asset)
-        {
-            return asset.Descriptor.AssetId;
         }
     }
 }

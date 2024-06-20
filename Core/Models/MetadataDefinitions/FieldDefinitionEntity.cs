@@ -22,6 +22,9 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc/>
         public AuthoringInfo AuthoringInfo { get; set; }
 
+        /// <inheritdoc/>
+        public FieldDefinitionOrigin Origin { get; set; }
+
         internal FieldDefinitionEntity(IAssetDataSource dataSource, FieldDefinitionDescriptor descriptor)
         {
             m_DataSource = dataSource;

@@ -55,9 +55,14 @@ namespace Unity.Cloud.Assets
         bool IsVisible { get; }
 
         /// <summary>
-        /// The searchable metadata of the asset.
+        /// The searchable metadata of the dataset.
         /// </summary>
         IMetadataContainer Metadata { get; }
+
+        /// <summary>
+        /// The system metadata of the dataset.
+        /// </summary>
+        IReadOnlyMetadataContainer SystemMetadata => throw new NotImplementedException();
 
         /// <summary>
         /// Refreshes the dataset with the specified fields.
@@ -72,6 +77,8 @@ namespace Unity.Cloud.Assets
         /// <param name="datasetUpdate">The object containing the necessary information to update the dataset. </param>
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task with no result. </returns>
+        /// <exception cref="InvalidArgumentException">If this version of the asset is frozen, because it cannot be modified. </exception>
+        /// <remarks>Can only be called if the version of the asset is not frozen. </remarks>
         Task UpdateAsync(IDatasetUpdate datasetUpdate, CancellationToken cancellationToken);
 
         /// <summary>
@@ -82,6 +89,8 @@ namespace Unity.Cloud.Assets
         /// <param name="progress">The progress of the upload. </param>
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task whose result is a newly created file. </returns>
+        /// <exception cref="InvalidArgumentException">If this version of the asset is frozen, because it cannot be modified. </exception>
+        /// <remarks>Can only be called if the version of the asset is not frozen. </remarks>
         Task<IFile> UploadFileAsync(IFileCreation fileCreation, Stream sourceStream, IProgress<HttpProgress> progress, CancellationToken cancellationToken);
 
         /// <summary>
@@ -91,6 +100,8 @@ namespace Unity.Cloud.Assets
         /// <param name="sourceDatasetId">The id of the source dataset.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>A task whose result is the linked file. </returns>
+        /// <exception cref="InvalidArgumentException">If this version of the asset is frozen, because it cannot be modified. </exception>
+        /// <remarks>Can only be called if the version of the asset is not frozen. </remarks>
         Task<IFile> AddExistingFileAsync(string filePath, DatasetId sourceDatasetId, CancellationToken cancellationToken);
 
         /// <summary>
@@ -99,6 +110,8 @@ namespace Unity.Cloud.Assets
         /// <param name="filePath">The path to the file. </param>
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task with no result. </returns>
+        /// <exception cref="InvalidArgumentException">If this version of the asset is frozen, because it cannot be modified. </exception>
+        /// <remarks>Can only be called if the version of the asset is not frozen. </remarks>
         Task RemoveFileAsync(string filePath, CancellationToken cancellationToken);
 
         /// <summary>
@@ -129,6 +142,8 @@ namespace Unity.Cloud.Assets
         /// </summary>
         /// <param name="transformationCreation">The object containing the information necessary to start a transformation. </param>
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
+        /// <exception cref="InvalidArgumentException">If this version of the asset is frozen, because it cannot be modified. </exception>
+        /// <remarks>Can only be called if the version of the asset is not frozen. </remarks>
         Task<ITransformation> StartTransformationAsync(ITransformationCreation transformationCreation, CancellationToken cancellationToken);
 
         /// <summary>

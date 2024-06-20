@@ -86,8 +86,9 @@ namespace Unity.Cloud.Assets
         }
 
         /// <summary>
-        /// Executes the query and returns the assets that satisfy the critiera.
+        /// Executes the query and returns the assets with a default version that satisfy the critiera.
         /// </summary>
+        /// <remarks>The default version of an asset is defined as the "Latest" frozen version, or if there are no frozen versions, the unfrozen "Pending" version.</remarks>
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>An async enumeration of <see cref="IAsset"/>. </returns>
         public async IAsyncEnumerable<IAsset> ExecuteAsync([EnumeratorCancellation] CancellationToken cancellationToken)

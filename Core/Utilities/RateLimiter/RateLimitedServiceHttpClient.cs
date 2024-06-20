@@ -39,7 +39,7 @@ namespace Unity.Cloud.Assets
                 QueueLimit = queueLimit,
                 TokensPerPeriod = tokensPerPeriod,
                 TokenLimit = tokenLimit,
-                ReplenishmentPeriod = replenishmentPeriod/*TimeSpan.FromSeconds(k_ReplenishmentPeriod)*/
+                ReplenishmentPeriod = replenishmentPeriod
             });
         }
 

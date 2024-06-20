@@ -13,10 +13,10 @@ namespace Unity.Cloud.Assets
         /// </summary>
         /// <param name="organizationId">The id of the organization. </param>
         /// <param name="pagination">An object containing the necessary information return a range of field definitions.</param>
-        /// <param name="includeDeleted">Whether the results should include deleted field definitions.</param>
+        /// <param name="queryParameters">Optional query parameters.</param>
         /// <param name="cancellationToken">A token that can be used to cancel the request.</param>
         /// <returns>A task whose result is an async enumeration of field definitions. </returns>
-        IAsyncEnumerable<IFieldDefinitionData> ListFieldDefinitionsAsync(OrganizationId organizationId, PaginationData pagination, bool includeDeleted, CancellationToken cancellationToken);
+        IAsyncEnumerable<IFieldDefinitionData> ListFieldDefinitionsAsync(OrganizationId organizationId, PaginationData pagination, Dictionary<string, string> queryParameters, CancellationToken cancellationToken);
 
         /// <summary>
         /// Retrieves the specified field definition.

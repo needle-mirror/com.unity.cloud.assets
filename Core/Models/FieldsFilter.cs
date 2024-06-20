@@ -15,6 +15,7 @@ namespace Unity.Cloud.Assets
         description = 1,
         authoring = 2,
         metadata = 4,
+        systemMetadata = 256,
         labels = 8,
         previewFile = 16,
         previewFileUrl = 32,
@@ -39,6 +40,7 @@ namespace Unity.Cloud.Assets
         description = 1,
         authoring = 2,
         metadata = 8,
+        systemMetadata = 16,
         files = 32,
         filesOrder = 64,
     }
@@ -55,6 +57,7 @@ namespace Unity.Cloud.Assets
         authoring = 2,
         downloadURL = 4,
         metadata = 16,
+        systemMetadata = 32,
         userChecksum = 64,
         fileSize = 128,
         previewURL = 256,
@@ -66,6 +69,7 @@ namespace Unity.Cloud.Assets
         public DatasetFields DatasetFields { get; set; } = DatasetFields.none;
         public FileFields FileFields { get; set; } = FileFields.none;
         public List<string> MetadataFields { get; } = new();
+        public List<string> SystemMetadataFields { get; } = new();
 
         public static FieldsFilter None => new()
         {

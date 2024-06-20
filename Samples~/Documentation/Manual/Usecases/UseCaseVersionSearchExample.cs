@@ -1,5 +1,3 @@
-using Unity.Cloud.Common;
-
 namespace Unity.Cloud.Documentation.Assets
 {
 #pragma warning disable S4487 // Unread "private" fields should be removed
@@ -13,6 +11,7 @@ namespace Unity.Cloud.Documentation.Assets
     using System.Threading;
     using System.Threading.Tasks;
     using Unity.Cloud.Assets;
+    using Unity.Cloud.Common;
     using UnityEngine;
 
     public class UseCaseVersionSearchExampleUI : IAssetManagementUI
@@ -41,11 +40,14 @@ namespace Unity.Cloud.Documentation.Assets
             m_Behaviour = new UseCaseVersionSearchExampleBehaviour(behaviour);
         }
 
+        protected IAsset CurrentVersion => m_CurrentVersion;
+
         #region Example_UIContent
 
-        AssetId m_CurrentAssetId;
         string m_SortingField = "versionNumber";
         SortingOrder m_SortingOrder = SortingOrder.Descending;
+        AssetId m_CurrentAssetId;
+        IAsset m_CurrentVersion;
 
         public void OnGUI()
         {
@@ -54,6 +56,7 @@ namespace Unity.Cloud.Documentation.Assets
             if (m_Behaviour.CurrentAsset.Descriptor.AssetId != m_CurrentAssetId)
             {
                 m_CurrentAssetId = m_Behaviour.CurrentAsset.Descriptor.AssetId;
+                m_CurrentVersion = null;
                 SearchAssetVersions();
             }
 
@@ -65,7 +68,7 @@ namespace Unity.Cloud.Documentation.Assets
             m_SortingField = GUILayout.TextField(m_SortingField);
 
             GUILayout.Label("Sorting Order:");
-            m_SortingOrder = (SortingOrder) GUILayout.SelectionGrid((int) m_SortingOrder, new[] { "Ascending", "Descending" }, 2);
+            m_SortingOrder = (SortingOrder) GUILayout.SelectionGrid((int) m_SortingOrder, new[] {"Ascending", "Descending"}, 2);
 
             if (GUILayout.Button("Search"))
             {
@@ -88,21 +91,23 @@ namespace Unity.Cloud.Documentation.Assets
             {
                 foreach (var asset in m_Behaviour.AssetVersions)
                 {
-                    DisplayVersionInfo(asset);
+                    DisplayVersion(asset);
                 }
             }
 
             GUILayout.EndVertical();
+
+            DisplayCurrentVersion();
         }
 
         void SearchAssetVersions()
         {
             if (string.IsNullOrEmpty(m_SortingField)) return;
 
-            _ = m_Behaviour.SearchAssetVersions(m_SortingField, m_SortingOrder);
+            _ = m_Behaviour.SearchVersions(m_SortingField, m_SortingOrder);
         }
 
-        static void DisplayVersionInfo(IAsset asset)
+        void DisplayVersion(IAsset asset)
         {
             var version = asset.IsFrozen ? $"Ver. {asset.FrozenSequenceNumber}" : $"WIP from Ver. {asset.ParentFrozenSequenceNumber}";
 
@@ -112,7 +117,55 @@ namespace Unity.Cloud.Documentation.Assets
                 version += $" ({string.Join(", ", labels)})";
             }
 
-            GUILayout.Label(version);
+            GUILayout.BeginHorizontal();
+
+            GUILayout.Label(version, GUILayout.ExpandWidth(true));
+
+            if (GUILayout.Button("Select", GUILayout.Width(60)))
+            {
+                m_CurrentVersion = asset;
+            }
+
+            GUILayout.EndHorizontal();
+        }
+
+        void DisplayCurrentVersion()
+        {
+            if (m_CurrentVersion == null)
+            {
+                GUILayout.Label("! No version selected. !");
+                return;
+            }
+
+            GUILayout.BeginVertical();
+
+            GUILayout.Label($"Version: {m_CurrentVersion.Descriptor.AssetVersion}");
+            GUILayout.Label($"Status: {m_CurrentVersion.Status}");
+            if (m_CurrentVersion.ParentFrozenSequenceNumber > 0)
+            {
+                GUILayout.Label($"Parent Sequence Number: {m_CurrentVersion.ParentFrozenSequenceNumber}");
+            }
+
+            GUILayout.Label($"Frozen: {m_CurrentVersion.IsFrozen}");
+
+            if (m_CurrentVersion.IsFrozen)
+            {
+                GUILayout.Label($"Frozen Sequence Number: {m_CurrentVersion.FrozenSequenceNumber}");
+
+                if (GUILayout.Button("Create new version"))
+                {
+                    _ = m_Behaviour.CreateVersion(m_CurrentVersion);
+                }
+            }
+            else
+            {
+                if (GUILayout.Button("Freeze version"))
+                {
+                    _ = m_Behaviour.FreezeVersion(m_CurrentVersion);
+                }
+            }
+
+            GUILayout.EndVertical();
         }
 
         #endregion
@@ -129,17 +182,25 @@ namespace Unity.Cloud.Documentation.Assets
             m_Behaviour = behaviour;
         }
 
-        #region Example_Behaviour
+        #region Example_SearchVersions
 
         public List<IAsset> AssetVersions { get; private set; }
 
-        public async Task SearchAssetVersions(string sortingField, SortingOrder sortingOrder)
-        {
-            AssetVersions = null;
+        VersionQueryBuilder m_CurrentQuery;
 
-            var results = CurrentAsset.QueryAssetVersions()
-                .OrderBy(sortingField, sortingOrder)
-                .ExecuteAsync(CancellationToken.None);
+        public async Task SearchVersions(string sortingField, SortingOrder sortingOrder)
+        {
+            m_CurrentQuery = CurrentAsset.QueryVersions()
+                .OrderBy(sortingField, sortingOrder);
+
+            await PopulateVersions(m_CurrentQuery);
+        }
+
+        async Task PopulateVersions(VersionQueryBuilder query)
+        {
+            if (query == null) return;
+
+            var results = query.ExecuteAsync(CancellationToken.None);
 
             AssetVersions = new List<IAsset>();
             await foreach (var asset in results)
@@ -147,6 +208,32 @@ namespace Unity.Cloud.Documentation.Assets
                 AssetVersions ??= new List<IAsset>();
                 AssetVersions.Add(asset);
             }
+        }
+
+        #endregion
+
+        #region Example_FreezeVersion
+
+        public async Task FreezeVersion(IAsset asset)
+        {
+            var sequenceNumber = await asset.FreezeAsync("Use case coding example submission.", CancellationToken.None);
+
+            var tasks = AssetVersions.Select(version => version.RefreshAsync(CancellationToken.None)).ToList();
+            await Task.WhenAll(tasks);
+
+            Debug.Log($"Version frozen with sequence number: {sequenceNumber}");
+        }
+
+        #endregion
+
+        #region Example_CreateVersion
+
+        public async Task CreateVersion(IAsset asset)
+        {
+            var version = await asset.CreateUnfrozenVersionAsync(CancellationToken.None);
+            await PopulateVersions(m_CurrentQuery);
+
+            Debug.Log($"New version created with version: {version.Descriptor.AssetVersion}");
         }
 
         #endregion

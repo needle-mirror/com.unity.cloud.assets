@@ -17,7 +17,7 @@ namespace Unity.Cloud.Assets
         /// The user id.
         /// </summary>
         [DataMember(Name = "userId")]
-        string UserId { get; }
+        UserId UserId { get; }
 
         /// <summary>
         /// The ID of the asset containing the dataset on which the transformation is applied.
@@ -96,5 +96,11 @@ namespace Unity.Cloud.Assets
         /// </summary>
         [DataMember(Name = "startedAt")]
         DateTime StartedAt { get; }
+
+        /// <summary>
+        /// The job ID of the transformation
+        /// </summary>
+        [DataMember(Name = "jobId")]
+        string JobId { get; }
     }
 }

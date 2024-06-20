@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -15,6 +14,8 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
             VisualElement m_MenuPopup;
             int m_CurrentMenuPopupOwner = -1;
+
+            public event Action<IAsset> RemoveAsset;
 
             public override void Initialize(ListView listView, VisualTreeAsset itemTemplate, Action<IEnumerable<object>> onSelectionChange)
             {
@@ -49,33 +50,13 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             {
                 var asset = m_List[i];
 
-                string versionText;
-                if (asset.IsFrozen)
-                {
-                    versionText = $"Ver. {asset.FrozenSequenceNumber}";
-                }
-                else if (asset.ParentFrozenSequenceNumber < 1)
-                {
-                    versionText = $"New";
-                }
-                else
-                {
-                    versionText = $"Editing Ver. {asset.ParentFrozenSequenceNumber}";
-                }
-                var version = asset.Descriptor.AssetVersion.ToString();
-                if (version.Length > 8)
-                {
-                    version = version[..8];
-                }
-                versionText = $"{version}\n<color=#888888>{versionText}</color>";
-
                 element.Q<Label>("TitleLabel").text = asset.Name;
                 element.Q<Label>("IngestedDateLabel").text = asset.AuthoringInfo?.Updated.ToString("MMM dd, yyyy") ?? "unknown";
                 element.Q<Label>("IngestedTimeLabel").text = asset.AuthoringInfo?.Updated.ToString("h:mm tt GMT") ?? "unknown";
                 element.Q<Label>("DescriptionLabel").text = asset.Description;
                 element.Q<Label>("TagsLabel").text = asset.Tags.FirstOrDefault();
                 element.Q<Label>("TypeLabel").text = asset.Type.ToString();
-                element.Q<Label>("Label").text = versionText;
+                element.Q<Label>("Label").text = asset.GetVersionText();
                 element.Q<Label>("StatusLabel").text = asset.Status;
 
                 var expandButton = element.Q<Button>("ExpandButton");
@@ -164,16 +145,11 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
                     "This will remove the asset from the current project. Note that once an asset is no longer linked to any projects it is effectively deleted.",
                     () =>
                     {
-                        _ = RemoveAsset(m_List[m_CurrentMenuPopupOwner]);
+                        RemoveAsset?.Invoke(m_List[m_CurrentMenuPopupOwner]);
                         m_List.RemoveAt(m_CurrentMenuPopupOwner);
                         m_ListView.Rebuild();
                         ClearMenuPopupOwner();
                     }, () => { });
-            }
-
-            static async Task RemoveAsset(IAsset asset)
-            {
-                await asset.UnlinkFromProjectAsync(asset.Descriptor.ProjectDescriptor, default);
             }
         }
 
@@ -181,6 +157,12 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
         protected override string VisualElementName => "AssetListBox";
         protected override string EmptyListMessage => string.Empty;
+
+        public event Action<IAsset> RemoveAsset
+        {
+            add => m_ListController.RemoveAsset += value;
+            remove => m_ListController.RemoveAsset -= value;
+        }
 
         public override void Initialize(VisualElement uiDocumentRoot, VisualTreeAsset listItemTemplate)
         {

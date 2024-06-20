@@ -14,5 +14,8 @@ namespace Unity.Cloud.Assets
 
         /// <inheritdoc />
         public Dictionary<string, object> Metadata { get; set; }
+
+        /// <inheritdoc />
+        public Dictionary<string, object> SystemMetadata { get; set; }
     }
 }

@@ -8,7 +8,7 @@ namespace Unity.Cloud.Assets
     {
         static MetadataObject From(object obj, IAssetDataSource dataSource, FieldDefinitionDescriptor fieldDefinitionDescriptor)
         {
-            return new MetadataObject(IsolatedSerialization.ToObject(obj), dataSource, fieldDefinitionDescriptor);
+            return new FieldDefinitionMetadataObject(IsolatedSerialization.ToObject(obj), dataSource, fieldDefinitionDescriptor);
         }
 
         static object From(this MetadataValue metadataValue)
@@ -29,6 +29,11 @@ namespace Unity.Cloud.Assets
         internal static Dictionary<string, MetadataObject> From(this IDictionary<string, object> dictionary, IAssetDataSource dataSource, OrganizationId organizationId)
         {
             return dictionary.ToDictionary(pair => pair.Key, pair => From(pair.Value, dataSource, new FieldDefinitionDescriptor(organizationId, pair.Key)));
+        }
+
+        internal static Dictionary<string, MetadataObject> From(this IDictionary<string, object> dictionary)
+        {
+            return dictionary.ToDictionary(pair => pair.Key, pair => new MetadataObject(IsolatedSerialization.ToObject(pair.Value)));
         }
     }
 }

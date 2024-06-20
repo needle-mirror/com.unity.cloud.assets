@@ -1,6 +1,3 @@
-using System.Linq;
-using UnityEditor;
-
 namespace Unity.Cloud.Documentation.Assets
 {
 #pragma warning disable S4487 // Unread "private" fields should be removed
@@ -11,10 +8,12 @@ namespace Unity.Cloud.Documentation.Assets
     using System;
     using System.Collections.Generic;
     using System.IO;
+    using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
     using Unity.Cloud.Assets;
     using Unity.Cloud.Common;
+    using UnityEditor;
     using UnityEngine;
 
     public class UseCaseFileReuploadExampleUI : IAssetManagementUI

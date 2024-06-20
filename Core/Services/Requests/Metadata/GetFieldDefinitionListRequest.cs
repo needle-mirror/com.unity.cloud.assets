@@ -1,15 +1,23 @@
+using System.Collections.Generic;
 using Unity.Cloud.Common;
 
 namespace Unity.Cloud.Assets
 {
     class GetFieldDefinitionListRequest : OrganizationRequest
     {
-        public GetFieldDefinitionListRequest(OrganizationId organizationId, int limit, SortingOrder sortingOrder, string nextToken, bool includeDeleted)
+        public GetFieldDefinitionListRequest(OrganizationId organizationId, int limit, SortingOrder sortingOrder, string nextToken, Dictionary<string, string> queryParameters = null)
             : base(organizationId)
         {
             m_RequestUrl += "/templates/fields";
 
-            AddParamToQuery("IncludeDeleted", includeDeleted.ToString());
+            if (queryParameters != null)
+            {
+                foreach (var param in queryParameters)
+                {
+                    AddParamToQuery(param.Key, param.Value);
+                }
+            }
+
             AddParamToQuery("SortingOrder", sortingOrder.ToString());
             AddParamToQuery("Limit", limit.ToString());
             AddParamToQuery("Next", nextToken);

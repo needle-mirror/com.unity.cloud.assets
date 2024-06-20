@@ -10,11 +10,11 @@ namespace Unity.Cloud.Assets
     /// </summary>
     public class MetadataQueryBuilder
     {
-        readonly MetadataContainerEntity m_MetadataContainerEntity;
+        readonly ReadOnlyMetadataContainerEntity m_MetadataContainerEntity;
 
         IEnumerable<string> m_Keys;
 
-        internal MetadataQueryBuilder(MetadataContainerEntity metadataContainer)
+        internal MetadataQueryBuilder(ReadOnlyMetadataContainerEntity metadataContainer)
         {
             m_MetadataContainerEntity = metadataContainer;
         }

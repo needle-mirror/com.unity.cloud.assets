@@ -46,6 +46,8 @@ namespace Unity.Cloud.Assets
 
             if (includeFields.HasFlag(FileFields.metadata))
                 file.MetadataEntity.Properties = fileData.Metadata?.From(assetDataSource, file.Descriptor.OrganizationId);
+            if (includeFields.HasFlag(FileFields.systemMetadata))
+                file.SystemMetadataEntity.Properties = fileData.SystemMetadata?.From();
             if (includeFields.HasFlag(FileFields.userChecksum))
                 file.UserChecksum = fileData.UserChecksum;
             if (includeFields.HasFlag(FileFields.fileSize))

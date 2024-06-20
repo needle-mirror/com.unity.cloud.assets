@@ -128,14 +128,14 @@ namespace Unity.Cloud.Assets
         /// <param name="labelCreation">The object containing the necessary information to create a label. </param>
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task whose result is an <see cref="ILabel"/>. </returns>
-        Task<ILabel> CreateLabelAsync(OrganizationId organizationId, ILabelCreation labelCreation, CancellationToken cancellationToken);
+        Task<ILabel> CreateLabelAsync(OrganizationId organizationId, ILabelCreation labelCreation, CancellationToken cancellationToken) => throw new NotImplementedException();
 
         /// <summary>
         /// Returns a builder to create a query to search an organization's labels.
         /// </summary>
         /// <param name="organizationId">The id of the organization. </param>
         /// <returns>A <see cref="LabelQueryBuilder"/>. </returns>
-        LabelQueryBuilder QueryLabels(OrganizationId organizationId);
+        LabelQueryBuilder QueryLabels(OrganizationId organizationId) => throw new NotImplementedException();
 
         /// <summary>
         /// Retrieves a label by name.
@@ -143,7 +143,7 @@ namespace Unity.Cloud.Assets
         /// <param name="labelDescriptor">The descriptor containing the indentifiers for the label. </param>
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task whose result is an <see cref="ILabel"/>. </returns>
-        Task<ILabel> GetLabelAsync(LabelDescriptor labelDescriptor, CancellationToken cancellationToken);
+        Task<ILabel> GetLabelAsync(LabelDescriptor labelDescriptor, CancellationToken cancellationToken) => throw new NotImplementedException();
 
         /// <summary>
         /// Implement this method to get an <see cref="AssetDescriptor"/> given a serialized json of asset identifiers.

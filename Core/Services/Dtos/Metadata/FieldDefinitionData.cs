@@ -18,5 +18,8 @@ namespace Unity.Cloud.Assets
 
         /// <inheritdoc />
         public DateTime? Updated { get; set; }
+
+        /// <inheritdoc />
+        public string Origin { get; set; }
     }
 }

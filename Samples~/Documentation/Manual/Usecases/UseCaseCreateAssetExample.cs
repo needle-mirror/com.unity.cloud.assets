@@ -1,9 +1,9 @@
-using Unity.Cloud.Assets;
-using UnityEngine;
-
 namespace Unity.Cloud.Documentation.Assets
 {
     #region Example
+
+    using Unity.Cloud.Assets;
+    using UnityEngine;
 
     public class UseCaseCreateAssetExampleUI : IAssetManagementUI
     {

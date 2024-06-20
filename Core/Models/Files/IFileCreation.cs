@@ -21,5 +21,11 @@ namespace Unity.Cloud.Assets
 
         /// <inheritdoc cref="IFile.Metadata"/>
         Dictionary<string, MetadataValue> Metadata { get; }
+
+        /// <summary>
+        /// Whether to disable automatic transformations for the new file.
+        /// If true, automatic transformations, such as preview generation and metadata extraction, will be disabled.
+        /// </summary>
+        bool DisableAutomaticTransformations => false;
     }
 }

@@ -43,6 +43,9 @@ namespace Unity.Cloud.Assets
         public IMetadataContainer Metadata => MetadataEntity;
 
         /// <inheritdoc />
+        public IReadOnlyMetadataContainer SystemMetadata => SystemMetadataEntity;
+
+        /// <inheritdoc />
         public IEnumerable<string> FileOrder
         {
             get => m_FileOrder;
@@ -53,6 +56,7 @@ namespace Unity.Cloud.Assets
         public bool IsVisible { get; set; }
 
         internal MetadataContainerEntity MetadataEntity { get; }
+        internal ReadOnlyMetadataContainerEntity SystemMetadataEntity { get; }
 
         /// <summary>
         /// The name of the workflow.
@@ -60,24 +64,19 @@ namespace Unity.Cloud.Assets
         internal string WorkflowName { get; set; }
 
         internal DatasetEntity(IAssetDataSource assetDataSource, DatasetDescriptor datasetDescriptor)
-            : this(datasetDescriptor)
         {
             m_DataSource = assetDataSource;
-
-            MetadataEntity = new DatasetMetadataContainer(Descriptor, DatasetFields.metadata, m_DataSource);
-        }
-
-        internal DatasetEntity(DatasetDescriptor datasetDescriptor)
-        {
             Descriptor = datasetDescriptor;
 
-            MetadataEntity = new DatasetMetadataContainer(Descriptor, DatasetFields.metadata, null);
+            MetadataEntity = new MetadataContainerEntity(new DatasetMetadataDataSource(Descriptor, m_DataSource, MetadataDataSourceSpecification.metadata));
+            SystemMetadataEntity = new ReadOnlyMetadataContainerEntity(new DatasetMetadataDataSource(Descriptor, m_DataSource, MetadataDataSourceSpecification.systemMetadata));
         }
 
         /// <inheritdoc />
         public Task RefreshAsync(CancellationToken cancellationToken)
         {
             MetadataEntity.Refresh();
+            SystemMetadataEntity.Refresh();
 
             return RefreshAsync(FieldsFilter.DefaultDatasetIncludes, cancellationToken);
         }
@@ -141,11 +140,13 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc />
         public async Task<IFile> UploadFileAsync(IFileCreation fileCreation, Stream sourceStream, IProgress<HttpProgress> progress, CancellationToken cancellationToken)
         {
+            var filePath = fileCreation.Path.Replace('\\', '/');
+
             var checksum = await CalculateMD5ChecksumAsync(sourceStream, cancellationToken);
 
             var createInternal = new FileCreateData
             {
-                Path = fileCreation.Path,
+                Path = filePath,
                 Description = fileCreation.Description,
                 Metadata = fileCreation.Metadata?.ToObjectDictionary() ?? new Dictionary<string, object>(),
                 UserChecksum = checksum,
@@ -153,11 +154,10 @@ namespace Unity.Cloud.Assets
                 Tags = fileCreation.Tags?.ToList() ?? new List<string>(), // WORKAROUND until backend supports null tags
             };
 
-            var path = fileCreation.Path;
             var pendingfile = await m_DataSource.CreateFileAsync(Descriptor, createInternal, cancellationToken);
             if (cancellationToken.IsCancellationRequested) // if file was created but external code requested cancellation
             {
-                await m_DataSource.RemoveFileFromDatasetAsync(Descriptor, path, default);
+                await m_DataSource.RemoveFileFromDatasetAsync(Descriptor, filePath, default);
             }
 
             if (pendingfile.UploadUrl != null) //file is new for this dataset, needs to be uploaded
@@ -165,15 +165,16 @@ namespace Unity.Cloud.Assets
                 try
                 {
                     await m_DataSource.UploadContentAsync(pendingfile.UploadUrl, sourceStream, progress, cancellationToken);
-                    await m_DataSource.FinalizeFileUploadAsync(new FileDescriptor(Descriptor, path), cancellationToken);
+                    await m_DataSource.FinalizeFileUploadAsync(new FileDescriptor(Descriptor, filePath), fileCreation.DisableAutomaticTransformations, cancellationToken);
                 }
                 catch (OperationCanceledException)
                 {
-                    await m_DataSource.RemoveFileFromDatasetAsync(Descriptor, path, default);
+                    await m_DataSource.RemoveFileFromDatasetAsync(Descriptor, filePath, default);
+                    throw;
                 }
             }
 
-            return await GetFileAsync(path, cancellationToken);
+            return await GetFileAsync(filePath, cancellationToken);
         }
 
         /// <inheritdoc />

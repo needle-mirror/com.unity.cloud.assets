@@ -100,24 +100,6 @@ public class AssetManagementExample
     }
 
     #endregion
-
-    #region LinkAssetToProject
-
-    async Task LinkAssetToProject(IAsset asset, ProjectDescriptor projectDescriptor, CancellationToken cancellationToken)
-    {
-        await asset.LinkToProjectAsync(projectDescriptor, cancellationToken);
-    }
-
-    #endregion
-
-    #region UnlinkAssetFromProject
-
-    async Task UnlinkAssetFromProject(IAsset asset, ProjectDescriptor projectDescriptor, CancellationToken cancellationToken)
-    {
-        await asset.UnlinkFromProjectAsync(projectDescriptor, cancellationToken);
-    }
-
-    #endregion
 }
 #pragma warning restore S1144
 }

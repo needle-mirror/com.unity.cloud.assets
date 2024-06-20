@@ -12,6 +12,7 @@ namespace Unity.Cloud.Assets.Samples.MetadataManagement
         readonly VisualElement m_RootVisualElement;
 
         readonly Label m_Key;
+        readonly Label m_Origin;
         readonly Label m_AuthoringInfo_Created;
         readonly Label m_AuthoringInfo_Updated;
         readonly Label m_Type;
@@ -28,6 +29,8 @@ namespace Unity.Cloud.Assets.Samples.MetadataManagement
             m_RootVisualElement = rootVisualElement;
 
             m_Key = rootVisualElement.Q<Label>("Key");
+
+            m_Origin = rootVisualElement.Q<Label>("Origin");
             m_AuthoringInfo_Created = rootVisualElement.Q<Label>("AuthoringInfo-Created");
             m_AuthoringInfo_Updated = rootVisualElement.Q<Label>("AuthoringInfo-Updated");
             m_Type = rootVisualElement.Q<Label>("Type");
@@ -73,6 +76,7 @@ namespace Unity.Cloud.Assets.Samples.MetadataManagement
             m_RootVisualElement.style.display = DisplayStyle.Flex;
 
             m_Key.text = $"{m_FieldDefinition.Descriptor.FieldKey}";
+            m_Origin.text = $"Origin: {m_FieldDefinition.Origin.ToString()}";
             m_AuthoringInfo_Created.text = $"Created: {m_FieldDefinition.AuthoringInfo?.Created.ToString() ?? "unknown"}";
             m_AuthoringInfo_Updated.text = $"Updated: {m_FieldDefinition.AuthoringInfo?.Updated.ToString() ?? "unknown"}";
             m_Type.text = $"Type: {m_FieldDefinition.Type.ToString()}";

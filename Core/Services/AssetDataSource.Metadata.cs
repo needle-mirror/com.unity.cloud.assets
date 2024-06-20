@@ -11,7 +11,7 @@ namespace Unity.Cloud.Assets
     partial class AssetDataSource
     {
         /// <inheritdoc/>
-        public async IAsyncEnumerable<IFieldDefinitionData> ListFieldDefinitionsAsync(OrganizationId organizationId, PaginationData pagination, bool includeDeleted, [EnumeratorCancellation] CancellationToken cancellationToken)
+        public async IAsyncEnumerable<IFieldDefinitionData> ListFieldDefinitionsAsync(OrganizationId organizationId, PaginationData pagination, Dictionary<string, string> queryParameters, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
             const int maxPageSize = 99;
 
@@ -29,7 +29,7 @@ namespace Unity.Cloud.Assets
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                var request = new GetFieldDefinitionListRequest(organizationId, pageSize, pagination.SortingOrder, nextPageToken, includeDeleted);
+                var request = new GetFieldDefinitionListRequest(organizationId, pageSize, pagination.SortingOrder, nextPageToken, queryParameters);
                 var response = await RateLimitedServiceClient(request, HttpMethod.Get).GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(),
                     cancellationToken);
 

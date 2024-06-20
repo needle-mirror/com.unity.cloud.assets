@@ -5,6 +5,38 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2024-06-20
+
+### Added
+- Added overloads to `IAsset.WithVersionAsync` to get the version of the asset from a sequence number or a label.
+- Added a readonly `SystemMetadata` property to `IAsset`, `IDataset`, and `IFile` to expose system metadata.
+- `IFieldDefinition.FieldOrigin` property to expose the originator of a field definition.
+- `IAssetProject.LinkAssetsAsync` and `IAssetProject.UnlinkAssetsAsync` to link and unlink assets to a project.
+- Added overload `IAssetProject.GetAssetAsync` without a version to get the default version of an asset.
+- Added versioning details to Asset Discovery and Management samples.
+- Added `UserId` and `JobId` properties in `ITransformation`.
+- Added `IFileCreation.DisableAutomaticTransformations` property to give the option to skip automatic transformations triggered by a file upload.
+- Added `IReadOnlyMetadataContainer` to query system metadata.
+
+### Changed
+- [Experimental][Breaking] Renamed `AssetVersionQueryBuilder` to `VersionQueryBuilder`.
+- [Experimental][Breaking] Renamed `IAsset.QueryAssetVersion` to `IAsset.QueryVersions`.
+- [Experimental][Breaking] Changed `IAsset.WithProjectAsync` to return another instance of the asset at a different project path.
+- [Experimental][Breaking] Changed `IAsset.WithVersionAsync` to return another instance of the asset with the specified version.
+- Improved test coverage.
+
+### Fixed
+- Sanitize file paths on file creation.
+- Fixed search criteria for date ranges.
+- Fixed dropped calls when rate limiting.
+
+### Removed
+- [Experimental][Breaking] Removed `IAssetProject.QueryAssetVersions`.
+
+### Deprecated
+- Deprecated `IAsset.LinkToProjectAsync`; use `IAssetProject.LinkAssetsAsync` instead.
+- Deprecated `IAsset.UnlinkFromProjectAsync`; use `IAssetProject.UnlinkAssetsAsync` instead.
+
 ## [1.2.0-exp.3] - 2024-05-31
 
 ### Added

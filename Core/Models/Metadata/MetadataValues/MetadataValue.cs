@@ -17,11 +17,6 @@ namespace Unity.Cloud.Assets
             ValueType = valueType;
         }
 
-        private protected MetadataValue(MetadataValueType valueType, object value)
-            : this(valueType)
-        {
-        }
-
         /// <summary>
         /// Returns the value of the metadata.
         /// </summary>
@@ -76,6 +71,7 @@ namespace Unity.Cloud.Assets
         /// <summary>
         /// Returns the value as a <see cref="SingleSelectionMetadata"/> object.
         /// </summary>
+        /// <remarks>Parses the value to a simple string. Can be used when the representing the value of a <see cref="ISelectionFieldDefinition"/> when <see cref="ISelectionFieldDefinition.Multiselection"/> is False. </remarks>
         /// <returns>A <see cref="SingleSelectionMetadata"/> object containing the selected value. </returns>
         public SingleSelectionMetadata AsSingleSelection()
         {
@@ -85,6 +81,7 @@ namespace Unity.Cloud.Assets
         /// <summary>
         /// Returns the value as a <see cref="MultiSelectionMetadata"/> object.
         /// </summary>
+        /// <remarks>Parses the value to an enumeration of strings. Can be used when the representing the value of a <see cref="ISelectionFieldDefinition"/> when <see cref="ISelectionFieldDefinition.Multiselection"/> is True. </remarks>
         /// <returns>A <see cref="MultiSelectionMetadata"/> object containing a list of selected values. </returns>
         public MultiSelectionMetadata AsMultiSelection()
         {
@@ -94,6 +91,7 @@ namespace Unity.Cloud.Assets
         /// <summary>
         /// Returns the value as a <see cref="UrlMetadata"/> object.
         /// </summary>
+        /// <remarks>Parses the value to a url. Can be used when the representing the value of a <see cref="IFieldDefinition"/> of type <see cref="FieldDefinitionType.Url"/>. </remarks>
         /// <returns>A <see cref="UrlMetadata"/> object containg the url. </returns>
         /// <exception cref="FormatException">If the value is not parsable as a url. </exception>
         public UrlMetadata AsUrl()
@@ -104,6 +102,7 @@ namespace Unity.Cloud.Assets
         /// <summary>
         /// Returns the value as a <see cref="UserMetadata"/>.
         /// </summary>
+        /// <remarks>Parses the value to a <see cref="Common.UserId"/>. can be used when the representing the value of a <see cref="IFieldDefinition"/> of type <see cref="FieldDefinitionType.User"/>. </remarks>
         /// <returns>A <see cref="UserMetadata"/>. </returns>
         public UserMetadata AsUser()
         {

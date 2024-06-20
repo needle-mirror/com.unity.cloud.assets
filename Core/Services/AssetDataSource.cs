@@ -14,11 +14,11 @@ namespace Unity.Cloud.Assets
     partial class AssetDataSource : IAssetDataSource
     {
         const int k_QueueLimit = 100000;
-        const int k_DefaultTokensPerPeriod = 50;
-        const int k_DefaultTokenLimit = 50;
+        const int k_DefaultTokensPerPeriod = 30;
+        const int k_DefaultTokenLimit = 30;
         const int k_SlowTokensPerPeriod = 10;
         const int k_SlowTokenLimit = 10;
-        const double k_ReplenishmentPeriod = 0.55; // we add 0.05s to each period to have a safety margin
+        const double k_ReplenishmentPeriod = 0.45; // we add 0.05s to each period to have a safety margin
         const string k_PublicApiPath = "/assets/v1";
 
         static readonly UCLogger k_Logger = LoggerProvider.GetLogger<AssetDataSource>();
@@ -196,15 +196,15 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc />
         public Task LinkAssetToProjectAsync(AssetDescriptor assetDescriptor, ProjectDescriptor destinationProject, CancellationToken cancellationToken)
         {
-            var request = new LinkAssetToProjectRequest(assetDescriptor.ProjectId, assetDescriptor.AssetId, destinationProject.ProjectId);
+            var request = new LinkAssetToProjectRequest(assetDescriptor.ProjectId, destinationProject.ProjectId, assetDescriptor.AssetId);
             return RateLimitedServiceClient(request, HttpMethod.Post).PostAsync(GetPublicRequestUri(request), request.ConstructBody(),
                 ServiceHttpClientOptions.Default(), cancellationToken);
         }
 
         /// <inheritdoc />
-        public Task UnlinkAssetFromProjectAsync(AssetDescriptor assetDescriptor, ProjectDescriptor destinationProject, CancellationToken cancellationToken)
+        public Task UnlinkAssetFromProjectAsync(AssetDescriptor assetDescriptor, CancellationToken cancellationToken)
         {
-            var request = new UnlinkAssetFromProjectRequest(destinationProject.ProjectId, assetDescriptor.AssetId);
+            var request = new UnlinkAssetFromProjectRequest(assetDescriptor.ProjectId, assetDescriptor.AssetId);
             return RateLimitedServiceClient(request, HttpMethod.Post).PostAsync(GetPublicRequestUri(request), request.ConstructBody(),
                 ServiceHttpClientOptions.Default(), cancellationToken);
         }
@@ -262,6 +262,7 @@ namespace Unity.Cloud.Assets
             {
                 total += aggregate.Count;
             }
+
             return total;
         }
 
@@ -430,8 +431,8 @@ namespace Unity.Cloud.Assets
         {
             var requestUri = GetPublicRequestUri(request);
 
-            var lastIndex = offset + length;
-            while (index <= lastIndex)
+            var cutoff = offset + length;
+            while (index < cutoff)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -453,7 +454,7 @@ namespace Unity.Cloud.Assets
                     cancellationToken.ThrowIfCancellationRequested();
 
                     if (++index < offset) continue;
-                    if (index > lastIndex) break;
+                    if (index > cutoff) yield break;
 
                     yield return asset;
                 }
@@ -476,11 +477,12 @@ namespace Unity.Cloud.Assets
             {
                 client = new RateLimitedServiceHttpClient(m_ServiceHttpClient, k_QueueLimit, k_DefaultTokensPerPeriod, k_DefaultTokenLimit, TimeSpan.FromSeconds(k_ReplenishmentPeriod));
             }
+
             m_HttpClients[requestType] = client;
             return client;
         }
 
-        bool IsSearchRequest(ApiRequest request)
+        static bool IsSearchRequest(ApiRequest request)
         {
             return request is SearchRequest or AcrossProjectsSearchRequest or SearchAndAggregateRequest or AcrossProjectsSearchAndAggregateRequest;
         }

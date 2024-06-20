@@ -9,14 +9,12 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 {
     public class DatasetPanelController
     {
+        StatusController m_StatusController;
+
         VisualTreeAsset m_DatasetTagsTemplate;
         VisualElement m_RightPanel;
         VisualElement m_DatasetTagsContainer;
-        VisualElement m_DatasetStatusCircle;
-        VisualElement m_DatasetLastEdit;
 
-        Label m_DatasetStatusNameLabel;
-        Label m_DatasetStatusLastEditLabel;
         TextField m_DatasetNameField;
         TextField m_DatasetTagsField;
         TextField m_DatasetDescriptionField;
@@ -42,11 +40,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
             m_DatasetNameField = datasetPanel.Q<TextField>("DatasetNameField");
 
-            m_DatasetStatusCircle = datasetPanel.Q("StatusCircle");
-            m_DatasetStatusNameLabel = datasetPanel.Q<Label>("StatusNameLabel");
-
-            m_DatasetLastEdit = datasetPanel.Q("LastEdit");
-            m_DatasetStatusLastEditLabel = datasetPanel.Q<Label>("LastEditDate");
+            m_StatusController = new StatusController(datasetPanel);
 
             var scrollView = m_RightPanel.Q<ScrollView>("DatasetInfo");
             var content = m_RightPanel.Q("Content");
@@ -109,19 +103,18 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             ClearInformation();
 
             m_RightPanel?.Show();
-            m_DatasetLastEdit?.Show();
 
             m_CurrentDataset = dataset;
             m_DatasetUpdate = new DatasetUpdate(m_CurrentDataset);
 
             m_SaveDatasetButton.SetEnabled(canUpdate);
+            m_GeneratePreviewButton.SetEnabled(canUpdate);
             m_DatasetTagsField.style.display = canUpdate ? DisplayStyle.Flex : DisplayStyle.None;
 
             m_DatasetNameField.SetValueWithoutNotify(dataset.Name);
             m_DatasetNameField.SetEnabled(canUpdate);
             m_DatasetDescriptionField.SetValueWithoutNotify(dataset.Description);
             m_DatasetDescriptionField.SetEnabled(canUpdate);
-            m_DatasetStatusLastEditLabel.text = dataset.AuthoringInfo?.Updated.ToString("MMM dd, yyyy h:mm tt GMT") ?? "unknown";
             m_DatasetVisibleToggle.SetValueWithoutNotify(dataset.IsVisible);
             m_DatasetVisibleToggle.SetEnabled(canUpdate);
 
@@ -130,7 +123,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
             _ = m_FileController.ListExistingFiles(dataset, canUpdate);
 
-            UpdateStatus(dataset.Status);
+            UpdateStatus();
 
             _ = m_MetadataController.PopulateMetadataAsync(dataset, canUpdate);
 
@@ -209,10 +202,10 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
         {
             m_CurrentDataset = null;
             m_DatasetUpdate = null;
+            m_StatusController.Clear();
             m_DatasetNameField.SetValueWithoutNotify("");
             m_DatasetDescriptionField.SetValueWithoutNotify("");
             m_DatasetTagsField.SetValueWithoutNotify("");
-            m_DatasetStatusLastEditLabel.text = "";
             m_DatasetTagsContainer.Clear();
             m_DatasetVisibleToggle.SetValueWithoutNotify(false);
             m_FileController.Clear();
@@ -234,19 +227,18 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             _ = UpdateDatasetAsync();
         }
 
-        void UpdateStatus(string status)
+        void UpdateStatus()
         {
             if (m_CurrentDataset == null)
                 return;
 
-            m_DatasetStatusNameLabel.text = string.IsNullOrEmpty(status) ? "Unknown" : status;
-
-            m_DatasetStatusCircle.style.unityBackgroundImageTintColor = status switch
+            m_StatusController.Update(m_CurrentDataset.Status, m_CurrentDataset.AuthoringInfo?.Updated);
+            m_StatusController.SetStatusColor(m_CurrentDataset.Status switch
             {
                 "Committed" => new Color(0.74f, 0.94f, 0.71f, 1f),
                 "Uncommitted" => new Color(0.86f, 0.60f, 0.27f, 1f),
                 _ => Color.grey
-            };
+            });
         }
 
         void AddTags(FocusInEvent evt)

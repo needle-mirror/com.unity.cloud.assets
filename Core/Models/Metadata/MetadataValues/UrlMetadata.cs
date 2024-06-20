@@ -26,7 +26,7 @@ namespace Unity.Cloud.Assets
         }
 
         internal UrlMetadata(MetadataValueType valueType, object value)
-            : base(valueType, value)
+            : base(valueType)
         {
             if (value != null && TryParse(value.ToString(), out var uri, out var label))
             {

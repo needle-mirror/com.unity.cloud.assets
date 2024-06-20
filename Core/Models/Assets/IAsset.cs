@@ -74,12 +74,12 @@ namespace Unity.Cloud.Assets
         /// <summary>
         /// The labels associated to the asset version.
         /// </summary>
-        IEnumerable<LabelDescriptor> Labels { get; }
+        IEnumerable<LabelDescriptor> Labels => throw new NotImplementedException();
 
         /// <summary>
         /// The labels no longer associated to the asset version.
         /// </summary>
-        IEnumerable<LabelDescriptor> ArchivedLabels { get; }
+        IEnumerable<LabelDescriptor> ArchivedLabels => throw new NotImplementedException();
 
         /// <summary>
         /// The type of the asset.
@@ -107,6 +107,11 @@ namespace Unity.Cloud.Assets
         IMetadataContainer Metadata { get; }
 
         /// <summary>
+        /// The system metadata of the asset.
+        /// </summary>
+        IReadOnlyMetadataContainer SystemMetadata => throw new NotImplementedException();
+
+        /// <summary>
         /// Returns an asset in the context of the specified project.
         /// </summary>
         /// <param name="projectDescriptor">The descriptor of the project. </param>
@@ -119,16 +124,24 @@ namespace Unity.Cloud.Assets
         /// </summary>
         /// <param name="projectDescriptor">The descriptor of the project. </param>
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
-        /// <returns>A task with no result. </returns>
-        Task WithProjectAsync(ProjectDescriptor projectDescriptor, CancellationToken cancellationToken);
+        /// <returns>A task whose result is the <see cref="IAsset"/> with the specified project path. </returns>
+        Task<IAsset> WithProjectAsync(ProjectDescriptor projectDescriptor, CancellationToken cancellationToken) => throw new NotImplementedException();
 
         /// <summary>
         /// Switches this asset to the specified version.
         /// </summary>
         /// <param name="assetVersion">The version of the asset to fetch. </param>
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
-        /// <returns>A task with no result. </returns>
-        Task WithVersionAsync(AssetVersion assetVersion, CancellationToken cancellationToken);
+        /// <returns>A task whose result is the <see cref="IAsset"/> with the specified version. </returns>
+        Task<IAsset> WithVersionAsync(AssetVersion assetVersion, CancellationToken cancellationToken) => throw new NotImplementedException();
+
+        /// <summary>
+        /// Switches this asset to the specified version.
+        /// </summary>
+        /// <param name="label">The label associated to the version of the asset. </param>
+        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
+        /// <returns>A task whose result is the <see cref="IAsset"/> with the version attributed to the specified label. </returns>
+        Task<IAsset> WithVersionAsync(string label, CancellationToken cancellationToken) => throw new NotImplementedException();
 
         /// <summary>
         /// Fetches the latest changes.
@@ -143,6 +156,8 @@ namespace Unity.Cloud.Assets
         /// <param name="assetUpdate">The object containing information to update this version of the asset. </param>
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task with no result. </returns>
+        /// <exception cref="InvalidArgumentException">If the asset is frozen, because it cannot be modified. </exception>
+        /// <remarks>Can only be called on a version that is not frozen. </remarks>
         Task UpdateAsync(IAssetUpdate assetUpdate, CancellationToken cancellationToken);
 
         /// <summary>
@@ -158,6 +173,8 @@ namespace Unity.Cloud.Assets
         /// </summary>
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task whose result is a new version of the asset. </returns>
+        /// <exception cref="InvalidArgumentException">If the asset is unfrozen, because it cannot be used as a parent for a new version. </exception>
+        /// <remarks>Can only be called if the version is frozen; this version will be the parent of the new version. </remarks>
         Task<IAsset> CreateUnfrozenVersionAsync(CancellationToken cancellationToken) => throw new NotImplementedException();
 
         /// <summary>
@@ -166,13 +183,15 @@ namespace Unity.Cloud.Assets
         /// <param name="changeLog">The change log for the new version. </param>
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task whose result is a frozen sequence number. </returns>
+        /// <exception cref="InvalidArgumentException">If the asset is frozen, because it cannot be re-submitted. </exception>
+        /// <remarks>Can only be called on a version that is not frozen. </remarks>
         Task<int> FreezeAsync(string changeLog, CancellationToken cancellationToken) => throw new NotImplementedException();
 
         /// <summary>
-        /// Returns an object that can be used to query asset versions.
+        /// Returns an object that can be used to query the asset's versions.
         /// </summary>
-        /// <returns>A <see cref="AssetVersionQueryBuilder"/>. </returns>
-        AssetVersionQueryBuilder QueryAssetVersions() => throw new NotImplementedException();
+        /// <returns>A <see cref="VersionQueryBuilder"/>. </returns>
+        VersionQueryBuilder QueryVersions() => throw new NotImplementedException();
 
         /// <summary>
         /// Returns an enumeration of the asset's linked <see cref="IAssetProject"/>.
@@ -187,9 +206,7 @@ namespace Unity.Cloud.Assets
         /// <param name="projectDescriptor">The descriptor of the project to link to. </param>
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task with no result. </returns>
-        /// <example>
-        /// <code source="../../Samples/Documentation/Scripting/AssetManagementExample.cs" region="LinkAssetToProject" title="Link Asset to Project"/>
-        /// </example>
+        [Obsolete("Use IAssetProject.LinkAssetsAsync instead.")]
         Task LinkToProjectAsync(ProjectDescriptor projectDescriptor, CancellationToken cancellationToken);
 
         /// <summary>
@@ -198,9 +215,7 @@ namespace Unity.Cloud.Assets
         /// <param name="projectDescriptor">The descriptor of the project to unlink from. </param>
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task with no result. </returns>
-        /// <example>
-        /// <code source="../../Samples/Documentation/Scripting/AssetManagementExample.cs" region="UnlinkAssetFromProject" title="Unlink Asset from Project"/>
-        /// </example>
+        [Obsolete("Use IAssetProject.UnlinkAssetsAsync instead.")]
         Task UnlinkFromProjectAsync(ProjectDescriptor projectDescriptor, CancellationToken cancellationToken);
 
         /// <summary>
@@ -231,6 +246,8 @@ namespace Unity.Cloud.Assets
         /// <param name="datasetCreation">The object containing the necessary information to create a dataset. </param>
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task whose result is the newly created dataset. </returns>
+        /// <exception cref="InvalidArgumentException">If the asset is frozen, because it cannot be modified. </exception>
+        /// <remarks>Can only be called on a version that is not frozen. </remarks>
         Task<IDataset> CreateDatasetAsync(DatasetCreation datasetCreation, CancellationToken cancellationToken);
 
         /// <summary>

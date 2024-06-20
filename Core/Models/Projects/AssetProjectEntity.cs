@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Unity.Cloud.Common;
@@ -25,6 +26,30 @@ namespace Unity.Cloud.Assets
         {
             m_DataSource = dataSource;
             Descriptor = projectDescriptor;
+        }
+
+        /// <inheritdoc />
+        public async Task<IAsset> GetAssetAsync(AssetId assetId, CancellationToken cancellationToken)
+        {
+            var filter = new AssetSearchFilter();
+            filter.Include().Id.WithValue(assetId.ToString());
+
+            var query = QueryAssets()
+                .SelectWhereMatchesFilter(filter)
+                .LimitTo(new Range(0, 1))
+                .ExecuteAsync(cancellationToken);
+
+            IAsset asset = null;
+
+            var enumerator = query.GetAsyncEnumerator(cancellationToken);
+            if (await enumerator.MoveNextAsync())
+            {
+                asset = enumerator.Current;
+            }
+
+            await enumerator.DisposeAsync();
+
+            return asset;
         }
 
         /// <inheritdoc />
@@ -61,9 +86,15 @@ namespace Unity.Cloud.Assets
         }
 
         /// <inheritdoc />
-        public AssetVersionQueryBuilder QueryAssetVersions(AssetId assetId)
+        public Task LinkAssetsAsync(ProjectDescriptor sourceProjectDescriptor, IEnumerable<AssetId> assetIds, CancellationToken cancellationToken)
         {
-            return new AssetVersionQueryBuilder(m_DataSource, Descriptor, assetId);
+            return m_DataSource.LinkAssetsToProjectAsync(sourceProjectDescriptor, Descriptor, assetIds, cancellationToken);
+        }
+
+        /// <inheritdoc />
+        public Task UnlinkAssetsAsync(IEnumerable<AssetId> assetIds, CancellationToken cancellationToken)
+        {
+            return m_DataSource.UnlinkAssetsFromProjectAsync(Descriptor, assetIds, cancellationToken);
         }
 
         /// <inheritdoc />

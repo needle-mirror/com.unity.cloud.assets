@@ -10,6 +10,7 @@
                 <ui:TextField picking-mode="Ignore" label="Display Name" value="filler text" />
             </ui:VisualElement>
             <ui:Label tabindex="-1" text="Label" parse-escape-sequences="true" display-tooltip-when-elided="true" name="Key" class="unity-base-field__label" style="-unity-font-style: italic;" />
+            <ui:Label tabindex="-1" text="Label" parse-escape-sequences="true" display-tooltip-when-elided="true" name="Origin" class="unity-base-field__label" />
             <ui:Label tabindex="-1" text="Label" parse-escape-sequences="true" display-tooltip-when-elided="true" name="AuthoringInfo-Created" class="unity-base-field__label" />
             <ui:Label tabindex="-1" text="Label" parse-escape-sequences="true" display-tooltip-when-elided="true" name="AuthoringInfo-Updated" class="unity-base-field__label" />
             <ui:Label tabindex="-1" text="Label" parse-escape-sequences="true" display-tooltip-when-elided="true" name="Type" class="unity-base-field__label" />

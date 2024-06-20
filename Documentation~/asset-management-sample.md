@@ -17,7 +17,7 @@ To use the Asset Management sample, you need the following:
 * Installed [Identity](https://docs.unity3d.com/Packages/com.unity.cloud.identity@latest) package
 * A valid [Unity ID Account](https://id.unity.com/)
 * Access to your [Unity Gaming Services account](https://dashboard.unity3d.com/)
-* An access to the [Asset Manager service](https://docs.unity3d.com/docs-asset-manager/manual/get-started.html)
+* Access to the [Asset Manager service](https://docs.unity3d.com/docs-asset-manager/manual/get-started.html)
 * A Unity Project with the Asset Manager service enabled, see: [Asset Manager documentation](https://docs.unity3d.com/docs-asset-manager/manual/modify-project.html)
 
 >[!NOTE]
@@ -70,7 +70,7 @@ To select a keyword, select it. The search bar will add it as a parameter and th
 
 ### Update/edit an asset
 
-To update an asset in this sample, follow these steps:
+An asset can only be updated if it is not frozen and its status is 'Draft'. To update an asset in this sample, follow these steps:
 
 1. Select a Project.
 2. On the right side of the screen, select **...** button of the asset you want to update and select **Open**.
@@ -81,7 +81,7 @@ To update an asset in this sample, follow these steps:
    ![Screenshot of the asset edit panel](images/asset-edit-panel.png)
 4. To add a new dataset to the asset, select the **Create dataset** button.
    </br>
-   ![Screenshot of the add dataset button](images/asset-edit-create-dataset-button.png)
+   ![Screenshot of the add dataset button](images/asset-details-create-dataset.png)
 5. A new dataset with an automatic name is added to the asset.
     </br>
    ![Screenshot of the new created dataset in list](images/asset-edit-new-created-dataset.png)
@@ -98,21 +98,42 @@ To update an asset in this sample, follow these steps:
 10. To remove a file from the dataset, select the **Trash icon** button.
     </br>
     ![Screenshot of the remove button](images/trash-icon-button.png)
-11. To go back to the detail of the asset, select the **Back** button on the top left corner.
-12. To go back to the list of assets of the Project, select the **Back** button on the top left corner.
+11. To go back to the detail of the asset, select the **Back** button in the top left corner.
+12. To go back to the list of assets of the Project, select the **Back** button in the top left corner.
 
 >[!NOTE]
->When an asset is not published, you can do the two following actions :
-> 1. You can save the asset by selecting the **Save asset** button.
+>When an asset is not frozen, you can do the following actions :
+> 1. You can save the asset by selecting the **Save changes** button.
 > 
-> ![Screenshot of the save asset button](images/save-asset-button.png)
+> 2. You can publish it by selecting the **Publish** button.
 > 
-> 2. You can publish it by checking the Publish checkbox and selecting the **Publish asset** button.
+> 3. You can freeze the asset by selecting the **Save version** button.
 >
->  ![Screenshot of the publish asset button](images/publish-asset-button.png)
+> ![Screenshot of the save asset button](images/asset-details-buttons-unfrozen.png)
 >  
+> 4. **Sources** dataset is the default dataset of an asset used to list the asset data files.
+> 5. **Previews** dataset is default dataset of an asset to list the asset preview files.
+>
+> 
+>When an asset is frozen, you can do the following actions :
+> 1. You can publish it by selecting the **Publish** button.
+>
+> 2. You can create a new version based off the current version by selecting the **Continue editing** button.
+>
+> ![Screenshot of the save asset button](images/asset-details-buttons-frozen.png)
+>
 > 3. **Sources** dataset is the default dataset of an asset used to list the asset data files.
 > 4. **Previews** dataset is default dataset of an asset to list the asset preview files.
+
+### Browse the asset's version history
+
+By default, the details panel displays the list of datasets for the default version of the asset. To browse the asset's version history in this sample, follow these steps once an asset is selected:
+
+1. To browse the asset's version history, select the **History** tab.
+   </br>
+   ![Screenshot of the history button](images/asset-details-tabs.png)
+2. In the asset's version history, you can select a version to view its details.
+3. To go back to the asset's datasets, select the **Datasets** tab.
 
 ## Main components
 

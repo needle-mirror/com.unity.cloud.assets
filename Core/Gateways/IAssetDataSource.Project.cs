@@ -33,5 +33,24 @@ namespace Unity.Cloud.Assets
         /// <param name="cancellationToken">A token that can be used to cancel the request.</param>
         /// <returns>A task whose result is a newly created project. </returns>
         Task<IProjectData> CreateProjectAsync(OrganizationId organizationId, IProjectBaseData projectCreation, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Adds assets to the project.
+        /// </summary>
+        /// <param name="sourceProject">The object containing the necessary information to identify the source project.</param>
+        /// <param name="destinationProject">The object containing the necessary information to identify the destination project.</param>
+        /// <param name="assetIds">The ids of the assets to link.</param>
+        /// <param name="cancellationToken">A token that can be used to cancel the request.</param>
+        /// <returns>A task with no result. </returns>
+        Task LinkAssetsToProjectAsync(ProjectDescriptor sourceProject, ProjectDescriptor destinationProject, IEnumerable<AssetId> assetIds, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Removes the assets from the project.
+        /// </summary>
+        /// <param name="sourceProject">The object containing the necessary information to identify the source project.</param>
+        /// <param name="assetIds">The ids of the assets to unlink.</param>
+        /// <param name="cancellationToken">A token that can be used to cancel the request.</param>
+        /// <returns>A task with no result. </returns>
+        Task UnlinkAssetsFromProjectAsync(ProjectDescriptor sourceProject, IEnumerable<AssetId> assetIds, CancellationToken cancellationToken);
     }
 }

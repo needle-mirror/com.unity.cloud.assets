@@ -15,10 +15,15 @@ namespace Unity.Cloud.Assets
         /// <param name="assetId">The id of the asset the file will linked to.</param>
         /// <param name="assetVersion">The version of the asset the file will linked to.</param>
         /// <param name="filePath">The path to the file for which the upload will be finalized.</param>
-        public FinalizeFileUploadRequest(ProjectId projectId, AssetId assetId, AssetVersion assetVersion, string filePath)
+        /// <param name="disableAutomaticTransformations">If true, automatic transformations, such as preview generation and metadata extraction, will be disabled.</param>
+        public FinalizeFileUploadRequest(ProjectId projectId, AssetId assetId, AssetVersion assetVersion, string filePath, bool disableAutomaticTransformations)
             : base(projectId, assetId, assetVersion, filePath)
         {
             m_RequestUrl += $"/finalize";
+            if (disableAutomaticTransformations)
+            {
+                m_RequestUrl += "?enableCheckForPreviewAndMetadataGeneration=false";
+            }
         }
     }
 }

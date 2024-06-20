@@ -69,6 +69,16 @@ namespace Unity.Cloud.Assets
         DateTime StartedAt { get; }
 
         /// <summary>
+        /// The user ID of the user who started the transformation
+        /// </summary>
+        UserId UserId => throw new NotImplementedException();
+
+        /// <summary>
+        /// The job ID of the transformation
+        /// </summary>
+        string JobId { get; }
+
+        /// <summary>
         /// Refreshes the transformation properties.
         /// </summary>
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>

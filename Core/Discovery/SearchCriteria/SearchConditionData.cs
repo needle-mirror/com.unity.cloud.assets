@@ -19,23 +19,65 @@ namespace Unity.Cloud.Assets
             Type = type;
         }
 
-        public void Clean()
+        public void Validate()
         {
             Conditions.RemoveAll(x => x.IsEmpty());
+
+            if (Conditions.Count == 1)
+            {
+                AddImplicitRangeCondition(Conditions[0].Range);
+            }
         }
 
         public void AddCondition(SearchConditionValue conditionValue)
         {
             if (conditionValue == null) return;
 
-            var existingCondition = Conditions.FirstOrDefault(x => x.Type == conditionValue.Type);
-            if (existingCondition != null)
+            var index = Conditions.FindIndex(x => IsConditionOverlapping(x, conditionValue));
+            if (index >= 0)
             {
-                existingCondition.Value = conditionValue.Value;
+                Conditions[index] = conditionValue;
             }
             else
             {
                 Conditions.Add(conditionValue);
+            }
+        }
+
+        static bool IsConditionOverlapping(SearchConditionValue existingValue, SearchConditionValue newValue)
+        {
+            if (existingValue.Range == SearchConditionRange.GreaterThanOrEqual || existingValue.Range == SearchConditionRange.GreaterThan)
+            {
+                return newValue.Range == SearchConditionRange.GreaterThanOrEqual || newValue.Range == SearchConditionRange.GreaterThan;
+            }
+
+            if (existingValue.Range == SearchConditionRange.LessThanOrEqual || existingValue.Range == SearchConditionRange.LessThan)
+            {
+                return newValue.Range == SearchConditionRange.LessThanOrEqual || newValue.Range == SearchConditionRange.LessThan;
+            }
+
+            return false;
+        }
+
+        void AddImplicitRangeCondition(string conditionRange)
+        {
+            if (conditionRange == SearchConditionRange.GreaterThanOrEqual || conditionRange == SearchConditionRange.GreaterThan)
+            {
+                switch (Type)
+                {
+                    case "date-range":
+                        Conditions.Add(new SearchConditionValue(SearchConditionRange.LessThanOrEqual, DateTime.MaxValue));
+                        break;
+                }
+            }
+            else if (conditionRange == SearchConditionRange.LessThanOrEqual || conditionRange == SearchConditionRange.LessThan)
+            {
+                switch (Type)
+                {
+                    case "date-range":
+                        Conditions.Add(new SearchConditionValue(SearchConditionRange.GreaterThanOrEqual, DateTime.MinValue));
+                        break;
+                }
             }
         }
     }
@@ -47,19 +89,19 @@ namespace Unity.Cloud.Assets
         internal string ValueString => ValueToString();
 
         [DataMember(Name = "conditionType")]
-        public string Type { get; private set; }
+        public string Range { get; private set; }
 
-        public object Value { get; set; }
+        object Value { get; }
 
         public SearchConditionValue(SearchConditionRange conditionRange, object value)
         {
-            Type = conditionRange.ToString();
+            Range = conditionRange.ToString();
             Value = value;
         }
 
         internal bool IsEmpty()
         {
-            return string.IsNullOrEmpty(Type) || string.IsNullOrEmpty(ValueString);
+            return string.IsNullOrEmpty(Range) || string.IsNullOrEmpty(ValueString);
         }
 
         string ValueToString()

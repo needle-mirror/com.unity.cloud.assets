@@ -13,7 +13,7 @@ namespace Unity.Cloud.Assets
         }
 
         internal DateTimeMetadata(MetadataValueType valueType, object value)
-            : base(valueType, value)
+            : base(valueType)
         {
             Value = value as DateTime? ?? DateTime.Parse(value?.ToString() ?? DateTime.MinValue.ToString());
         }

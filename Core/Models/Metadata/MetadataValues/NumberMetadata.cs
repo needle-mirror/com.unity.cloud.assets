@@ -13,7 +13,7 @@ namespace Unity.Cloud.Assets
         }
 
         internal NumberMetadata(MetadataValueType valueType, object value)
-            : base(valueType, value)
+            : base(valueType)
         {
             Value = value as double? ?? double.Parse(value?.ToString() ?? "0");
         }

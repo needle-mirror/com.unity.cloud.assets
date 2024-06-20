@@ -11,7 +11,7 @@ namespace Unity.Cloud.Assets
         }
 
         internal StringMetadata(MetadataValueType valueType, object value)
-            : base(valueType, value)
+            : base(valueType)
         {
             Value = value?.ToString() ?? string.Empty;
         }

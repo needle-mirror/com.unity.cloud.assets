@@ -23,6 +23,31 @@ namespace Unity.Cloud.Assets
         }
 
         /// <summary>
+        /// Links the assets to the project.
+        /// </summary>
+        /// <param name="assetProject">The target project. </param>
+        /// <param name="sourceProjectDescriptor">The id of the project that is common to the assets. </param>
+        /// <param name="assets">The assets to link. </param>
+        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
+        /// <returns>A task with no result. </returns>
+        public static Task LinkAssetsAsync(this IAssetProject assetProject, ProjectDescriptor sourceProjectDescriptor, IEnumerable<IAsset> assets, CancellationToken cancellationToken)
+        {
+            return assetProject.LinkAssetsAsync(sourceProjectDescriptor, assets.Select(AssetExtensions.SelectId), cancellationToken);
+        }
+
+        /// <summary>
+        /// Unlinks the assets from the project.
+        /// </summary>
+        /// <param name="assetProject">The target project. </param>
+        /// <param name="assets">The assets to unlink from the project. </param>
+        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
+        /// <returns>A task with no result. </returns>
+        public static Task UnlinkAssetsAsync(this IAssetProject assetProject, IEnumerable<IAsset> assets, CancellationToken cancellationToken)
+        {
+            return assetProject.UnlinkAssetsAsync(assets.Select(AssetExtensions.SelectId), cancellationToken);
+        }
+
+        /// <summary>
         /// Returns the total count of assets in the specified projects based on the provided criteria.
         /// </summary>
         /// <param name="assetProject">The <see cref="IAssetProject"/>. </param>

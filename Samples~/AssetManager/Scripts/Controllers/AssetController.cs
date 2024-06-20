@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -56,6 +55,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             addButton.RegisterCallback<ClickEvent>(_ => CreateAsset?.Invoke());
 
             m_AssetListUi.Initialize(AssetListPanel, m_AssetListItemTemplate);
+            m_AssetListUi.RemoveAsset += OnRemoveAsset;
 
             ProjectSelected += OnProjectSelected;
 
@@ -100,15 +100,13 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             // Handle 'All' selection
             if (IsAllProjectSelected) return;
 
-            m_SearchBarUi.DisplaySearchBar(SelectedProject);
-
             CancelNewList();
             m_NewListCancellationTokenSource = new CancellationTokenSource();
 
             var newListToken = m_NewListCancellationTokenSource.Token;
 
             m_ProjectAssetsList.Clear();
-            RefreshAssetList(m_ProjectAssetsList);
+            m_SearchBarUi.DisplaySearchBar(SelectedProject);
 
             if (SelectedProject == null) return;
 
@@ -187,6 +185,11 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
         {
             m_AssetListUi.ClearAssetList();
             m_AssetListUi.PopulateAssetsList(assetsList);
+        }
+
+        void OnRemoveAsset(IAsset asset)
+        {
+            _ = SelectedProject?.UnlinkAssetsAsync(new[] { asset }, CancellationToken.None);
         }
 
         void CancelNewList()

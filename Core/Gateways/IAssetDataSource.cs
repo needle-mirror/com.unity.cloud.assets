@@ -109,10 +109,9 @@ namespace Unity.Cloud.Assets
         /// Removes the asset link from the project.
         /// </summary>
         /// <param name="assetDescriptor">The object containing the necessary information to identify the asset.</param>
-        /// <param name="destinationProject">The object containing the necessary information to identify the destination project from which the asset is unlinked.</param>
         /// <param name="cancellationToken">A token that can be used to cancel the request.</param>
         /// <returns>A task with no result. </returns>
-        Task UnlinkAssetFromProjectAsync(AssetDescriptor assetDescriptor, ProjectDescriptor destinationProject, CancellationToken cancellationToken);
+        Task UnlinkAssetFromProjectAsync(AssetDescriptor assetDescriptor, CancellationToken cancellationToken);
 
         /// <summary>
         /// Checks whether the project is an asset source project.

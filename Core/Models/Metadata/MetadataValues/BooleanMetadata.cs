@@ -11,7 +11,7 @@ namespace Unity.Cloud.Assets
         }
 
         internal BooleanMetadata(MetadataValueType valueType, object value)
-            : base(valueType, value)
+            : base(valueType)
         {
             Value = value as bool? ?? bool.Parse(value?.ToString() ?? false.ToString());
         }

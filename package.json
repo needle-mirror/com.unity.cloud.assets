@@ -1,6 +1,6 @@
 {
   "name": "com.unity.cloud.assets",
-  "version": "1.2.0-exp.3",
+  "version": "1.2.0",
   "displayName": "Unity Cloud Assets",
   "description": "Unity Cloud Assets makes it easy to discover, create, update, delete, and manage Unity assets through the Assets service interface.",
   "unity": "2022.3",
@@ -8,19 +8,19 @@
     "com.unity.cloud.common": "1.1.0"
   },
   "relatedPackages": {
-    "com.unity.cloud.assets.tests": "1.2.0-exp.3"
+    "com.unity.cloud.assets.tests": "1.2.0"
   },
   "_upm": {
-    "changelog": "### Added\n- Added `ITransformation.TerminateAsync` to cancel a transformation.\n- Added `IAsset.WithProjectAsync` to change the project path of the asset.\n- Added `IAsset.WithVersionAsync` to switch to another version of the asset.\n- `IAsset.WithLatestVersionAsync` and `IAssetProject.GetAssetWithLatestVersionAsync` to get the latest version of an asset.\n\n### Changed\n- Removed internal caching of files and datasets in `IAsset`.\n- [Experimental][Breaking] Renames all instances of `VersionLabel` to `Label`.\n- [Experimental][Breaking] Renames `IAsset.VersionNumber` and `IAsset.ParentVersionNumber` to `IAsset.FrozenSequenceNumber` and `IAsset.ParentFrozenSequenceNumber` respectively.\n\n### Deprecated\n- Deprecated `IAsset.GetFileAsync` and `IAsset.ListFilesAsync`; use `IDataset.GetFileAsync` and `IDataset.ListFilesAsync` instead.\n- Deprecated `IAsset.WithProject`; use `IAsset.WithProjectAsync` instead."
+    "changelog": "### Added\n- Added overloads to `IAsset.WithVersionAsync` to get the version of the asset from a sequence number or a label.\n- Added a readonly `SystemMetadata` property to `IAsset`, `IDataset`, and `IFile` to expose system metadata.\n- `IFieldDefinition.FieldOrigin` property to expose the originator of a field definition.\n- `IAssetProject.LinkAssetsAsync` and `IAssetProject.UnlinkAssetsAsync` to link and unlink assets to a project.\n- Added overload `IAssetProject.GetAssetAsync` without a version to get the default version of an asset.\n- Added versioning details to Asset Discovery and Management samples.\n- Added `UserId` and `JobId` properties in `ITransformation`.\n- Added `IFileCreation.DisableAutomaticTransformations` property to give the option to skip automatic transformations triggered by a file upload.\n- Added `IReadOnlyMetadataContainer` to query system metadata.\n\n### Changed\n- [Experimental][Breaking] Renamed `AssetVersionQueryBuilder` to `VersionQueryBuilder`.\n- [Experimental][Breaking] Renamed `IAsset.QueryAssetVersion` to `IAsset.QueryVersions`.\n- [Experimental][Breaking] Changed `IAsset.WithProjectAsync` to return another instance of the asset at a different project path.\n- [Experimental][Breaking] Changed `IAsset.WithVersionAsync` to return another instance of the asset with the specified version.\n- Improved test coverage.\n\n### Fixed\n- Sanitize file paths on file creation.\n- Fixed search criteria for date ranges.\n- Fixed dropped calls when rate limiting.\n\n### Removed\n- [Experimental][Breaking] Removed `IAssetProject.QueryAssetVersions`.\n\n### Deprecated\n- Deprecated `IAsset.LinkToProjectAsync`; use `IAssetProject.LinkAssetsAsync` instead.\n- Deprecated `IAsset.UnlinkFromProjectAsync`; use `IAssetProject.UnlinkAssetsAsync` instead."
   },
   "upmCi": {
-    "footprint": "d3473f315c9c593a3dffa375e2f89e085cecfed1"
+    "footprint": "9a188b6bccbbd3f0186604ef59665cdb79be4237"
   },
   "documentationUrl": "https://docs.unity3d.com/Packages/com.unity.cloud.assets@1.2/manual/index.html",
   "repository": {
     "url": "https://github.cds.internal.unity3d.com/unity/digital-twins-sdk.git",
     "type": "git",
-    "revision": "c01fbff181aa2e5137a9e06a31cefea42de383b1"
+    "revision": "08782c556534d858742f7f8e6bfc2963f963cfec"
   },
   "samples": [
     {

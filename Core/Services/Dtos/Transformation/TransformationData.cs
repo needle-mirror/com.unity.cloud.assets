@@ -9,7 +9,7 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc/>
         public TransformationId Id { get; set; }
 
-        public string UserId { get; set; }
+        public UserId UserId { get; set; }
 
         /// <inheritdoc/>
         public AssetId AssetId { get; set; }
@@ -49,5 +49,8 @@ namespace Unity.Cloud.Assets
 
         /// <inheritdoc/>
         public DateTime StartedAt { get; set; }
+
+        /// <inheritdoc/>
+        public string JobId { get; set; }
     }
 }

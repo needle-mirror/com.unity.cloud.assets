@@ -9,16 +9,16 @@
             <ui:Button text="Create asset" display-tooltip-when-elided="true" name="CreateAssetButton" class="sample-button button-blue" />
         </ui:VisualElement>
         <ui:VisualElement name="DatasetPanels" style="flex-direction: row; width: 100%; flex-grow: 1;">
-            <ui:VisualElement name="LeftPanel" style="flex-direction: column; flex-grow: 1;">
+            <ui:VisualElement name="LeftPanel" style="width: 35%;">
                 <ui:VisualElement name="DatasetFileListContainer" style="height: 100%; width: 100%; display: flex; flex-grow: 1;">
                     <ui:ScrollView name="DatasetFileScrollView" class="AssetFile" style="flex-grow: 1;" />
                     <ui:VisualElement name="FileUpload" class="AssetFile" style="align-items: center; justify-content: center; background-color: rgb(28, 28, 28); padding-top: 12px; padding-right: 12px; padding-bottom: 12px; padding-left: 12px;">
-                        <ui:VisualElement name="FileUploadIcon" style="background-image: url(&apos;../Sprites/upload.png?fileID=21300000&amp;guid=f44e3bc83b7624066b709ce2b697218e&amp;type=3#upload&apos;); width: 30px; height: 30px; -unity-background-image-tint-color: rgb(128, 128, 128);" />
+                        <ui:VisualElement name="FileUploadIcon" style="background-image: url(&apos;project://database/Packages/com.unity.cloud.assets/Samples/AssetManager/UI/Sprites/upload.png?fileID=21300000&amp;guid=f44e3bc83b7624066b709ce2b697218e&amp;type=3#upload&apos;); width: 30px; height: 30px; -unity-background-image-tint-color: rgb(128, 128, 128);" />
                         <ui:Button text="Browse" display-tooltip-when-elided="true" name="FileUploadButton" class="sample-button" style="color: rgb(210, 210, 210);" />
                     </ui:VisualElement>
                 </ui:VisualElement>
             </ui:VisualElement>
-            <ui:VisualElement name="RightPanel" style="width: 60%;">
+            <ui:VisualElement name="RightPanel" style="flex-grow: 1;">
                 <ui:TextField picking-mode="Ignore" value="Dataset Name" name="DatasetNameField" style="-unity-font-style: bold; font-size: 20px;" />
                 <ui:Instance template="StatusTemplate" />
                 <ui:VisualElement name="Content" style="overflow: hidden; align-self: flex-end; width: 100%; padding-left: 4px;">

@@ -71,7 +71,18 @@ namespace Unity.Cloud.Assets
             };
 
             m_SearchFilter ??= new FieldDefinitionSearchFilter();
-            var enumerator = m_AssetDataSource.ListFieldDefinitionsAsync(m_OrganizationId, pagination, m_SearchFilter.Deleted.GetValue(), cancellationToken);
+
+            var queryParameters = new Dictionary<string, string>()
+            {
+                { "IncludeDeleted", m_SearchFilter.Deleted.GetValue().ToString() }
+            };
+            var fieldOrigin = m_SearchFilter.FieldOrigin.GetValue();
+            if (fieldOrigin.HasValue)
+            {
+                queryParameters.Add("FieldOrigin", fieldOrigin.ToString());
+            }
+
+            var enumerator = m_AssetDataSource.ListFieldDefinitionsAsync(m_OrganizationId, pagination, queryParameters, cancellationToken);
             await foreach(var fieldDefinitionData in enumerator)
             {
                 yield return fieldDefinitionData.From(m_AssetDataSource, m_OrganizationId);

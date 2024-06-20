@@ -22,6 +22,8 @@ namespace Unity.Cloud.Assets
                 dataset.AuthoringInfo = new AuthoringInfo(datasetData.CreatedBy, datasetData.Created, datasetData.UpdatedBy, datasetData.Updated);
             if (includeFields.HasFlag(DatasetFields.metadata))
                 dataset.MetadataEntity.Properties = datasetData.Metadata?.From(assetDataSource, dataset.Descriptor.OrganizationId);
+            if (includeFields.HasFlag(DatasetFields.systemMetadata))
+                dataset.SystemMetadataEntity.Properties = datasetData.SystemMetadata?.From();
             if (includeFields.HasFlag(DatasetFields.filesOrder))
                 dataset.FileOrder = datasetData.FileOrder;
         }

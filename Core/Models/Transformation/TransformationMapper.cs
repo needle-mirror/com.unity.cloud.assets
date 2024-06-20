@@ -16,6 +16,8 @@ namespace Unity.Cloud.Assets
             transformation.CreatedOn = data.CreatedOn;
             transformation.UpdatedAt = data.UpdatedAt;
             transformation.StartedAt = data.StartedAt;
+            transformation.UserId = data.UserId;
+            transformation.JobId = data.JobId;
         }
 
         static ITransformation From(this ITransformationData data, IAssetDataSource assetDataSource, TransformationDescriptor transformationDescriptor)

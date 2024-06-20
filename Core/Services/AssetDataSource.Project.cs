@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -95,6 +96,36 @@ namespace Unity.Cloud.Assets
                 Name = projectCreation.Name,
                 Metadata = projectCreation.Metadata
             };
+        }
+
+        /// <inheritdoc />
+        public Task LinkAssetsToProjectAsync(ProjectDescriptor sourceProject, ProjectDescriptor destinationProject, IEnumerable<AssetId> assetIds, CancellationToken cancellationToken)
+        {
+            return SplitRequest(assetIds, ids => new LinkAssetToProjectRequest(sourceProject.ProjectId, destinationProject.ProjectId, ids), cancellationToken);
+        }
+
+        /// <inheritdoc />
+        public Task UnlinkAssetsFromProjectAsync(ProjectDescriptor sourceProject, IEnumerable<AssetId> assetIds, CancellationToken cancellationToken)
+        {
+            return SplitRequest(assetIds, ids => new UnlinkAssetFromProjectRequest(sourceProject.ProjectId, ids), cancellationToken);
+        }
+
+        Task SplitRequest(IEnumerable<AssetId> assetIds, Func<IEnumerable<AssetId>, ApiRequest> buildRequest, CancellationToken cancellationToken)
+        {
+            const int maxPageSize = 99;
+
+            var assetIdArray = assetIds.ToArray();
+
+            var tasks = new List<Task>();
+            for (var i = 0; i * maxPageSize < assetIdArray.Length; ++i)
+            {
+                var request = buildRequest(assetIdArray.Skip(i * maxPageSize).Take(maxPageSize));
+                var task = RateLimitedServiceClient(request, HttpMethod.Post).PostAsync(GetPublicRequestUri(request), request.ConstructBody(),
+                    ServiceHttpClientOptions.Default(), cancellationToken);
+                tasks.Add(task);
+            }
+
+            return Task.WhenAll(tasks);
         }
     }
 }

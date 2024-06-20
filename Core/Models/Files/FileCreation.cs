@@ -17,6 +17,9 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc/>
         public Dictionary<string, MetadataValue> Metadata { get; set; }
 
+        /// <inheritdoc/>
+        public bool DisableAutomaticTransformations { get; set; }
+
         [Obsolete("Use FileCreation(string path) instead.")]
         public FileCreation() { }
 

@@ -11,6 +11,7 @@
 * Use cases
     * [Aggregate assets](use-case-aggregate-assets.md)
     * [Publish and/or withdraw assets](use-case-publish-withdraw-assets.md)
+    * [Manage asset versions](use-case-manage-versions.md)
     * [Create datasets](use-case-create-datasets.md)
     * [Update datasets](use-case-update-datasets.md)
     * [Create and upload files to a dataset](use-case-create-files.md)
