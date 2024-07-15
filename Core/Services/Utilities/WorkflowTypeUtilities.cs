@@ -12,6 +12,8 @@ namespace Unity.Cloud.Assets
                 WorkflowType.GLB_Preview => "glb-preview",
                 WorkflowType.Data_Streaming => "3d-data-streaming",
                 WorkflowType.Transcode_Video => "video-transcoding",
+                WorkflowType.Metadata_Extraction => "metadata-extraction",
+                WorkflowType.Generic_Polygon_Target => "generic-polygon-target",
                 _ => string.Empty
             };
         }
@@ -24,6 +26,8 @@ namespace Unity.Cloud.Assets
                 "glb-preview" => WorkflowType.GLB_Preview,
                 "3d-data-streaming" => WorkflowType.Data_Streaming,
                 "video-transcoding" => WorkflowType.Transcode_Video,
+                "metadata-extraction" => WorkflowType.Metadata_Extraction,
+                "generic-polygon-target" => WorkflowType.Generic_Polygon_Target,
                 _ => default
             };
         }

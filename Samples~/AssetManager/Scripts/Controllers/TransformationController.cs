@@ -45,6 +45,12 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
             void OnCancel(ClickEvent _)
             {
+                if (m_Transformation.Status is TransformationStatus.Pending or TransformationStatus.Running)
+                {
+                    m_Transformation.TerminateAsync(CancellationToken.None);
+                    return;
+                }
+
                 Cancel();
 
                 m_UI.RemoveFromHierarchy();
@@ -66,6 +72,8 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
                 {
                     TransformationStatus.Pending => "Pending...",
                     TransformationStatus.Running => "Running",
+                    TransformationStatus.Terminating => "Cancelling...",
+                    TransformationStatus.Terminated => "Cancelled",
                     TransformationStatus.Succeeded => "Succeeded",
                     TransformationStatus.Failed => "Failed",
                     _ => "Unknown"
@@ -94,6 +102,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
                         {
                             case TransformationStatus.Pending:
                             case TransformationStatus.Running:
+                            case TransformationStatus.Terminating:
                                 // Do nothing
                                 break;
 

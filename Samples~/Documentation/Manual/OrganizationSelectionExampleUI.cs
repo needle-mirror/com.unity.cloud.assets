@@ -9,6 +9,8 @@ namespace Unity.Cloud.Documentation.Assets
     {
         readonly AssetManagementBehaviour m_Behaviour;
 
+        Vector2 m_OrganizationListScrollPosition;
+
         public OrganizationSelectionExampleUI(AssetManagementBehaviour behaviour)
         {
             m_Behaviour = behaviour;
@@ -19,7 +21,7 @@ namespace Unity.Cloud.Documentation.Assets
             if (m_Behaviour.IsOrganizationSelected) return;
 
             // Refresh the org list
-            if (GUILayout.Button("Refresh"))
+            if (GUILayout.Button("Refresh", GUILayout.Width(60)))
             {
                 _ = m_Behaviour.GetOrganizationsAsync();
                 return;
@@ -41,6 +43,8 @@ namespace Unity.Cloud.Documentation.Assets
             var availableOrganizations = m_Behaviour.AvailableOrganizations;
             if (availableOrganizations != null)
             {
+                m_OrganizationListScrollPosition = GUILayout.BeginScrollView(m_OrganizationListScrollPosition, GUILayout.ExpandHeight(true), GUILayout.Width(250));
+
                 for (var i = 0; i < availableOrganizations.Length; ++i)
                 {
                     if (GUILayout.Button(availableOrganizations[i].Name))
@@ -48,6 +52,8 @@ namespace Unity.Cloud.Documentation.Assets
                         m_Behaviour.SetSelectedOrganization(availableOrganizations[i]);
                     }
                 }
+
+                GUILayout.EndScrollView();
             }
             else
             {

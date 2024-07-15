@@ -47,6 +47,8 @@ namespace Unity.Cloud.Documentation.Assets
         Vector2 m_DatasetsScrollPosition;
         Dictionary<DatasetId, bool> m_Expanded = new();
 
+        int m_OverrideFileActionIndex;
+
         public void OnGUI()
         {
             if (!m_Behaviour.IsProjectSelected) return;
@@ -71,12 +73,12 @@ namespace Unity.Cloud.Documentation.Assets
 
             GUILayout.BeginVertical();
 
-            if (GUILayout.Button("Refresh Datasets", GUILayout.Width(120)))
+            if (GUILayout.Button("Refresh", GUILayout.Width(60)))
             {
                 _ = m_Behaviour.GetDatasets();
             }
 
-            GUILayout.Space(5f);
+            GUILayout.Space(5);
 
             DisplayDatasets(m_Behaviour.Datasets.ToArray());
 
@@ -91,13 +93,20 @@ namespace Unity.Cloud.Documentation.Assets
                 return;
             }
 
-            m_DatasetsScrollPosition = GUILayout.BeginScrollView(m_DatasetsScrollPosition, GUILayout.Height(Screen.height * 0.8f));
+#if UNITY_EDITOR
+            GUILayout.Label("File upload options:");
+            m_OverrideFileActionIndex = GUILayout.SelectionGrid(m_OverrideFileActionIndex, new[] {"None", "Replace", "Reupload"}, 3, GUILayout.Width(240));
+
+            GUILayout.Space(10);
+#endif
+
+            m_DatasetsScrollPosition = GUILayout.BeginScrollView(m_DatasetsScrollPosition, GUILayout.ExpandHeight(true));
 
             foreach (var dataset in datasets)
             {
                 DisplayDataset(dataset);
 
-                GUILayout.Space(10f);
+                GUILayout.Space(10);
             }
 
             GUILayout.EndScrollView();
@@ -109,19 +118,26 @@ namespace Unity.Cloud.Documentation.Assets
 
             GUILayout.Label(dataset.Name);
 
-            GUILayout.Space(5f);
+            GUILayout.Space(5);
 
 #if UNITY_EDITOR
-            if (GUILayout.Button("Upload new file", GUILayout.Width(100)))
+            if (GUILayout.Button("Upload file", GUILayout.Width(80)))
             {
                 var filePath = UnityEditor.EditorUtility.OpenFilePanel("File to upload", "Assets", string.Empty);
                 if (!string.IsNullOrEmpty(filePath))
-                    _ = m_Behaviour.UploadFile(dataset, filePath);
+                {
+                    _ = m_OverrideFileActionIndex switch
+                    {
+                        1 => m_Behaviour.ReplaceFile(dataset, filePath),
+                        2 => m_Behaviour.ReuploadFile(dataset, filePath),
+                        _ => m_Behaviour.UploadFile(dataset, filePath)
+                    };
+                }
             }
 #endif
 
             var expanded = m_Expanded.GetValueOrDefault(dataset.Descriptor.DatasetId);
-            if (GUILayout.Button(expanded ? "-" : "+", GUILayout.Width(20f)))
+            if (GUILayout.Button(expanded ? "-" : "+", GUILayout.Width(20)))
             {
                 expanded = !expanded;
                 m_Expanded[dataset.Descriptor.DatasetId] = expanded;
@@ -187,7 +203,8 @@ namespace Unity.Cloud.Documentation.Assets
         {
             GUILayout.BeginHorizontal();
 
-            GUILayout.Label($"{file.Descriptor.Path} ({file.SizeBytes} kb)");
+            var size = file.SizeBytes < 1000 ? "<1" : MathF.Round(file.SizeBytes / 1000f).ToString("F0");
+            GUILayout.Label($"{file.Descriptor.Path} ({size} KB)");
 
             if (GUILayout.Button("Link to", GUILayout.Width(60)))
             {
@@ -237,6 +254,7 @@ namespace Unity.Cloud.Documentation.Assets
                             m_Behaviour.DatasetFiles.Remove(linkedDatasetId);
                             m_Expanded.Remove(linkedDatasetId);
                         }
+
                         m_Behaviour.DatasetFiles.Remove(m_AvailableDatasets[i].Descriptor.DatasetId);
                         m_Expanded.Remove(m_AvailableDatasets[i].Descriptor.DatasetId);
 
@@ -248,7 +266,7 @@ namespace Unity.Cloud.Documentation.Assets
                 }
             }
 
-            GUILayout.Space(10f);
+            GUILayout.Space(10);
 
             if (GUILayout.Button("Close", GUILayout.Width(60)))
             {
@@ -325,11 +343,18 @@ namespace Unity.Cloud.Documentation.Assets
 
         class LogProgress : IProgress<HttpProgress>
         {
+            string m_Name;
+
+            public LogProgress(string name)
+            {
+                m_Name = name;
+            }
+
             public void Report(HttpProgress value)
             {
                 if (!value.UploadProgress.HasValue) return;
 
-                Debug.Log($"Upload progress: {value.UploadProgress * 100} %");
+                Debug.Log($"Upload progress for {m_Name}: {value.UploadProgress * 100} %");
             }
         }
 
@@ -337,25 +362,77 @@ namespace Unity.Cloud.Documentation.Assets
         {
             var fileCreation = new FileCreation(Path.GetFileName(filePath))
             {
-                Description = "Documentation example asset file creation.",
+                Description = "Documentation example file creation.",
                 Tags = new List<string> {"Texture", "Gray"}
             };
 
             try
             {
-                var progress = new LogProgress();
+                var progress = new LogProgress(filePath);
 
                 var fileStream = File.OpenRead(filePath);
                 var file = await dataset.UploadFileAsync(fileCreation, fileStream, progress, default);
 
                 _ = GetFilesAsync(dataset.Descriptor.DatasetId);
 
-                Debug.Log($"Asset file upload: {file.Descriptor.Path} added and uploaded.");
+                Debug.Log($"File upload: {file.Descriptor.Path} added and uploaded.");
             }
             catch (Exception e)
             {
                 Debug.LogError($"Failed to upload file: {fileCreation.Path}. {e}");
             }
+        }
+
+        public async Task ReplaceFile(IDataset dataset, string filePath)
+        {
+            if (DatasetFiles.TryGetValue(dataset.Descriptor.DatasetId, out var files))
+            {
+                var file = files.FirstOrDefault(f => f.Descriptor.Path == Path.GetFileName(filePath));
+                if (file != null)
+                {
+                    try
+                    {
+                        await UnlinkFile(dataset, file);
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.LogError($"Failed to remove file for replace: {file.Descriptor.Path}. {e}");
+                        return;
+                    }
+                }
+            }
+
+            await UploadFile(dataset, filePath);
+        }
+
+        public async Task ReuploadFile(IDataset dataset, string filePath)
+        {
+            if (DatasetFiles.TryGetValue(dataset.Descriptor.DatasetId, out var files))
+            {
+                var file = files.FirstOrDefault(f => f.Descriptor.Path == Path.GetFileName(filePath));
+                if (file != null)
+                {
+                    try
+                    {
+                        var logProgress = new LogProgress(filePath);
+
+                        var fileStream = File.OpenRead(filePath);
+                        await file.UploadAsync(fileStream, logProgress, default);
+
+                        _ = GetFilesAsync(dataset.Descriptor.DatasetId);
+
+                        Debug.Log($"Re-uplaoded file: {file.Descriptor.Path}.");
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.LogError($"Failed to re-upload file: {file.Descriptor.Path}. {e}");
+                    }
+
+                    return;
+                }
+            }
+
+            await UploadFile(dataset, filePath);
         }
 
         #endregion
@@ -368,10 +445,16 @@ namespace Unity.Cloud.Documentation.Assets
             {
                 await dataset.AddExistingFileAsync(file.Descriptor.Path, file.Descriptor.DatasetId, CancellationToken.None);
                 Debug.Log($"File: {file.Descriptor.Path} linked to dataset {dataset.Descriptor.DatasetId}.");
+
+                // If the dataset files are already loaded, refresh them
+                if (DatasetFiles.ContainsKey(dataset.Descriptor.DatasetId))
+                {
+                    _ = GetFilesAsync(dataset.Descriptor.DatasetId);
+                }
             }
             catch (Exception e)
             {
-                Debug.LogError($"Failed to link asset file: {file.Descriptor.Path}. {e}");
+                Debug.LogError($"Failed to link file: {file.Descriptor.Path}. {e}");
             }
         }
 
@@ -386,11 +469,15 @@ namespace Unity.Cloud.Documentation.Assets
                 await dataset.RemoveFileAsync(file.Descriptor.Path, CancellationToken.None);
                 Debug.Log($"File: {file.Descriptor.Path} unlinked from dataset {dataset.Descriptor.DatasetId}.");
 
-                _ = GetFilesAsync(dataset.Descriptor.DatasetId);
+                // If the dataset files are already loaded, refresh them
+                if (DatasetFiles.ContainsKey(dataset.Descriptor.DatasetId))
+                {
+                    _ = GetFilesAsync(dataset.Descriptor.DatasetId);
+                }
             }
             catch (Exception e)
             {
-                Debug.LogError($"Failed to unlink asset file: {file.Descriptor.Path}. {e}");
+                Debug.LogError($"Failed to unlink file: {file.Descriptor.Path}. {e}");
             }
         }
 

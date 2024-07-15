@@ -63,7 +63,7 @@ namespace Unity.Cloud.Documentation.Assets
 
             GUILayout.BeginVertical();
 
-            if (GUILayout.Button("Refresh") || m_Behaviour.Datasets == null)
+            if (GUILayout.Button("Refresh", GUILayout.Width(60)) || m_Behaviour.Datasets == null)
             {
                 _ = m_Behaviour.GetDatasets();
             }
@@ -103,7 +103,7 @@ namespace Unity.Cloud.Documentation.Assets
                     var dataset = datasets[i];
                     GUILayout.Label($"{dataset.Name}");
 
-                    if (GUILayout.Button("Select"))
+                    if (GUILayout.Button("Select", GUILayout.Width(60)))
                     {
                         m_Behaviour.SetCurrentDataset(dataset);
                         m_DatasetUpdate = new DatasetUpdate(dataset);

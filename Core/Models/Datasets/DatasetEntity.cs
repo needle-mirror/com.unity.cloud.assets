@@ -180,7 +180,22 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc />
         public async Task<ITransformation> StartTransformationAsync(ITransformationCreation transformationCreation, CancellationToken cancellationToken)
         {
-            var transformationId = await m_DataSource.StartTransformationAsync(Descriptor, transformationCreation.WorkflowType, transformationCreation.InputFilePaths, cancellationToken);
+            string workflowName;
+            switch (transformationCreation.WorkflowType)
+            {
+                case WorkflowType.Custom:
+                    if (string.IsNullOrEmpty(transformationCreation.CustomWorkflowName))
+                    {
+                        throw new InvalidArgumentException($"A workflow name must be provided when {nameof(WorkflowType.Custom)} is selected.");
+                    }
+                    workflowName = transformationCreation.CustomWorkflowName;
+                    break;
+                default:
+                    workflowName = transformationCreation.WorkflowType.ToJsonValue();
+                    break;
+            }
+
+            var transformationId = await m_DataSource.StartTransformationAsync(Descriptor, workflowName, transformationCreation.InputFilePaths, transformationCreation.GetParameters(), cancellationToken);
             var transformation = await GetTransformationAsync(transformationId, cancellationToken);
 
             return transformation;

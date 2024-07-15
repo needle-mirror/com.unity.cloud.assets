@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Unity.Cloud.Common;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -10,6 +11,32 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 {
     public class FileController
     {
+        class FileUploadProgress : IProgress<HttpProgress>
+        {
+            readonly ProgressBar m_ProgressBar;
+            string m_FileLabel;
+
+            public FileUploadProgress(ProgressBar progressBar)
+            {
+                m_ProgressBar = progressBar;
+            }
+
+            public void SetFileLabel(string fileLabel)
+            {
+                m_FileLabel = fileLabel;
+                m_ProgressBar.value = 0;
+                m_ProgressBar.title = $"Starting upload of file {m_FileLabel}...";
+            }
+
+            public void Report(HttpProgress value)
+            {
+                m_ProgressBar.value = value.UploadProgress.HasValue ? value.UploadProgress.Value * 100 : 0;
+                if (m_ProgressBar.value <= 0) return;
+
+                m_ProgressBar.title = $"Uploading file {m_FileLabel}... {m_ProgressBar.value:0}%";
+            }
+        }
+
         VisualTreeAsset m_FileListItemTemplate;
         VisualElement m_FileUpload;
 
@@ -20,6 +47,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
         readonly List<string> m_FilesToCreate = new();
         readonly List<IFile> m_FilesToDelete = new();
         Button m_FileUploadButton;
+        List<VisualElement> m_FileDeleteIcons = new();
 
         CancellationTokenSource m_GetFilesCancellationTokenSource;
 
@@ -48,6 +76,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             m_FilesToCreate.Clear();
             m_FilesToDelete.Clear();
             m_FileScrollView.Clear();
+            m_FileDeleteIcons.Clear();
         }
 
         public void Show()
@@ -63,6 +92,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
         public void SetFileUploadEnabled(bool state)
         {
             m_FileUploadButton.SetEnabled(state);
+            m_FileDeleteIcons.ForEach(button => button.SetEnabled(state));
         }
 
         public async Task ListExistingFiles(IDataset dataset, bool canUpdate)
@@ -76,6 +106,15 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             }
 
             m_GetFilesCancellationTokenSource = new CancellationTokenSource();
+
+            if (canUpdate)
+            {
+                Show();
+            }
+            else
+            {
+                Hide();
+            }
 
             await foreach (var file in dataset.ListFilesAsync(Range.All, m_GetFilesCancellationTokenSource.Token))
             {
@@ -91,11 +130,21 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             }
         }
 
-        public async Task<bool> UploadFiles(IDataset sourceDataset)
+        public async Task<bool> UploadFiles(IDataset sourceDataset, ProgressBar progressBar = null)
         {
+            FileUploadProgress progress = null;
+            if (progressBar != null)
+            {
+                progress = new FileUploadProgress(progressBar);
+            }
+
+            var fileNb = 1;
+            var fileCount = m_FilesToCreate.Count;
             for (var i = m_FilesToCreate.Count - 1; i >= 0; --i)
             {
-                var assetFile = await UploadAssetFileAsync(sourceDataset, m_FilesToCreate[i]);
+                var file = m_FilesToCreate[i];
+                progress?.SetFileLabel($"{Path.GetFileName(file)} ({fileNb++} of {fileCount})");
+                var assetFile = await UploadAssetFileAsync(sourceDataset, file, progress);
                 if (assetFile == null) return false;
                 m_FilesToCreate.RemoveAt(i);
             }
@@ -167,6 +216,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
                     m_FilesToDelete.Add(file);
                     fileItem.RemoveFromHierarchy();
                 });
+                m_FileDeleteIcons.Add(deleteButton);
             }
 
             m_FileScrollView.Add(fileItem);
@@ -231,7 +281,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             }
         }
 
-        static async Task<IFile> UploadAssetFileAsync(IDataset dataset, string filePath)
+        static async Task<IFile> UploadAssetFileAsync(IDataset dataset, string filePath, IProgress<HttpProgress> progress = null)
         {
             var fileCreation = new FileCreation(Path.GetFileName(filePath))
             {
@@ -244,7 +294,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             try
             {
                 var fileStream = File.OpenRead(filePath);
-                assetFile = await dataset.UploadFileAsync(fileCreation, fileStream, null, CancellationToken.None);
+                assetFile = await dataset.UploadFileAsync(fileCreation, fileStream, progress, CancellationToken.None);
                 if (assetFile == null)
                 {
                     DialogService.ShowMessage("Error", $"Failed to upload file: {filePath}");

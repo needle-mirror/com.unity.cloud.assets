@@ -16,11 +16,19 @@ namespace Unity.Cloud.Assets
         [DataMember(Name = "inputFiles")]
         string[] m_InputFiles;
 
-        public StartTransformationRequest(string workflowType, IEnumerable<string> inputFiles,
+        public StartTransformationRequest(string workflowType, IEnumerable<string> inputFiles, Dictionary<string, string> parameters,
             ProjectId projectId, AssetId assetId, AssetVersion assetVersion, DatasetId datasetId)
             : base(projectId, assetId, assetVersion, datasetId)
         {
             m_RequestUrl += $"/transformations/start/{workflowType}";
+
+            if (parameters != null)
+            {
+                foreach (var kvp in parameters)
+                {
+                    AddParamToQuery(kvp.Key, kvp.Value);
+                }
+            }
 
             m_InputFiles = inputFiles?.ToArray();
         }

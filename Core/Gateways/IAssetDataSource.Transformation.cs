@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Unity.Cloud.Common;
 
@@ -14,7 +15,7 @@ namespace Unity.Cloud.Assets
         /// <param name="inputFiles">The files to include in the transformation. </param>
         /// <param name="cancellationToken">A token that can be used to cancel the request.</param>
         /// <returns>The ID of the transformation </returns>
-        Task<TransformationId> StartTransformationAsync(DatasetDescriptor datasetDescriptor, WorkflowType workflowType, string[] inputFiles, CancellationToken cancellationToken);
+        Task<TransformationId> StartTransformationAsync(DatasetDescriptor datasetDescriptor, string workflowType, string[] inputFiles, Dictionary<string, string> parameters, CancellationToken cancellationToken);
 
         /// <summary>
         /// Get a transformation on the specified dataset.

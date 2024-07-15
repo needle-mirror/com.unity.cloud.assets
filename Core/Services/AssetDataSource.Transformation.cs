@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
@@ -10,16 +11,15 @@ namespace Unity.Cloud.Assets
     partial class AssetDataSource
     {
         /// <inheritdoc/>
-        public async Task<TransformationId> StartTransformationAsync(DatasetDescriptor datasetDescriptor, WorkflowType workflowType, string[] inputFiles, CancellationToken cancellationToken)
+        public async Task<TransformationId> StartTransformationAsync(DatasetDescriptor datasetDescriptor, string workflowType, string[] inputFiles, Dictionary<string, string> parameters, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var request = new StartTransformationRequest(workflowType.ToJsonValue(), inputFiles, datasetDescriptor.ProjectId, datasetDescriptor.AssetId, datasetDescriptor.AssetVersion, datasetDescriptor.DatasetId);
+            var request = new StartTransformationRequest(workflowType, inputFiles, parameters, datasetDescriptor.ProjectId, datasetDescriptor.AssetId, datasetDescriptor.AssetVersion, datasetDescriptor.DatasetId);
             var response = await RateLimitedServiceClient(request, HttpMethod.Post).PostAsync(GetPublicRequestUri(request), request.ConstructBody(),
                 ServiceHttpClientOptions.Default(), cancellationToken);
 
             var jsonContent = await response.GetContentAsString();
-
             cancellationToken.ThrowIfCancellationRequested();
 
             var startedTransformationResponse = IsolatedSerialization.DeserializeWithConverters<StartedTransformationDto>(jsonContent, IsolatedSerialization.TransformationIdConverter);
@@ -39,7 +39,6 @@ namespace Unity.Cloud.Assets
             var response = await RateLimitedServiceClient(request, HttpMethod.Get).GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(), cancellationToken);
 
             var jsonContent = await response.GetContentAsString();
-
             cancellationToken.ThrowIfCancellationRequested();
 
             return IsolatedSerialization.DeserializeWithDefaultConverters<TransformationData>(jsonContent);

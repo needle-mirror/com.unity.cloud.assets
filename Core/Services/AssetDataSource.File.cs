@@ -32,7 +32,7 @@ namespace Unity.Cloud.Assets
                 Metadata = fileCreation.Metadata,
                 Tags = fileCreation.Tags != null ? new List<string>(fileCreation.Tags) : new List<string>(),
                 UserChecksum = fileCreation.UserChecksum,
-                UploadUrl = new Uri(dto.UploadUrl)
+                UploadUrl = GetEscapedUri(dto.UploadUrl)
             };
         }
 
@@ -98,7 +98,7 @@ namespace Unity.Cloud.Assets
 
             var dto = JsonSerialization.Deserialize<FileUrl>(jsonContent);
 
-            return new Uri(dto.Url);
+            return GetEscapedUri(dto.Url);
         }
 
         /// <inheritdoc />
@@ -120,7 +120,7 @@ namespace Unity.Cloud.Assets
 
             var dto = JsonSerialization.Deserialize<FileUrl>(jsonContent);
 
-            return new Uri(dto.Url);
+            return GetEscapedUri(dto.Url);
         }
 
         /// <inheritdoc />

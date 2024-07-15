@@ -80,7 +80,7 @@ namespace Unity.Cloud.Documentation.Assets
                 return;
             }
 
-            if (GUILayout.Button("Refresh") || m_Behaviour.FieldDefinitions == null)
+            if (GUILayout.Button("Refresh", GUILayout.Width(60)) || m_Behaviour.FieldDefinitions == null)
             {
                 _ = m_Behaviour.GetFieldDefinitions();
             }
@@ -130,7 +130,7 @@ namespace Unity.Cloud.Documentation.Assets
 
                     GUILayout.Label(fields[i].Descriptor.FieldKey);
 
-                    if (GUILayout.Button("Select"))
+                    if (GUILayout.Button("Select", GUILayout.Width(60)))
                     {
                         m_Behaviour.SetCurrentFieldDefinition(fields[i]);
                         if (m_Behaviour.CurrentFieldDefinition.Type == FieldDefinitionType.Selection)

@@ -123,7 +123,7 @@ namespace Unity.Cloud.Documentation.Assets
         {
             GUILayout.Label($"{collection.Name}", GUILayout.MaxWidth(Screen.width * 0.2f));
 
-            if (GUILayout.Button("Select"))
+            if (GUILayout.Button("Select", GUILayout.Width(60)))
             {
                 m_Behaviour.SetCurrentCollection(collection);
                 m_CollectionUpdate = new AssetCollectionUpdate

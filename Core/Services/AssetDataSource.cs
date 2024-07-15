@@ -188,7 +188,11 @@ namespace Unity.Cloud.Assets
 
             var assetDownloadUrlsDto = JsonSerialization.Deserialize<AssetDownloadUrlsDto>(jsonContent);
 
-            var urlList = assetDownloadUrlsDto.FileUrls.Select(f => new AssetDownloadUrl {FilePath = f.Path, DownloadUrl = new Uri(f.Url)}).ToList();
+            var urlList = assetDownloadUrlsDto.FileUrls.Select(f => new AssetDownloadUrl
+            {
+                FilePath = f.Path,
+                DownloadUrl = GetEscapedUri(f.Url)
+            }).ToList();
 
             return urlList;
         }
@@ -485,6 +489,13 @@ namespace Unity.Cloud.Assets
         static bool IsSearchRequest(ApiRequest request)
         {
             return request is SearchRequest or AcrossProjectsSearchRequest or SearchAndAggregateRequest or AcrossProjectsSearchAndAggregateRequest;
+        }
+
+        static Uri GetEscapedUri(string url)
+        {
+            var uri = new Uri(url);
+            // Using the AbsoluteUri of an existing Uri ensures that the url is properly escaped.
+            return new Uri(uri.AbsoluteUri);
         }
     }
 }

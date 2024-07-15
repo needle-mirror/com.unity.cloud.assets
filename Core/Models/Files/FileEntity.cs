@@ -183,6 +183,10 @@ namespace Unity.Cloud.Assets
                 await GetDownloadUrlAsync(cancellationToken);
                 await m_DataSource.DownloadContentAsync(DownloadUrl, targetStream, progress, cancellationToken);
             }
+            finally
+            {
+                DownloadUrl = null; // Discard the url as it can only be used once.
+            }
         }
 
         /// Not exposed in the interface

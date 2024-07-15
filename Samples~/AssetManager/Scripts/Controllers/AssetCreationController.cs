@@ -11,6 +11,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
     public class AssetCreationController
     {
         Button m_CreateAssetButton;
+        ProgressBar m_ProgressBar;
 
         FileController m_FileController;
 
@@ -27,6 +28,9 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             m_CreateAssetButton = root.Q<Button>("CreateAssetButton");
             m_CreateAssetButton.style.display = DisplayStyle.None;
             m_CreateAssetButton.RegisterCallback<ClickEvent>(CreateAsset);
+
+            m_ProgressBar = root.Q<ProgressBar>();
+            m_ProgressBar?.Hide();
 
             m_FileController.FilesAdded += OnFilesAdded;
             m_FileController.FilesRemoved += OnFilesRemoved;
@@ -61,6 +65,13 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
         void CreateAsset(ClickEvent evt)
         {
+            if (m_ProgressBar != null)
+            {
+                m_ProgressBar.title = "Creating asset...";
+                m_ProgressBar.value = 0;
+                m_ProgressBar.Show();
+            }
+
             SetButtonsEnabled(false);
 
             _ = CreateAssetAsync();
@@ -114,19 +125,13 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
         async Task OnAssetCreated(IAsset createdAsset)
         {
-            var datasets = new List<IDataset>();
-            await foreach (var dataset in createdAsset.ListDatasetsAsync(Range.All, CancellationToken.None))
-            {
-                datasets.Add(dataset);
-            }
-
-            var sourceDataset = datasets.FirstOrDefault(x => x.Name == "Source");
+            var sourceDataset = await createdAsset.GetSourceDatasetAsync(CancellationToken.None);
             if (sourceDataset == null)
             {
                 Debug.LogError($"No datasets found for created asset {createdAsset.Name}.");
             }
 
-            await m_FileController.UploadFiles(sourceDataset);
+            await m_FileController.UploadFiles(sourceDataset, m_ProgressBar);
 
             SetButtonsEnabled(true);
 
@@ -153,6 +158,11 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
         void SetButtonsEnabled(bool isEnabled)
         {
+            if (isEnabled)
+            {
+                m_ProgressBar?.Hide();
+            }
+
             m_CreateAssetButton.SetEnabled(isEnabled);
             ChangeButtonEnabledState?.Invoke(isEnabled);
         }

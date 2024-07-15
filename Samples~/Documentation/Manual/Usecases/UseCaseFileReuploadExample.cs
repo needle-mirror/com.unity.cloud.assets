@@ -73,7 +73,7 @@ namespace Unity.Cloud.Documentation.Assets
 
             GUILayout.BeginVertical();
 
-            if (GUILayout.Button("Refresh Datasets"))
+            if (GUILayout.Button("Refresh", GUILayout.Width(60)))
             {
                 _ = m_Behaviour.GetDataSetsAsync();
             }

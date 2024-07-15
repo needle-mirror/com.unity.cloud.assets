@@ -12,6 +12,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
         StatusController m_StatusController;
 
         VisualTreeAsset m_DatasetTagsTemplate;
+        VisualElement m_LeftPanel;
         VisualElement m_RightPanel;
         VisualElement m_DatasetTagsContainer;
 
@@ -36,6 +37,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
         {
             m_DatasetTagsTemplate = tagsTemplate;
 
+            m_LeftPanel = datasetPanel.Q("LeftPanel");
             m_RightPanel = datasetPanel.Q("RightPanel");
 
             m_DatasetNameField = datasetPanel.Q<TextField>("DatasetNameField");
@@ -103,6 +105,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             ClearInformation();
 
             m_RightPanel?.Show();
+            if (m_LeftPanel != null) m_LeftPanel.style.flexGrow = 0;
 
             m_CurrentDataset = dataset;
             m_DatasetUpdate = new DatasetUpdate(m_CurrentDataset);
@@ -133,6 +136,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
         public void Clear()
         {
             m_RightPanel?.Hide();
+            if (m_LeftPanel != null) m_LeftPanel.style.flexGrow = 1;
 
             ClearInformation();
         }

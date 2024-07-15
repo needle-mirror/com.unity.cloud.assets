@@ -30,7 +30,7 @@ namespace Unity.Cloud.Documentation.Assets
             }
 
             // Refresh the project list
-            if (GUILayout.Button("Refresh"))
+            if (GUILayout.Button("Refresh", GUILayout.Width(60)))
             {
                 _ = m_Behaviour.GetProjectsAsync();
                 return;
@@ -53,16 +53,17 @@ namespace Unity.Cloud.Documentation.Assets
             GUILayout.Label("Available Projects:");
             GUILayout.Space(5f);
 
-            var projects = m_Behaviour.AvailableProjects;
-            if (projects.Count > 0)
+            var projects = m_Behaviour.AvailableProjects.ToArray();
+            if (projects.Length > 0)
             {
-                m_ProjectListScrollPosition = GUILayout.BeginScrollView(m_ProjectListScrollPosition, GUILayout.Height(Screen.height * 0.8f));
+                m_ProjectListScrollPosition = GUILayout.BeginScrollView(m_ProjectListScrollPosition, GUILayout.ExpandHeight(true), GUILayout.Width(250));
 
-                for (var i = 0; i < projects.Count; ++i)
+                for (var i = 0; i < projects.Length; ++i)
                 {
                     if (GUILayout.Button(projects[i].Name))
                     {
                         m_Behaviour.SetSelectedProject(projects[i]);
+                        Debug.Log($"Selected project: {projects[i].Descriptor.ProjectId}");
                     }
                 }
 

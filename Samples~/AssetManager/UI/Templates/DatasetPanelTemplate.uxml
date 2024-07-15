@@ -8,6 +8,7 @@
             <ui:Button text="Back" parse-escape-sequences="true" display-tooltip-when-elided="true" name="BackBtn" class="sample-button" />
             <ui:Button text="Create asset" display-tooltip-when-elided="true" name="CreateAssetButton" class="sample-button button-blue" />
         </ui:VisualElement>
+        <ui:ProgressBar value="22" title="my-progress" />
         <ui:VisualElement name="DatasetPanels" style="flex-direction: row; width: 100%; flex-grow: 1;">
             <ui:VisualElement name="LeftPanel" style="width: 35%;">
                 <ui:VisualElement name="DatasetFileListContainer" style="height: 100%; width: 100%; display: flex; flex-grow: 1;">

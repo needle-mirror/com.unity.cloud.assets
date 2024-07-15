@@ -66,7 +66,6 @@ namespace Unity.Cloud.Documentation.Assets
             {
                 m_CurrentAsset = m_Behaviour.CurrentAsset;
                 m_CurrentDataset = null;
-                m_Behaviour.Files = null;
                 m_CurrentFile = null;
                 m_FileUpdate = null;
                 m_Behaviour.CancelTagGeneration();
@@ -101,14 +100,17 @@ namespace Unity.Cloud.Documentation.Assets
 
         void DisplayDatasetSelection()
         {
-            if (GUILayout.Button("Refresh Datasets"))
+            if (GUILayout.Button("Refresh", GUILayout.Width(60)))
             {
+                m_CurrentDataset = null;
+                m_CurrentFile = null;
                 _ = m_Behaviour.GetDataSetsAsync();
+                return;
             }
 
-            GUILayout.Space(5f);
+            GUILayout.Space(5);
 
-            m_DatasetsScrollPosition = GUILayout.BeginScrollView(m_DatasetsScrollPosition, GUILayout.MaxHeight(Screen.height * 0.8f), GUILayout.Width(Screen.width * 0.15f));
+            m_DatasetsScrollPosition = GUILayout.BeginScrollView(m_DatasetsScrollPosition, GUILayout.ExpandHeight(true), GUILayout.Width(Screen.width * 0.15f));
 
             DisplayDatasets(m_Behaviour.Datasets.ToArray());
 
@@ -130,14 +132,10 @@ namespace Unity.Cloud.Documentation.Assets
 
                 GUILayout.Label($"{dataset.Name}");
 
-                if (GUILayout.Button("Select", GUILayout.Width(80)))
+                if (GUILayout.Button("Select", GUILayout.Width(60)))
                 {
-                    m_CurrentFile = null;
-                    m_FileUpdate = null;
-                    m_Behaviour.CancelTagGeneration();
-                    m_GeneratedTags = null;
                     m_CurrentDataset = dataset;
-                    _ = m_Behaviour.GetFilesAsync(dataset);
+                    _ = ListFiles();
                 }
 
                 GUILayout.EndHorizontal();
@@ -158,12 +156,14 @@ namespace Unity.Cloud.Documentation.Assets
                 return;
             }
 
-            if (GUILayout.Button("Refresh Files"))
+            if (GUILayout.Button("Refresh", GUILayout.Width(60)))
             {
-                _ = m_Behaviour.GetFilesAsync(m_CurrentDataset);
+                m_CurrentFile = null;
+                _ = ListFiles();
+                return;
             }
 
-            GUILayout.Space(5f);
+            GUILayout.Space(5);
 
             m_FilesScrollPosition = GUILayout.BeginScrollView(m_FilesScrollPosition, GUILayout.MaxHeight(Screen.height * 0.8f), GUILayout.Width(Screen.width * 0.2f));
 
@@ -187,7 +187,7 @@ namespace Unity.Cloud.Documentation.Assets
 
                 GUILayout.Label($"{assetFile.Descriptor.Path}");
 
-                if (GUILayout.Button("Select", GUILayout.Width(80)))
+                if (GUILayout.Button("Select", GUILayout.Width(70)))
                 {
                     m_CurrentFile = assetFile;
                     m_FileUpdate = new FileUpdate(assetFile);
@@ -196,7 +196,7 @@ namespace Unity.Cloud.Documentation.Assets
                     m_GeneratedTags = null;
                 }
 
-                if (GUILayout.Button("Download", GUILayout.Width(80)))
+                if (GUILayout.Button("Download", GUILayout.Width(70)))
                 {
                     _ = m_Behaviour.DownloadFileAsync(assetFile);
                 }
@@ -231,7 +231,7 @@ namespace Unity.Cloud.Documentation.Assets
 
             GUILayout.EndVertical();
 
-            GUILayout.Space(5f);
+            GUILayout.Space(5);
 
             GUILayout.Label("Description:");
             m_FileUpdate.Description = GUILayout.TextField(m_FileUpdate.Description);
@@ -250,12 +250,21 @@ namespace Unity.Cloud.Documentation.Assets
 
             DisplayGeneratedTags();
 
-            GUILayout.Space(5f);
+            GUILayout.Space(5);
 
             if (GUILayout.Button("Update"))
             {
                 _ = m_Behaviour.UpdateFileAsync(m_CurrentFile, m_FileUpdate);
             }
+        }
+
+        async Task ListFiles()
+        {
+            m_CurrentFile = null;
+            m_FileUpdate = null;
+            m_Behaviour.CancelTagGeneration();
+            m_GeneratedTags = null;
+            await m_Behaviour.GetFilesAsync(m_CurrentDataset);
         }
 
         async Task GenerateTagsAsync()
@@ -274,7 +283,7 @@ namespace Unity.Cloud.Documentation.Assets
 
                     GUI.enabled = !m_FileUpdate.Tags?.Contains(tag.Value) ?? true;
 
-                    if (GUILayout.Button("Add"))
+                    if (GUILayout.Button("Add", GUILayout.Width(40)))
                     {
                         m_FileUpdate.Tags ??= Array.Empty<string>();
                         m_FileUpdate.Tags = m_FileUpdate.Tags.Append(tag.Value).ToArray();
@@ -315,8 +324,10 @@ namespace Unity.Cloud.Documentation.Assets
 
         public async Task GetDataSetsAsync()
         {
-            CleanDatasetCancellation();
+            CleanFileCancellation();
+            Files = null;
 
+            CleanDatasetCancellation();
             Datasets = null;
 
             if (CurrentAsset == null) return;
@@ -368,6 +379,7 @@ namespace Unity.Cloud.Documentation.Assets
                 m_DatasetCancellationSource.Cancel();
                 m_DatasetCancellationSource.Dispose();
             }
+
             m_DatasetCancellationSource = null;
         }
 
@@ -378,6 +390,7 @@ namespace Unity.Cloud.Documentation.Assets
                 m_FileCancellationSource.Cancel();
                 m_FileCancellationSource.Dispose();
             }
+
             m_FileCancellationSource = null;
         }
 
@@ -415,10 +428,10 @@ namespace Unity.Cloud.Documentation.Assets
 
             if (string.IsNullOrEmpty(folder)) return;
 
+            var filePath = Path.Combine(folder, assetFile.Descriptor.Path);
+
             try
             {
-                var filePath = Path.Combine(folder, assetFile.Descriptor.Path);
-
                 // Create the necessary directories
                 var directory = Path.GetDirectoryName(filePath);
                 if (!string.IsNullOrEmpty(directory))
@@ -436,6 +449,11 @@ namespace Unity.Cloud.Documentation.Assets
             catch (Exception e)
             {
                 Debug.LogError($"Failed to download asset file: {assetFile.Descriptor.Path}. {e}");
+
+                if (File.Exists(filePath))
+                {
+                    File.Delete(filePath);
+                }
             }
         }
 

@@ -5,6 +5,16 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2024-07-15
+
+### Added
+- Added `Terminating` status to `TransformationStatus`.
+- Added `Metadata_Extraction`, `Generic_Polygon_Target`, and `Custom` to `WorkflowType`.
+- Added `CustomWorkflowName` to `TransformationCreation` for specifying the transformation when `ITransformationCreation.WorkflowType` is set to `WorkflowType.Custom`.
+
+### Changed
+- Improved documentation code snippets.
+
 ## [1.2.0] - 2024-06-20
 
 ### Added
@@ -29,6 +39,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Sanitize file paths on file creation.
 - Fixed search criteria for date ranges.
 - Fixed dropped calls when rate limiting.
+- Fixed incorrectly escaped download urls.
 
 ### Removed
 - [Experimental][Breaking] Removed `IAssetProject.QueryAssetVersions`.

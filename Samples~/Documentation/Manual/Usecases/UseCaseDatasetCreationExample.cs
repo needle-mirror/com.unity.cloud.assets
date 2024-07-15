@@ -73,7 +73,7 @@ namespace Unity.Cloud.Documentation.Assets
 
             GUILayout.EndHorizontal();
 
-            if (GUILayout.Button("Refresh") || m_Behaviour.Datasets == null)
+            if (GUILayout.Button("Refresh", GUILayout.Width(60)) || m_Behaviour.Datasets == null)
             {
                 _ = m_Behaviour.GetDatasets();
             }

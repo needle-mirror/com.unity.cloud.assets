@@ -20,6 +20,8 @@ namespace Unity.Cloud.Assets
         [EnumMember(Value = "skipped")]
         Skipped,
         [EnumMember(Value = "timedout")]
-        TimedOut
+        TimedOut,
+        [EnumMember(Value = "terminating")]
+        Terminating,
     }
 }

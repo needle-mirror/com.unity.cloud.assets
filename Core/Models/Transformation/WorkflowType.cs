@@ -12,6 +12,9 @@ namespace Unity.Cloud.Assets
         [EnumMember(Value = "3d-data-streaming")]
         Data_Streaming,
         [EnumMember(Value = "transcode-video")]
-        Transcode_Video
+        Transcode_Video,
+        Metadata_Extraction,
+        Generic_Polygon_Target,
+        Custom
     }
 }
