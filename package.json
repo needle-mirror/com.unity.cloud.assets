@@ -1,6 +1,6 @@
 {
   "name": "com.unity.cloud.assets",
-  "version": "1.3.0",
+  "version": "1.4.0-exp.1",
   "displayName": "Unity Cloud Assets",
   "description": "Unity Cloud Assets makes it easy to discover, create, update, delete, and manage Unity assets through the Assets service interface.",
   "unity": "2022.3",
@@ -8,19 +8,19 @@
     "com.unity.cloud.common": "1.1.0"
   },
   "relatedPackages": {
-    "com.unity.cloud.assets.tests": "1.3.0"
+    "com.unity.cloud.assets.tests": "1.4.0-exp.1"
   },
   "_upm": {
-    "changelog": "### Added\n- Added `Terminating` status to `TransformationStatus`.\n- Added `Metadata_Extraction`, `Generic_Polygon_Target`, and `Custom` to `WorkflowType`.\n- Added `CustomWorkflowName` to `TransformationCreation` for specifying the transformation when `ITransformationCreation.WorkflowType` is set to `WorkflowType.Custom`.\n\n### Changed\n- Improved documentation code snippets."
+    "changelog": "### Added\n- Added `IDataset.GetDownloadUrlsAsync` to get download urls for all files in a dataset.\n- [Experimental] Added `IStatusFlow`, `IStatus`, and `IStatusTransition` to expose asset status information.\n- [Experimental] Added `StatusFlowQueryBuilder` and `IAssetRepository.QueryStatusFlows` to fetch the status flows available in the organization.\n- [Experimental] Added `IAsset.GetStatusAsync` to get the status information of an asset.\n- [Experimental] Added `IAsset.GetReachableStatusesAsync` to get the information of statuses reachable from the current status of an asset.\n- [Experimental] Added overloaded `IAsset.UpdateStatusAsync` to update the status of an asset with an `IStatus` parameter.\n- [Experimental] Added `IAsset.StatusFlowDescriptor` to expose the status flow of an asset.\n- [Experimental] Added `StatusFlowDescriptor` property to `IAssetCreation` and `IAssetUpdate` specify the status flow when creating and updating an asset.\n\n### Changed\n- Improved documentation code snippets.\n- Added status details to Asset Discovery and Asset Manager samples\n\n### Deprecated\n- Deprecated `IAsset.Status` property; use `IAsset.GetStatusAsync` instead.\n- Deprecated `IAsset.UpdateStatusAsync(AssetStatusAction, CancellationToken)`; use `IAsset.UpdateStatusAsync(IStatus, CancellationToken)` instead.\n- Deprecated `AssetStatusAction` enum."
   },
   "upmCi": {
-    "footprint": "835bd5ee4b9b3d46f607e818101dc6b6a8d172c2"
+    "footprint": "24f2df33ede746fb98440ea3857770418563ae1a"
   },
-  "documentationUrl": "https://docs.unity3d.com/Packages/com.unity.cloud.assets@1.3/manual/index.html",
+  "documentationUrl": "https://docs.unity3d.com/Packages/com.unity.cloud.assets@1.4/manual/index.html",
   "repository": {
     "url": "https://github.cds.internal.unity3d.com/unity/digital-twins-sdk.git",
     "type": "git",
-    "revision": "875d99e1db11aed6467c01e8f234a94c1a9146d8"
+    "revision": "891a7706a2020f9119c05608d61ba8124cd3fbdb"
   },
   "samples": [
     {

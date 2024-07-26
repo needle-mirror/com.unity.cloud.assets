@@ -140,7 +140,6 @@ namespace Unity.Cloud.Documentation.Assets
             GUILayout.BeginVertical();
 
             GUILayout.Label($"Version: {m_CurrentVersion.Descriptor.AssetVersion}");
-            GUILayout.Label($"Status: {m_CurrentVersion.Status}");
             if (m_CurrentVersion.ParentFrozenSequenceNumber > 0)
             {
                 GUILayout.Label($"Parent Sequence Number: {m_CurrentVersion.ParentFrozenSequenceNumber}");

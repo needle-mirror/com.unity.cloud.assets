@@ -81,12 +81,12 @@ namespace Unity.Cloud.Documentation.Assets
 
             #endregion
 
-            #region UseCasePublishWithdrawAsset
+            #region UseCaseManageAssetStatus
 
             m_UI.Add(new OrganizationSelectionExampleUI(m_Behaviour));
             m_UI.Add(new ProjectSelectionExampleUI(m_Behaviour));
             m_UI.Add(new AssetSelectionExampleUI(m_Behaviour));
-            m_UI.Add(new UseCasePublishWithdrawAssetExampleUI(m_Behaviour));
+            m_UI.Add(new UseCaseManageAssetStatusExampleUI(m_Behaviour));
 
             #endregion
 
@@ -105,15 +105,6 @@ namespace Unity.Cloud.Documentation.Assets
             m_UI.Add(new ProjectSelectionExampleUI(m_Behaviour));
             m_UI.Add(new AssetSelectionExampleUI(m_Behaviour));
             m_UI.Add(new UseCaseFileManagementExampleUI(m_Behaviour));
-
-            #endregion
-
-            #region UseCaseSendToReviewApproveRejectAsset
-
-            m_UI.Add(new OrganizationSelectionExampleUI(m_Behaviour));
-            m_UI.Add(new ProjectSelectionExampleUI(m_Behaviour));
-            m_UI.Add(new AssetSelectionExampleUI(m_Behaviour));
-            m_UI.Add(new UseCaseSendToReviewApproveRejectAssetExampleUI(m_Behaviour));
 
             #endregion
 

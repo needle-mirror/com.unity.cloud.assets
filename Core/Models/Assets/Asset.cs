@@ -75,6 +75,9 @@ namespace Unity.Cloud.Assets
         public string Status { get; set; }
 
         /// <inheritdoc />
+        public StatusFlowDescriptor StatusFlowDescriptor { get; set; }
+
+        /// <inheritdoc />
         public AuthoringInfo AuthoringInfo { get; set; }
 
         internal Uri PreviewFileUrl { get; set; }
@@ -151,21 +154,39 @@ namespace Unity.Cloud.Assets
         }
 
         /// <inheritdoc />
-        public Task UpdateAsync(IAssetUpdate assetUpdate, CancellationToken cancellationToken)
+        public async Task UpdateAsync(IAssetUpdate assetUpdate, CancellationToken cancellationToken)
         {
-            return m_DataSource.UpdateAssetAsync(Descriptor, assetUpdate.From(), cancellationToken);
+            // Update properties first
+            if (assetUpdate.HasValues())
+            {
+                await m_DataSource.UpdateAssetAsync(Descriptor, assetUpdate.From(), cancellationToken);
+            }
+
+            // Update status flow descriptor next
+            if (assetUpdate.StatusFlowDescriptor.HasValue)
+            {
+                await m_DataSource.UpdateAssetStatusFlowAsync(Descriptor, assetUpdate.StatusFlowDescriptor.Value, cancellationToken);
+            }
         }
 
         /// <inheritdoc />
+        [Obsolete("Use UpdateAsync(IAssetUpdate, CancellationToken) instead.")]
         public Task UpdateStatusAsync(AssetStatusAction statusAction, CancellationToken cancellationToken)
         {
-            return m_DataSource.UpdateAssetStatusAsync(Descriptor, statusAction, cancellationToken);
+            var status = IsolatedSerialization.SerializeWithConverters(statusAction, IsolatedSerialization.StringEnumConverter).Replace("\"", "");
+            return m_DataSource.UpdateAssetStatusAsync(Descriptor, status, cancellationToken);
+        }
+
+        /// <inheritdoc />
+        public Task UpdateStatusAsync(IStatus status, CancellationToken cancellationToken)
+        {
+            return m_DataSource.UpdateAssetStatusAsync(Descriptor, status.Name, cancellationToken);
         }
 
         /// <inheritdoc />
         public async Task<IAsset> CreateUnfrozenVersionAsync(CancellationToken cancellationToken)
         {
-            var version = await m_DataSource.CreateUnfrozenAssetVersionAsync(Descriptor, cancellationToken);
+            var version = await m_DataSource.CreateUnfrozenAssetVersionAsync(Descriptor, null, cancellationToken);
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -363,6 +384,28 @@ namespace Unity.Cloud.Assets
         public Task UnassignLabelsAsync(IEnumerable<string> labels, CancellationToken cancellationToken)
         {
             return m_DataSource.UnassignLabelsAsync(Descriptor, labels, cancellationToken);
+        }
+
+        /// <inheritdoc />
+        public async Task<IStatus> GetStatusAsync(CancellationToken cancellationToken)
+        {
+            var (flowDescriptor, data) = await m_DataSource.GetAssetStatusAsync(Descriptor, cancellationToken);
+            if (data == null)
+            {
+                throw new NotFoundException("Status information not found.");
+            }
+
+            return data.From(flowDescriptor);
+        }
+
+        /// <inheritdoc />
+        public async Task<IStatus[]> GetReachableStatusesAsync(CancellationToken cancellationToken)
+        {
+            var (statusFlowDescriptor, datas) = await m_DataSource.GetReachableStatusesAsync(Descriptor, cancellationToken);
+            return datas
+                .Where(data => data != null)
+                .Select(data => data.From(statusFlowDescriptor))
+                .ToArray();
         }
 
         /// <inheritdoc />

@@ -14,18 +14,23 @@ namespace Unity.Cloud.Assets
         [DataMember(Name = "parentAssetVersion")]
         readonly string m_ParentVersion;
 
+        [DataMember(Name = "statusFlowId")]
+        readonly string m_StatusFlowId;
+
         /// <summary>
         /// Changes the asset's status Request Object.
         /// </summary>
         /// <param name="projectId">ID of the project.</param>
         /// <param name="assetId">The id of the asset the file is linked to.</param>
         /// <param name="parentVersion">The version of the asset the file is linked to.</param>
-        public CreateAssetVersionRequest(ProjectId projectId, AssetId assetId, AssetVersion? parentVersion)
+        /// <param name="statusFlowId">The id of the flow to apply to the new version.</param>
+        public CreateAssetVersionRequest(ProjectId projectId, AssetId assetId, AssetVersion? parentVersion, string statusFlowId)
             : base(projectId)
         {
             m_RequestUrl += $"/assets/{assetId}/versions";
 
             m_ParentVersion = parentVersion?.ToString();
+            m_StatusFlowId = statusFlowId;
         }
 
         /// <summary>

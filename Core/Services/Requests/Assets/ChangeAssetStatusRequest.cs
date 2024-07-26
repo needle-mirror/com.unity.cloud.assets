@@ -13,11 +13,10 @@ namespace Unity.Cloud.Assets
         /// <param name="projectId">ID of the project.</param>
         /// <param name="assetId">The id of the asset the file is linked to.</param>
         /// <param name="assetVersion">The version of the asset the file is linked to.</param>
-        /// <param name="action"></param>
-        public ChangeAssetStatusRequest(ProjectId projectId, AssetId assetId, AssetVersion assetVersion, AssetStatusAction action)
+        /// <param name="status">The new status. </param>
+        public ChangeAssetStatusRequest(ProjectId projectId, AssetId assetId, AssetVersion assetVersion, string status)
             : base(projectId, assetId, assetVersion)
         {
-            var status = IsolatedSerialization.SerializeWithConverters(action, IsolatedSerialization.StringEnumConverter).Replace("\"", "");
             m_RequestUrl += $"/status/{status}";
         }
     }

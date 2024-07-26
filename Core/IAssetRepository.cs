@@ -146,6 +146,13 @@ namespace Unity.Cloud.Assets
         Task<ILabel> GetLabelAsync(LabelDescriptor labelDescriptor, CancellationToken cancellationToken) => throw new NotImplementedException();
 
         /// <summary>
+        /// Returns a builder to create a query to search an organization's <see cref="IStatusFlow"/>.
+        /// </summary>
+        /// <param name="organizationId">The id of the organization. </param>
+        /// <returns>A <see cref="StatusFlowQueryBuilder"/>. </returns>
+        StatusFlowQueryBuilder QueryStatusFlows(OrganizationId organizationId) => throw new NotImplementedException();
+
+        /// <summary>
         /// Implement this method to get an <see cref="AssetDescriptor"/> given a serialized json of asset identifiers.
         /// </summary>
         /// <param name="jsonSerialization">The serialization of an asset's identifiers. Accepts the result of <see cref="IAsset.SerializeIdentifiers"/>. </param>

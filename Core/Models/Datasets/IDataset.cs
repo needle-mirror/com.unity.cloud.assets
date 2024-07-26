@@ -131,6 +131,13 @@ namespace Unity.Cloud.Assets
         Task<IFile> GetFileAsync(string filePath, CancellationToken cancellationToken);
 
         /// <summary>
+        /// Returns the download URLs for the files of the dataset.
+        /// </summary>
+        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
+        /// <returns>A task whose result is the download URLs for the dataset. </returns>
+        Task<IReadOnlyDictionary<string, Uri>> GetDownloadUrlsAsync(CancellationToken cancellationToken) => throw new NotImplementedException();
+
+        /// <summary>
         /// Returns the download URL of the file.
         /// </summary>
         /// <param name="filePath"></param>

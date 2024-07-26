@@ -22,9 +22,10 @@ namespace Unity.Cloud.Assets
         /// Creates an asset version.
         /// </summary>
         /// <param name="parentAssetDescriptor">The descriptor of the asset from which to branch off a new version.</param>
+        /// <param name="statusFlowId">The status flow to apply to the new version. </param>
         /// <param name="cancellationToken">A token that can be used to cancel the request.</param>
         /// <returns>A task whose result is a new version id of the asset. </returns>
-        Task<AssetVersion> CreateUnfrozenAssetVersionAsync(AssetDescriptor parentAssetDescriptor, CancellationToken cancellationToken);
+        Task<AssetVersion> CreateUnfrozenAssetVersionAsync(AssetDescriptor parentAssetDescriptor, string statusFlowId, CancellationToken cancellationToken);
 
         /// <summary>
         /// Submits an asset version to be frozen.

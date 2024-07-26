@@ -1,6 +1,3 @@
-using Unity.Cloud.AppLinking.Runtime;
-using Unity.Cloud.Identity.Runtime;
-
 namespace Unity.Cloud.Documentation.Assets
 {
     #region PlatformServices
@@ -8,6 +5,7 @@ namespace Unity.Cloud.Documentation.Assets
     using System;
     using System.Threading.Tasks;
     using Unity.Cloud.Assets;
+    using Unity.Cloud.AppLinking.Runtime;
     using Unity.Cloud.Common;
     using Unity.Cloud.Common.Runtime;
     using Unity.Cloud.Identity;

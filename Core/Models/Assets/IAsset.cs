@@ -94,7 +94,13 @@ namespace Unity.Cloud.Assets
         /// <summary>
         /// The status of the asset.
         /// </summary>
+        [Obsolete("Use GetStatusAsync instead.")]
         string Status { get; }
+
+        /// <summary>
+        /// The id of the status flow of the asset.
+        /// </summary>
+        StatusFlowDescriptor StatusFlowDescriptor => default;
 
         /// <summary>
         /// The creation and update information of the asset.
@@ -166,7 +172,20 @@ namespace Unity.Cloud.Assets
         /// <param name="statusAction">The new status of the asset. </param>
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task with no result. </returns>
+        [Obsolete("Use IAssetUpdate.Status instead.")]
         Task UpdateStatusAsync(AssetStatusAction statusAction, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Updates the asset's status.
+        /// </summary>
+        /// <param name="status">The new status of the asset. </param>
+        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
+        /// <returns>A task with no result. </returns>
+        /// <remarks>
+        /// The status of an asset can be updated whether an asset is frozen or unfrozen.
+        /// However, take note that the reachable statuses may vary based on the state of the asset.
+        /// </remarks>
+        Task UpdateStatusAsync(IStatus status, CancellationToken cancellationToken) => throw new NotImplementedException();
 
         /// <summary>
         /// Creates a new unfrozen version of the asset.
@@ -305,6 +324,20 @@ namespace Unity.Cloud.Assets
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task with no result. </returns>
         Task UnassignLabelsAsync(IEnumerable<string> labels, CancellationToken cancellationToken) => throw new NotImplementedException();
+
+        /// <summary>
+        /// Returns the current status information of the asset.
+        /// </summary>
+        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
+        /// <returns>A task whose result is the <see cref="IStatus"/> of the asset. </returns>
+        Task<IStatus> GetStatusAsync(CancellationToken cancellationToken) => throw new NotImplementedException();
+
+        /// <summary>
+        /// Returns a set of reachable statuses from the current status.
+        /// </summary>
+        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
+        /// <returns>A task whose result is an array of <see cref="IStatus"/>. </returns>
+        Task<IStatus[]> GetReachableStatusesAsync(CancellationToken cancellationToken) => throw new NotImplementedException();
 
         /// <summary>
         /// Returns a JSON serialized string of the asset's identifiers.

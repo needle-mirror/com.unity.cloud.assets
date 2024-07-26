@@ -112,7 +112,6 @@ The script does the following:
 * Provides the functions to list and select Organizations.
 * Provides the functions to list and select Projects.
 * Performs a basic search to list the assets of the selected Project.
-* Provides the functions to create, read, update, delete assets.
 
 ### Create an interface for all UI scripts
 
@@ -125,7 +124,9 @@ To create the interface for all UI scripts, follow these steps:
 
 [!code-cs [behaviour-script](../Samples/Documentation/Manual/IAssetManagementUI.cs#Example)]
 
-### Create the UI for selecting an organization
+## How do I...?
+
+### Select an organization
 
 To create a simple UI for selecting an organization, do the following:
 
@@ -140,7 +141,7 @@ The script does the following:
 
 * Provides the UI to list and select organizations.
 
-### Create the UI for selecting a project
+### Select a project
 
 To create a simple UI for selecting a project, do the following:
 
@@ -155,7 +156,7 @@ The script does the following:
 
 * Provides the UI to list and select projects.
 
-### Create the UI for selecting an asset
+### Select an asset
 
 To create a simple UI for selecting an asset, do the following:
 
@@ -170,28 +171,63 @@ The script does the following:
 
 * Provides the UI to list and select assets.
 
-### Create the UI for CRUD operations on assets
+### Update an asset
 
-To create a simple UI for CRUD operations on assets, do the following:
+To update an asset, follow these steps:
+
+1. Open the `AssetManagementBehaviour` script you created.
+2. Add the following code to the end of the class:
+
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseManageAssetExample.cs#Example_Behaviour_UpdateAsset)]
+
+The code snippet does the following:
+
+* Provides a method to update the selected asset.
+
+To create UI for updating an asset, follow these steps:
 
 1. In your Unity Project window, go to **Assets** > **Scripts**.
 2. Select and hold the `Assets/Scripts` folder.
-3. Go to **Create** > **C# Script**. Name your script `UseCaseCreateAssetExampleUI`.
-4. Open the `UseCaseCreateAssetExampleUI` script you created and replace the contents of the file with the following code sample:
+3. Go to **Create** > **C# Script**. Name your script `UseCaseManageAssetExampleUI`.
+4. Open the `UseCaseManageAssetExampleUI` script you created and replace the contents of the file with the following code sample:
 
-[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseCreateAssetExample.cs#Example)]
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseManageAssetExample.cs#Example_UIClass)]
 
-5. In your Unity Project window, go to **Assets** > **Scripts**.
-6. Select and hold the `Assets/Scripts` folder.
-7. Go to **Create** > **C# Script**. Name your script `UseCaseManageAssetExampleUI`.
-8. Open the `UseCaseManageAssetExampleUI` script you created and replace the contents of the file with the following code sample:
+5. In the same script, replace the `OnGUI` function with the following code:
 
-[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseManageAssetExample.cs#Example)]
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseManageAssetExample.cs#Example_UIContent)]
 
-The scripts do the following:
+The ui does the following:
 
-* Provide UI buttons to select an asset type and a UI button to create a new asset.
-* Provide UI to update the name, type and tags of the selected asset.
+* Displays information about the selected asset.
+* Provide fields to update the name, type and tags of the selected asset.
+
+### Create an asset
+
+To create an asset, follow these steps:
+
+1. Open the `AssetManagementBehaviour` script you created.
+2. Add the following code to the end of the class:
+
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseAssetCreationExample.cs#Example_Behaviour_CreateAsset)]
+
+The code snippet does the following:
+
+* Provides a method to fetch the status flows of the selected organization.
+* Provides a method to create a new asset given a type and a status flow.
+
+To create UI for creating an asset, follow these steps:
+
+1. In your Unity Project window, go to **Assets** > **Scripts**.
+2. Select and hold the `Assets/Scripts` folder.
+3. Go to **Create** > **C# Script**. Name your script `UseCaseAssetCreationExampleUI`.
+4. Open the `UseCaseAssetCreationExampleUI` script you created and replace the contents of the file with the following code sample:
+
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseAssetCreationExample.cs#Example_UIClass)]
+
+5. In the same script, replace the `OnGUI` function with the following code:
+
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseAssetCreationExample.cs#Example_UIContent)]
 
 ### Integrate the UI scripts
 

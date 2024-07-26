@@ -5,6 +5,27 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [1.4.0-exp.1] - 2024-07-26
+
+### Added
+- Added `IDataset.GetDownloadUrlsAsync` to get download urls for all files in a dataset.
+- [Experimental] Added `IStatusFlow`, `IStatus`, and `IStatusTransition` to expose asset status information.
+- [Experimental] Added `StatusFlowQueryBuilder` and `IAssetRepository.QueryStatusFlows` to fetch the status flows available in the organization.
+- [Experimental] Added `IAsset.GetStatusAsync` to get the status information of an asset.
+- [Experimental] Added `IAsset.GetReachableStatusesAsync` to get the information of statuses reachable from the current status of an asset.
+- [Experimental] Added overloaded `IAsset.UpdateStatusAsync` to update the status of an asset with an `IStatus` parameter.
+- [Experimental] Added `IAsset.StatusFlowDescriptor` to expose the status flow of an asset.
+- [Experimental] Added `StatusFlowDescriptor` property to `IAssetCreation` and `IAssetUpdate` specify the status flow when creating and updating an asset.
+
+### Changed
+- Improved documentation code snippets.
+- Added status details to Asset Discovery and Asset Manager samples
+
+### Deprecated
+- Deprecated `IAsset.Status` property; use `IAsset.GetStatusAsync` instead.
+- Deprecated `IAsset.UpdateStatusAsync(AssetStatusAction, CancellationToken)`; use `IAsset.UpdateStatusAsync(IStatus, CancellationToken)` instead.
+- Deprecated `AssetStatusAction` enum.
+
 ## [1.3.0] - 2024-07-15
 
 ### Added

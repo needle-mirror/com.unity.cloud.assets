@@ -140,6 +140,12 @@ namespace Unity.Cloud.Assets
         }
 
         /// <inheritdoc />
+        public StatusFlowQueryBuilder QueryStatusFlows(OrganizationId organizationId)
+        {
+            return new StatusFlowQueryBuilder(m_DataSource, organizationId);
+        }
+
+        /// <inheritdoc />
         public AssetDescriptor DeserializeAssetIdentifiers(string jsonSerialization)
         {
             // Verify old deprecated serialization format first

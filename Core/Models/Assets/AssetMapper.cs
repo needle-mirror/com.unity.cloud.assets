@@ -25,6 +25,7 @@ namespace Unity.Cloud.Assets
             asset.SystemTags = assetData.SystemTags ?? Array.Empty<string>();
             asset.Type = assetData.Type ?? AssetType.Other;
             asset.Status = assetData.Status;
+            asset.StatusFlowDescriptor = new StatusFlowDescriptor(organizationId, assetData.StatusFlowId);
             asset.Labels = assetData.Labels?.Select(x => new LabelDescriptor(organizationId, x)) ?? Array.Empty<LabelDescriptor>();
             asset.ArchivedLabels = assetData.ArchivedLabels?.Select(x => new LabelDescriptor(organizationId, x)) ?? Array.Empty<LabelDescriptor>();
 
@@ -56,11 +57,21 @@ namespace Unity.Cloud.Assets
             {
                 Name = assetCreation.Name,
                 Description = assetCreation.Description,
-                Tags = assetCreation.Tags,
+                Tags = assetCreation.Tags?.Where(s => !string.IsNullOrWhiteSpace(s)),
+                StatusFlowId = assetCreation.StatusFlowDescriptor?.StatusFlowId,
                 Type = assetCreation.Type,
                 Metadata = assetCreation.Metadata?.ToObjectDictionary() ?? new Dictionary<string, object>(),
                 Collections = assetCreation.Collections,
             };
+        }
+
+        internal static bool HasValues(this IAssetUpdate assetUpdate)
+        {
+            return assetUpdate.Name != null ||
+                assetUpdate.Description != null ||
+                assetUpdate.Tags != null ||
+                assetUpdate.Type.HasValue ||
+                assetUpdate.PreviewFile != null;
         }
 
         internal static IAssetUpdateData From(this IAssetUpdate assetUpdate)
@@ -69,7 +80,7 @@ namespace Unity.Cloud.Assets
             {
                 Name = assetUpdate.Name,
                 Description = assetUpdate.Description,
-                Tags = assetUpdate.Tags,
+                Tags = assetUpdate.Tags?.Where(s => !string.IsNullOrWhiteSpace(s)),
                 Type = assetUpdate.Type,
                 PreviewFile = assetUpdate.PreviewFile,
             };

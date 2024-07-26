@@ -32,7 +32,7 @@
                     <ui:TextField password="false" name="Name" label="Unique Id *" style="align-items: stretch; flex-direction: row;" />
                     <ui:TextField password="false" name="DisplayName" label="Display Name *" style="align-items: stretch; flex-direction: row;" />
                     <ui:EnumField label="Type *" type="Unity.Cloud.Assets.FieldDefinitionType, Unity.Cloud.Assets" name="Type" />
-                    <ui:Toggle label="Toggle" name="Multiselection" />
+                    <ui:Toggle label="Multiselect" name="Multiselection" />
                     <ui:VisualElement style="flex-direction: row;">
                         <ui:ListView focusable="true" name="AcceptedValues" header-title="Accepted Values" show-add-remove-footer="true" show-foldout-header="true" show-bound-collection-size="false" selection-type="None" reorderable="true" style="color: rgb(206, 206, 206); flex-grow: 1;" />
                     </ui:VisualElement>

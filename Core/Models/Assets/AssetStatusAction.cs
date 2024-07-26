@@ -1,7 +1,9 @@
+using System;
 using System.Runtime.Serialization;
 
 namespace Unity.Cloud.Assets
 {
+    [Obsolete("Use IStatus instead.")]
     [DataContract]
     public enum AssetStatusAction
     {

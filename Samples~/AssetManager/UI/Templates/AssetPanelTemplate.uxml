@@ -31,6 +31,9 @@
                 </ui:VisualElement>
                 <ui:Instance template="StatusTemplate" />
                 <ui:ScrollView style="overflow: hidden; padding-left: 4px; flex-grow: 1;">
+                    <ui:VisualElement name="StatusSelection" style="flex-grow: 1; flex-shrink: 0;">
+                        <ui:DropdownField label="Status" index="0" choices="Draft, Ready for Review, Needs Changes, Approved" name="StatusSelectionDropdown" />
+                    </ui:VisualElement>
                     <ui:VisualElement name="AssetDescription" style="min-height: 70px; flex-grow: 1; flex-shrink: 0;">
                         <ui:TextField picking-mode="Ignore" label="Description" value="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua." text="Description" name="AssetDescriptionField" multiline="true" style="color: rgb(210, 210, 210); white-space: normal; flex-grow: 1; flex-wrap: wrap;" />
                     </ui:VisualElement>
@@ -49,7 +52,6 @@
                     <ui:Instance template="MetadataItemTemplate" name="MetadataItemTemplate" style="display: none;" />
                 </ui:ScrollView>
                 <ui:VisualElement style="flex-shrink: 0; justify-content: flex-end; flex-direction: row; padding-top: 2px; padding-right: 2px; padding-bottom: 2px; padding-left: 2px; width: 100%;">
-                    <ui:Button text="Publish" display-tooltip-when-elided="true" visible="false" name="Publish" class="button-blue sample-button" />
                     <ui:Button text="Save changes" display-tooltip-when-elided="true" visible="false" name="Save" class="button-blue sample-button" />
                     <ui:Button text="Save version" display-tooltip-when-elided="true" visible="false" name="Freeze" class="button-blue sample-button" />
                     <ui:Button text="Continue editing" display-tooltip-when-elided="true" visible="false" name="Unfreeze" class="button-blue sample-button" />

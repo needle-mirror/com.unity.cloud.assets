@@ -15,6 +15,9 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc/>
         public string PreviewFile { get; set; }
 
+        /// <inheritdoc/>
+        public StatusFlowDescriptor? StatusFlowDescriptor { get; set; }
+
         public AssetUpdate() { }
 
         public AssetUpdate(IAsset asset)

@@ -29,11 +29,17 @@ Before you start, you must:
 
 ### List an asset's datasets and files
 
-To list datasets, open the `AssetManagementBehaviour` script you created and add the following code to the end of the class:
+To list datasets, follow these steps:
+
+1. Open the `AssetManagementBehaviour` script you created.
+2. Add the following code to the end of the class:
 
 [!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseFileCreationExample.cs#Example_Behaviour_RefreshDatasets)]
 
-To list files, open the `AssetManagementBehaviour` script you created and add the following code to the end of the class:
+To list files, follow these steps:
+
+1. Open the `AssetManagementBehaviour` script you created.
+2. Add the following code to the end of the class:
 
 [!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseFileCreationExample.cs#Example_Behaviour_RefreshFiles)]
 
@@ -48,11 +54,9 @@ To upload a file to an asset's dataset, follow these steps:
 
 The code snippet does the following:
 
-* Displays a UI button for creating a new file.
-* When the button is clicked, a file dialog opens to select a file.
-* When a file is selected, a new file definition is created and the file content is uploaded.
-* Prints a progress log for the upload to the console.
-* Prints a message to the console when the upload is complete OR an error message if the upload fails.
+* Provides a method to upload a new file to a dataset.
+* Provides a method to replace the content of an existing file in a dataset.
+* Provides a method to replace a file in a dataset with another file.
 
 ### Reference a file in a different dataset
 

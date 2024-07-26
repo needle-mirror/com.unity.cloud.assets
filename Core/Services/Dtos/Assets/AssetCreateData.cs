@@ -9,5 +9,8 @@ namespace Unity.Cloud.Assets
     {
         /// <inheritdoc />
         public IEnumerable<CollectionPath> Collections { get; set; }
+
+        /// <inheritdoc />
+        public string StatusFlowId { get; set; }
     }
 }

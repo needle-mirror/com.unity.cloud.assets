@@ -54,6 +54,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
         Label m_ParentSequenceNumber;
         TextField m_AssetTagsField;
         TextField m_AssetDescriptionField;
+        DropdownField m_StatusDropdown;
 
         Button m_BackButton;
 
@@ -64,24 +65,28 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
         VisualElement m_VersionContainer;
         ScrollView m_VersionScrollView;
 
-        Button m_PublishButton;
         Button m_SaveButton;
         Button m_FreezeButton;
         Button m_UnfreezeButton;
 
         StatusController m_StatusController;
 
+        IStatus[] m_ReachableStatuses;
+        IStatus m_CurrentStatus;
+
         IAsset m_CurrentAsset;
         AssetUpdate m_AssetUpdate;
         MetadataController m_MetadataController;
+        IStatus m_SelectedStatus;
 
-        CancellationTokenSource m_ListCancellationTokenSource;
+        CancellationTokenSource m_CurrentAssetCancellationTokenSource;
 
         public event Action<IDataset, bool> OnDatasetOpen;
         public event Action<IAsset> OnAssetUpdated;
         public Func<Task> PrepareAssetUpdateAsync { get; set; }
-
         public IAsset CurrentAsset => m_CurrentAsset;
+
+        bool IsEditable => m_CurrentAsset is {IsFrozen: false};
 
         public void Init(VisualElement assetCreationPanel, VisualTreeAsset datasetListItemTemplate, VisualTreeAsset tagsTemplate, AddMetadataPopupController addMetadataPopup)
         {
@@ -114,6 +119,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             scrollView.horizontalScrollerVisibility = ScrollerVisibility.Hidden;
             scrollView.verticalScrollerVisibility = ScrollerVisibility.Hidden;
 
+            m_StatusDropdown = assetCreationPanel.Q<DropdownField>("StatusSelectionDropdown");
             m_AssetDescriptionField = assetCreationPanel.Q<TextField>("AssetDescriptionField");
             m_AssetTypeDropdown = assetCreationPanel.Q<EnumField>("AssetTypeDropdown");
             m_AssetTagsField = assetCreationPanel.Q<TextField>("AssetTagsField");
@@ -124,10 +130,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             var metadataContainer = assetCreationPanel.Q("MetadataContainer");
             m_MetadataController = new MetadataController(metadataContainer, metadataTemplate.templateSource, addMetadataPopup);
 
-            m_PublishButton = assetCreationPanel.Q<Button>("Publish");
-            m_PublishButton.Hide();
             m_SaveButton = assetCreationPanel.Q<Button>("Save");
-            m_SaveButton.Hide();
             m_FreezeButton = assetCreationPanel.Q<Button>("Freeze");
             m_FreezeButton.Hide();
             m_UnfreezeButton = assetCreationPanel.Q<Button>("Unfreeze");
@@ -156,8 +159,17 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
                     m_AssetUpdate.Description = evt.newValue;
             });
 
-            m_PublishButton.RegisterCallback<ClickEvent>(_ => AsyncAction(PublishAssetAsync));
-            m_SaveButton.RegisterCallback<ClickEvent>(_ => AsyncAction(UpdateAssetInformationAsync));
+            m_StatusDropdown.RegisterValueChangedCallback(evt =>
+            {
+                m_SelectedStatus = m_ReachableStatuses.FirstOrDefault(s => s.Name == evt.newValue);
+                if (m_SelectedStatus?.Descriptor == m_CurrentStatus.Descriptor)
+                {
+                    m_SelectedStatus = null;
+                }
+                m_SaveButton.SetEnabled(IsEditable || m_SelectedStatus != null);
+            });
+
+            m_SaveButton.RegisterCallback<ClickEvent>(_ => AsyncAction(UpdateAssetAsync));
             m_FreezeButton.RegisterCallback<ClickEvent>(_ => AsyncAction(FreezeAsset));
             m_UnfreezeButton.RegisterCallback<ClickEvent>(_ => AsyncAction(UnfreezeAsset));
             m_CreateDatasetButton.RegisterCallback<ClickEvent>(_ => AsyncAction(CreateNewDatasetAsync));
@@ -168,36 +180,33 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
         {
             ClearAssetInformation();
 
-            m_ListCancellationTokenSource = new CancellationTokenSource();
-            var token = m_ListCancellationTokenSource.Token;
+            m_CurrentAssetCancellationTokenSource = new CancellationTokenSource();
+            var token = m_CurrentAssetCancellationTokenSource.Token;
 
             m_RightPanel?.Show();
 
             m_CurrentAsset = asset;
             m_AssetUpdate = new AssetUpdate(asset);
 
-            var canUpdate = !asset.IsFrozen && asset.Status == "Draft";
-
-            m_SaveButton.Show(canUpdate);
-            m_FreezeButton.Show(canUpdate);
-            m_UnfreezeButton.Show(!canUpdate);
-            m_CreateDatasetButton.Show(canUpdate);
-            m_PublishButton.Show(asset.Status != "Published");
+            m_SaveButton.SetEnabled(IsEditable);
+            m_FreezeButton.Show(IsEditable);
+            m_UnfreezeButton.Show(!IsEditable);
+            m_CreateDatasetButton.Show(IsEditable);
 
             m_AssetNameField.SetValueWithoutNotify(asset.Name);
-            m_AssetNameField.SetEnabled(canUpdate);
+            m_AssetNameField.SetEnabled(IsEditable);
             m_AssetTypeDropdown.SetValueWithoutNotify(asset.Type);
-            m_AssetTypeDropdown.SetEnabled(canUpdate);
+            m_AssetTypeDropdown.SetEnabled(IsEditable);
             m_AssetDescriptionField.SetValueWithoutNotify(asset.Description);
-            m_AssetDescriptionField.SetEnabled(canUpdate);
-            m_AssetTagsField.SetEnabled(canUpdate);
+            m_AssetDescriptionField.SetEnabled(IsEditable);
+            m_AssetTagsField.SetEnabled(IsEditable);
 
             foreach (var label in asset.Labels)
             {
                 m_VersionLabelsContainer.AddTag(label.LabelName, null, m_AssetTagsTemplate, false);
             }
 
-            UpdateStatus();
+            _ = UpdateStatusAsync(token);
 
             m_SequenceNumber.tooltip = asset.Descriptor.AssetVersion.ToString();
             m_SequenceNumber.text = $"Ver. {asset.FrozenSequenceNumber}";
@@ -206,12 +215,12 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             m_ParentSequenceNumber.text = $"Parent Ver. {asset.ParentFrozenSequenceNumber}";
             m_ParentSequenceNumber.Show(asset.ParentFrozenSequenceNumber > 0);
 
-            Action<string> addTagAction = tag => AddTag(tag, canUpdate);
+            Action<string> addTagAction = tag => AddTag(tag, IsEditable);
             addTagAction.AddTags(m_AssetUpdate.Tags);
 
-            _ = m_MetadataController.PopulateMetadataAsync(asset, canUpdate);
+            _ = m_MetadataController.PopulateMetadataAsync(asset, IsEditable);
 
-            _ = ListDatasets(asset, canUpdate, token);
+            _ = ListDatasets(asset, IsEditable, token);
             _ = ListVersions(asset, token);
         }
 
@@ -220,6 +229,55 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             m_RightPanel?.Hide();
 
             ClearAssetInformation();
+        }
+
+        void ClearAssetInformation()
+        {
+            if (m_CurrentAssetCancellationTokenSource != null)
+            {
+                m_CurrentAssetCancellationTokenSource.Cancel();
+                m_CurrentAssetCancellationTokenSource.Dispose();
+                m_CurrentAssetCancellationTokenSource = null;
+            }
+
+            m_CurrentAsset = null;
+            m_AssetNameField.SetValueWithoutNotify("");
+            m_VersionLabelsContainer.Clear();
+            m_SequenceNumber.text = "";
+            m_ParentSequenceNumber.text = "";
+            m_ParentSequenceNumber.Hide();
+            m_AssetTypeDropdown.SetValueWithoutNotify(default);
+            m_AssetDescriptionField.SetValueWithoutNotify("");
+            m_AssetTagsField.SetValueWithoutNotify("");
+            m_AssetTagsContainer.Clear();
+            m_DatasetScrollView.Clear();
+            m_VersionScrollView.Clear();
+            m_MetadataController.Clear();
+            m_StatusController.Clear();
+            m_StatusDropdown.choices = new List<string>();
+            m_StatusDropdown.SetEnabled(false);
+            m_ReachableStatuses = null;
+            m_CurrentStatus = null;
+            m_SelectedStatus = null;
+        }
+
+        void ChangeButtonEnabledState(bool state)
+        {
+            m_CreateDatasetButton.SetEnabled(state);
+            m_SaveButton.SetEnabled(state);
+            m_FreezeButton.SetEnabled(state);
+            m_UnfreezeButton.SetEnabled(state);
+            m_BackButton.SetEnabled(state);
+        }
+
+        void AddTags(FocusInEvent evt)
+        {
+            m_AssetTagsField.ParseTags(m_AssetUpdate.Tags, tag => AddTag(tag, true));
+        }
+
+        void AddTag(string tag, bool canRemove)
+        {
+            m_AssetTagsContainer.AddTag(tag, m_AssetUpdate.Tags, m_AssetTagsTemplate, canRemove);
         }
 
         async Task ListDatasets(IAsset asset, bool canUpdate, CancellationToken cancellationToken)
@@ -271,49 +329,32 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             m_VersionScrollView.Add(item);
         }
 
-        void ClearAssetInformation()
-        {
-            if (m_ListCancellationTokenSource != null)
-            {
-                m_ListCancellationTokenSource.Cancel();
-                m_ListCancellationTokenSource.Dispose();
-                m_ListCancellationTokenSource = null;
-            }
-
-            m_CurrentAsset = null;
-            m_StatusController.Clear();
-            m_AssetNameField.SetValueWithoutNotify("");
-            m_VersionLabelsContainer.Clear();
-            m_SequenceNumber.text = "";
-            m_ParentSequenceNumber.text = "";
-            m_ParentSequenceNumber.Hide();
-            m_AssetTypeDropdown.SetValueWithoutNotify(default);
-            m_AssetDescriptionField.SetValueWithoutNotify("");
-            m_AssetTagsField.SetValueWithoutNotify("");
-            m_AssetTagsContainer.Clear();
-            m_DatasetScrollView.Clear();
-            m_VersionScrollView.Clear();
-            m_MetadataController.Clear();
-        }
-
         void AsyncAction(Func<Task> action)
         {
             _ = action?.Invoke();
         }
 
-        async Task UpdateAssetInformationAsync()
+        async Task UpdateAssetAsync()
         {
             if (m_CurrentAsset == null) return;
 
             ChangeButtonEnabledState(false);
 
-            if (PrepareAssetUpdateAsync != null) await PrepareAssetUpdateAsync.Invoke();
+            var updateTasks = new List<Task>();
 
-            var updateTasks = new List<Task>
+            if (IsEditable)
             {
-                m_CurrentAsset.UpdateAsync(m_AssetUpdate, default),
-                m_MetadataController.UpdateMetadataAsync(default),
-            };
+                if (PrepareAssetUpdateAsync != null) await PrepareAssetUpdateAsync.Invoke();
+
+                updateTasks.Add(m_CurrentAsset.UpdateAsync(m_AssetUpdate, default));
+                updateTasks.Add(m_MetadataController.UpdateMetadataAsync(default));
+            }
+
+            if (m_SelectedStatus != null)
+            {
+                updateTasks.Add(m_CurrentAsset.UpdateStatusAsync(m_SelectedStatus, default));
+                m_SelectedStatus = null;
+            }
 
             try
             {
@@ -328,45 +369,6 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             {
                 e.LogException();
                 DialogService.ShowMessage("Error", $"An error occured while saving the asset.");
-            }
-            finally
-            {
-                ChangeButtonEnabledState(true);
-            }
-        }
-
-        async Task PublishAssetAsync()
-        {
-            if (m_CurrentAsset == null) return;
-
-            ChangeButtonEnabledState(false);
-
-            try
-            {
-                // Successful publishing workflow
-                //Draft -> Review -> Approved -> Published
-                switch (m_CurrentAsset.Status)
-                {
-                    case "Draft":
-                        await m_CurrentAsset.UpdateStatusAsync(AssetStatusAction.SendForReview, CancellationToken.None);
-                        await m_CurrentAsset.UpdateStatusAsync(AssetStatusAction.Approve, CancellationToken.None);
-                        await m_CurrentAsset.UpdateStatusAsync(AssetStatusAction.Publish, CancellationToken.None);
-                        break;
-                    case "Ingestion": // Status when asset is in review
-                        await m_CurrentAsset.UpdateStatusAsync(AssetStatusAction.Approve, CancellationToken.None);
-                        await m_CurrentAsset.UpdateStatusAsync(AssetStatusAction.Publish, CancellationToken.None);
-                        break;
-                    case "Approved":
-                        await m_CurrentAsset.UpdateStatusAsync(AssetStatusAction.Publish, CancellationToken.None);
-                        break;
-                }
-
-                OnAssetUpdated?.Invoke(m_CurrentAsset);
-            }
-            catch (Exception)
-            {
-                // Hide exception for now until we have a better way to handle it.
-                // Invalid exception can occur on SendAssetToReview even if the execution completes.
             }
             finally
             {
@@ -432,56 +434,56 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
                 AddDatasetRow(dataset, true);
         }
 
-        void UpdateStatus()
+        async Task UpdateStatusAsync(CancellationToken cancellationToken)
         {
+            m_StatusController.Update(null, null);
+
             if (m_CurrentAsset == null)
                 return;
 
-            m_StatusController.Update(m_CurrentAsset.Status, m_CurrentAsset.AuthoringInfo?.Updated);
+            var status = await m_CurrentAsset.GetStatusAsync(cancellationToken);
 
-            // Successful publishing workflow
-            //Draft -> Review -> Approved -> Published
-            switch (m_CurrentAsset.Status)
+            if (cancellationToken.IsCancellationRequested)
+                return;
+
+            m_CurrentStatus = status;
+            m_StatusController.Update(m_CurrentStatus.Name, m_CurrentAsset.AuthoringInfo?.Updated);
+
+            m_StatusController.SetStatusColor(m_CurrentStatus.Name switch
             {
-                case "Published":
-                    m_StatusController.SetStatusColor(new Color(0.74f, 0.94f, 0.71f, 1f));
-                    break;
-                case "Approved":
-                    m_StatusController.SetStatusColor(new Color(0.74f, 0.94f, 0.71f, 1f));
-                    m_PublishButton.visible = true;
-                    break;
-                case "Ingestion": // Status when asset is in review
-                    m_PublishButton.visible = true;
-                    break;
-                case "Withdrawn":
-                    m_StatusController.SetStatusColor(new Color(0.93f, 0.42f, 0.37f, 1f));
-                    break;
-                case "Draft":
-                    m_StatusController.SetStatusColor(new Color(0.86f, 0.60f, 0.27f, 1f));
-                    m_PublishButton.visible = true;
-                    m_CreateDatasetButton.visible = true;
-                    break;
-            }
+                // Legacy || Default
+                "Published" or "Approved" => new Color(0.07f, 0.65f, 0.58f, 1f),
+
+                // Legacy || Default
+                "InReview" or "Ready for Review" => new Color(0.24f, 0.39f, 0.87f, 1f),
+
+                // Legacy || Legacy || Default
+                "Withdrawn" or "Rejected" or "Needs Changes" => new Color(0.9f, 0.28f, 0.3f, 1f),
+
+                "Draft" => new Color(0.86f, 0.60f, 0.27f, 1f),
+
+                _ => Color.gray
+            });
+
+            await ListReachableStatusesAsync(cancellationToken);
         }
 
-        void ChangeButtonEnabledState(bool state)
+        async Task ListReachableStatusesAsync(CancellationToken cancellationToken)
         {
-            m_CreateDatasetButton.SetEnabled(state);
-            m_PublishButton.SetEnabled(state);
-            m_SaveButton.SetEnabled(state);
-            m_FreezeButton.SetEnabled(state);
-            m_UnfreezeButton.SetEnabled(state);
-            m_BackButton.SetEnabled(state);
-        }
+            m_StatusDropdown.SetEnabled(false);
 
-        void AddTags(FocusInEvent evt)
-        {
-            m_AssetTagsField.ParseTags(m_AssetUpdate.Tags, tag => AddTag(tag, true));
-        }
+            if (m_CurrentAsset == null)
+                return;
 
-        void AddTag(string tag, bool canRemove)
-        {
-            m_AssetTagsContainer.AddTag(tag, m_AssetUpdate.Tags, m_AssetTagsTemplate, canRemove);
+            m_ReachableStatuses = await m_CurrentAsset.GetReachableStatusesAsync(cancellationToken);
+
+            if (cancellationToken.IsCancellationRequested)
+                return;
+
+            m_StatusDropdown.choices = m_ReachableStatuses.Select(s => s.Name).ToList();
+            m_StatusDropdown.SetValueWithoutNotify(string.Empty);
+
+            m_StatusDropdown.SetEnabled(true);
         }
     }
 }

@@ -47,7 +47,8 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
         readonly OrganizationController m_OrganizationController;
         IAsset m_SelectedAsset;
         OrganizationId m_OrganizationId;
-        Dictionary<string, string> m_KeyToDisplayName = null;
+        Dictionary<string, string> m_FieldToName;
+        Dictionary<string, string> m_StatusFlowToName;
 
         MonoBehaviour m_CoroutineHandler;
 
@@ -132,7 +133,7 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
 
             m_SelectedAsset = asset;
 
-            _ = PopulateKeyToDisplayName(asset.Descriptor.OrganizationId);
+            PopulateOrganizationFields(asset.Descriptor.OrganizationId);
 
             var propertyNames = m_SelectedAsset.GetType().GetProperties().Select(property => property.Name)
                 .Where(name => !k_AssetPropertiesToHide.Contains(name));
@@ -209,12 +210,18 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
             }
         }
 
-        async Task PopulateKeyToDisplayName(OrganizationId organizationId)
+        void PopulateOrganizationFields(OrganizationId organizationId)
         {
             if (m_OrganizationId == organizationId) return;
-
-            m_KeyToDisplayName = null;
             m_OrganizationId = organizationId;
+
+            _ = PopulateFieldToName();
+            _ = PopluateStatusFlowToName();
+        }
+
+        async Task PopulateFieldToName()
+        {
+            m_FieldToName = null;
 
             var dictionary = new Dictionary<string, string>();
             await foreach (var fieldDefinition in PlatformServices.AssetRepository.ListFieldDefinitionsAsync(m_OrganizationId, Range.All, default))
@@ -222,7 +229,20 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
                 dictionary[fieldDefinition.Descriptor.FieldKey] = fieldDefinition.DisplayName;
             }
 
-            m_KeyToDisplayName = dictionary;
+            m_FieldToName = dictionary;
+        }
+
+        async Task PopluateStatusFlowToName()
+        {
+            m_StatusFlowToName = null;
+
+            var dictionary = new Dictionary<string, string>();
+            await foreach (var statusFlow in PlatformServices.AssetRepository.ListStatusFlowsAsync(m_OrganizationId, Range.All, default))
+            {
+                dictionary[statusFlow.Descriptor.StatusFlowId] = statusFlow.Name;
+            }
+
+            m_StatusFlowToName = dictionary;
         }
 
         IEnumerable<TemplateContainer> CreatePropertyInformation(string propertyName, object propertyValue)
@@ -237,11 +257,14 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
                 case DatasetDescriptor datasetDescriptor:
                     AddItem(items, "Id", datasetDescriptor.DatasetId.ToString());
                     break;
+                case StatusFlowDescriptor statusFlowDescriptor:
+                    AddItem(items, "Status Flow", statusFlowDescriptor.StatusFlowId, valueSetter: (l, s) => _ = TrySetStatusFlowNameAsync(l, s));
+                    break;
                 case AuthoringInfo authoringInfo:
                     AddItem(items, "Created On", authoringInfo.Created.ToString("MM/dd/yyyy"));
-                    if (m_OrganizationController.OrganizationMembersInfo.ContainsKey(authoringInfo.CreatedBy)) AddItem(items, "Created By", m_OrganizationController.OrganizationMembersInfo[authoringInfo.CreatedBy].Name);
+                    if (m_OrganizationController.OrganizationMembersInfo.TryGetValue(authoringInfo.CreatedBy, out var value)) AddItem(items, "Created By", value.Name);
                     AddItem(items, "Updated On", authoringInfo.Updated.ToString("MM/dd/yyyy"));
-                    if (m_OrganizationController.OrganizationMembersInfo.ContainsKey(authoringInfo.UpdatedBy)) AddItem(items, "Updated By", m_OrganizationController.OrganizationMembersInfo[authoringInfo.UpdatedBy].Name);
+                    if (m_OrganizationController.OrganizationMembersInfo.TryGetValue(authoringInfo.UpdatedBy, out value)) AddItem(items, "Updated By", value.Name);
                     break;
                 case int propertyValueInt:
                     AddItem(items, propertyName, propertyValueInt.ToString());
@@ -276,22 +299,24 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
         {
             var properties = new List<TemplateContainer>();
 
+            Action<Label, string> getFieldName = (l, s) => _ = TrySetFieldNameAsync(l, s);
+
             await foreach (var kvp in metadata)
             {
                 switch (kvp.Value.ValueType)
                 {
                     case MetadataValueType.MultiSelection:
                         var multiSelectionEntry = kvp.Value.AsMultiSelection();
-                        AddItemList(properties, kvp.Key, multiSelectionEntry.SelectedValues);
+                        AddItemList(properties, kvp.Key, multiSelectionEntry.SelectedValues, getFieldName);
                         break;
                     case MetadataValueType.Url:
                         var urlEntry = kvp.Value.AsUrl();
                         var label = string.IsNullOrEmpty(urlEntry.Label) ? urlEntry.Uri.ToString() : urlEntry.Label;
                         var urlString = $"<a href=\"{urlEntry.Uri}\">{label}</a>";
-                        AddItem(properties, kvp.Key, urlString);
+                        AddItem(properties, kvp.Key, urlString, getFieldName);
                         break;
                     default:
-                        AddItem(properties, kvp.Key, kvp.Value.ToString());
+                        AddItem(properties, kvp.Key, kvp.Value.ToString(), getFieldName);
                         break;
                 }
             }
@@ -319,33 +344,25 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
             return item;
         }
 
-        TemplateContainer AddItem(ICollection<TemplateContainer> items, string key, string value)
+        TemplateContainer AddItem(ICollection<TemplateContainer> items, string key, string value, Action<Label, string> labelSetter = null, Action<Label, string> valueSetter = null)
         {
             var item = m_InformationItemTemplate.Instantiate();
             items.Add(item);
-            _ = GetDisplayNameAsync(item.Q<Label>("InformationPropertyLabel"), key);
-            item.Q<Label>("InformationValueLabel").text = value;
+
+            var label = item.Q<Label>("InformationPropertyLabel");
+            label.text = key;
+            labelSetter?.Invoke(label, key);
+
+            var valueLabel = item.Q<Label>("InformationValueLabel");
+            valueLabel.text = value;
+            valueSetter?.Invoke(valueLabel, value);
+
             return item;
         }
 
-        async Task GetDisplayNameAsync(TextElement label, string key)
+        void AddItemList(ICollection<TemplateContainer> items, string key, IEnumerable<string> values, Action<Label, string> labelSetter = null)
         {
-            label.text = key;
-
-            while (m_KeyToDisplayName == null)
-            {
-                await Task.Yield();
-            }
-
-            if (m_KeyToDisplayName.TryGetValue(key, out var displayName))
-            {
-                label.text = displayName;
-            }
-        }
-
-        void AddItemList(ICollection<TemplateContainer> items, string key, IEnumerable<string> values)
-        {
-            var item = AddItem(items, key, string.Empty);
+            var item = AddItem(items, key, string.Empty, labelSetter);
 
             var label = item.Q<Label>("InformationValueLabel");
             var valueList = values.ToList();
@@ -362,6 +379,32 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
             else
             {
                 label.text = k_NoneLabel;
+            }
+        }
+
+        async Task TrySetFieldNameAsync(TextElement label, string key)
+        {
+            while (m_FieldToName == null)
+            {
+                await Task.Yield();
+            }
+
+            if (m_FieldToName.TryGetValue(key, out var displayName))
+            {
+                label.text = displayName;
+            }
+        }
+
+        async Task TrySetStatusFlowNameAsync(TextElement label, string key)
+        {
+            while (m_StatusFlowToName == null)
+            {
+                await Task.Yield();
+            }
+
+            if (m_StatusFlowToName.TryGetValue(key, out var displayName))
+            {
+                label.text = displayName;
             }
         }
 
@@ -399,7 +442,8 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
 
             try
             {
-                await foreach (var file in assetToDownload.ListFilesAsync(Range.All, CancellationToken.None))
+                var sourceDataset = await assetToDownload.GetSourceDatasetAsync(CancellationToken.None);
+                await foreach (var file in sourceDataset.ListFilesAsync(Range.All, CancellationToken.None))
                 {
                     await using var destination = OpenWrite(Path.Combine(m_DownloadFolder, file.Descriptor.Path));
 

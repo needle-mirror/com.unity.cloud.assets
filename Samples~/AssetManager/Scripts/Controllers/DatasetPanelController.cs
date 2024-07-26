@@ -239,7 +239,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             m_StatusController.Update(m_CurrentDataset.Status, m_CurrentDataset.AuthoringInfo?.Updated);
             m_StatusController.SetStatusColor(m_CurrentDataset.Status switch
             {
-                "Committed" => new Color(0.74f, 0.94f, 0.71f, 1f),
+                "Committed" => new Color(0.07f, 0.65f, 0.58f, 1f),
                 "Uncommitted" => new Color(0.86f, 0.60f, 0.27f, 1f),
                 _ => Color.grey
             });

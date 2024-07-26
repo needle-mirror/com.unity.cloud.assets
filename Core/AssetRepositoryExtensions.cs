@@ -62,5 +62,39 @@ namespace Unity.Cloud.Assets
         {
             return assetRepository.QueryLabels(organizationId).LimitTo(range).ExecuteAsync(cancellationToken);
         }
+
+        /// <summary>
+        /// Lists an organization's <see cref="IStatusFlow"/>.
+        /// </summary>
+        /// <param name="assetRepository">The <see cref="IAssetRepository"/>. </param>
+        /// <param name="organizationId">The id of the organization. </param>
+        /// <param name="range">The range of results to return. </param>
+        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
+        /// <returns>An async enumeration of <see cref="IStatusFlow"/>. </returns>
+        public static IAsyncEnumerable<IStatusFlow> ListStatusFlowsAsync(this IAssetRepository assetRepository, OrganizationId organizationId, Range range, CancellationToken cancellationToken)
+        {
+            return assetRepository.QueryStatusFlows(organizationId).LimitTo(range).ExecuteAsync(cancellationToken);
+        }
+
+        /// <summary>
+        /// Returns the default status flow for the specified organization.
+        /// </summary>
+        /// <param name="assetRepository">The <see cref="IAssetRepository"/>. </param>
+        /// <param name="organizationId">The id of the organization. </param>
+        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
+        /// <returns>An <see cref="IStatusFlow"/>. </returns>
+        public static async Task<IStatusFlow> GetDefaultStatusFlowAsync(this IAssetRepository assetRepository, OrganizationId organizationId, CancellationToken cancellationToken)
+        {
+            var queryResults = assetRepository.QueryStatusFlows(organizationId).ExecuteAsync(cancellationToken);
+            await foreach (var statusFlow in queryResults)
+            {
+                if (statusFlow.IsDefault)
+                {
+                    return statusFlow;
+                }
+            }
+
+            throw new NotFoundException("No default status flow found.");
+        }
     }
 }

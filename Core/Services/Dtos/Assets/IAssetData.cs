@@ -117,5 +117,19 @@ namespace Unity.Cloud.Assets
         /// </summary>
         [DataMember(Name = "collections")]
         IEnumerable<CollectionPath> Collections { get; set; }
+
+        [DataMember(Name = "statusFlowId")]
+        string StatusFlowId
+        {
+            get => default;
+            set => throw new NotImplementedException();
+        }
+
+        [DataMember(Name = "statusFlowName")]
+        string StatusFlowName
+        {
+            get => default;
+            set => throw new NotImplementedException();
+        }
     }
 }

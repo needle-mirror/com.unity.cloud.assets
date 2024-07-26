@@ -4,7 +4,6 @@ namespace Unity.Cloud.Documentation.Assets
 
     using System;
     using System.Collections.Generic;
-    using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
     using Unity.Cloud.Assets;
@@ -91,53 +90,6 @@ namespace Unity.Cloud.Documentation.Assets
             }
         }
 
-        public async Task CreateAssetAsync(AssetType assetType)
-        {
-            var assetCreation = new AssetCreation("GrayTexture_0")
-            {
-                Description = "Documentation example asset creation.",
-                Type = assetType
-            };
-
-            var cancellationTokenSrc = new CancellationTokenSource(k_DefaultCancellationTimeout);
-
-            try
-            {
-                var asset = await CurrentProject.CreateAssetAsync(assetCreation, cancellationTokenSrc.Token);
-                if (asset != null)
-                {
-                    _ = GetAssetsAsync();
-                }
-            }
-            catch (Exception e)
-            {
-                Debug.LogError($"Failed to create asset. {e}");
-                throw;
-            }
-        }
-
-        public async Task UpdateAssetAsync(IAsset asset, IAssetUpdate assetUpdate)
-        {
-            try
-            {
-                var cancellationTokenSrc = new CancellationTokenSource(k_DefaultCancellationTimeout);
-                await asset.UpdateAsync(assetUpdate, cancellationTokenSrc.Token);
-                await asset.RefreshAsync(cancellationTokenSrc.Token);
-            }
-            catch (OperationCanceledException oe)
-            {
-                Debug.Log(oe);
-            }
-            catch (AggregateException e)
-            {
-                Debug.LogError(e.InnerException);
-            }
-            catch (Exception e)
-            {
-                Debug.LogError(e);
-            }
-        }
-
         public async Task GetProjectsAsync()
         {
             m_ProjectCancellationTokenSrc.Cancel();
@@ -171,7 +123,7 @@ namespace Unity.Cloud.Documentation.Assets
             }
         }
 
-        async Task GetAssetsAsync()
+        public async Task GetAssetsAsync(IAsset currentAsset = null)
         {
             m_AssetCancellationTokenSrc.Cancel();
             m_AssetCancellationTokenSrc.Dispose();
@@ -183,7 +135,7 @@ namespace Unity.Cloud.Documentation.Assets
                 var assets = CurrentProject.QueryAssets().ExecuteAsync(token);
 
                 AvailableAssets.Clear();
-                CurrentAsset = null;
+                CurrentAsset = currentAsset;
 
                 await foreach (var asset in assets)
                 {

@@ -14,5 +14,8 @@ namespace Unity.Cloud.Assets
         /// </summary>
         [DataMember(Name = "collections")]
         IEnumerable<CollectionPath> Collections { get; set; }
+
+        [DataMember(Name = "statusFlowId")]
+        string StatusFlowId { get; set; }
     }
 }

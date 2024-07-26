@@ -13,6 +13,9 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc/>
         public List<CollectionPath> Collections { get; set; }
 
+        /// <inheritdoc/>
+        public StatusFlowDescriptor? StatusFlowDescriptor { get; set; }
+
         public AssetCreation(string name)
         {
             Name = name;

@@ -116,6 +116,20 @@ namespace Unity.Cloud.Assets
         }
 
         /// <inheritdoc />
+        public async Task<IReadOnlyDictionary<string, Uri>> GetDownloadUrlsAsync(CancellationToken cancellationToken)
+        {
+            var fileUrls = await m_DataSource.GetAssetDownloadUrlsAsync(Descriptor.AssetDescriptor, new[] {Descriptor.DatasetId}, cancellationToken);
+
+            var urls = new Dictionary<string, Uri>();
+            foreach (var url in fileUrls)
+            {
+                urls.Add(url.FilePath, url.DownloadUrl);
+            }
+
+            return urls;
+        }
+
+        /// <inheritdoc />
         public async IAsyncEnumerable<IFile> ListFilesAsync(Range range, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
             var data = m_DataSource.ListFilesAsync(Descriptor, range, FieldsFilter.DefaultFileIncludes, cancellationToken);

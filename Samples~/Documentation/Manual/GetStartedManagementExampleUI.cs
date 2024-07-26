@@ -21,7 +21,7 @@ namespace Unity.Cloud.Documentation.Assets
             m_UI.Add(new OrganizationSelectionExampleUI(m_Behaviour));
             m_UI.Add(new ProjectSelectionExampleUI(m_Behaviour));
             m_UI.Add(new AssetSelectionExampleUI(m_Behaviour));
-            m_UI.Add(new UseCaseCreateAssetExampleUI(m_Behaviour));
+            m_UI.Add(new UseCaseAssetCreationExampleUI(m_Behaviour));
             m_UI.Add(new UseCaseManageAssetExampleUI(m_Behaviour));
         }
 

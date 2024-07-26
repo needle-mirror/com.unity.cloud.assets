@@ -133,10 +133,10 @@ namespace Unity.Cloud.Assets
         /// Updates the status of an asset.
         /// </summary>
         /// <param name="assetDescriptor">The object containing the necessary information to identify the asset.</param>
-        /// <param name="assetStatusAction">The new status of the asset.</param>
+        /// <param name="statusName">The new status of the asset.</param>
         /// <param name="cancellationToken">A token that can be used to cancel the request.</param>
         /// <returns>A task with no result. </returns>
-        Task UpdateAssetStatusAsync(AssetDescriptor assetDescriptor, AssetStatusAction assetStatusAction, CancellationToken cancellationToken);
+        Task UpdateAssetStatusAsync(AssetDescriptor assetDescriptor, string statusName, CancellationToken cancellationToken);
 
         /// <summary>
         /// Uploads content.

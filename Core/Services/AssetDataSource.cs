@@ -153,16 +153,9 @@ namespace Unity.Cloud.Assets
 
             var createdAsset = IsolatedSerialization.DeserializeWithDefaultConverters<CreatedAssetDto>(jsonContent);
 
-            return new AssetData(createdAsset.AssetId, createdAsset.AssetVersion)
-            {
-                SourceProjectId = projectDescriptor.ProjectId,
-                LinkedProjectIds = new[] {projectDescriptor.ProjectId},
-                Name = assetCreation.Name,
-                Description = assetCreation.Description,
-                Type = assetCreation.Type,
-                Status = "Draft",
-                Datasets = createdAsset.Datasets,
-            };
+            var assetDescriptor = new AssetDescriptor(projectDescriptor, createdAsset.AssetId, createdAsset.AssetVersion);
+
+            return await GetAssetAsync(assetDescriptor, FieldsFilter.DefaultAssetIncludes, cancellationToken);
         }
 
         /// <inheritdoc />
@@ -238,9 +231,9 @@ namespace Unity.Cloud.Assets
         }
 
         /// <inheritdoc />
-        public Task UpdateAssetStatusAsync(AssetDescriptor assetDescriptor, AssetStatusAction assetStatusAction, CancellationToken cancellationToken)
+        public Task UpdateAssetStatusAsync(AssetDescriptor assetDescriptor, string statusName, CancellationToken cancellationToken)
         {
-            var request = new ChangeAssetStatusRequest(assetDescriptor.ProjectId, assetDescriptor.AssetId, assetDescriptor.AssetVersion, assetStatusAction);
+            var request = new ChangeAssetStatusRequest(assetDescriptor.ProjectId, assetDescriptor.AssetId, assetDescriptor.AssetVersion, statusName);
             return RateLimitedServiceClient(request, HttpClientExtensions.HttpMethodPatch).PatchAsync(GetPublicRequestUri(request), request.ConstructBody(),
                 ServiceHttpClientOptions.Default(), cancellationToken);
         }

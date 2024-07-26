@@ -1,15 +1,15 @@
-# Use case: Aggregate assets
+# Use case: Group and count assets
 
 You can use the Unity Cloud Assets package to retrieve the number of assets in a Project that meet a set of search criteria.
 
 The SDK supports different workflows for users with different roles.
 
-| Organization or Asset Manager Project role                                                           | Aggregation search |
-|:-----------------------------------------------------------------------------------------------------|:-------------------|
-| [`Asset Management Viewer`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles)      | yes                |
-| [`Asset Management Consumer`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles)    | yes                |
-| [`Asset Management Contributor`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles) | yes                |
-| [`Organization Owner`](https://docs.unity.com/cloud/en-us/accounts/roles-and-permissions)            | yes                |
+| Organization or Asset Manager Project role                                                           | Group and count search |
+|:-----------------------------------------------------------------------------------------------------|:-----------------------|
+| [`Asset Management Viewer`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles)      | yes                    |
+| [`Asset Management Consumer`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles)    | yes                    |
+| [`Asset Management Contributor`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles) | yes                    |
+| [`Organization Owner`](https://docs.unity.com/cloud/en-us/accounts/roles-and-permissions)            | yes                    |
 
 ## Before you start
 
@@ -25,7 +25,7 @@ Before you start, you must:
 
 ### Add aggregation behaviours
 
-To implement aggregation, open the `AssetDiscoveryBehaviour` script you created and add the following code to the end of the class:
+To implement aggregation, open the `AssetManagementBehaviour` script you created and add the following code to the end of the class:
 
 [!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseAggregationExample.cs#Example_Behaviour)]
 

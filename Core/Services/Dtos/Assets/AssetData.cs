@@ -74,6 +74,12 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc />
         public IEnumerable<CollectionPath> Collections { get; set; }
 
+        /// <inheritdoc />
+        public string StatusFlowId { get; set; }
+
+        /// <inheritdoc />
+        public string StatusFlowName { get; set; }
+
         internal AssetData()
             : this(AssetId.None, AssetVersion.None) { }
 

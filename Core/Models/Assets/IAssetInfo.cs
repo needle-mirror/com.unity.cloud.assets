@@ -12,5 +12,10 @@ namespace Unity.Cloud.Assets
 
         /// <inheritdoc cref="IAsset.Tags"/>
         List<string> Tags { get; }
+
+        /// <summary>
+        /// The status flow of the asset.
+        /// </summary>
+        StatusFlowDescriptor? StatusFlowDescriptor => null;
     }
 }

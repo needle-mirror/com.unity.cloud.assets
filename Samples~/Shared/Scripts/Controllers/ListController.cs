@@ -65,7 +65,7 @@ namespace Unity.Cloud.Assets.Samples
             m_ListView.Rebuild();
         }
 
-        public void ClearList()
+        public virtual void ClearList()
         {
             Hide();
 
