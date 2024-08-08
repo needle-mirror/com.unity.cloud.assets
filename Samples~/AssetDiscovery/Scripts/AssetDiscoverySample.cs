@@ -10,6 +10,8 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
 {
     public class AssetDiscoverySample : MonoBehaviour
     {
+        const int k_RefreshIncrement = 100;
+
         [SerializeField]
         UIDocument m_UiDocument;
 
@@ -161,7 +163,7 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
 
             if (m_ProjectController.IsAllProjectSelected)
             {
-                m_SearchBarUi.DisplaySearchBar(m_ProjectController.GetAllProjects());
+                m_SearchBarUi.DisplaySearchBar(m_ProjectController.SelectedOrganizationId);
             }
             else
             {
@@ -182,7 +184,7 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
             IAsyncEnumerable<IAsset> assets = null;
             if (m_ProjectController.IsAllProjectSelected)
             {
-                assets = m_ProjectController.GetAssetsAcrossAllProjectsAsync(newListToken);
+                assets = m_ProjectController.GetAssetsAcrossAllProjectsAsync(m_ProjectController.SelectedOrganizationId, newListToken);
             }
             else if (m_ProjectController.SelectedProject != null)
             {
@@ -196,7 +198,7 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
             {
                 try
                 {
-                    var nextDisplayTrigger = 40;
+                    var nextDisplayTrigger = 30;
                     await foreach (var asset in assets.WithCancellation(newListToken))
                     {
                         m_ProjectAssetsList.Add(asset);
@@ -204,7 +206,7 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
 
                         if (m_ProjectAssetsList.Count > nextDisplayTrigger && !updateToken.IsCancellationRequested)
                         {
-                            nextDisplayTrigger *= 2;
+                            nextDisplayTrigger += k_RefreshIncrement;
 
                             m_AssetsGridController.PopulateAssetsGrid(assetsList);
                             assetsList.Clear();
@@ -254,7 +256,7 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
             m_AssetsGridController.DisplayAssetGrid();
             var assetList = new List<IAsset>();
 
-            var nextDisplayTrigger = 40;
+            var nextDisplayTrigger = 30;
             try
             {
                 await foreach (var asset in assets.WithCancellation(cancellationToken))
@@ -263,7 +265,7 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
 
                     if (assetList.Count > nextDisplayTrigger)
                     {
-                        nextDisplayTrigger *= 2;
+                        nextDisplayTrigger += k_RefreshIncrement;
                         m_AssetsGridController.PopulateAssetsGrid(assetList);
                         assetList.Clear();
                     }

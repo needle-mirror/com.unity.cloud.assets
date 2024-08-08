@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using Unity.Cloud.Common;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -53,11 +52,9 @@ namespace Unity.Cloud.Assets.Samples
             UpdateSearchBarValues();
         }
 
-        public void DisplaySearchBar(IEnumerable<IAssetProject> projects)
+        public void DisplaySearchBar(OrganizationId organizationId)
         {
-            var projectDescriptors = projects.Select(p => p.Descriptor).ToArray();
-
-            m_SearchBarController.UpdateSearchBar(projectDescriptors);
+            m_SearchBarController.UpdateSearchBar(organizationId);
             m_SearchBarController.DisplaySearchBar();
             UpdateSearchBarValues();
         }

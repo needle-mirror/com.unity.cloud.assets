@@ -5,6 +5,31 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [1.4.0-exp.2] - 2024-08-08
+
+### Added
+- Added overload `IAsset.CreateDatasetAsync(IDatasetCreation, CancellationToken)` to create a dataset.
+- Added use case documentation and example for folder upload.
+- Added `IAsset.AddTagsAsync(IEnumerable<string>, CancellationToken)` and `IAsset.RemoveTagsAsync(IEnumerable<string>, CancellationToken)` to respectively add and remove tags from an asset.
+- [Experimental] Added `IAsset.StatusName` property to get the current status name of an asset.
+- [Experimental] Added `IAsset.GetReachableStatusNamesAsync` to get the names of statuses reachable from the current status of an asset.
+- [Experimental] Added `IAsset.UpdateStatusAsync(string, CancellationToken)` to update the status of an asset.
+- Added overload `IAssetRepository.QueryAssets(OrganizationId)` which can query assets across all projects in an organization.
+- Added overloads `IAssetRepository.GroupAndCountAssets(OrganizationId)` and `IAssetRepository.CountAssetsAsync(OrganizationId, IAssetSearchFilter, CancellationToken)` which can group and count assets across all projects in an organization.
+- [Experimental] Added `IAssetReference` to expose dependencies between assets.
+- [Experimental] Added `IAsset.ListReferencesAsync` to list the references to an asset.
+- [Experimental] Added `IAsset.AddReferenceAsync(AssetId, AssetVersion, CancellationToken)` and `IAsset.AddReferenceAsync(AssetId, string, CancellationToken)` to add a reference to an asset either by version or label.
+- [Experimental] Added `IAsset.RemoveReferenceAsync(string, CancellationToken)` to remove a reference to an asset.
+- Added use cases to documentation
+
+### Removed
+- [Experimental][Breaking] Removed `IAsset.GetStatusAsync`; use `IAsset.StatusName` property instead.
+- [Experimental][Breaking] Removed `IAsset.GetReachableStatusesAsync`; use `IAsset.GetReachableStatusNamesAsync` instead.
+- [Experimental][Breaking] Removed `IAsset.UpdateStatusAsync(IStatus, CancellationToken)`; use `IAsset.UpdateStatusAsync(string, CancellationToken)` instead.
+
+### Deprecated
+- Deprecated `IAsset.CreateDatasetAsync(DatasetCreation, CancellationToken)`; use `IAsset.CreateDatasetAsync(IDatasetCreation, CancellationToken)` instead.
+
 ## [1.4.0-exp.1] - 2024-07-26
 
 ### Added

@@ -43,6 +43,8 @@ namespace Unity.Cloud.Documentation.Assets
 
         #region Example_UIContent
 
+        static readonly GUILayoutOption k_DefaultButtonSize = GUILayout.Width(60);
+
         IAsset m_CurrentAsset;
         Vector2 m_DatasetsScrollPosition;
         Dictionary<DatasetId, bool> m_Expanded = new();
@@ -73,7 +75,7 @@ namespace Unity.Cloud.Documentation.Assets
 
             GUILayout.BeginVertical();
 
-            if (GUILayout.Button("Refresh", GUILayout.Width(60)))
+            if (GUILayout.Button("Refresh", k_DefaultButtonSize))
             {
                 _ = m_Behaviour.GetDatasets();
             }
@@ -120,21 +122,8 @@ namespace Unity.Cloud.Documentation.Assets
 
             GUILayout.Space(5);
 
-#if UNITY_EDITOR
-            if (GUILayout.Button("Upload file", GUILayout.Width(80)))
-            {
-                var filePath = UnityEditor.EditorUtility.OpenFilePanel("File to upload", "Assets", string.Empty);
-                if (!string.IsNullOrEmpty(filePath))
-                {
-                    _ = m_OverrideFileActionIndex switch
-                    {
-                        1 => m_Behaviour.ReplaceFile(dataset, filePath),
-                        2 => m_Behaviour.ReuploadFile(dataset, filePath),
-                        _ => m_Behaviour.UploadFile(dataset, filePath)
-                    };
-                }
-            }
-#endif
+            TryUploadFolder(dataset);
+            TryUploadFile(dataset);
 
             var expanded = m_Expanded.GetValueOrDefault(dataset.Descriptor.DatasetId);
             if (GUILayout.Button(expanded ? "-" : "+", GUILayout.Width(20)))
@@ -165,6 +154,39 @@ namespace Unity.Cloud.Documentation.Assets
             {
                 m_WindowRect = GUILayout.Window(0, m_WindowRect, DisplayWindow, "Select files to link");
             }
+        }
+
+        void TryUploadFolder(IDataset dataset)
+        {
+#if UNITY_EDITOR
+            if (GUILayout.Button("Upload folder", GUILayout.Width(90)))
+            {
+                var folderPath = UnityEditor.EditorUtility.OpenFolderPanel("Folder to upload", "Assets", string.Empty);
+                if (!string.IsNullOrEmpty(folderPath))
+                {
+                    _ = m_Behaviour.UploadFolderAsync(dataset, folderPath);
+                }
+            }
+#endif
+        }
+
+        void TryUploadFile(IDataset dataset)
+        {
+#if UNITY_EDITOR
+            if (GUILayout.Button("Upload file", GUILayout.Width(90)))
+            {
+                var filePath = UnityEditor.EditorUtility.OpenFilePanel("File to upload", "Assets", string.Empty);
+                if (!string.IsNullOrEmpty(filePath))
+                {
+                    _ = m_OverrideFileActionIndex switch
+                    {
+                        1 => m_Behaviour.ReplaceFile(dataset, filePath),
+                        2 => m_Behaviour.ReuploadFile(dataset, filePath),
+                        _ => m_Behaviour.UploadFile(dataset, filePath)
+                    };
+                }
+            }
+#endif
         }
 
         void DisplayFiles(IDataset dataset)
@@ -206,14 +228,14 @@ namespace Unity.Cloud.Documentation.Assets
             var size = file.SizeBytes < 1000 ? "<1" : MathF.Round(file.SizeBytes / 1000f).ToString("F0");
             GUILayout.Label($"{file.Descriptor.Path} ({size} KB)");
 
-            if (GUILayout.Button("Link to", GUILayout.Width(60)))
+            if (GUILayout.Button("Link to", k_DefaultButtonSize))
             {
                 m_WindowRect = new Rect(Screen.width * 0.4f, Screen.height * 0.4f, Screen.width * 0.2f, Screen.height * 0.2f);
                 m_SelectedFile = file;
                 m_AvailableDatasets = m_Behaviour.Datasets?.Where(f => !m_SelectedFile.LinkedDatasets.Contains(dataset.Descriptor)).ToList();
             }
 
-            if (GUILayout.Button("Unlink", GUILayout.Width(60)))
+            if (GUILayout.Button("Unlink", k_DefaultButtonSize))
             {
                 _ = m_Behaviour.UnlinkFile(dataset, file);
             }
@@ -243,7 +265,7 @@ namespace Unity.Cloud.Documentation.Assets
 
                     GUILayout.Label(m_AvailableDatasets[i].Name);
 
-                    if (GUILayout.Button("Link", GUILayout.Width(60)))
+                    if (GUILayout.Button("Link", k_DefaultButtonSize))
                     {
                         _ = m_Behaviour.LinkFile(m_AvailableDatasets[i], m_SelectedFile);
                         m_AvailableDatasets.RemoveAt(i);
@@ -268,7 +290,7 @@ namespace Unity.Cloud.Documentation.Assets
 
             GUILayout.Space(10);
 
-            if (GUILayout.Button("Close", GUILayout.Width(60)))
+            if (GUILayout.Button("Close", k_DefaultButtonSize))
             {
                 m_SelectedFile = null;
                 m_AvailableDatasets = null;
@@ -358,12 +380,11 @@ namespace Unity.Cloud.Documentation.Assets
             }
         }
 
-        public async Task UploadFile(IDataset dataset, string filePath)
+        public async Task UploadFile(IDataset dataset, string filePath, string folderPath = "")
         {
-            var fileCreation = new FileCreation(Path.GetFileName(filePath))
+            var fileCreation = new FileCreation(Path.GetRelativePath(folderPath, filePath))
             {
                 Description = "Documentation example file creation.",
-                Tags = new List<string> {"Texture", "Gray"}
             };
 
             try
@@ -383,11 +404,13 @@ namespace Unity.Cloud.Documentation.Assets
             }
         }
 
-        public async Task ReplaceFile(IDataset dataset, string filePath)
+        public async Task ReplaceFile(IDataset dataset, string filePath, string folderPath = "")
         {
+            var path = Path.GetRelativePath(folderPath, filePath);
+
             if (DatasetFiles.TryGetValue(dataset.Descriptor.DatasetId, out var files))
             {
-                var file = files.FirstOrDefault(f => f.Descriptor.Path == Path.GetFileName(filePath));
+                var file = files.FirstOrDefault(f => f.Descriptor.Path == Path.GetFileName(path));
                 if (file != null)
                 {
                     try
@@ -402,19 +425,21 @@ namespace Unity.Cloud.Documentation.Assets
                 }
             }
 
-            await UploadFile(dataset, filePath);
+            await UploadFile(dataset, filePath, folderPath);
         }
 
-        public async Task ReuploadFile(IDataset dataset, string filePath)
+        public async Task ReuploadFile(IDataset dataset, string filePath, string folderPath = "")
         {
+            var path = Path.GetRelativePath(folderPath, filePath);
+
             if (DatasetFiles.TryGetValue(dataset.Descriptor.DatasetId, out var files))
             {
-                var file = files.FirstOrDefault(f => f.Descriptor.Path == Path.GetFileName(filePath));
+                var file = files.FirstOrDefault(f => f.Descriptor.Path == Path.GetFileName(path));
                 if (file != null)
                 {
                     try
                     {
-                        var logProgress = new LogProgress(filePath);
+                        var logProgress = new LogProgress(path);
 
                         var fileStream = File.OpenRead(filePath);
                         await file.UploadAsync(fileStream, logProgress, default);
@@ -432,7 +457,7 @@ namespace Unity.Cloud.Documentation.Assets
                 }
             }
 
-            await UploadFile(dataset, filePath);
+            await UploadFile(dataset, filePath, folderPath);
         }
 
         #endregion
@@ -478,6 +503,32 @@ namespace Unity.Cloud.Documentation.Assets
             catch (Exception e)
             {
                 Debug.LogError($"Failed to unlink file: {file.Descriptor.Path}. {e}");
+            }
+        }
+
+        #endregion
+
+        #region Example_Behaviour_UploadFolder
+
+        public async Task UploadFolderAsync(IDataset dataset, string folderPath)
+        {
+            var parentDirectoryPath = Directory.GetParent(folderPath)?.FullName;
+            var files = Directory.GetFiles(folderPath, "*.*", SearchOption.AllDirectories);
+
+            var tasks = new List<Task>();
+            foreach (var file in files)
+            {
+                tasks.Add(ReuploadFile(dataset, file, parentDirectoryPath));
+            }
+
+            try
+            {
+                await Task.WhenAll(tasks);
+                Debug.Log($"Folder: {folderPath} uploaded.");
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"Failed to upload folder: {folderPath}. {e}");
             }
         }
 

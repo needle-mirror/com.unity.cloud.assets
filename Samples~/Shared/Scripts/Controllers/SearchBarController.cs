@@ -12,7 +12,7 @@ namespace Unity.Cloud.Assets.Samples
 {
     public class SearchBarController
     {
-        public enum SearchFilter
+        enum SearchFilter
         {
             Name,
             Type,
@@ -72,9 +72,8 @@ namespace Unity.Cloud.Assets.Samples
 
         List<string> m_QueryList;
         IAssetRepository m_AssetRepository;
-        IEnumerable<ProjectDescriptor> m_ProjectDescriptors;
+        OrganizationId? m_OrganizationId;
         IAssetProject m_CurrentProject;
-        bool AcrossProjectMode => m_ProjectDescriptors != null && m_ProjectDescriptors.Any();
 
         readonly Dictionary<SearchFilter, KeyValuePair<string, int>[]> m_SearchValuesByCategory = new();
         readonly List<SearchValue> m_SearchValues = new();
@@ -242,16 +241,16 @@ namespace Unity.Cloud.Assets.Samples
 
         public void UpdateSearchBar(IAssetProject project)
         {
-            m_ProjectDescriptors = null;
+            m_OrganizationId = null;
             m_CurrentProject = project;
             m_SearchBarProjectLabel.text = project != null ? $"In: {project.Name}" : "";
 
             ClearSearchBar();
         }
 
-        public void UpdateSearchBar(IEnumerable<ProjectDescriptor> projects)
+        public void UpdateSearchBar(OrganizationId organizationId)
         {
-            m_ProjectDescriptors = projects;
+            m_OrganizationId = organizationId;
             m_CurrentProject = null;
 
             m_SearchBarProjectLabel.text = $"In: All Projects";
@@ -289,9 +288,9 @@ namespace Unity.Cloud.Assets.Samples
 
             IReadOnlyDictionary<string, int> aggregation = default;
 
-            if (AcrossProjectMode)
+            if (m_OrganizationId.HasValue)
             {
-                aggregation = await m_AssetRepository.GroupAndCountAssets(m_ProjectDescriptors)
+                aggregation = await m_AssetRepository.GroupAndCountAssets(m_OrganizationId.Value)
                     .LimitTo(102)
                     .ExecuteAsync(criterion, cancellationToken);
             }
@@ -346,9 +345,9 @@ namespace Unity.Cloud.Assets.Samples
 
             try
             {
-                if (AcrossProjectMode)
+                if (m_OrganizationId.HasValue)
                 {
-                    return m_AssetRepository.QueryAssets(m_ProjectDescriptors).SelectWhereMatchesFilter(assetSearchFilter).ExecuteAsync(cancellationToken);
+                    return m_AssetRepository.QueryAssets(m_OrganizationId.Value).SelectWhereMatchesFilter(assetSearchFilter).ExecuteAsync(cancellationToken);
                 }
 
                 if (m_CurrentProject != null)
@@ -382,8 +381,12 @@ namespace Unity.Cloud.Assets.Samples
             List<string> tags = new();
             List<string> systemTags = new();
 
-            assetSearchFilter.Include().Tags.WithValue(tags);
-            assetSearchFilter.Include().SystemTags.WithValue(systemTags);
+            assetSearchFilter.Any().Tags.WithValue(tags);
+            assetSearchFilter.Any().SystemTags.WithValue(systemTags);
+            assetSearchFilter.Any().Datasets.Tags.WithValue(tags);
+            assetSearchFilter.Any().Datasets.SystemTags.WithValue(systemTags);
+            assetSearchFilter.Any().Files.Tags.WithValue(tags);
+            assetSearchFilter.Any().Files.SystemTags.WithValue(systemTags);
 
             for (var i = 0; i < queries.Length; ++i)
             {
@@ -464,9 +467,9 @@ namespace Unity.Cloud.Assets.Samples
             try
             {
                 var count = 0;
-                if (AcrossProjectMode)
+                if (m_OrganizationId.HasValue)
                 {
-                    count = await m_AssetRepository.CountAssetsAsync(m_ProjectDescriptors, assetSearchFilter, cancellationToken);
+                    count = await m_AssetRepository.CountAssetsAsync(m_OrganizationId.Value, assetSearchFilter, cancellationToken);
                 }
                 else if (m_CurrentProject != null)
                 {

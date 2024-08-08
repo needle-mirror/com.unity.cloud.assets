@@ -11,11 +11,17 @@ You can use the Unity Cloud Assets package to filter assets across projects base
 
 ## Methodology
 
-To search assets across projects, you can use the `QueryAssets` method of an `IAssetRepository`, like so:
+To search assets across projects, you can use one of two `QueryAssets` method of an `IAssetRepository`.
 
-[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseSearchAcrossProjectsAssetsExample.cs#Example_Search)]
+To search assets across all projects of an organization, call the following method:
 
-The `ExecuteAsync` method returns an awaitable `IAsyncEnumerable` that will return each `IAsset` result.
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseSearchAcrossProjectsAssetsExample.cs#Example_Search_AllProjects)]
+
+To search assets across a select set of projects, call the following method:
+
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseSearchAcrossProjectsAssetsExample.cs#Example_Search_SelectProjects)]
+
+In both examples, the `ExecuteAsync` method returns an awaitable `IAsyncEnumerable` that will return each `IAsset` result.
 
 ### Built-in Search Filter
 

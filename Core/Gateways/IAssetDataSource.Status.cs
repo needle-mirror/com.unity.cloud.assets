@@ -13,6 +13,8 @@ namespace Unity.Cloud.Assets
 
         Task<(StatusFlowDescriptor, IStatusData[])> GetReachableStatusesAsync(AssetDescriptor assetDescriptor, CancellationToken cancellationToken);
 
+        Task<string[]> GetReachableStatusNamesAsync(AssetDescriptor assetDescriptor, CancellationToken cancellationToken);
+
         Task UpdateAssetStatusFlowAsync(AssetDescriptor assetDescriptor, StatusFlowDescriptor statusFlowDescriptor, CancellationToken cancellationToken);
     }
 }

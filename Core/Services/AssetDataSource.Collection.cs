@@ -98,8 +98,7 @@ namespace Unity.Cloud.Assets
         public Task DeleteCollectionAsync(CollectionDescriptor collectionDescriptor, CancellationToken cancellationToken)
         {
             var request = new CollectionRequest(collectionDescriptor.ProjectId, collectionDescriptor.Path);
-            return RateLimitedServiceClient(request, HttpMethod.Delete).DeleteAsync(GetPublicRequestUri(request), request.ConstructBody(),
-                ServiceHttpClientOptions.Default(), cancellationToken);
+            return RateLimitedServiceClient(request, HttpMethod.Delete).DeleteAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(), cancellationToken);
         }
 
         /// <inheritdoc />

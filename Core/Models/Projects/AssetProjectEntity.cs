@@ -67,6 +67,12 @@ namespace Unity.Cloud.Assets
         }
 
         /// <inheritdoc />
+        public AssetReferenceQueryBuilder QueryAssetReferences(AssetId assetId)
+        {
+            return new AssetReferenceQueryBuilder(m_DataSource, Descriptor, assetId);
+        }
+
+        /// <inheritdoc />
         public async Task<IAsset> CreateAssetAsync(IAssetCreation assetCreation, CancellationToken cancellationToken)
         {
             var data = await m_DataSource.CreateAssetAsync(Descriptor, assetCreation.From(), cancellationToken);

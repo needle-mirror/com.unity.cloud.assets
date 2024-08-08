@@ -44,18 +44,32 @@ namespace Unity.Cloud.Assets
         Task<IAssetCollection> GetAssetCollectionAsync(CollectionDescriptor collectionDescriptor, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Returns a builder to create a query to search an organization's <see cref="IAsset"/>.
+        /// Returns a builder which can query for assets in a set of projects.
         /// </summary>
         /// <param name="projectDescriptors">The projects to search. They must all belong to the same organization. </param>
         /// <returns>An <see cref="AssetQueryBuilder"/>. </returns>
         AssetQueryBuilder QueryAssets(IEnumerable<ProjectDescriptor> projectDescriptors);
 
         /// <summary>
-        /// Returns a builder to create a query to count an organization's <see cref="IAsset"/>.
+        /// Returns a builder which can query for assets in an organization.
+        /// </summary>
+        /// <param name="organizationId">The id of the organization.</param>
+        /// <returns>An <see cref="AssetQueryBuilder"/>. </returns>
+        AssetQueryBuilder QueryAssets(OrganizationId organizationId) => throw new NotImplementedException();
+
+        /// <summary>
+        /// Returns a builder which can query the asset count for a set of projects.
         /// </summary>
         /// <param name="projectDescriptors">The projects to search. They must all belong to the same organization. </param>
         /// <returns>An <see cref="GroupAndCountAssetsQueryBuilder"/>. </returns>
         GroupAndCountAssetsQueryBuilder GroupAndCountAssets(IEnumerable<ProjectDescriptor> projectDescriptors);
+
+        /// <summary>
+        /// Returns a builder which can query the asset count for an organization.
+        /// </summary>
+        /// <param name="organizationId">The id of the organization.</param>
+        /// <returns>An <see cref="GroupAndCountAssetsQueryBuilder"/>. </returns>
+        GroupAndCountAssetsQueryBuilder GroupAndCountAssets(OrganizationId organizationId) => throw new NotImplementedException();
 
         /// <summary>
         /// Retrieves an <see cref="IAsset"/> by its id and version.

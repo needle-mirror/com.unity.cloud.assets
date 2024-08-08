@@ -92,6 +92,23 @@ namespace Unity.Cloud.Assets
             return (statusFlowDescriptor, statuses);
         }
 
+        /// <inheritdoc />
+        public async Task<string[]> GetReachableStatusNamesAsync(AssetDescriptor assetDescriptor, CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var request = AssetStatusRequest.GetReachableStatusRequest(assetDescriptor.ProjectId, assetDescriptor.AssetId, assetDescriptor.AssetVersion);
+            var response = await RateLimitedServiceClient(request, HttpMethod.Get).GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(), cancellationToken);
+
+            var jsonContent = await response.GetContentAsString();
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var dto = IsolatedSerialization.Deserialize<ReachableStatusesDto>(jsonContent, IsolatedSerialization.defaultSettings);
+
+            return dto.ReachableStatusNames;
+        }
+
+        /// <inheritdoc />
         public Task UpdateAssetStatusFlowAsync(AssetDescriptor assetDescriptor, StatusFlowDescriptor statusFlowDescriptor, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();

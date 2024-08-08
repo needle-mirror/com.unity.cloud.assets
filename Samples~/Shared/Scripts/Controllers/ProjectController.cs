@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using Unity.Cloud.Common;
 using UnityEngine;
@@ -35,16 +34,16 @@ namespace Unity.Cloud.Assets.Samples
             m_ProjectListUi.Hide();
 
             var contextMenu = new ContextMenuController(RootVisualElement.Q("LeftPanelContextMenu"));
-            contextMenu?.SetEnabled(false);
+            contextMenu.SetEnabled(false);
 
             OrganizationSelected += PopulateProjectList;
         }
 
-        public IAsyncEnumerable<IAsset> GetAssetsAcrossAllProjectsAsync(CancellationToken cancellationToken)
+        public IAsyncEnumerable<IAsset> GetAssetsAcrossAllProjectsAsync(OrganizationId organizationId, CancellationToken cancellationToken)
         {
             try
             {
-                return AssetRepository.QueryAssets(m_ProjectListUi.GetProjects().Select(p => p.Descriptor)).ExecuteAsync(cancellationToken);
+                return AssetRepository.QueryAssets(organizationId).ExecuteAsync(cancellationToken);
             }
             catch (OperationCanceledException oe)
             {
@@ -74,11 +73,6 @@ namespace Unity.Cloud.Assets.Samples
                 e.LogException();
                 throw;
             }
-        }
-
-        public IEnumerable<IAssetProject> GetAllProjects()
-        {
-            return m_ProjectListUi.GetProjects();
         }
 
         protected override void Hide()

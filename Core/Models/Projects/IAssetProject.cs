@@ -53,6 +53,13 @@ namespace Unity.Cloud.Assets
         Task<IAsset> GetAssetAsync(AssetId assetId, string label, CancellationToken cancellationToken) => throw new NotImplementedException();
 
         /// <summary>
+        /// Returns an object that can be used to query asset references.
+        /// </summary>
+        /// <param name="assetId">The id of the asset to query. </param>
+        /// <returns>A <see cref="AssetReferenceQueryBuilder"/>. </returns>
+        AssetReferenceQueryBuilder QueryAssetReferences(AssetId assetId) => throw new NotImplementedException();
+
+        /// <summary>
         /// Creates an asset.
         /// </summary>
         /// <param name="assetCreation">The object containing all the necessary information to create the asset. </param>

@@ -71,13 +71,12 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
         StatusController m_StatusController;
 
-        IStatus[] m_ReachableStatuses;
-        IStatus m_CurrentStatus;
+        string[] m_ReachableStatuses;
 
         IAsset m_CurrentAsset;
         AssetUpdate m_AssetUpdate;
         MetadataController m_MetadataController;
-        IStatus m_SelectedStatus;
+        string m_SelectedStatus;
 
         CancellationTokenSource m_CurrentAssetCancellationTokenSource;
 
@@ -161,8 +160,8 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
             m_StatusDropdown.RegisterValueChangedCallback(evt =>
             {
-                m_SelectedStatus = m_ReachableStatuses.FirstOrDefault(s => s.Name == evt.newValue);
-                if (m_SelectedStatus?.Descriptor == m_CurrentStatus.Descriptor)
+                m_SelectedStatus = m_ReachableStatuses.FirstOrDefault(s => s == evt.newValue);
+                if (m_SelectedStatus == m_CurrentAsset.StatusName)
                 {
                     m_SelectedStatus = null;
                 }
@@ -257,7 +256,6 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             m_StatusDropdown.choices = new List<string>();
             m_StatusDropdown.SetEnabled(false);
             m_ReachableStatuses = null;
-            m_CurrentStatus = null;
             m_SelectedStatus = null;
         }
 
@@ -429,7 +427,8 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             if (m_CurrentAsset == null)
                 return;
 
-            var dataset = await m_CurrentAsset.CreateDatasetAsync(new DatasetCreation($"Dataset_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}"), default);
+            IDatasetCreation datasetCreation = new DatasetCreation($"Dataset_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}");
+            var dataset = await m_CurrentAsset.CreateDatasetAsync(datasetCreation, default);
             if (dataset != null)
                 AddDatasetRow(dataset, true);
         }
@@ -441,15 +440,9 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             if (m_CurrentAsset == null)
                 return;
 
-            var status = await m_CurrentAsset.GetStatusAsync(cancellationToken);
+            m_StatusController.Update(m_CurrentAsset.StatusName, m_CurrentAsset.AuthoringInfo?.Updated);
 
-            if (cancellationToken.IsCancellationRequested)
-                return;
-
-            m_CurrentStatus = status;
-            m_StatusController.Update(m_CurrentStatus.Name, m_CurrentAsset.AuthoringInfo?.Updated);
-
-            m_StatusController.SetStatusColor(m_CurrentStatus.Name switch
+            m_StatusController.SetStatusColor(m_CurrentAsset.StatusName switch
             {
                 // Legacy || Default
                 "Published" or "Approved" => new Color(0.07f, 0.65f, 0.58f, 1f),
@@ -475,12 +468,12 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             if (m_CurrentAsset == null)
                 return;
 
-            m_ReachableStatuses = await m_CurrentAsset.GetReachableStatusesAsync(cancellationToken);
+            m_ReachableStatuses = await m_CurrentAsset.GetReachableStatusNamesAsync(cancellationToken);
 
             if (cancellationToken.IsCancellationRequested)
                 return;
 
-            m_StatusDropdown.choices = m_ReachableStatuses.Select(s => s.Name).ToList();
+            m_StatusDropdown.choices = m_ReachableStatuses.ToList();
             m_StatusDropdown.SetValueWithoutNotify(string.Empty);
 
             m_StatusDropdown.SetEnabled(true);

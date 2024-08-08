@@ -8,12 +8,12 @@ You can use the Unity Cloud Assets package to:
 
 The SDK supports several workflows for users with different roles.
 
-| Organization or Asset Manager Project role                                                           | View files | Upload new file | Add/remove file references |
-|:-----------------------------------------------------------------------------------------------------|------------|:----------------|----------------------------|
-| [`Asset Management Viewer`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles)      | yes        | no              | no                         |
-| [`Asset Management Consumer`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles)    | yes        | no              | no                         |
-| [`Asset Management Contributor`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles) | yes        | yes             | yes                        |
-| [`Organization Owner`](https://docs.unity.com/cloud/en-us/accounts/roles-and-permissions)            | yes        | yes             | yes                        |
+| Organization or Asset Manager Project role                                                           | View files | Upload files | Add/remove file references |
+|:-----------------------------------------------------------------------------------------------------|------------|:-------------|----------------------------|
+| [`Asset Management Viewer`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles)      | yes        | no           | no                         |
+| [`Asset Management Consumer`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles)    | yes        | no           | no                         |
+| [`Asset Management Contributor`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles) | yes        | yes          | yes                        |
+| [`Organization Owner`](https://docs.unity.com/cloud/en-us/accounts/roles-and-permissions)            | yes        | yes          | yes                        |
 
 ## Before you start
 
@@ -57,6 +57,22 @@ The code snippet does the following:
 * Provides a method to upload a new file to a dataset.
 * Provides a method to replace the content of an existing file in a dataset.
 * Provides a method to replace a file in a dataset with another file.
+
+### Upload a folder
+
+To upload a folder to an asset's dataset, follow these steps:
+
+1. Open the `AssetManagementBehaviour` script you created.
+2. Add the following code to the end of the class:
+
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseFileCreationExample.cs#Example_Behaviour_UploadFolder)]
+
+The code snippet does the following:
+
+* Provides a method to upload the entire contents of a folder to a dataset.
+
+>[!NOTE]
+>The method will check for existing files in the dataset and replace their content; if an existing file is not found, it will upload the file as new.
 
 ### Reference a file in a different dataset
 
@@ -111,3 +127,13 @@ The code snippet does the following:
 * Provides UI buttons to trigger the creation of a new file within a dataset.
 * Provides a UI button to link an existing file to a dataset.
 * Provides a UI button for each existing file to unlink it from its dataset.
+
+## Going further
+
+### Update and download files
+
+See the [Download and manage files](use-case-update-files.md) use case for more information.
+
+### Replace uploaded file content
+
+See the [Replace uploaded file content](use-case-replace-files.md) use case for more information.

@@ -25,15 +25,16 @@ namespace Unity.Cloud.Assets
             asset.SystemTags = assetData.SystemTags ?? Array.Empty<string>();
             asset.Type = assetData.Type ?? AssetType.Other;
             asset.Status = assetData.Status;
+            asset.StatusName = assetData.Status;
             asset.StatusFlowDescriptor = new StatusFlowDescriptor(organizationId, assetData.StatusFlowId);
             asset.Labels = assetData.Labels?.Select(x => new LabelDescriptor(organizationId, x)) ?? Array.Empty<LabelDescriptor>();
             asset.ArchivedLabels = assetData.ArchivedLabels?.Select(x => new LabelDescriptor(organizationId, x)) ?? Array.Empty<LabelDescriptor>();
 
             if (includeFields.AssetFields.HasFlag(AssetFields.description))
-                asset.Description = assetData.Description;
+                asset.Description = assetData.Description ?? string.Empty;
 
             if (includeFields.AssetFields.HasFlag(AssetFields.previewFile))
-                asset.PreviewFile = assetData.PreviewFile;
+                asset.PreviewFile = assetData.PreviewFile ?? string.Empty;
 
             if (includeFields.AssetFields.HasFlag(AssetFields.previewFileUrl))
             {
@@ -109,8 +110,10 @@ namespace Unity.Cloud.Assets
 
         internal static IAsset From(this AssetDataWithIdentifiers data, IAssetDataSource dataSource, FieldsFilter includeFields)
         {
+#pragma warning disable 618
             var assetDescriptor = string.IsNullOrEmpty(data.Descriptor) ? data.Identifier.From() : AssetDescriptor.FromJson(data.Descriptor);
             return data.Data.From(dataSource, assetDescriptor, includeFields);
+#pragma warning restore 618
         }
 
         internal static AssetDescriptor From(this AssetIdentifier ids)
@@ -129,7 +132,7 @@ namespace Unity.Cloud.Assets
                 Type = asset.Type,
                 PreviewFile = asset.PreviewFile,
                 PreviewFileUrl = asset.PreviewFileUrl?.ToString(),
-                Status = asset.Status,
+                Status = asset.StatusName,
                 Created = asset.AuthoringInfo?.Created,
                 CreatedBy = asset.AuthoringInfo?.CreatedBy.ToString(),
                 Updated = asset.AuthoringInfo?.Updated,

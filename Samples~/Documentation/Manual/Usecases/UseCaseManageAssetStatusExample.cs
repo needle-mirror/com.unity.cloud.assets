@@ -53,13 +53,12 @@ namespace Unity.Cloud.Documentation.Assets
             if (m_CurrentAsset != m_Behaviour.CurrentAsset)
             {
                 m_CurrentAsset = m_Behaviour.CurrentAsset;
-                _ = m_Behaviour.GetCurrentStatusAsync();
                 _ = m_Behaviour.GetReachableStatuses();
             }
 
             GUILayout.BeginVertical();
 
-            GUILayout.Label("Current Status: " + (m_Behaviour.CurrentStatus == null ? "Loading..." : $"{m_Behaviour.CurrentStatus.Name}"));
+            GUILayout.Label($"Current Status: {m_CurrentAsset.StatusName}");
 
             GUILayout.Space(5f);
 
@@ -72,7 +71,7 @@ namespace Unity.Cloud.Documentation.Assets
                 GUILayout.Label("Reachable Statuses:");
                 foreach (var status in m_Behaviour.ReachableStatuses)
                 {
-                    if (GUILayout.Button(status.Name))
+                    if (GUILayout.Button(status))
                     {
                         _ = m_Behaviour.UpdateStatusAsync(status);
                     }
@@ -97,33 +96,21 @@ namespace Unity.Cloud.Documentation.Assets
             m_Behaviour = behaviour;
         }
 
-        #region Example_Behaviour_GetCurrentStatus
-
-        public IStatus CurrentStatus { get; private set; }
-
-        public async Task GetCurrentStatusAsync()
-        {
-            CurrentStatus = null;
-            CurrentStatus = await CurrentAsset.GetStatusAsync(default);
-        }
-
-        #endregion
-
         #region Example_Behaviour_GetReachableStatuses
 
-        public IStatus[] ReachableStatuses { get; private set; }
+        public string[] ReachableStatuses { get; private set; }
 
         public async Task GetReachableStatuses()
         {
             ReachableStatuses = null;
-            ReachableStatuses = await CurrentAsset.GetReachableStatusesAsync(default);
+            ReachableStatuses = await CurrentAsset.GetReachableStatusNamesAsync(default);
         }
 
         #endregion
 
         #region Example_Behaviour_UpdateStatus
 
-        public async Task UpdateStatusAsync(IStatus reachableStatus)
+        public async Task UpdateStatusAsync(string reachableStatus)
         {
             await CurrentAsset.UpdateStatusAsync(reachableStatus, default);
             await GetReachableStatuses();

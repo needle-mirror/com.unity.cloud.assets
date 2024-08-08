@@ -38,6 +38,20 @@ namespace Unity.Cloud.Assets
         }
 
         /// <summary>
+        /// Returns the total count of assets in the specified projects based on the provided criteria.
+        /// </summary>
+        /// <param name="assetRepository">The <see cref="IAssetRepository"/>. </param>
+        /// <param name="organizationId">The id of the organization. </param>
+        /// <param name="assetSearchFilter">The filter specifying the search criteria. Can be null. </param>
+        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
+        /// <returns>A task whose result is an asset count. </returns>
+        public static async Task<int> CountAssetsAsync(this IAssetRepository assetRepository, OrganizationId organizationId, [AllowNull] IAssetSearchFilter assetSearchFilter, CancellationToken cancellationToken)
+        {
+            var result = await assetRepository.GroupAndCountAssets(organizationId).SelectWhereMatchesFilter(assetSearchFilter).ExecuteAsync(GroupableField.Type, cancellationToken);
+            return result.Values.Sum();
+        }
+
+        /// <summary>
         /// Lists an organization's <see cref="IFieldDefinition"/>.
         /// </summary>
         /// <param name="assetRepository">The <see cref="IAssetRepository"/>. </param>

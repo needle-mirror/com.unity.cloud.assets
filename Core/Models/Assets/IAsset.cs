@@ -94,8 +94,13 @@ namespace Unity.Cloud.Assets
         /// <summary>
         /// The status of the asset.
         /// </summary>
-        [Obsolete("Use GetStatusAsync instead.")]
+        [Obsolete("Use StatusName instead.")]
         string Status { get; }
+
+        /// <summary>
+        /// The status of the asset.
+        /// </summary>
+        string StatusName => string.Empty;
 
         /// <summary>
         /// The id of the status flow of the asset.
@@ -126,7 +131,7 @@ namespace Unity.Cloud.Assets
         IAsset WithProject(ProjectDescriptor projectDescriptor);
 
         /// <summary>
-        /// Changes the path of this asset to the specified project.
+        /// Changes the path of the asset to the specified project.
         /// </summary>
         /// <param name="projectDescriptor">The descriptor of the project. </param>
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
@@ -134,7 +139,7 @@ namespace Unity.Cloud.Assets
         Task<IAsset> WithProjectAsync(ProjectDescriptor projectDescriptor, CancellationToken cancellationToken) => throw new NotImplementedException();
 
         /// <summary>
-        /// Switches this asset to the specified version.
+        /// Switches the asset to the specified version.
         /// </summary>
         /// <param name="assetVersion">The version of the asset to fetch. </param>
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
@@ -142,7 +147,7 @@ namespace Unity.Cloud.Assets
         Task<IAsset> WithVersionAsync(AssetVersion assetVersion, CancellationToken cancellationToken) => throw new NotImplementedException();
 
         /// <summary>
-        /// Switches this asset to the specified version.
+        /// Switches the asset to the specified version.
         /// </summary>
         /// <param name="label">The label associated to the version of the asset. </param>
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
@@ -172,20 +177,20 @@ namespace Unity.Cloud.Assets
         /// <param name="statusAction">The new status of the asset. </param>
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task with no result. </returns>
-        [Obsolete("Use IAssetUpdate.Status instead.")]
+        [Obsolete("Use UpdateStatus(string, CancellationToken) instead.")]
         Task UpdateStatusAsync(AssetStatusAction statusAction, CancellationToken cancellationToken);
 
         /// <summary>
         /// Updates the asset's status.
         /// </summary>
-        /// <param name="status">The new status of the asset. </param>
+        /// <param name="statusName">The name of the status. </param>
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task with no result. </returns>
         /// <remarks>
         /// The status of an asset can be updated whether an asset is frozen or unfrozen.
-        /// However, take note that the reachable statuses may vary based on the state of the asset.
+        /// However, note that the reachable statuses may vary based on the state of the asset.
         /// </remarks>
-        Task UpdateStatusAsync(IStatus status, CancellationToken cancellationToken) => throw new NotImplementedException();
+        Task UpdateStatusAsync(string statusName, CancellationToken cancellationToken) => throw new NotImplementedException();
 
         /// <summary>
         /// Creates a new unfrozen version of the asset.
@@ -267,7 +272,18 @@ namespace Unity.Cloud.Assets
         /// <returns>A task whose result is the newly created dataset. </returns>
         /// <exception cref="InvalidArgumentException">If the asset is frozen, because it cannot be modified. </exception>
         /// <remarks>Can only be called on a version that is not frozen. </remarks>
+        [Obsolete("Use CreateDatasetAsync(IDatasetCreation, CancellationToken) instead.")]
         Task<IDataset> CreateDatasetAsync(DatasetCreation datasetCreation, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Returns a <see cref="IDataset"/> with the specified creation information.
+        /// </summary>
+        /// <param name="datasetCreation">The object containing the necessary information to create a dataset. </param>
+        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
+        /// <returns>A task whose result is the newly created dataset. </returns>
+        /// <exception cref="InvalidArgumentException">If the asset is frozen, because it cannot be modified. </exception>
+        /// <remarks>Can only be called on a version that is not frozen. </remarks>
+        Task<IDataset> CreateDatasetAsync(IDatasetCreation datasetCreation, CancellationToken cancellationToken) => throw new NotImplementedException();
 
         /// <summary>
         /// Retrieves the specified <see cref="IDataset"/>.
@@ -310,7 +326,7 @@ namespace Unity.Cloud.Assets
         AssetLabelQueryBuilder QueryLabels() => throw new NotImplementedException();
 
         /// <summary>
-        /// Adds labels to this asset.
+        /// Adds labels to the asset.
         /// </summary>
         /// <param name="labels">The collection of labels to add. </param>
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
@@ -318,7 +334,7 @@ namespace Unity.Cloud.Assets
         Task AssignLabelsAsync(IEnumerable<string> labels, CancellationToken cancellationToken) => throw new NotImplementedException();
 
         /// <summary>
-        /// Remove labels from this asset.
+        /// Remove labels from the asset.
         /// </summary>
         /// <param name="labels">The collection of labels to remove. </param>
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
@@ -326,18 +342,45 @@ namespace Unity.Cloud.Assets
         Task UnassignLabelsAsync(IEnumerable<string> labels, CancellationToken cancellationToken) => throw new NotImplementedException();
 
         /// <summary>
-        /// Returns the current status information of the asset.
-        /// </summary>
-        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
-        /// <returns>A task whose result is the <see cref="IStatus"/> of the asset. </returns>
-        Task<IStatus> GetStatusAsync(CancellationToken cancellationToken) => throw new NotImplementedException();
-
-        /// <summary>
         /// Returns a set of reachable statuses from the current status.
         /// </summary>
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
-        /// <returns>A task whose result is an array of <see cref="IStatus"/>. </returns>
-        Task<IStatus[]> GetReachableStatusesAsync(CancellationToken cancellationToken) => throw new NotImplementedException();
+        /// <returns>A task whose result is an array of status names. </returns>
+        Task<string[]> GetReachableStatusNamesAsync(CancellationToken cancellationToken) => throw new NotImplementedException();
+
+        /// <summary>
+        /// Returns references to the asset.
+        /// </summary>
+        /// <param name="range">The range of results to return. </param>
+        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
+        /// <returns>An async enumeration of <see cref="IAssetReference"/>. </returns>
+        IAsyncEnumerable<IAssetReference> ListReferencesAsync(Range range, CancellationToken cancellationToken) => throw new NotImplementedException();
+
+        /// <summary>
+        /// Creates a reference between the asset and another asset, where the asset is the source of the reference.
+        /// </summary>
+        /// <param name="targetAssetId">The id of the asset. </param>
+        /// <param name="targetAssetVersion">The version of the asset. </param>
+        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
+        /// <returns>A task whose result is the reference between the assets. </returns>
+        Task<IAssetReference> AddReferenceAsync(AssetId targetAssetId, AssetVersion targetAssetVersion, CancellationToken cancellationToken) => throw new NotImplementedException();
+
+        /// <summary>
+        /// Creates a reference between the asset and another asset, where the asset is the source of the reference.
+        /// </summary>
+        /// <param name="targetAssetId">The id of the asset. </param>
+        /// <param name="targetLabel">The label associated to the asset version. </param>
+        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
+        /// <returns>A task whose result is the reference between the assets. </returns>
+        Task<IAssetReference> AddReferenceAsync(AssetId targetAssetId, string targetLabel, CancellationToken cancellationToken) => throw new NotImplementedException();
+
+        /// <summary>
+        /// Removes a reference between the asset and another asset. The asset can be either the source or the target.
+        /// </summary>
+        /// <param name="referenceId">The id of the reference between the assets. </param>
+        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
+        /// <returns>A task with no result. </returns>
+        Task RemoveReferenceAsync(string referenceId, CancellationToken cancellationToken) => throw new NotImplementedException();
 
         /// <summary>
         /// Returns a JSON serialized string of the asset's identifiers.

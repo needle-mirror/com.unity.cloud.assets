@@ -9,7 +9,7 @@ namespace Unity.Cloud.Assets.Samples
         protected readonly Button m_ActionButton;
         readonly Action m_Action;
 
-        public PopupController(VisualElement root, string popupName, Action action)
+        protected PopupController(VisualElement root, string popupName, Action action)
         {
             m_PopupWindow = root.Q(popupName);
             m_Action = action;

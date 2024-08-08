@@ -52,6 +52,12 @@ namespace Unity.Cloud.Assets
             m_ProjectIds.AddRange(projects.Select(descriptor => descriptor.ProjectId));
         }
 
+        internal GroupAndCountAssetsQueryBuilder(IAssetDataSource assetDataSource, OrganizationId organizationId)
+            : this(assetDataSource)
+        {
+            m_OrganizationId = organizationId;
+        }
+
         /// <summary>
         /// Sets the filter to be used when querying assets.
         /// </summary>

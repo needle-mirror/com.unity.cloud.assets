@@ -35,7 +35,7 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc cref="IAsset.Type"/>
         public AssetTypeSearchCriteria Type { get; } = new(nameof(IAsset.Type));
 
-        /// <inheritdoc cref="IAsset.Status"/>
+        /// <inheritdoc cref="IAsset.StatusName"/>
         public SearchCriteria<string> Status { get; } = new("Status", "status");
 
         /// <inheritdoc cref="IAsset.Tags"/>

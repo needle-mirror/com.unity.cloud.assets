@@ -41,6 +41,15 @@ public class AssetManagementExample
         return assets;
     }
 
+    IAsyncEnumerable<IAsset> SearchForAssets(IAssetRepository assetRepository, OrganizationId organizationId, string assetName, CancellationToken cancellationToken)
+    {
+        var assetSearchFilter = new AssetSearchFilter();
+        assetSearchFilter.Include().Name.WithValue(assetName);
+
+        var assets = assetRepository.QueryAssets(organizationId).SelectWhereMatchesFilter(assetSearchFilter).ExecuteAsync(cancellationToken);
+        return assets;
+    }
+
     #endregion
 
     #region AggregateAssets

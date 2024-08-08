@@ -17,11 +17,22 @@ namespace Unity.Cloud.Documentation.Assets
             m_AssetRepository = assetRepository;
         }
 
-#region Example_Search
+#region Example_Search_SelectProjects
 
 IAsyncEnumerable<IAsset> SearchAsync(IEnumerable<ProjectDescriptor> projectDescriptors, IAssetSearchFilter searchFilter)
 {
     return m_AssetRepository.QueryAssets(projectDescriptors)
+        .SelectWhereMatchesFilter(searchFilter)
+        .ExecuteAsync(CancellationToken.None);
+}
+
+#endregion
+
+#region Example_Search_AllProjects
+
+IAsyncEnumerable<IAsset> SearchAsync(OrganizationId organizationId, IAssetSearchFilter searchFilter)
+{
+    return m_AssetRepository.QueryAssets(organizationId)
         .SelectWhereMatchesFilter(searchFilter)
         .ExecuteAsync(CancellationToken.None);
 }

@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace Unity.Cloud.Documentation.Assets
 {
 #pragma warning disable S4487 // Unread "private" fields should be removed
@@ -169,5 +171,47 @@ namespace Unity.Cloud.Documentation.Assets
         }
 
         #endregion
+
+        async Task ClearDescription()
+        {
+            #region Example_Behaviour_ClearDescription
+
+            var assetUpdate = new AssetUpdate
+            {
+                Description = ""
+            };
+
+            await CurrentAsset.UpdateAsync(assetUpdate, CancellationToken.None);
+
+            #endregion
+        }
+
+        async Task ClearTags()
+        {
+            #region Example_Behaviour_ClearTags
+
+            var assetUpdate = new AssetUpdate
+            {
+                Tags = new List<string>()
+            };
+
+            await CurrentAsset.UpdateAsync(assetUpdate, CancellationToken.None);
+
+            #endregion
+        }
+
+        async Task ClearPreviewFile()
+        {
+            #region Example_Behaviour_ClearPreviewFile
+
+            var assetUpdate = new AssetUpdate
+            {
+                PreviewFile = ""
+            };
+
+            await CurrentAsset.UpdateAsync(assetUpdate, CancellationToken.None);
+
+            #endregion
+        }
     }
 }

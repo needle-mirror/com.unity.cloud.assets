@@ -57,9 +57,21 @@ namespace Unity.Cloud.Assets
         }
 
         /// <inheritdoc />
+        public AssetQueryBuilder QueryAssets(OrganizationId organizationId)
+        {
+            return new AssetQueryBuilder(m_DataSource, organizationId);
+        }
+
+        /// <inheritdoc />
         public GroupAndCountAssetsQueryBuilder GroupAndCountAssets(IEnumerable<ProjectDescriptor> projectDescriptors)
         {
             return new GroupAndCountAssetsQueryBuilder(m_DataSource, projectDescriptors);
+        }
+
+        /// <inheritdoc />
+        public GroupAndCountAssetsQueryBuilder GroupAndCountAssets(OrganizationId organizationId)
+        {
+            return new GroupAndCountAssetsQueryBuilder(m_DataSource, organizationId);
         }
 
         /// <inheritdoc />

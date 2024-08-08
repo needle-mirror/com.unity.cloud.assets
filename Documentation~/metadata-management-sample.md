@@ -2,12 +2,12 @@
 
 You can use the Metadata Management sample to list and manage the metadata field definitions in your Organization.
 
-| Organization or Asset Manager Project role                                                           | List an orgnaization's field definitions | Create/edit/delete field definitions |
-|:-----------------------------------------------------------------------------------------------------|:-----------------------------------------|:-------------------------------------|
-| [`Asset Management Viewer`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles)      | yes                                      | no                                   |
-| [`Asset Management Consumer`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles)    | yes                                      | no                                   |
-| [`Asset Management Contributor`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles) | yes                                      | yes                                  |
-| [`Organization Owner`](https://docs.unity.com/cloud/en-us/accounts/roles-and-permissions)            | yes                                      | yes                                  |
+| Organization or Asset Manager Project role                                                           | List field definitions | Create/edit/delete field definitions |
+|:-----------------------------------------------------------------------------------------------------|:-----------------------|:-------------------------------------|
+| [`Asset Management Viewer`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles)      | yes                    | no                                   |
+| [`Asset Management Consumer`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles)    | yes                    | no                                   |
+| [`Asset Management Contributor`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles) | yes                    | yes                                  |
+| [`Organization Owner`](https://docs.unity.com/cloud/en-us/accounts/roles-and-permissions)            | yes                    | yes                                  |
 
 ## Before you start
 

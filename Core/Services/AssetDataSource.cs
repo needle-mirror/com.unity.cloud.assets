@@ -342,8 +342,7 @@ namespace Unity.Cloud.Assets
                 metadataType,
                 keys);
 
-            return RateLimitedServiceClient(request, HttpMethod.Delete).DeleteAsync(GetPublicRequestUri(request), request.ConstructBody(),
-                ServiceHttpClientOptions.Default(), cancellationToken);
+            return RateLimitedServiceClient(request, HttpMethod.Delete).DeleteAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(), cancellationToken);
         }
 
         /// <inheritdoc />

@@ -28,6 +28,12 @@ namespace Unity.Cloud.Assets
             m_ProjectIds.Add(projectDescriptor.ProjectId);
         }
 
+        internal AssetQueryBuilder(IAssetDataSource assetDataSource, OrganizationId organizationId)
+        {
+            m_AssetDataSource = assetDataSource;
+            m_OrganizationId = organizationId;
+        }
+
         internal AssetQueryBuilder(IAssetDataSource assetDataSource, IEnumerable<ProjectDescriptor> projectDescriptors)
         {
             m_AssetDataSource = assetDataSource;

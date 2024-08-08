@@ -4,12 +4,12 @@ You can use the Unity Cloud Assets package to start any transformation on a give
 
 The SDK supports different workflows for users with different roles:
 
-| Organization or Asset Manager Project role | Start a transformation | Get a transformation |
-|--------------------------------------------|:-----------------------|----------------------|
-| [`Asset Management Viewer`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles) | no | no |
-| [`Asset Management Consumer`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles) | no | yes |
-| [`Asset Management Contributor`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles) | yes | yes |
-| [`Organization Owner`](https://docs.unity.com/cloud/en-us/accounts/roles-and-permissions) | yes  | yes  |
+| Organization or Asset Manager Project role                                                           | List transformations | Start transformations |
+|------------------------------------------------------------------------------------------------------|:---------------------|-----------------------|
+| [`Asset Management Viewer`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles)      | no                   | no                    |
+| [`Asset Management Consumer`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles)    | yes                  | no                    |
+| [`Asset Management Contributor`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles) | yes                  | yes                   |
+| [`Organization Owner`](https://docs.unity.com/cloud/en-us/accounts/roles-and-permissions)            | yes                  | yes                   |
 
 ## Before you start
 

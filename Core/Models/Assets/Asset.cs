@@ -75,6 +75,9 @@ namespace Unity.Cloud.Assets
         public string Status { get; set; }
 
         /// <inheritdoc />
+        public string StatusName { get; set; }
+
+        /// <inheritdoc />
         public StatusFlowDescriptor StatusFlowDescriptor { get; set; }
 
         /// <inheritdoc />
@@ -178,9 +181,9 @@ namespace Unity.Cloud.Assets
         }
 
         /// <inheritdoc />
-        public Task UpdateStatusAsync(IStatus status, CancellationToken cancellationToken)
+        public Task UpdateStatusAsync(string statusName, CancellationToken cancellationToken)
         {
-            return m_DataSource.UpdateAssetStatusAsync(Descriptor, status.Name, cancellationToken);
+            return m_DataSource.UpdateAssetStatusAsync(Descriptor, statusName, cancellationToken);
         }
 
         /// <inheritdoc />
@@ -306,7 +309,10 @@ namespace Unity.Cloud.Assets
         }
 
         /// <inheritdoc />
-        public async Task<IDataset> CreateDatasetAsync(DatasetCreation datasetCreation, CancellationToken cancellationToken)
+        public Task<IDataset> CreateDatasetAsync(DatasetCreation datasetCreation, CancellationToken cancellationToken) => CreateDatasetAsync((IDatasetCreation)datasetCreation, cancellationToken);
+
+        /// <inheritdoc />
+        public async Task<IDataset> CreateDatasetAsync(IDatasetCreation datasetCreation, CancellationToken cancellationToken)
         {
             var datasetData = await m_DataSource.CreateDatasetAsync(Descriptor, datasetCreation.From(), cancellationToken);
             var dataset = datasetData.From(m_DataSource, Descriptor, DatasetFields.all);
@@ -387,25 +393,64 @@ namespace Unity.Cloud.Assets
         }
 
         /// <inheritdoc />
-        public async Task<IStatus> GetStatusAsync(CancellationToken cancellationToken)
+        public Task<string[]> GetReachableStatusNamesAsync(CancellationToken cancellationToken)
         {
-            var (flowDescriptor, data) = await m_DataSource.GetAssetStatusAsync(Descriptor, cancellationToken);
-            if (data == null)
-            {
-                throw new NotFoundException("Status information not found.");
-            }
-
-            return data.From(flowDescriptor);
+            return m_DataSource.GetReachableStatusNamesAsync(Descriptor, cancellationToken);
         }
 
         /// <inheritdoc />
-        public async Task<IStatus[]> GetReachableStatusesAsync(CancellationToken cancellationToken)
+        public IAsyncEnumerable<IAssetReference> ListReferencesAsync(Range range, CancellationToken cancellationToken)
         {
-            var (statusFlowDescriptor, datas) = await m_DataSource.GetReachableStatusesAsync(Descriptor, cancellationToken);
-            return datas
-                .Where(data => data != null)
-                .Select(data => data.From(statusFlowDescriptor))
-                .ToArray();
+            var filter = new AssetReferenceSearchFilter();
+            filter.AssetVersion.WhereEquals(Descriptor.AssetVersion);
+
+            return new AssetReferenceQueryBuilder(m_DataSource, Descriptor.ProjectDescriptor, Descriptor.AssetId)
+                .SelectWhereMatchesFilter(filter)
+                .LimitTo(range)
+                .ExecuteAsync(cancellationToken);
+        }
+
+        /// <inheritdoc />
+        public Task<IAssetReference> AddReferenceAsync(AssetId targetAssetId, AssetVersion targetAssetVersion, CancellationToken cancellationToken)
+        {
+            var assetIdentifier = new AssetIdentifierDto
+            {
+                Id = targetAssetId.ToString(),
+                Version = targetAssetVersion.ToString()
+            };
+            return AddReferenceAsync(assetIdentifier, cancellationToken);
+        }
+
+        /// <inheritdoc />
+        public Task<IAssetReference> AddReferenceAsync(AssetId targetAssetId, string targetLabel, CancellationToken cancellationToken)
+        {
+            var assetIdentifier = new AssetIdentifierDto
+            {
+                Id = targetAssetId.ToString(),
+                Label = targetLabel
+            };
+            return AddReferenceAsync(assetIdentifier, cancellationToken);
+        }
+
+        async Task<IAssetReference> AddReferenceAsync(AssetIdentifierDto targetAssetIdentifier, CancellationToken cancellationToken)
+        {
+            var referenceId = await m_DataSource.CreateAssetReferenceAsync(Descriptor, targetAssetIdentifier, cancellationToken);
+            // Ideally we would fetch the newly created reference data here, but the API does not have an entry for returning a single reference.
+            return new AssetReference(Descriptor.ProjectDescriptor, referenceId)
+            {
+                IsValid = true,
+                SourceAssetId = Descriptor.AssetId,
+                SourceAssetVersion = Descriptor.AssetVersion,
+                TargetAssetId = new AssetId(targetAssetIdentifier.Id),
+                TargetAssetVersion = string.IsNullOrWhiteSpace(targetAssetIdentifier.Version) ? null : new AssetVersion(targetAssetIdentifier.Version),
+                TargetLabel = string.IsNullOrWhiteSpace(targetAssetIdentifier.Label) ? null : targetAssetIdentifier.Label,
+            };
+        }
+
+        /// <inheritdoc />
+        public Task RemoveReferenceAsync(string referenceId, CancellationToken cancellationToken)
+        {
+            return m_DataSource.DeleteAssetReferenceAsync(Descriptor.ProjectDescriptor, Descriptor.AssetId, referenceId, cancellationToken);
         }
 
         /// <inheritdoc />
@@ -440,6 +485,7 @@ namespace Unity.Cloud.Assets
                 Type = Type,
                 PreviewFile = PreviewFile,
                 Status = Status,
+                StatusName = StatusName,
                 IsFrozen = IsFrozen,
                 AuthoringInfo = AuthoringInfo,
                 MetadataEntity = {Properties = MetadataEntity.Properties},

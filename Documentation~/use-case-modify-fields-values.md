@@ -3,12 +3,12 @@
 You can use the Unity Cloud Assets package to add and remove the accepted values of field definitions of type `Selection`.
 
 
-| Organization or Asset Manager Project role                                                           | Modifying accepted values of field definitions |
-|:-----------------------------------------------------------------------------------------------------|------------------------------------------------|
-| [`Asset Management Viewer`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles)      | no                                             |
-| [`Asset Management Consumer`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles)    | no                                             |
-| [`Asset Management Contributor`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles) | no                                             |
-| [`Organization Owner`](https://docs.unity.com/cloud/en-us/accounts/roles-and-permissions)            | yes                                            |
+| Organization or Asset Manager Project role                                                           | Update accepted values |
+|:-----------------------------------------------------------------------------------------------------|------------------------|
+| [`Asset Management Viewer`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles)      | no                     |
+| [`Asset Management Consumer`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles)    | no                     |
+| [`Asset Management Contributor`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles) | no                     |
+| [`Organization Owner`](https://docs.unity.com/cloud/en-us/accounts/roles-and-permissions)            | yes                    |
 
 ## Before you start
 

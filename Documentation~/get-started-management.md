@@ -171,37 +171,6 @@ The script does the following:
 
 * Provides the UI to list and select assets.
 
-### Update an asset
-
-To update an asset, follow these steps:
-
-1. Open the `AssetManagementBehaviour` script you created.
-2. Add the following code to the end of the class:
-
-[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseManageAssetExample.cs#Example_Behaviour_UpdateAsset)]
-
-The code snippet does the following:
-
-* Provides a method to update the selected asset.
-
-To create UI for updating an asset, follow these steps:
-
-1. In your Unity Project window, go to **Assets** > **Scripts**.
-2. Select and hold the `Assets/Scripts` folder.
-3. Go to **Create** > **C# Script**. Name your script `UseCaseManageAssetExampleUI`.
-4. Open the `UseCaseManageAssetExampleUI` script you created and replace the contents of the file with the following code sample:
-
-[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseManageAssetExample.cs#Example_UIClass)]
-
-5. In the same script, replace the `OnGUI` function with the following code:
-
-[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseManageAssetExample.cs#Example_UIContent)]
-
-The ui does the following:
-
-* Displays information about the selected asset.
-* Provide fields to update the name, type and tags of the selected asset.
-
 ### Create an asset
 
 To create an asset, follow these steps:
@@ -245,14 +214,9 @@ The script does the following:
 
 For a more information about asset management, see the [Asset Management sample](asset-management-sample.md).
 
-### Creating datasets
+### Updating assets
 
-By default, each asset contain two datasets:
-
-* `Sources`
-* `Previews`
-
-To create additional datasets, see the [Create datasets](use-case-create-datasets.md) use case for more information.
+See the [Update assets](use-case-update-assets.md) use case for more information.
 
 ### Uploading files
 

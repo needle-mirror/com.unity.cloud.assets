@@ -143,7 +143,7 @@ namespace Unity.Cloud.Documentation.Assets
 
         public async Task CreateDataset(string name)
         {
-            var datasetCreation = new DatasetCreation(name)
+            IDatasetCreation datasetCreation = new DatasetCreation(name)
             {
                 Description = "Documentation example asset dataset creation.",
                 Tags = new List<string> {"Custom"}

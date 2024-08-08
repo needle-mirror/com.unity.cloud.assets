@@ -9,11 +9,13 @@
     * [Collection management](asset-collection-management-sample.md)
     * [Metadata field definition management](metadata-management-sample.md)
 * Use cases
+    * [Use case: Get projects, assets, datasets and files](use-case-get-entities.md)
     * Search and count
       * [Search assets in a project](use-case-search-assets.md)
       * [Search assets across projects](use-case-search-across-projects-assets.md)
       * [Group and count assets](use-case-aggregate-assets.md)
     * Assets
+      * [Update assets](use-case-update-assets.md)
       * [Manage asset versions](use-case-manage-versions.md)
       * [Manage asset status](use-case-manage-status.md)
     * Datasets

@@ -14,6 +14,15 @@ namespace Unity.Cloud.Documentation.Assets
 
         UseCaseSetupExamples()
         {
+            #region UseCaseAssetUpdate
+
+            m_UI.Add(new OrganizationSelectionExampleUI(m_Behaviour));
+            m_UI.Add(new ProjectSelectionExampleUI(m_Behaviour));
+            m_UI.Add(new AssetSelectionExampleUI(m_Behaviour));
+            m_UI.Add(new UseCaseManageAssetExampleUI(m_Behaviour));
+
+            #endregion
+
             #region UseCaseAggregateAssets
 
             m_UI.Add(new OrganizationSelectionExampleUI(m_Behaviour));

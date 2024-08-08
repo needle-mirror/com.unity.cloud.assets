@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Unity.Cloud.Common;
@@ -77,6 +79,52 @@ namespace Unity.Cloud.Assets
         {
             const string sourceTag = "Source";
             return GetDatasetAsync(asset, sourceTag, cancellationToken);
+        }
+
+        /// <summary>
+        /// Adds the specified tags to the asset if they are not already present.
+        /// </summary>
+        /// <param name="asset">An asset. </param>
+        /// <param name="tagsToAdd">A set of tags to add. </param>
+        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
+        /// <returns>A task with no result. </returns>
+        public static async Task AddTagsAsync(this IAsset asset, IEnumerable<string> tagsToAdd, CancellationToken cancellationToken)
+        {
+            await asset.RefreshAsync(cancellationToken);
+            var update = new AssetUpdate
+            {
+                Tags = asset.Tags.Union(tagsToAdd).ToList()
+            };
+            await asset.UpdateAsync(update, cancellationToken);
+        }
+
+        /// <summary>
+        /// Removes all instances of the specified tags from the asset.
+        /// </summary>
+        /// <param name="asset">An asset. </param>
+        /// <param name="tagsToRemove">A set of tags to remove. </param>
+        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
+        /// <returns>A task with no result. </returns>
+        public static async Task RemoveTagsAsync(this IAsset asset, IEnumerable<string> tagsToRemove, CancellationToken cancellationToken)
+        {
+            await asset.RefreshAsync(cancellationToken);
+            var update = new AssetUpdate
+            {
+                Tags = asset.Tags.Except(tagsToRemove).ToList()
+            };
+            await asset.UpdateAsync(update, cancellationToken);
+        }
+
+        /// <summary>
+        /// Creates a reference between the asset and another asset, where the asset is the source of the reference.
+        /// </summary>
+        /// <param name="asset">This asset. </param>
+        /// <param name="targetAssetDescriptor">The descriptor of the asset which is a target. </param>
+        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
+        /// <returns>A task whose result is the reference between the assets. </returns>
+        public static Task<IAssetReference> AddReferenceAsync(this IAsset asset, AssetDescriptor targetAssetDescriptor, CancellationToken cancellationToken)
+        {
+            return asset.AddReferenceAsync(targetAssetDescriptor.AssetId, targetAssetDescriptor.AssetVersion, cancellationToken);
         }
 
         static async Task<IDataset> GetDatasetAsync(this IAsset asset, string systemTag, CancellationToken cancellationToken)

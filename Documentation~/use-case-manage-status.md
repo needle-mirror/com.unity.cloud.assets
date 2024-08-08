@@ -4,7 +4,7 @@ You can use the Unity Cloud Assets package to update the status of assets in the
 
 | Organization or Asset Manager Project role                                                           | View status | Update status |
 |:-----------------------------------------------------------------------------------------------------|:------------|:--------------|
-| [`Asset Management Viewer`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles)      | no          | no            |
+| [`Asset Management Viewer`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles)      | yes         | no            |
 | [`Asset Management Consumer`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles)    | yes         | no            |
 | [`Asset Management Contributor`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles) | yes         | yes           |
 | [`Organization Owner`](https://docs.unity.com/cloud/en-us/accounts/roles-and-permissions)            | yes         | yes           |
@@ -23,17 +23,6 @@ Before you start, you must:
    * You can create assets through the dashboard; see the [Managing assets on the dashboard](https://docs.unity3d.com/docs-asset-manager/manual/add-asset.html) documentation.
 
 ## How do I...?
-
-### View the status of an asset
-
-To get the current status of an asset, follow these steps:
-
-1. Open the `AssetManagementBehaviour` script you created.
-2. Add the following code to the end of the class:
-
-[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseManageAssetStatusExample.cs#Example_Behaviour_GetCurrentStatus)]
-
-The code snippet sets the current status of the asset.
 
 ### View reachable statuses for an asset
 
