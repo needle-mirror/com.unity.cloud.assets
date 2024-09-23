@@ -7,9 +7,11 @@ namespace Unity.Cloud.Assets
 {
     static partial class EntityMapper
     {
-        internal static void MapFrom(this Asset asset, IAssetDataSource assetDataSource, OrganizationId organizationId, IAssetData assetData, FieldsFilter includeFields)
+        internal static void MapFrom(this Asset asset, IAssetDataSource assetDataSource, AssetDescriptor assetDescriptor, IAssetData assetData, FieldsFilter includeFields)
         {
             includeFields ??= new FieldsFilter();
+
+            var organizationId = assetDescriptor.OrganizationId;
 
             asset.m_LinkedProjects = assetData.LinkedProjectIds?.Select(projectId => new ProjectDescriptor(organizationId, projectId)).ToArray() ?? Array.Empty<ProjectDescriptor>();
             asset.SourceProject = new ProjectDescriptor(organizationId, assetData.SourceProjectId);
@@ -20,6 +22,7 @@ namespace Unity.Cloud.Assets
             asset.ParentVersion = assetData.ParentVersion;
             asset.ParentFrozenSequenceNumber = assetData.ParentVersionNumber;
 
+            asset.Description = assetData.Description ?? string.Empty;
             asset.Name = assetData.Name;
             asset.Tags = assetData.Tags ?? Array.Empty<string>();
             asset.SystemTags = assetData.SystemTags ?? Array.Empty<string>();
@@ -29,12 +32,9 @@ namespace Unity.Cloud.Assets
             asset.StatusFlowDescriptor = new StatusFlowDescriptor(organizationId, assetData.StatusFlowId);
             asset.Labels = assetData.Labels?.Select(x => new LabelDescriptor(organizationId, x)) ?? Array.Empty<LabelDescriptor>();
             asset.ArchivedLabels = assetData.ArchivedLabels?.Select(x => new LabelDescriptor(organizationId, x)) ?? Array.Empty<LabelDescriptor>();
-
-            if (includeFields.AssetFields.HasFlag(AssetFields.description))
-                asset.Description = assetData.Description ?? string.Empty;
-
-            if (includeFields.AssetFields.HasFlag(AssetFields.previewFile))
-                asset.PreviewFile = assetData.PreviewFile ?? string.Empty;
+            asset.PreviewFile = assetData.PreviewFilePath ?? string.Empty;
+            var previewFileDatasetDescriptor = new DatasetDescriptor(assetDescriptor, assetData.PreviewFileDatasetId);
+            asset.PreviewFileDescriptor = new FileDescriptor(previewFileDatasetDescriptor, assetData.PreviewFilePath ?? string.Empty);
 
             if (includeFields.AssetFields.HasFlag(AssetFields.previewFileUrl))
             {
@@ -92,7 +92,13 @@ namespace Unity.Cloud.Assets
             var validProjects = new HashSet<ProjectId>(availableProjects);
             validProjects.IntersectWith(data.LinkedProjectIds ?? Array.Empty<ProjectId>());
 
-            return data.From(assetDataSource, new ProjectDescriptor(organizationId, validProjects.FirstOrDefault()), includeFields);
+            var projectId = data.SourceProjectId;
+            if (validProjects.Any() && !validProjects.Contains(projectId))
+            {
+                projectId = validProjects.First();
+            }
+
+            return data.From(assetDataSource, new ProjectDescriptor(organizationId, projectId), includeFields);
         }
 
         internal static Asset From(this IAssetData data, IAssetDataSource assetDataSource, ProjectDescriptor projectDescriptor, FieldsFilter includeFields)
@@ -104,7 +110,7 @@ namespace Unity.Cloud.Assets
         internal static Asset From(this IAssetData data, IAssetDataSource assetDataSource, AssetDescriptor assetDescriptor, FieldsFilter includeFields)
         {
             var asset = new Asset(assetDataSource, assetDescriptor);
-            asset.MapFrom(assetDataSource, assetDescriptor.OrganizationId, data, includeFields);
+            asset.MapFrom(assetDataSource, assetDescriptor, data, includeFields);
             return asset;
         }
 
@@ -130,7 +136,8 @@ namespace Unity.Cloud.Assets
                 Description = asset.Description,
                 Tags = asset.Tags?.ToList(),
                 Type = asset.Type,
-                PreviewFile = asset.PreviewFile,
+                PreviewFilePath = asset.PreviewFileDescriptor.Path,
+                PreviewFileDatasetId = asset.PreviewFileDescriptor.DatasetId,
                 PreviewFileUrl = asset.PreviewFileUrl?.ToString(),
                 Status = asset.StatusName,
                 Created = asset.AuthoringInfo?.Created,

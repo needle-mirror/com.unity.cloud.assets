@@ -5,6 +5,36 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 2024-09-23
+
+### Added
+- Added `IAssetRepository.EnableProjectForAssetManagerAsync` to enable the Asset Manager feature for a project; this allows a project to be retrieved as an `IAssetProject`.
+- Added documentation for asset to asset references.
+- Added `IAsset.PreviewFileDescriptor`
+- Added `IFile.GetResizedImageDownloadUrlAsync` to get the download url of an image file with a specified max dimension.
+
+### Changed
+- Improved sample code snippets.
+
+### Fixed
+- Fixed bug where organization search returned asset results with missing ProjectId.
+- Fixes missing script in Asset Discovery sample
+
+### Removed
+- [Experimental][Breaking] Removed `StatusDescriptor` and `StatusTransitionDescriptor`. IStatus and IStatusTransition expose separate properties for `StatusFlowDescriptor` and string ids instead.
+
+### Deprecated
+- Deprecated `IAsset.PreviewFile`; use `IAsset.PreviewFileDescriptor` instead.
+
+## [1.4.0-exp.3] - 2024-08-26
+
+### Added
+- Added overload `IAssetRepository.GetAssetAsync(ProjectDescriptor, AssetId, string, CancellationToken)` to get an asset by asset id and label.
+- Added `Unity_Editor` in `AssetType` enum.
+
+### Changed
+- Changed rate limitation for endpoints related to file uploading to prevent error when bulk uploading file to the same asset.
+
 ## [1.4.0-exp.2] - 2024-08-08
 
 ### Added

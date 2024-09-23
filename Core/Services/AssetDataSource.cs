@@ -16,9 +16,10 @@ namespace Unity.Cloud.Assets
         const int k_QueueLimit = 100000;
         const int k_DefaultTokensPerPeriod = 30;
         const int k_DefaultTokenLimit = 30;
-        const int k_SlowTokensPerPeriod = 10;
-        const int k_SlowTokenLimit = 10;
+        const int k_SlowTokensPerPeriod = 5;
+        const int k_SlowTokenLimit = 5;
         const double k_ReplenishmentPeriod = 0.45; // we add 0.05s to each period to have a safety margin
+        const double k_SlowReplenishmentPeriod = 1;
         const string k_PublicApiPath = "/assets/v1";
 
         static readonly UCLogger k_Logger = LoggerProvider.GetLogger<AssetDataSource>();
@@ -288,7 +289,7 @@ namespace Unity.Cloud.Assets
             var httpClientOptions = new ServiceHttpClientOptions(true, false, false,
                 false, retryPolicy: new NoRetryPolicy());
 
-            var response = await m_ServiceHttpClient.SendAsync(httpRequestMessage, httpClientOptions,
+            var response = await RateLimitedServiceClient("UploadFile", HttpMethod.Put).SendAsync(httpRequestMessage, httpClientOptions,
                 HttpCompletionOption.ResponseContentRead, progress, cancellationToken);
 
             var result = response.EnsureSuccessStatusCode();
@@ -461,26 +462,37 @@ namespace Unity.Cloud.Assets
 
         IServiceHttpClient RateLimitedServiceClient(ApiRequest request, HttpMethod httpMethod)
         {
-            var requestType = request.GetType().ToString() + httpMethod;
+            var requestKey = request.GetType().ToString() + httpMethod;
 
-            if (m_HttpClients.TryGetValue(requestType, out var client)) return client;
+            if (m_HttpClients.TryGetValue(requestKey, out var client)) return client;
 
-            if (IsSearchRequest(request))
-            {
-                client = new RateLimitedServiceHttpClient(m_ServiceHttpClient, k_QueueLimit, k_SlowTokensPerPeriod, k_SlowTokenLimit, TimeSpan.FromSeconds(k_ReplenishmentPeriod));
-            }
-            else
-            {
-                client = new RateLimitedServiceHttpClient(m_ServiceHttpClient, k_QueueLimit, k_DefaultTokensPerPeriod, k_DefaultTokenLimit, TimeSpan.FromSeconds(k_ReplenishmentPeriod));
-            }
+            client = IsSlowRequest(request)
+                ? new RateLimitedServiceHttpClient(m_ServiceHttpClient, k_QueueLimit, k_SlowTokensPerPeriod,
+                    k_SlowTokenLimit, TimeSpan.FromSeconds(k_SlowReplenishmentPeriod))
+                : new RateLimitedServiceHttpClient(m_ServiceHttpClient, k_QueueLimit, k_DefaultTokensPerPeriod,
+                    k_DefaultTokenLimit, TimeSpan.FromSeconds(k_ReplenishmentPeriod));
 
-            m_HttpClients[requestType] = client;
+            m_HttpClients[requestKey] = client;
             return client;
         }
 
-        static bool IsSearchRequest(ApiRequest request)
+        IServiceHttpClient RateLimitedServiceClient(string requestType, HttpMethod httpMethod)
         {
-            return request is SearchRequest or AcrossProjectsSearchRequest or SearchAndAggregateRequest or AcrossProjectsSearchAndAggregateRequest;
+            var requestKey = requestType + httpMethod;
+
+            if (m_HttpClients.TryGetValue(requestKey, out var client)) return client;
+
+            client = new RateLimitedServiceHttpClient(m_ServiceHttpClient, k_QueueLimit, k_SlowTokensPerPeriod,
+                k_SlowTokenLimit, TimeSpan.FromSeconds(k_SlowReplenishmentPeriod));
+
+            m_HttpClients[requestKey] = client;
+            return client;
+        }
+
+        static bool IsSlowRequest(ApiRequest request)
+        {
+            return request is SearchRequest or AcrossProjectsSearchRequest or SearchAndAggregateRequest or AcrossProjectsSearchAndAggregateRequest
+                or CreateFileRequest or FileRequest or GetFileUploadUrlRequest;
         }
 
         static Uri GetEscapedUri(string url)

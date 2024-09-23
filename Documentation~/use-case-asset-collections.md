@@ -56,7 +56,7 @@ To create UI for displaying asset collections, follow these steps:
 1. In your Unity Project window, go to **Assets** > **Scripts**.
 2. Select and hold the `Assets/Scripts` folder.
 3. Go to **Create** > **C# Script**. Name your script `UseCaseAssetCollectionExampleUI`.
-4. Open the `UseCaseAggregationExampleUI` script you created and replace the contents of the file with the following code sample:
+4. Open the `UseCaseAssetCollectionExampleUI` script you created and replace the contents of the file with the following code sample:
 
 [!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseAssetCollectionExample.cs#Example_UIClass)]
 

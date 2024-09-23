@@ -1,5 +1,6 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
     <Style src="../../../Shared/UI/StyleSheets/SampleSheet.uss?fileID=7433441132597879392&amp;guid=7376c3d25e9f04a989663c45cc94f5c7&amp;type=3#SampleSheet" />
+    <Style src="../StyleSheets/DiscoveryStyleSheet.uss?fileID=7433441132597879392&amp;guid=6106b709427544a248238f9563ef3780&amp;type=3#DiscoveryStyleSheet" />
     <ui:VisualElement name="AssetsPanel" style="flex-direction: row; height: 100%; justify-content: space-between; width: 100%; flex-grow: 1;">
         <ui:VisualElement name="RightPanel" class="ContentContainer" style="justify-content: flex-end; margin-left: 0; margin-right: 0; margin-top: 0; margin-bottom: 0; padding-left: 4px; flex-direction: column; flex-grow: 1;">
             <ui:VisualElement name="Tabs" style="flex-grow: initial; flex-direction: row; height: -105px; width: 170px;">
@@ -7,21 +8,21 @@
                 <ui:Label tabindex="-1" text="Datasets" parse-escape-sequences="true" display-tooltip-when-elided="true" name="DatasetsInfo" class="tab" />
             </ui:VisualElement>
             <ui:VisualElement name="TabsContent" style="flex-grow: 1;">
-                <ui:VisualElement name="AssetInformationContainer" tooltip="Download" style="width: 100%; height: 100%; display: none; align-items: center;">
-                    <ui:VisualElement name="AssetInformationPanel" style="width: 100%; height: 85%; padding-right: 8px; padding-left: 4px;">
+                <ui:VisualElement name="AssetInformationContainer" tooltip="Download" style="display: none; flex-grow: 1; justify-content: space-between;">
+                    <ui:VisualElement name="AssetInformationPanel" style="padding-right: 8px; padding-left: 4px;">
                         <ui:VisualElement style="flex-direction: row; flex-shrink: 0;">
                             <ui:Label text="Name" display-tooltip-when-elided="true" name="Name" style="font-size: 18px; color: rgba(255, 255, 255, 0.82); -unity-font-style: bold;" />
                             <ui:Label text="Version" display-tooltip-when-elided="true" name="Version" style="font-size: 14px; color: rgba(255, 255, 255, 0.82); -unity-font-style: normal; margin-left: 12px; border-top-width: 1px; border-right-width: 1px; border-bottom-width: 1px; border-left-width: 1px; border-left-color: rgb(205, 205, 205); border-right-color: rgb(205, 205, 205); border-top-color: rgb(205, 205, 205); border-bottom-color: rgb(205, 205, 205); border-top-left-radius: 16px; border-top-right-radius: 16px; border-bottom-right-radius: 16px; border-bottom-left-radius: 16px; padding-right: 8px; padding-left: 8px; -unity-text-align: middle-left;" />
                         </ui:VisualElement>
-                        <ui:ScrollView name="AssetInformationScrollView" />
+                        <ui:ScrollView name="AssetInformationScrollView" horizontal-scroller-visibility="Hidden" />
                     </ui:VisualElement>
-                    <ui:Button text="Download" display-tooltip-when-elided="true" name="AssetDownloadButton" style="height: 7%;" />
-                    <ui:VisualElement name="AssetDownloadSuccessful" style="display: none; height: 3%; transition-duration: 1s; transition-timing-function: ease-in;">
-                        <ui:Label text="Download successful!" display-tooltip-when-elided="true" name="AssetDownloadSuccessfulLabel" />
+                    <ui:VisualElement style="flex-shrink: 0;">
+                        <ui:Label text="Download successful!" display-tooltip-when-elided="true" name="AssetDownloadSuccessful" class="info-label" />
+                        <ui:Button text="Download" display-tooltip-when-elided="true" name="AssetDownloadButton" class="sample-button button-blue" />
                     </ui:VisualElement>
                 </ui:VisualElement>
-                <ui:VisualElement name="DatasetInformationContainer" class="unselectedContent" style="height: 100%; width: 100%; display: none;">
-                    <ui:ScrollView name="DatasetsScrollView" style="height: 100%; width: 85%; padding-right: 8px;" />
+                <ui:VisualElement name="DatasetInformationContainer" class="unselectedContent" style="display: flex; flex-grow: 1;">
+                    <ui:ScrollView name="DatasetsScrollView" />
                 </ui:VisualElement>
             </ui:VisualElement>
         </ui:VisualElement>

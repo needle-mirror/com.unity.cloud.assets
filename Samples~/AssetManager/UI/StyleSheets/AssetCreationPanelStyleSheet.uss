@@ -160,26 +160,6 @@ Label {
     border-width: 2px;
 }
 
-.sample-button {
-    border-radius: 4px;
-    padding: 4px 8px;
-    margin: 2px 4px;
-    min-width: 80px;
-}
-
-.button-blue {
-    color: rgba(255, 255, 255, 0.82);
-    background-color: rgb(41, 161, 255);
-    border-color: rgb(41, 161, 255);
-    transition-duration: 0.25s;
-    transition-timing-function: ease-out-back;
-}
-
-.button-blue:hover {
-    background-color: rgb(76, 176, 255);
-    border-color: rgb(76, 176, 255);
-}
-
 .MetadataValue {
     display: none;
     flex-grow: 1;
@@ -216,4 +196,66 @@ Label {
     border-right-color: rgb(205, 205, 205);
     border-top-color: rgb(205, 205, 205);
     border-bottom-color: rgb(205, 205, 205);
+}
+
+.row-item {
+    padding-left: 16px;
+    padding-right: 16px;
+    background-color: rgb(19, 19, 19);
+    border-color: rgb(48, 48, 48);
+    border-width: 1px;
+    min-height: 55px;
+    flex-direction: row;
+    align-items: center;
+    overflow: hidden;
+}
+
+.row-item Label {
+    color: rgba(255, 255, 255, 0.82);
+    font-size: 13px;
+    margin: 2px;
+    padding: 4px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+.row-item__flex {
+    flex-shrink: 1;
+    flex-grow: 1;
+    white-space: normal;
+}
+
+.row-item__fixed {
+    min-width: auto;
+    flex-shrink: 0;
+    flex-grow: 0;
+    white-space: nowrap;
+}
+
+.row-item:hover {
+    border-color: rgb(48, 48, 48);
+    background-color: rgb(48, 48, 48);
+}
+
+.delete-icon {
+    flex-direction: row;
+    flex-grow: 0;
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    margin: 4px 4px 4px 16px;
+    background-image: url('../Sprites/delete_can.png?fileID=21300000&guid=6c9cea01357fe4f299a5d51b5e7f57ae&type=3#delete_can');
+    -unity-background-image-tint-color: rgb(112, 112, 112);
+    -unity-background-scale-mode: scale-to-fit;
+}
+
+.delete-icon:hover {
+    -unity-background-image-tint-color: rgb(160, 160, 160);
+}
+
+#ReferencesContainer #unity-content {
+    margin-top: 0;
+    margin-right: 0;
+    margin-bottom: 0;
+    margin-left: 0;
 }

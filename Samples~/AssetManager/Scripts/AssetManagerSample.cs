@@ -24,10 +24,6 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
         [SerializeField]
         VisualTreeAsset m_DatasetCreationTemplate;
         [SerializeField]
-        VisualTreeAsset m_FileListItemTemplate;
-        [SerializeField]
-        VisualTreeAsset m_DatasetListItemTemplate;
-        [SerializeField]
         VisualTreeAsset m_TagsTemplate;
         [SerializeField]
         VisualTreeAsset m_PopupTemplate;
@@ -95,7 +91,6 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             m_AssetPanelController.Init
             (
                 m_AssetPanel,
-                m_DatasetListItemTemplate,
                 m_TagsTemplate,
                 m_AddMetadataPopupController
             );
@@ -123,11 +118,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             );
             m_DatasetPanelController.PanelClosed += OnDatasetPanelClosed;
 
-            m_FileController.Init
-            (
-                m_DatasetPanel,
-                m_FileListItemTemplate
-            );
+            m_FileController.Init(m_DatasetPanel);
 
             m_AssetCreationController.Initialize
             (

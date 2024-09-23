@@ -1,9 +1,0 @@
-#InformationValue Label {
-    font-size: 14px;
-    color: rgb(210, 210, 210);
-}
-
-#InformationValueLabel {
-    white-space: normal;
-    -unity-font-style: bold;
-}

@@ -15,5 +15,12 @@ namespace Unity.Cloud.Assets
         {
             m_RequestUrl = $"/projects/{projectId}";
         }
+
+        public static ProjectRequest GetEnableProjectRequest(ProjectId projectId)
+        {
+            var request = new ProjectRequest(projectId);
+            request.m_RequestUrl += "/enable";
+            return request;
+        }
     }
 }

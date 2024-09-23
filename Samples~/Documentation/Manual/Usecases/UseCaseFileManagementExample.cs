@@ -47,10 +47,7 @@ namespace Unity.Cloud.Documentation.Assets
         Vector2 m_DatasetsScrollPosition;
         Vector2 m_FilesScrollPosition;
 
-        IDataset m_CurrentDataset;
-        IFile m_CurrentFile;
         FileUpdate m_FileUpdate;
-        IEnumerable<GeneratedTag> m_GeneratedTags;
 
         public void OnGUI()
         {
@@ -65,11 +62,10 @@ namespace Unity.Cloud.Documentation.Assets
             if (m_CurrentAsset != m_Behaviour.CurrentAsset)
             {
                 m_CurrentAsset = m_Behaviour.CurrentAsset;
-                m_CurrentDataset = null;
-                m_CurrentFile = null;
+                m_Behaviour.CurrentDataset = null;
+                m_Behaviour.CurrentFile = null;
                 m_FileUpdate = null;
                 m_Behaviour.CancelTagGeneration();
-                m_GeneratedTags = null;
                 _ = m_Behaviour.GetDataSetsAsync();
             }
 
@@ -102,8 +98,8 @@ namespace Unity.Cloud.Documentation.Assets
         {
             if (GUILayout.Button("Refresh", GUILayout.Width(60)))
             {
-                m_CurrentDataset = null;
-                m_CurrentFile = null;
+                m_Behaviour.CurrentDataset = null;
+                m_Behaviour.CurrentFile = null;
                 _ = m_Behaviour.GetDataSetsAsync();
                 return;
             }
@@ -134,7 +130,7 @@ namespace Unity.Cloud.Documentation.Assets
 
                 if (GUILayout.Button("Select", GUILayout.Width(60)))
                 {
-                    m_CurrentDataset = dataset;
+                    m_Behaviour.CurrentDataset = dataset;
                     _ = ListFiles();
                 }
 
@@ -144,7 +140,7 @@ namespace Unity.Cloud.Documentation.Assets
 
         void DisplayFileSelection()
         {
-            if (m_CurrentDataset == null)
+            if (m_Behaviour.CurrentDataset == null)
             {
                 GUILayout.Label("! No dataset selected !");
                 return;
@@ -158,7 +154,7 @@ namespace Unity.Cloud.Documentation.Assets
 
             if (GUILayout.Button("Refresh", GUILayout.Width(60)))
             {
-                m_CurrentFile = null;
+                m_Behaviour.CurrentFile = null;
                 _ = ListFiles();
                 return;
             }
@@ -189,11 +185,9 @@ namespace Unity.Cloud.Documentation.Assets
 
                 if (GUILayout.Button("Select", GUILayout.Width(70)))
                 {
-                    m_CurrentFile = assetFile;
+                    m_Behaviour.CurrentFile = assetFile;
                     m_FileUpdate = new FileUpdate(assetFile);
-
                     m_Behaviour.CancelTagGeneration();
-                    m_GeneratedTags = null;
                 }
 
                 if (GUILayout.Button("Download", GUILayout.Width(70)))
@@ -209,25 +203,27 @@ namespace Unity.Cloud.Documentation.Assets
         {
             if (m_Behaviour.Files == null || !m_Behaviour.Files.Any()) return;
 
-            if (m_CurrentFile == null)
+            if (m_Behaviour.CurrentFile == null)
             {
                 GUILayout.Label("! No file selected !");
                 return;
             }
 
+            var file = m_Behaviour.CurrentFile;
+
             GUILayout.BeginVertical(GUI.skin.box);
 
-            GUILayout.Label($"{m_CurrentFile.Descriptor.Path}");
+            GUILayout.Label($"{file.Descriptor.Path}");
 
-            GUILayout.Label($"Status: {m_CurrentFile.Status}");
+            GUILayout.Label($"Status: {file.Status}");
 
-            var createdDate = m_CurrentFile.AuthoringInfo?.Created.ToString("d") ?? "unknown";
+            var createdDate = file.AuthoringInfo?.Created.ToString("d") ?? "unknown";
             GUILayout.Label($"Created on: {createdDate}");
 
-            var modifiedDate = m_CurrentFile.AuthoringInfo?.Updated.ToString("d") ?? "unknown";
+            var modifiedDate = file.AuthoringInfo?.Updated.ToString("d") ?? "unknown";
             GUILayout.Label($"Last modified on: {modifiedDate}");
 
-            GUILayout.Label($"Size: {m_CurrentFile.SizeBytes} bytes");
+            GUILayout.Label($"Size: {file.SizeBytes} bytes");
 
             GUILayout.EndVertical();
 
@@ -245,7 +241,7 @@ namespace Unity.Cloud.Documentation.Assets
 
             if (GUILayout.Button("Generate Tags"))
             {
-                _ = GenerateTagsAsync();
+                _ = m_Behaviour.GenerateTagsAsync();
             }
 
             DisplayGeneratedTags();
@@ -254,30 +250,23 @@ namespace Unity.Cloud.Documentation.Assets
 
             if (GUILayout.Button("Update"))
             {
-                _ = m_Behaviour.UpdateFileAsync(m_CurrentFile, m_FileUpdate);
+                _ = m_Behaviour.UpdateFileAsync(m_FileUpdate);
             }
         }
 
         async Task ListFiles()
         {
-            m_CurrentFile = null;
+            m_Behaviour.CurrentFile = null;
             m_FileUpdate = null;
             m_Behaviour.CancelTagGeneration();
-            m_GeneratedTags = null;
-            await m_Behaviour.GetFilesAsync(m_CurrentDataset);
-        }
-
-        async Task GenerateTagsAsync()
-        {
-            m_GeneratedTags = null;
-            m_GeneratedTags = await m_Behaviour.GenerateTagsAsync(m_CurrentFile);
+            await m_Behaviour.GetFilesAsync();
         }
 
         void DisplayGeneratedTags()
         {
-            if (m_GeneratedTags != null)
+            if (m_Behaviour.GeneratedTags != null)
             {
-                foreach (var tag in m_GeneratedTags)
+                foreach (var tag in m_Behaviour.GeneratedTags)
                 {
                     GUILayout.BeginHorizontal();
 
@@ -320,7 +309,11 @@ namespace Unity.Cloud.Documentation.Assets
 
         public IEnumerable<IDataset> Datasets { get; private set; }
 
-        public IEnumerable<IFile> Files { get; set; }
+        public IDataset CurrentDataset { get; set; }
+
+        public IEnumerable<IFile> Files { get; private set; }
+
+        public IFile CurrentFile { get; set; }
 
         public async Task GetDataSetsAsync()
         {
@@ -350,19 +343,19 @@ namespace Unity.Cloud.Documentation.Assets
             CleanDatasetCancellation();
         }
 
-        public async Task GetFilesAsync(IDataset dataset)
+        public async Task GetFilesAsync()
         {
             CleanFileCancellation();
 
             Files = null;
 
-            if (dataset == null) return;
+            if (CurrentDataset == null) return;
 
             m_FileCancellationSource = new CancellationTokenSource();
             var token = m_FileCancellationSource.Token;
 
             var files = new List<IFile>();
-            var fileList = dataset.ListFilesAsync(Range.All, token);
+            var fileList = CurrentDataset.ListFilesAsync(Range.All, token);
             await foreach (var file in fileList)
             {
                 files.Add(file);
@@ -398,11 +391,11 @@ namespace Unity.Cloud.Documentation.Assets
 
         #region Example_Behaviour_UpdateAssetFile
 
-        public async Task UpdateFileAsync(IFile assetFile, IFileUpdate fileUpdate)
+        public async Task UpdateFileAsync(IFileUpdate fileUpdate)
         {
-            await assetFile.UpdateAsync(fileUpdate, CancellationToken.None);
+            await CurrentFile.UpdateAsync(fileUpdate, CancellationToken.None);
             Debug.Log("File updated.");
-            await assetFile.RefreshAsync(CancellationToken.None);
+            await CurrentFile.RefreshAsync(CancellationToken.None);
         }
 
         #endregion
@@ -461,9 +454,11 @@ namespace Unity.Cloud.Documentation.Assets
 
         #region Example_Behaviour_GenerateFileTags
 
+        public IEnumerable<GeneratedTag> GeneratedTags { get; private set; }
+
         CancellationTokenSource TagGenerationCancellationSource;
 
-        public async Task<IEnumerable<GeneratedTag>> GenerateTagsAsync(IFile file)
+        public async Task GenerateTagsAsync()
         {
             CancelTagGeneration();
 
@@ -471,18 +466,16 @@ namespace Unity.Cloud.Documentation.Assets
 
             try
             {
-                return await file.GenerateSuggestedTagsAsync(TagGenerationCancellationSource.Token);
+                GeneratedTags = await CurrentFile.GenerateSuggestedTagsAsync(TagGenerationCancellationSource.Token);
             }
             catch (OperationCanceledException)
             {
-                Debug.Log($"Cancelled tag generation for {file.Descriptor.Path}.");
+                Debug.Log($"Cancelled tag generation for {CurrentFile.Descriptor.Path}.");
             }
             catch (Exception e)
             {
                 Debug.LogError(e);
             }
-
-            return null;
         }
 
         public void CancelTagGeneration()
@@ -494,6 +487,7 @@ namespace Unity.Cloud.Documentation.Assets
             }
 
             TagGenerationCancellationSource = null;
+            GeneratedTags = null;
         }
 
         #endregion

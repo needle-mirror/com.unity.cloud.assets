@@ -18,6 +18,7 @@
       * [Update assets](use-case-update-assets.md)
       * [Manage asset versions](use-case-manage-versions.md)
       * [Manage asset status](use-case-manage-status.md)
+      * [Manage asset references](use-case-asset-references.md)
     * Datasets
       * [Create datasets](use-case-create-datasets.md)
       * [Update datasets](use-case-update-datasets.md)

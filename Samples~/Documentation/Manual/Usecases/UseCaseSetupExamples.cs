@@ -134,6 +134,15 @@ namespace Unity.Cloud.Documentation.Assets
             m_UI.Add(new UseCaseVersionSearchExampleUI(m_Behaviour));
 
             #endregion
+
+            #region UseCaseManageAssetReferences
+
+            m_UI.Add(new OrganizationSelectionExampleUI(m_Behaviour));
+            m_UI.Add(new ProjectSelectionExampleUI(m_Behaviour));
+            m_UI.Add(new AssetSelectionExampleUI(m_Behaviour));
+            m_UI.Add(new UseCaseManageAssetReferencesExampleUI(m_Behaviour));
+
+            #endregion
         }
     }
 

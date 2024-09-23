@@ -7,7 +7,6 @@ namespace Unity.Cloud.Assets.Samples
     {
         readonly VisualElement m_ContextMenu;
         readonly Button m_ContextMenuButton;
-        readonly VisualTreeAsset m_TemplateOption;
 
         public ContextMenuController(VisualElement root)
         {
@@ -16,8 +15,6 @@ namespace Unity.Cloud.Assets.Samples
 
             m_ContextMenuButton = root.Q<Button>("ContextMenuButton");
             m_ContextMenuButton.clicked += ToggleContextMenu;
-
-            m_TemplateOption = m_ContextMenu.Q<TemplateContainer>()?.templateSource;
         }
 
         public void RegisterButtonAction(string id, Action clicked, string name = null)
@@ -26,9 +23,12 @@ namespace Unity.Cloud.Assets.Samples
             // Create a new button if not found
             if (button == null)
             {
-                button = m_TemplateOption == null ? new Button() : m_TemplateOption.Instantiate().Q<Button>();
-                button.name = id;
-                button.text = string.IsNullOrEmpty(name) ? id : name;
+                button = new Button
+                {
+                    name = id,
+                    text = string.IsNullOrEmpty(name) ? id : name
+                };
+                button.AddToClassList("ContextMenuEntry");
                 m_ContextMenu.Add(button);
             }
             // If new name is provided, update the button text

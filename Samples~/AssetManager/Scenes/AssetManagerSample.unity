@@ -375,7 +375,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1653108084}
-  - component: {fileID: 1653108085}
   - component: {fileID: 1653108086}
   m_Layer: 5
   m_Name: AssetManagerSample
@@ -399,19 +398,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1653108085
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1653108083}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5a8e7301098b64ad1b4318e960bb02bc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_LoginUiDocument: {fileID: 1790267153}
 --- !u!114 &1653108086
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -425,11 +411,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_AssetController: {fileID: 1790267157}
-  m_AssetFilePathDialogUi: {fileID: 0}
   m_AssetCreationPanelTemplate: {fileID: 9197481963319205126, guid: 3802736ecc98a4887b37fa548faccd15, type: 3}
   m_DatasetCreationTemplate: {fileID: 9197481963319205126, guid: 2d3af81f2e4257b4e9bd93613971c256, type: 3}
-  m_FileListItemTemplate: {fileID: 9197481963319205126, guid: 0ae255b6d208549a0a78319a239977f6, type: 3}
-  m_DatasetListItemTemplate: {fileID: 9197481963319205126, guid: 4496e6abf60da4e4a9f62d24fff0bfa8, type: 3}
   m_TagsTemplate: {fileID: 9197481963319205126, guid: d8efefb3cdfc8cf4c95c9fa06290b335, type: 3}
   m_PopupTemplate: {fileID: 9197481963319205126, guid: 2a025dd0b6b5d4a9db97bdb2e80997c2, type: 3}
 --- !u!1 &1790267152
@@ -442,7 +425,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1790267154}
   - component: {fileID: 1790267153}
-  - component: {fileID: 1790267156}
+  - component: {fileID: 1790267159}
   - component: {fileID: 1790267157}
   - component: {fileID: 1790267158}
   m_Layer: 5
@@ -483,19 +466,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1790267156
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1790267152}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9fe7246f2d084e0fa132db197deb5e54, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_OrganizationController: {fileID: 1790267157}
 --- !u!114 &1790267157
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -528,6 +498,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_SearchBarTemplate: {fileID: 9197481963319205126, guid: 16616135b714e43a6ae0a18c9ccf3732, type: 3}
   m_SearchBarChipTemplate: {fileID: 9197481963319205126, guid: d8efefb3cdfc8cf4c95c9fa06290b335, type: 3}
+--- !u!114 &1790267159
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1790267152}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5a8e7301098b64ad1b4318e960bb02bc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_LoginUiDocument: {fileID: 1790267153}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

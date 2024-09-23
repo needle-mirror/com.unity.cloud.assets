@@ -1,8 +1,0 @@
-<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
-    <Style src="../StyleSheets/AssetInformationPanelStyleSheet.uss?fileID=7433441132597879392&amp;guid=6106b709427544a248238f9563ef3780&amp;type=3#AssetInformationPanelStyleSheet" />
-    <ui:Foldout name="DataSetFoldout" text="DataSet" value="false" style="width: 100%;">
-        <ui:ScrollView name="DataSetInformationScrollView" />
-        <ui:Button name="DatasetDownloadButton" text="Download" display-tooltip-when-elided="true" />
-        <ui:Label name="DatasetDownloadSuccessfulLabel" text="Download successful!" display-tooltip-when-elided="true" style="-unity-text-align: upper-center; display: none; color: rgb(210, 210, 210);" />
-    </ui:Foldout>
-</ui:UXML>

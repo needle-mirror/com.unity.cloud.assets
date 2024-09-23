@@ -37,7 +37,6 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             }
         }
 
-        VisualTreeAsset m_FileListItemTemplate;
         VisualElement m_FileUpload;
 
         ScrollView m_FileScrollView;
@@ -54,10 +53,8 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
         public event Action<IEnumerable<string>> FilesAdded;
         public event Action<IEnumerable<string>> FilesRemoved;
 
-        public void Init(VisualElement datasetPanel, VisualTreeAsset fileListItemTemplate)
+        public void Init(VisualElement datasetPanel)
         {
-            m_FileListItemTemplate = fileListItemTemplate;
-
             m_FileScrollView = datasetPanel.Q<ScrollView>("DatasetFileScrollView");
             m_FileUpload = datasetPanel.Q("FileUpload");
             m_FileUploadButton = datasetPanel.Q<Button>("FileUploadButton");
@@ -203,14 +200,15 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
         void AddFileRow(IFile file, bool canUpdate)
         {
-            var fileItem = m_FileListItemTemplate.Instantiate();
-            fileItem.Q<Label>("FileNameLabel").text = file.Descriptor.Path;
-            fileItem.Q<Label>("FileSizeLabel").text = GetSizeAsUserFriendlyFormat(file.SizeBytes);
+            var fileItem = new RowItem();
+            fileItem.AddLabel(file.Descriptor.Path);
+            fileItem.AddLabel(GetSizeAsUserFriendlyFormat(file.SizeBytes), 80);
 
-            var deleteButton = fileItem.Q<VisualElement>("DeleteIcon");
-            deleteButton.style.display = canUpdate ? DisplayStyle.Flex : DisplayStyle.None;
             if (canUpdate)
             {
+                var deleteButton = new VisualElement();
+                deleteButton.AddToClassList("delete-icon");
+                fileItem.Add(deleteButton);
                 deleteButton.RegisterCallback<ClickEvent>(_ =>
                 {
                     m_FilesToDelete.Add(file);
@@ -257,12 +255,13 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
                 m_FilesToCreate.Add(filePath);
 
-                var fileItem = m_FileListItemTemplate.Instantiate();
-                fileItem.Q<Label>("FileNameLabel").text = fileName;
-                fileItem.Q<Label>("FileSizeLabel").text = GetSizeAsUserFriendlyFormat(fileInfo.Length);
+                var fileItem = new RowItem();
+                fileItem.AddLabel(fileName);
+                fileItem.AddLabel(GetSizeAsUserFriendlyFormat(fileInfo.Length), 80);
 
-                var deleteButton = fileItem.Q<VisualElement>("DeleteIcon");
-                deleteButton.style.display = DisplayStyle.Flex;
+                var deleteButton = new VisualElement {name = "DeleteIcon"};
+                deleteButton.AddToClassList("delete-icon");
+                fileItem.Add(deleteButton);
                 deleteButton.RegisterCallback<ClickEvent>(_ =>
                 {
                     m_FilesToCreate.Remove(filePath);

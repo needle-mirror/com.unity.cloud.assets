@@ -3,7 +3,7 @@ using Unity.Cloud.Common;
 namespace Unity.Cloud.Assets
 {
     /// <summary>
-    /// This struct contains the identifiers for an asset's status.
+    /// This struct contains the identifiers for a status flow.
     /// </summary>
     public readonly struct StatusFlowDescriptor
     {

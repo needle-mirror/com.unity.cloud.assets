@@ -1,6 +1,6 @@
 {
   "name": "com.unity.cloud.assets",
-  "version": "1.4.0-exp.2",
+  "version": "1.4.0",
   "displayName": "Unity Cloud Assets",
   "description": "Unity Cloud Assets makes it easy to discover, create, update, delete, and manage Unity assets through the Assets service interface.",
   "unity": "2022.3",
@@ -8,19 +8,19 @@
     "com.unity.cloud.common": "1.1.0"
   },
   "relatedPackages": {
-    "com.unity.cloud.assets.tests": "1.4.0-exp.2"
+    "com.unity.cloud.assets.tests": "1.4.0"
   },
   "_upm": {
-    "changelog": "### Added\n- Added overload `IAsset.CreateDatasetAsync(IDatasetCreation, CancellationToken)` to create a dataset.\n- Added use case documentation and example for folder upload.\n- Added `IAsset.AddTagsAsync(IEnumerable<string>, CancellationToken)` and `IAsset.RemoveTagsAsync(IEnumerable<string>, CancellationToken)` to respectively add and remove tags from an asset.\n- [Experimental] Added `IAsset.StatusName` property to get the current status name of an asset.\n- [Experimental] Added `IAsset.GetReachableStatusNamesAsync` to get the names of statuses reachable from the current status of an asset.\n- [Experimental] Added `IAsset.UpdateStatusAsync(string, CancellationToken)` to update the status of an asset.\n- Added overload `IAssetRepository.QueryAssets(OrganizationId)` which can query assets across all projects in an organization.\n- Added overloads `IAssetRepository.GroupAndCountAssets(OrganizationId)` and `IAssetRepository.CountAssetsAsync(OrganizationId, IAssetSearchFilter, CancellationToken)` which can group and count assets across all projects in an organization.\n- [Experimental] Added `IAssetReference` to expose dependencies between assets.\n- [Experimental] Added `IAsset.ListReferencesAsync` to list the references to an asset.\n- [Experimental] Added `IAsset.AddReferenceAsync(AssetId, AssetVersion, CancellationToken)` and `IAsset.AddReferenceAsync(AssetId, string, CancellationToken)` to add a reference to an asset either by version or label.\n- [Experimental] Added `IAsset.RemoveReferenceAsync(string, CancellationToken)` to remove a reference to an asset.\n- Added use cases to documentation\n\n### Removed\n- [Experimental][Breaking] Removed `IAsset.GetStatusAsync`; use `IAsset.StatusName` property instead.\n- [Experimental][Breaking] Removed `IAsset.GetReachableStatusesAsync`; use `IAsset.GetReachableStatusNamesAsync` instead.\n- [Experimental][Breaking] Removed `IAsset.UpdateStatusAsync(IStatus, CancellationToken)`; use `IAsset.UpdateStatusAsync(string, CancellationToken)` instead.\n\n### Deprecated\n- Deprecated `IAsset.CreateDatasetAsync(DatasetCreation, CancellationToken)`; use `IAsset.CreateDatasetAsync(IDatasetCreation, CancellationToken)` instead."
+    "changelog": "### Added\n- Added `IAssetRepository.EnableProjectForAssetManagerAsync` to enable the Asset Manager feature for a project; this allows a project to be retrieved as an `IAssetProject`.\n- Added documentation for asset to asset references.\n- Added `IAsset.PreviewFileDescriptor`\n- Added `IFile.GetResizedImageDownloadUrlAsync` to get the download url of an image file with a specified max dimension.\n\n### Changed\n- Improved sample code snippets.\n\n### Fixed\n- Fixed bug where organization search returned asset results with missing ProjectId.\n- Fixes missing script in Asset Discovery sample\n\n### Removed\n- [Experimental][Breaking] Removed `StatusDescriptor` and `StatusTransitionDescriptor`. IStatus and IStatusTransition expose separate properties for `StatusFlowDescriptor` and string ids instead.\n\n### Deprecated\n- Deprecated `IAsset.PreviewFile`; use `IAsset.PreviewFileDescriptor` instead."
   },
   "upmCi": {
-    "footprint": "8021e97772af18559aabb58bff7cbe29feff798b"
+    "footprint": "d26ed53c14ded742f4835b2e3316e1f7fe9ea1cd"
   },
   "documentationUrl": "https://docs.unity3d.com/Packages/com.unity.cloud.assets@1.4/manual/index.html",
   "repository": {
     "url": "https://github.cds.internal.unity3d.com/unity/digital-twins-sdk.git",
     "type": "git",
-    "revision": "e3d1d54f4bbecfa5c0c4519d1412cb20d3349d79"
+    "revision": "6f5fc1a1ad6b65fd4bee1f4f07afa8498eea362b"
   },
   "samples": [
     {

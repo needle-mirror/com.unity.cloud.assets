@@ -15,7 +15,7 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
         readonly ValidateCollectionName m_ValidateCollectionName;
 
         public CreateCollectionPopupController(VisualElement root, ValidateCollectionName validateCollectionName)
-            : base(root, "CreateCollectionPopup", null)
+            : base(root, "CreateCollectionPopup")
         {
             m_NameInput = m_PopupWindow.Q<TextField>("Name");
             m_NameInput.RegisterCallback<InputEvent>(OnInputChanged);

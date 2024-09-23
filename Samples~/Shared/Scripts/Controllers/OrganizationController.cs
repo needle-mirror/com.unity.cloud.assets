@@ -17,14 +17,13 @@ namespace Unity.Cloud.Assets.Samples
         readonly OrganizationListUi m_OrganizationListUi = new();
 
         VisualElement m_RootVisualElement;
-        IAssetRepository m_AssetRepository;
-        ICompositeAuthenticator m_Authenticator;
-        IOrganizationRepository m_OrganizationRepository;
+        static ICompositeAuthenticator Authenticator => PlatformServices.Authenticator;
+        static IOrganizationRepository OrganizationRepository => PlatformServices.OrganizationRepository;
 
         public Dictionary<UserId, IMemberInfo> OrganizationMembersInfo { get; } = new();
 
         public VisualElement RootVisualElement => m_RootVisualElement ??= m_OrganizationListUiDocument.rootVisualElement;
-        public IAssetRepository AssetRepository => m_AssetRepository;
+        public IAssetRepository AssetRepository => PlatformServices.AssetRepository;
         public OrganizationId SelectedOrganizationId => m_OrganizationListUi.SelectedOrganization.Id;
 
         public event Action ShowContent;
@@ -45,26 +44,19 @@ namespace Unity.Cloud.Assets.Samples
 
         protected virtual void OnDestroy()
         {
-            if (m_Authenticator != null)
+            if (Authenticator != null)
             {
-                m_Authenticator.AuthenticationStateChanged -= OnAuthenticationStateChanged;
+                Authenticator.AuthenticationStateChanged -= OnAuthenticationStateChanged;
             }
 
             m_OrganizationListUi.OrganizationSelected -= OnOrganizationSelected;
         }
 
-        public void SetServices(ICompositeAuthenticator authenticator, IAssetRepository assetRepository, IOrganizationRepository organizationRepository)
-        {
-            m_Authenticator = authenticator;
-            m_AssetRepository = assetRepository;
-            m_OrganizationRepository = organizationRepository;
-        }
-
         void ProcessAuthenticator()
         {
-            if (m_Authenticator.RequiresGUI)
+            if (Authenticator.RequiresGUI)
             {
-                m_Authenticator.AuthenticationStateChanged += OnAuthenticationStateChanged;
+                Authenticator.AuthenticationStateChanged += OnAuthenticationStateChanged;
             }
             else
             {
@@ -77,7 +69,7 @@ namespace Unity.Cloud.Assets.Samples
             switch (newAuthenticationState)
             {
                 case AuthenticationState.LoggedIn:
-                    await m_OrganizationListUi.PopulateOrganizations(m_OrganizationRepository);
+                    await m_OrganizationListUi.PopulateOrganizations(OrganizationRepository);
                     ShowContent?.Invoke();
                     break;
                 case AuthenticationState.LoggedOut:
@@ -102,7 +94,7 @@ namespace Unity.Cloud.Assets.Samples
         async Task GetOrganizationMembersInfo(OrganizationId organizationId)
         {
             OrganizationMembersInfo.Clear();
-            var datasetOrganization = await m_OrganizationRepository.GetOrganizationAsync(organizationId);
+            var datasetOrganization = await OrganizationRepository.GetOrganizationAsync(organizationId);
             var organizationMembersInfo = datasetOrganization.ListMembersAsync(Range.All);
             await foreach (var memberInfo in organizationMembersInfo)
             {

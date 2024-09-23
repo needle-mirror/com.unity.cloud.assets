@@ -89,7 +89,13 @@ namespace Unity.Cloud.Assets
         /// <summary>
         /// The preview file ID of the asset.
         /// </summary>
+        [Obsolete("Use PreviewFileDescriptor instead.")]
         string PreviewFile { get; }
+
+        /// <summary>
+        /// The descriptor for the preview file of the asset.
+        /// </summary>
+        FileDescriptor PreviewFileDescriptor => default;
 
         /// <summary>
         /// The status of the asset.
@@ -103,7 +109,7 @@ namespace Unity.Cloud.Assets
         string StatusName => string.Empty;
 
         /// <summary>
-        /// The id of the status flow of the asset.
+        /// The descriptor for the status flow of the asset.
         /// </summary>
         StatusFlowDescriptor StatusFlowDescriptor => default;
 

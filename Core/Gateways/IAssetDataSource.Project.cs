@@ -26,6 +26,14 @@ namespace Unity.Cloud.Assets
         Task<IProjectData> GetProjectAsync(ProjectDescriptor projectDescriptor, CancellationToken cancellationToken);
 
         /// <summary>
+        /// Enables a project for Asset Manager.
+        /// </summary>
+        /// <param name="projectDescriptor">The object containing the necessary information to identify the project. </param>
+        /// <param name="cancellationToken">A token that can be used to cancel the request.</param>
+        /// <returns>A task whose result is a project. </returns>
+        Task<IProjectData> EnableProjectAsync(ProjectDescriptor projectDescriptor, CancellationToken cancellationToken);
+
+        /// <summary>
         /// Creates a new project in an organization.
         /// </summary>
         /// <param name="organizationId">The organization id. </param>

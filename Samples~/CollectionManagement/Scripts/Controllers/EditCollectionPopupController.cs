@@ -16,7 +16,7 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
         public event Action<IAssetCollectionUpdate> UpdateCollection;
 
         public EditCollectionPopupController(VisualElement root, ValidateCollectionName validateCollectionName)
-            : base(root, "EditCollectionPopup", null)
+            : base(root, "EditCollectionPopup")
         {
             m_NameInput = m_PopupWindow.Q<TextField>("Name");
             m_NameInput.RegisterCallback<InputEvent>(OnInputChanged);

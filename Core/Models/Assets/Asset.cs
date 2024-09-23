@@ -72,6 +72,9 @@ namespace Unity.Cloud.Assets
         public string PreviewFile { get; set; }
 
         /// <inheritdoc />
+        public FileDescriptor PreviewFileDescriptor { get; set; }
+
+        /// <inheritdoc />
         public string Status { get; set; }
 
         /// <inheritdoc />
@@ -153,7 +156,7 @@ namespace Unity.Cloud.Assets
         async Task RefreshAsync(FieldsFilter fieldsFilter, CancellationToken cancellationToken)
         {
             var assetData = await m_DataSource.GetAssetAsync(Descriptor, fieldsFilter, cancellationToken);
-            this.MapFrom(m_DataSource, Descriptor.OrganizationId, assetData, fieldsFilter);
+            this.MapFrom(m_DataSource, Descriptor, assetData, fieldsFilter);
         }
 
         /// <inheritdoc />
@@ -270,7 +273,7 @@ namespace Unity.Cloud.Assets
             {
                 var fieldsFilter = new FieldsFilter {AssetFields = AssetFields.previewFileUrl};
                 var assetData = await m_DataSource.GetAssetAsync(Descriptor, fieldsFilter, cancellationToken);
-                this.MapFrom(m_DataSource, Descriptor.OrganizationId, assetData, fieldsFilter);
+                this.MapFrom(m_DataSource, Descriptor, assetData, fieldsFilter);
             }
 
             return PreviewFileUrl;

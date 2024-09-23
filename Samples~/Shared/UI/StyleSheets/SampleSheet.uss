@@ -5,59 +5,39 @@
     margin-right: 10px;
 }
 
+.sample-button {
+    border-radius: 4px;
+    padding: 4px 8px;
+    margin: 2px 4px;
+    min-width: 80px;
+}
+
+.button-blue {
+    color: rgba(255, 255, 255, 0.82);
+    background-color: rgb(41, 161, 255);
+    border-color: rgb(41, 161, 255);
+    transition-duration: 0.25s;
+    transition-timing-function: ease-out-back;
+}
+
+.button-blue:hover {
+    background-color: rgb(76, 176, 255);
+    border-color: rgb(76, 176, 255);
+}
+
+.button-blue:disabled {
+    background-color: rgba(255, 255, 255, 0.82);
+    border-color: rgba(255, 255, 255, 0.82);
+}
+
+.info-label {
+    margin-top: 5px;
+    color: rgb(210, 210, 210);
+    -unity-text-align: upper-center;
+}
+
 #AssetGridItemContainer {
     margin: 1px;
-}
-
-#AssetDownloadButton {
-    background-color: rgb(41, 161, 255);
-    width: 100%;
-    height: 100%;
-    margin-top: 12px;
-    -unity-font-style: bold;
-    border-radius: 6px;
-    transition-duration: 0.25s;
-    transition-timing-function: ease-out-back;
-    color: rgb(210, 210, 210);
-    border-color: rgb(41, 161, 255);
-}
-
-#AssetDownloadButton:hover {
-    background-color: rgb(88, 195, 255);
-}
-
-#AssetDownloadButton:disabled {
-    background-color: rgba(255, 255, 255, 0.82);
-    border-color: rgba(255, 255, 255, 0.82);
-}
-
-#AssetDownloadSuccessful {
-    margin-top: 5px;
-    color: rgb(210, 210, 210);
-}
-
-#DatasetDownloadButton {
-    background-color: rgb(41, 161, 255);
-    -unity-font-style: bold;
-    border-radius: 6px;
-    transition-duration: 0.25s;
-    transition-timing-function: ease-out-back;
-    color: rgb(210, 210, 210);
-    border-color: rgb(41, 161, 255);
-}
-
-#DatasetDownloadButton:hover {
-    background-color: rgb(88, 195, 255);
-}
-
-#DatasetDownloadButton:disabled {
-    background-color: rgba(255, 255, 255, 0.82);
-    border-color: rgba(255, 255, 255, 0.82);
-}
-
-#DatasetDownloadSuccessful {
-    margin-top: 5px;
-    color: rgb(210, 210, 210);
 }
 
 #tabs {
@@ -83,4 +63,156 @@
 
 .unselectedContent {
     display: none;
+}
+
+.ContextMenuContainer {
+    position: absolute;
+    right: 0;
+    top: 0;
+    align-items: flex-end;
+}
+
+.ContextMenuButton {
+    border-left-width: 0;
+    border-right-width: 0;
+    border-top-width: 0;
+    border-bottom-width: 0;
+    background-color: rgba(88, 88, 88, 0);
+    background-image: url('../../../Shared/UI/Sprites/expand.png?fileID=21300000&guid=f003f64c5b9534b98a42a77250bb34fa&type=3#expand');
+    -unity-background-scale-mode: scale-to-fit;
+    border-left-color: rgb(47, 47, 47);
+    border-right-color: rgb(47, 47, 47);
+    border-top-color: rgb(47, 47, 47);
+    border-bottom-color: rgb(47, 47, 47);
+    width: 24px;
+    height: 24px;
+}
+
+.ContextMenu {
+    background-color: rgb(56, 56, 56);
+    border-left-color: rgb(47, 47, 47);
+    border-right-color: rgb(47, 47, 47);
+    border-top-color: rgb(47, 47, 47);
+    border-bottom-color: rgb(47, 47, 47);
+    border-left-width: 2px;
+    border-right-width: 2px;
+    border-top-width: 2px;
+    border-bottom-width: 2px;
+    align-items: center;
+    width: 80px;
+    border-top-left-radius: 2px;
+    border-top-right-radius: 2px;
+    border-bottom-right-radius: 2px;
+    border-bottom-left-radius: 2px;
+}
+
+.ContextMenuEntry {
+    border-left-width: 0;
+    border-right-width: 0;
+    border-top-width: 0;
+    border-bottom-width: 0;
+    width: 100%;
+    padding-left: 3px;
+    padding-right: 3px;
+    padding-top: 3px;
+    padding-bottom: 3px;
+    color: rgb(210, 210, 210);
+    background-color: rgba(0, 0, 0, 0);
+}
+
+.ContextMenuEntry:hover {
+    background-color: rgb(72, 72, 72);
+}
+
+.PopupContainer {
+    align-items: center;
+    justify-content: space-around;
+    position: absolute;
+    width: 95%;
+    height: 95%;
+    align-self: center;
+    left: 2.5%;
+}
+
+.Popup {
+    border-left-width: 2px;
+    border-right-width: 2px;
+    border-top-width: 2px;
+    border-bottom-width: 2px;
+    border-top-left-radius: 2px;
+    border-bottom-left-radius: 2px;
+    border-top-right-radius: 2px;
+    border-bottom-right-radius: 2px;
+    background-color: rgb(56, 56, 56);
+    border-left-color: rgb(47, 47, 47);
+    border-right-color: rgb(47, 47, 47);
+    border-top-color: rgb(47, 47, 47);
+    border-bottom-color: rgb(47, 47, 47);
+    position: relative;
+    justify-content: space-between;
+    display: none;
+    overflow: hidden;
+    padding-top: 4px;
+    padding-right: 4px;
+    padding-bottom: 4px;
+    padding-left: 4px;
+    max-height: 100%;
+}
+
+.PopupError {
+    display: none;
+    border-left-color: rgb(255, 94, 81);
+    border-right-color: rgb(255, 94, 81);
+    border-top-color: rgb(255, 94, 81);
+    border-bottom-color: rgb(255, 94, 81);
+    margin-left: 9px;
+    margin-right: 9px;
+    margin-top: 9px;
+    margin-bottom: 9px;
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    color: rgb(238, 94, 81);
+    -unity-font-style: bold;
+    border-top-left-radius: 3px;
+    border-bottom-left-radius: 3px;
+    border-top-right-radius: 3px;
+    border-bottom-right-radius: 3px;
+    padding-left: 3px;
+    padding-right: 3px;
+    padding-top: 3px;
+    padding-bottom: 3px;
+}
+
+.PopupClose {
+    background-image: url('../../../Shared/UI/Sprites/delete.png?fileID=21300000&guid=2fba3b8e11a714aeca7937eb158f6f0b&type=3#delete');
+    width: 20px;
+    height: 20px;
+    background-color: rgba(88, 88, 88, 0);
+    border-left-width: 0;
+    border-right-width: 0;
+    border-top-width: 0;
+    border-bottom-width: 0;
+    margin-left: 8px;
+    margin-right: 8px;
+    margin-top: 8px;
+    margin-bottom: 8px;
+    padding-left: 0;
+    padding-right: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+.PopupButton {
+    width: 90px;
+    min-width: 60px;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 4px;
+    border-bottom-left-radius: 4px;
+}
+
+Label {
+    color: rgb(210, 210, 210);
 }

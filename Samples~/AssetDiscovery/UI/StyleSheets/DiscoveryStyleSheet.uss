@@ -47,3 +47,34 @@
     -unity-background-image-tint-color: white;
     background-image: url('../../../Shared/UI/Sprites/chevron_down.png?fileID=21300000&guid=452573b98430c674f945317a0d93b88b&type=3#chevron_down');
 }
+
+.details-container {
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: flex-start;
+    justify-content: space-between;
+}
+
+.details-label {
+    align-items: flex-start;
+    flex-grow: 0;
+    flex-shrink: 0;
+    color: rgb(159, 159, 159);
+}
+
+.details-value-container {
+    flex-grow: 1;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: flex-start;
+}
+
+.details-value {
+    flex-wrap: wrap-reverse;
+    margin: 0 4px 0 12px;
+    padding-left: 2px;
+    -unity-font-style: bold;
+    font-size: 14px;
+    color: rgb(210, 210, 210);
+    white-space: normal;
+}

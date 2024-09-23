@@ -22,7 +22,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
         CancellationTokenSource m_FetchTokenSource;
 
         public AddMetadataPopupController(VisualElement root)
-            : base(root, "AddMetadataPopup", null)
+            : base(root, "AddMetadataPopup")
         {
             m_ActionButton.SetEnabled(false);
 

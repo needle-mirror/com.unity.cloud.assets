@@ -1,8 +1,7 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
     <ui:Template name="LeftListContainer" src="../../Shared/UI/Templates/ListContainer.uxml?fileID=9197481963319205126&amp;guid=bc40760b2b12c4af4a3fe093fd2c100a&amp;type=3#ListContainer" />
     <Style src="./StyleSheets/CollectionManagementStyleSheet.uss?fileID=7433441132597879392&amp;guid=2cc08862a1c4e43878281c7d6f84f6a6&amp;type=3#CollectionManagementStyleSheet" />
-    <Style src="../../Shared/UI/StyleSheets/ContextMenuStyleSheet.uss?fileID=7433441132597879392&amp;guid=aad11b3cc0a914227ad16f5524ef8075&amp;type=3#ContextMenuStyleSheet" />
-    <Style src="../../Shared/UI/StyleSheets/Popups.uss?fileID=7433441132597879392&amp;guid=ea7c14029cf904c2e9d83863be857eec&amp;type=3#Popups" />
+    <Style src="../../Shared/UI/StyleSheets/StyleSheets/SampleSheet.uss?fileID=7433441132597879392&amp;guid=7376c3d25e9f04a989663c45cc94f5c7&amp;type=3#SampleSheet" />
     <ui:VisualElement style="flex-direction: row; justify-content: space-between; width: 100%; height: 100%;">
         <ui:VisualElement name="CollectionsPanel" class="ContentContainer" style="width: 50%; height: 100%; margin-top: 0; margin-bottom: 10px;">
             <ui:Instance template="LeftListContainer" name="CollectionsListContainer" style="display: flex; height: 100%;">

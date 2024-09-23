@@ -1,5 +1,5 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
-    <Style src="../../../Shared/UI/StyleSheets/Popups.uss?fileID=7433441132597879392&amp;guid=ea7c14029cf904c2e9d83863be857eec&amp;type=3#Popups" />
+    <Style src="../../../Shared/UI/StyleSheets/SampleSheet.uss?fileID=7433441132597879392&amp;guid=7376c3d25e9f04a989663c45cc94f5c7&amp;type=3#SampleSheet" />
     <ui:VisualElement name="AddMetadataPopup" class="Popup" style="min-width: 400px; display: flex;">
         <ui:VisualElement style="flex-direction: row; align-items: center; justify-content: space-between; flex-shrink: 0;">
             <ui:Label text="Add Metadata" style="font-size: 18px; -unity-font-style: bold; margin-bottom: 9px; margin-top: 7px; margin-left: 7px; margin-right: 2px; padding-left: 0; padding-right: 0; padding-top: 0; padding-bottom: 0; flex-grow: 1;" />

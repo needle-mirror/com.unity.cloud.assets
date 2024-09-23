@@ -15,9 +15,7 @@ namespace Unity.Cloud.Assets
         description = 1,
         authoring = 2,
         metadata = 4,
-        systemMetadata = 256,
-        labels = 8,
-        previewFile = 16,
+        systemMetadata = 8,
         previewFileUrl = 32,
         /// <summary>
         /// Will populate the dataset cache with only the default fields; use DatasetFields to specify which fields to populate.
@@ -80,7 +78,7 @@ namespace Unity.Cloud.Assets
 
         public static FieldsFilter DefaultAssetIncludes => new()
         {
-            AssetFields = AssetFields.description | AssetFields.authoring | AssetFields.previewFile | AssetFields.labels,
+            AssetFields = AssetFields.description | AssetFields.authoring,
             DatasetFields = DatasetFields.none,
             FileFields = FileFields.none,
         };

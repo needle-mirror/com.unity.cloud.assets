@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -13,7 +12,7 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
 {
     public interface IAssetInformationPanelController
     {
-        void Init(VisualElement root, VisualTreeAsset informationItemTemplate, VisualTreeAsset tagsTemplate, VisualTreeAsset dataSetItemTemplate, MonoBehaviour coroutineHandler);
+        void Init(VisualElement root);
         void PopulateAssetPanel(IAsset asset);
         Task PopulateDatasetsPanel(IAsyncEnumerable<IDataset> datasets);
         void DisplayInformationPanel();
@@ -32,14 +31,6 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
             nameof(IAsset.SystemMetadata),
         };
 
-        static readonly Type k_DatasetType = typeof(IDataset);
-        static readonly HashSet<string> k_DatasetPropertiesToHide = new()
-        {
-            nameof(IDataset.Name),
-            nameof(IDataset.FileOrder),
-            nameof(IDataset.Metadata),
-        };
-
         const string k_NoneLabel = "None";
         const string k_NoCollectionsLabel = "No Collections Found";
         const string k_CurrentlySelectedTabClassName = "currentlySelectedTab";
@@ -50,8 +41,6 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
         Dictionary<string, string> m_FieldToName;
         Dictionary<string, string> m_StatusFlowToName;
 
-        MonoBehaviour m_CoroutineHandler;
-
         VisualElement m_RootPanel;
         ScrollView m_AssetInformationScrollView;
         VisualElement m_AssetInfoTab;
@@ -59,9 +48,6 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
         VisualElement m_AssetInformationContainer;
         VisualElement m_AssetInformationDownloadSuccessful;
         VisualElement m_DatasetInformationContainer;
-        VisualTreeAsset m_InformationItemTemplate;
-        VisualTreeAsset m_InformationTagsTemplate;
-        VisualTreeAsset m_DatasetInformationItemTemplate;
         ScrollView m_DatasetScrollView;
         Button m_AssetDownloadButton;
 
@@ -75,13 +61,8 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
             m_OrganizationController = organizationController;
         }
 
-        public void Init(VisualElement root, VisualTreeAsset informationItemTemplate, VisualTreeAsset tagsTemplate, VisualTreeAsset dataSetItemTemplate, MonoBehaviour coroutineHandler)
+        public void Init(VisualElement root)
         {
-            m_InformationItemTemplate = informationItemTemplate;
-            m_InformationTagsTemplate = tagsTemplate;
-            m_DatasetInformationItemTemplate = dataSetItemTemplate;
-            m_CoroutineHandler = coroutineHandler;
-
             root.style.minWidth = new StyleLength {value = new Length(40.0f, LengthUnit.Percent)};
             m_RootPanel = root.Q<VisualElement>("RightPanel");
 
@@ -91,6 +72,7 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
             m_AssetInfoTab.RegisterCallback<ClickEvent>(OnAssetInfoTabClicked);
             m_AssetInformationContainer = root.Q<VisualElement>("AssetInformationContainer");
             m_AssetInformationDownloadSuccessful = root.Q<VisualElement>("AssetDownloadSuccessful");
+            m_AssetInformationDownloadSuccessful?.Hide();
             m_AssetDownloadButton = root.Q<Button>("AssetDownloadButton");
             m_AssetDownloadButton.clickable.clicked += OnAssetDownloadButtonClicked;
 
@@ -168,45 +150,16 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
         {
             m_DatasetScrollView.Clear();
 
-            var dataSetPropertyNames = typeof(IDataset).GetProperties()
-                .Select(property => property.Name)
-                .Where(name => !k_DatasetPropertiesToHide.Contains(name))
-                .ToList();
-
             await foreach (var dataset in datasets)
             {
-                var item = m_DatasetInformationItemTemplate.Instantiate();
-                item.Q<Foldout>("DataSetFoldout").text = dataset.Name;
+                var foldout = new DatasetFoldout(dataset, CreatePropertyInformation);
 
-                var dataSetInformationScrollView = item.Q<ScrollView>("DataSetInformationScrollView");
-                foreach (var propertyName in dataSetPropertyNames)
-                {
-                    var propertyValue = k_DatasetType.GetProperty(propertyName)?.GetValue(dataset);
+                foldout.RegisterDownloadButtonCallback(() => OnDatasetDownloadButtonClicked(dataset, foldout));
 
-                    if (string.IsNullOrEmpty(propertyValue?.ToString())) continue;
+                _ = PopulateMetadata(dataset.SystemMetadata, foldout.ScrollView, "System Metadata", m_CancelPopulateAsset.Token);
+                _ = PopulateMetadata(dataset.Metadata as IReadOnlyMetadataContainer, foldout.ScrollView, "Metadata", m_CancelPopulateAsset.Token);
 
-                    var propertyInformation = CreatePropertyInformation
-                    (
-                        propertyName,
-                        propertyValue
-                    );
-
-                    foreach (var property in propertyInformation)
-                    {
-                        dataSetInformationScrollView.Add(property);
-                    }
-                }
-
-                _ = PopulateMetadata(dataset.SystemMetadata, dataSetInformationScrollView, "System Metadata", m_CancelPopulateAsset.Token);
-                _ = PopulateMetadata(dataset.Metadata as IReadOnlyMetadataContainer, dataSetInformationScrollView, "Metadata", m_CancelPopulateAsset.Token);
-
-                var datasetDownloadButton = item.Q<Button>("DatasetDownloadButton");
-                datasetDownloadButton.clickable.clicked += () =>
-                {
-                    OnDatasetDownloadButtonClicked(dataset, datasetDownloadButton);
-                };
-
-                m_DatasetScrollView.Add(item);
+                m_DatasetScrollView.Add(foldout);
             }
         }
 
@@ -245,9 +198,9 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
             m_StatusFlowToName = dictionary;
         }
 
-        IEnumerable<TemplateContainer> CreatePropertyInformation(string propertyName, object propertyValue)
+        IEnumerable<VisualElement> CreatePropertyInformation(string propertyName, object propertyValue)
         {
-            var items = new List<TemplateContainer>();
+            var items = new List<VisualElement>();
 
             switch (propertyValue)
             {
@@ -297,7 +250,7 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
 
         async Task PopulateMetadata(IAsyncEnumerable<KeyValuePair<string, MetadataValue>> metadata, string sectionTitle, VisualElement scrollView)
         {
-            var properties = new List<TemplateContainer>();
+            var properties = new List<VisualElement>();
 
             Action<Label, string> getFieldName = (l, s) => _ = TrySetFieldNameAsync(l, s);
 
@@ -332,53 +285,65 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
             }
         }
 
-        TemplateContainer CreateLabel(string key)
+        static VisualElement CreateLabel(string key)
         {
-            var item = m_InformationItemTemplate.Instantiate();
-            item.Q("InformationPropertyLabel").style.display = DisplayStyle.None;
+            var item = new VisualElement();
+            item.AddToClassList("details-container");
 
-            var label = item.Q<Label>("InformationValueLabel");
-            label.parent.style.justifyContent = Justify.FlexStart;
-            label.style.fontSize = 18;
-            label.text = key;
+            var label = new Label
+            {
+                text = key,
+                style = { fontSize = 18}
+            };
+            label.AddToClassList("details-label");
+            item.Add(label);
             return item;
         }
 
-        TemplateContainer AddItem(ICollection<TemplateContainer> items, string key, string value, Action<Label, string> labelSetter = null, Action<Label, string> valueSetter = null)
+        static VisualElement AddItem(ICollection<VisualElement> items, string key, string value, Action<Label, string> labelSetter = null, Action<Label, string> valueSetter = null)
         {
-            var item = m_InformationItemTemplate.Instantiate();
+            var item = new VisualElement();
+            item.AddToClassList("details-container");
             items.Add(item);
 
-            var label = item.Q<Label>("InformationPropertyLabel");
-            label.text = key;
+            var label = new Label {text = key};
+            label.AddToClassList("details-label");
+            item.Add(label);
             labelSetter?.Invoke(label, key);
 
-            var valueLabel = item.Q<Label>("InformationValueLabel");
-            valueLabel.text = value;
-            valueSetter?.Invoke(valueLabel, value);
+            if (!string.IsNullOrEmpty(value) || valueSetter != null)
+            {
+                var valueLabel = new Label {text = value};
+                valueLabel.AddToClassList("details-value");
+                item.Add(valueLabel);
+                valueSetter?.Invoke(valueLabel, value);
+            }
 
             return item;
         }
 
-        void AddItemList(ICollection<TemplateContainer> items, string key, IEnumerable<string> values, Action<Label, string> labelSetter = null)
+        static void AddItemList(ICollection<VisualElement> items, string key, IEnumerable<string> values, Action<Label, string> labelSetter = null)
         {
             var item = AddItem(items, key, string.Empty, labelSetter);
 
-            var label = item.Q<Label>("InformationValueLabel");
             var valueList = values.ToList();
             if (valueList.Count != 0)
             {
-                label.style.display = DisplayStyle.None;
+                var container = new VisualElement();
+                container.AddToClassList("details-value-container");
+                item.Add(container);
+
                 foreach (var value in valueList)
                 {
-                    var tagItem = m_InformationTagsTemplate.Instantiate();
-                    tagItem.Q<Button>("TagContainer").text = value;
-                    item.Q<VisualElement>("InformationValue").Add(tagItem);
+                    var tag = new Button {text = value};
+                    tag.AddToClassList("AssetInfoItem");
+                    container.Add(tag);
                 }
             }
             else
             {
-                label.text = k_NoneLabel;
+                var valueLabel = new Label {text = k_NoneLabel};
+                valueLabel.AddToClassList("details-value");
             }
         }
 
@@ -451,7 +416,7 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
                     await file.DownloadAsync(destination, null, CancellationToken.None);
                 }
 
-                m_CoroutineHandler.StartCoroutine(ShowSuccessfulDownload());
+                _ = ShowSuccessfulDownload();
             }
             catch (Exception e)
             {
@@ -467,15 +432,17 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
             }
         }
 
-        void OnDatasetDownloadButtonClicked(IDataset dataset, Button button)
+        void OnDatasetDownloadButtonClicked(IDataset dataset, DatasetFoldout foldout)
         {
-            UpdateDownloadButton(button, false);
+            UpdateDownloadButton(foldout.Q<Button>(), false);
 
-            GetDownloadFolder(() => _ = DownloadDataset(dataset, button));
+            GetDownloadFolder(() => _ = DownloadDataset(dataset, foldout));
         }
 
-        async Task DownloadDataset(IDataset dataset, Button button)
+        async Task DownloadDataset(IDataset dataset, DatasetFoldout foldout)
         {
+            var button = foldout.Q<Button>();
+
             if (string.IsNullOrEmpty(m_DownloadFolder))
             {
                 UpdateDownloadButton(button, true);
@@ -494,7 +461,7 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
                     await file.DownloadAsync(destination, null, CancellationToken.None);
                 }
 
-                m_CoroutineHandler.StartCoroutine(ShowSuccessfulDownload());
+                foldout.ShowDownloadSuccessLabel();
             }
             catch (Exception e)
             {
@@ -513,18 +480,21 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
             button.text = enable ? "Download" : "Downloading...";
         }
 
-        IEnumerator ShowSuccessfulDownload()
+        async Task ShowSuccessfulDownload()
         {
             m_AssetInformationDownloadSuccessful.style.display = DisplayStyle.Flex;
-            yield return new WaitForSeconds(3f);
+            await Task.Delay(3000);
             m_AssetInformationDownloadSuccessful.style.display = DisplayStyle.None;
         }
 
         async Task ListAssetCollections(VisualElement item)
         {
-            var label = item.Q<Label>("InformationValueLabel");
+            var label = item.Q<Label>();
             label.style.display = DisplayStyle.None;
-            var container = item.Q<VisualElement>("InformationValue");
+
+            var container = new VisualElement();
+            container.AddToClassList("details-value-container");
+            item.Add(container);
 
             var collections = new List<CollectionPath>();
 
@@ -546,8 +516,8 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
                 {
                     foreach (var collection in collections)
                     {
-                        var collectionItem = m_InformationTagsTemplate.Instantiate();
-                        collectionItem.Q<Button>("TagContainer").text = collection.GetLastComponentOfPath();
+                        var collectionItem = new Button {text = collection.GetLastComponentOfPath()};
+                        collectionItem.AddToClassList("AssetInfoItem");
                         container.Add(collectionItem);
                     }
                 }

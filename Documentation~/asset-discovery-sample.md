@@ -27,6 +27,12 @@ Before you use the Asset Discovery sample, you must have the following:
 >[!NOTE]
 >While the Assets package doesn't depend on the Identity service, it is used in the sample to control the authentication process.
 
+## Known limitations
+
+The Asset Discovery sample has the following limitations:
+
+- Projects and organizations with a large number of assets may experience performance issues. When building the sample as a standalone application, the application may crash due to memory limitations.
+
 ## Install the sample
 
 To install the sample, follow these steps:

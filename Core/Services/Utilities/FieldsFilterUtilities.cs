@@ -10,6 +10,10 @@ namespace Unity.Cloud.Assets
         /// </summary>
         static readonly string[] s_DefaultAssetFields =
         {
+            "previewFileDatasetId",
+            "previewFile",
+            "labels",
+            "archivedLabels",
             "isFrozen",
             "versionNumber",
             "changelog",

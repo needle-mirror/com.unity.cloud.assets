@@ -133,6 +133,7 @@ GameObject:
   m_Component:
   - component: {fileID: 374964114}
   - component: {fileID: 374964115}
+  - component: {fileID: 374964116}
   m_Layer: 0
   m_Name: PlatformServices
   m_TagString: Untagged
@@ -167,6 +168,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6f19410fae5f44d7b850a2da40eba010, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &374964116
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 374964111}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dfa1c268361e4adba91428c70adae63d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &472770734
 GameObject:
   m_ObjectHideFlags: 0
@@ -176,9 +189,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 472770736}
-  - component: {fileID: 472770737}
   - component: {fileID: 472770738}
-  - component: {fileID: 472770739}
   m_Layer: 5
   m_Name: AssetDiscoverySample
   m_TagString: Untagged
@@ -201,19 +212,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &472770737
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 472770734}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5a8e7301098b64ad1b4318e960bb02bc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_LoginUiDocument: {fileID: 1792582386}
 --- !u!114 &472770738
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -227,15 +225,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_UiDocument: {fileID: 1792582386}
-  m_OrganizationController: {fileID: 1792582388}
   m_ProjectController: {fileID: 1792582388}
-  m_SearchBarUi: {fileID: 472770739}
+  m_SearchBarUi: {fileID: 1792582389}
   m_AssetGridLayoutTemplate: {fileID: 9197481963319205126, guid: 84db7d6d6cdac44c18d54d1a3086dcd3, type: 3}
   m_AssetInformationLayoutTemplate: {fileID: 9197481963319205126, guid: fd6368ed5012be94f8fef81f2addec5a, type: 3}
   m_AssetsGridItemTemplate: {fileID: 9197481963319205126, guid: 29fd9f4eec0d2473da93581c087fbbcf, type: 3}
-  m_InformationItemTemplate: {fileID: 9197481963319205126, guid: 43cc51fae7b474e109e9f7ececbe7542, type: 3}
-  m_InformationTagsTemplate: {fileID: 9197481963319205126, guid: e39c2cb33f9df429591577dc14df1eb9, type: 3}
-  m_DataSetInformationPanelItemTemplate: {fileID: 9197481963319205126, guid: 44416b588d51974459e0b6018ae00caf, type: 3}
   m_DefaultThumbnails:
   - <AssetType>k__BackingField: 0
     <Thumbnail>k__BackingField: {fileID: 2800000, guid: 9a6dfd0b3c8a49346afcdb89f5361153, type: 3}
@@ -251,20 +245,6 @@ MonoBehaviour:
     <Thumbnail>k__BackingField: {fileID: 2800000, guid: f0cc439d978693c42a08ccd1b2546d55, type: 3}
   - <AssetType>k__BackingField: 6
     <Thumbnail>k__BackingField: {fileID: 2800000, guid: fbc1b225fb5286e44bbd5a546112af7a, type: 3}
---- !u!114 &472770739
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 472770734}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 135f21b60232c4368b4392783ea227ff, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_SearchBarTemplate: {fileID: 9197481963319205126, guid: 16616135b714e43a6ae0a18c9ccf3732, type: 3}
-  m_SearchBarChipTemplate: {fileID: 9197481963319205126, guid: d8efefb3cdfc8cf4c95c9fa06290b335, type: 3}
 --- !u!1 &1792582385
 GameObject:
   m_ObjectHideFlags: 0
@@ -275,8 +255,9 @@ GameObject:
   m_Component:
   - component: {fileID: 1792582387}
   - component: {fileID: 1792582386}
-  - component: {fileID: 1792582389}
   - component: {fileID: 1792582388}
+  - component: {fileID: 1792582390}
+  - component: {fileID: 1792582389}
   m_Layer: 5
   m_Name: SampleManager
   m_TagString: Untagged
@@ -339,10 +320,24 @@ MonoBehaviour:
   m_GameObject: {fileID: 1792582385}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9fe7246f2d084e0fa132db197deb5e54, type: 3}
+  m_Script: {fileID: 11500000, guid: 135f21b60232c4368b4392783ea227ff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_OrganizationController: {fileID: 1792582388}
+  m_SearchBarTemplate: {fileID: 9197481963319205126, guid: 16616135b714e43a6ae0a18c9ccf3732, type: 3}
+  m_SearchBarChipTemplate: {fileID: 9197481963319205126, guid: d8efefb3cdfc8cf4c95c9fa06290b335, type: 3}
+--- !u!114 &1792582390
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1792582385}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5a8e7301098b64ad1b4318e960bb02bc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_LoginUiDocument: {fileID: 1792582386}
 --- !u!1 &1866004488
 GameObject:
   m_ObjectHideFlags: 0
@@ -536,5 +531,5 @@ SceneRoots:
   - {fileID: 1866004491}
   - {fileID: 2030513173}
   - {fileID: 374964114}
-  - {fileID: 472770736}
   - {fileID: 1792582387}
+  - {fileID: 472770736}

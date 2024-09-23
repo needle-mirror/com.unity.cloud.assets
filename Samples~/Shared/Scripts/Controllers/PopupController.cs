@@ -7,12 +7,10 @@ namespace Unity.Cloud.Assets.Samples
     {
         protected readonly VisualElement m_PopupWindow;
         protected readonly Button m_ActionButton;
-        readonly Action m_Action;
 
-        protected PopupController(VisualElement root, string popupName, Action action)
+        protected PopupController(VisualElement root, string popupName)
         {
             m_PopupWindow = root.Q(popupName);
-            m_Action = action;
 
             var closeButton = m_PopupWindow.Q<Button>("Close");
             closeButton.clicked += Hide;
@@ -35,7 +33,6 @@ namespace Unity.Cloud.Assets.Samples
 
         protected virtual void OnClicked()
         {
-            m_Action?.Invoke();
             Hide();
         }
     }

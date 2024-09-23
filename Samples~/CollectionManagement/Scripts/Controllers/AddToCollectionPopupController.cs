@@ -11,7 +11,7 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
         public event Action<IEnumerable<IAsset>> AssetsAddedToCollection;
 
         public AddToCollectionPopupController(VisualElement root, VisualTreeAsset listItemTemplate)
-            : base(root, "AddToCollectionPopup", null)
+            : base(root, "AddToCollectionPopup")
         {
             m_AssetListUi.Initialize(m_PopupWindow, listItemTemplate);
         }

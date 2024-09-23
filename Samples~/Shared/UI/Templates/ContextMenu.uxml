@@ -1,8 +1,5 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
-    <ui:Template name="ContextMenuOption" src="../Templates/ContextMenuOption.uxml?fileID=9197481963319205126&amp;guid=9b3c75760635248de954caa64e0c1b76&amp;type=3#ContextMenuOption" />
-    <Style src="../StyleSheets/ContextMenuStyleSheet.uss?fileID=7433441132597879392&amp;guid=aad11b3cc0a914227ad16f5524ef8075&amp;type=3#ContextMenuStyleSheet" />
+    <Style src="../StyleSheets/SampleSheet.uss?fileID=7433441132597879392&amp;guid=7376c3d25e9f04a989663c45cc94f5c7&amp;type=3#SampleSheet" />
     <ui:Button display-tooltip-when-elided="true" name="ContextMenuButton" class="ContextMenuButton" />
-    <ui:VisualElement name="ContextMenu" class="ContextMenu" style="width: 110px;">
-        <ui:Instance template="ContextMenuOption" style="display: none;" />
-    </ui:VisualElement>
+    <ui:VisualElement name="ContextMenu" class="ContextMenu" style="width: 110px;" />
 </ui:UXML>

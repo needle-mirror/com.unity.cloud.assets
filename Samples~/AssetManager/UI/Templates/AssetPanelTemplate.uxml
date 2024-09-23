@@ -11,6 +11,7 @@
                 <ui:VisualElement style="flex-direction: row; flex-shrink: 0;">
                     <ui:Button text="Datasets" parse-escape-sequences="true" display-tooltip-when-elided="true" name="Datasets" class="asset-tabs" />
                     <ui:Button text="History" parse-escape-sequences="true" display-tooltip-when-elided="true" name="History" class="asset-tabs" />
+                    <ui:Button text="References" parse-escape-sequences="true" display-tooltip-when-elided="true" name="References" class="asset-tabs" />
                 </ui:VisualElement>
                 <ui:VisualElement name="DatasetContainer" style="height: 100%; width: 100%; flex-grow: 1;">
                     <ui:ScrollView class="AssetFile" style="flex-grow: 1;" />
@@ -19,7 +20,10 @@
                     </ui:VisualElement>
                 </ui:VisualElement>
                 <ui:VisualElement name="VersionContainer" style="height: 100%; width: 100%; flex-grow: 1;">
-                    <ui:ScrollView name="DatasetScrollView" class="AssetFile" style="flex-grow: 1;" />
+                    <ui:ScrollView class="AssetFile" style="flex-grow: 1;" />
+                </ui:VisualElement>
+                <ui:VisualElement name="ReferencesContainer" style="height: 100%; width: 100%; flex-grow: 1;">
+                    <ui:ScrollView class="AssetFile" style="flex-grow: 1;" />
                 </ui:VisualElement>
             </ui:VisualElement>
             <ui:VisualElement name="RightPanel" style="flex-grow: 1;">
@@ -57,6 +61,17 @@
                     <ui:Button text="Continue editing" display-tooltip-when-elided="true" visible="false" name="Unfreeze" class="button-blue sample-button" />
                 </ui:VisualElement>
             </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement name="AddReferencePopup" style="position: absolute; left: 50%; top: 50%; align-items: stretch; background-color: rgb(19, 19, 19); padding-top: 8px; padding-right: 8px; padding-bottom: 8px; padding-left: 8px; border-left-color: rgb(28, 28, 28); border-right-color: rgb(28, 28, 28); border-top-color: rgb(28, 28, 28); border-bottom-color: rgb(28, 28, 28); border-top-width: 2px; border-right-width: 2px; border-bottom-width: 2px; border-left-width: 2px; border-top-left-radius: 8px; border-top-right-radius: 8px; border-bottom-right-radius: 8px; border-bottom-left-radius: 8px; translate: -50% -50px; transform-origin: center; rotate: 0; display: flex; flex-grow: 1; width: 60%;">
+            <ui:VisualElement style="flex-grow: 1; flex-direction: row; justify-content: space-between; margin-top: 4px; margin-bottom: 4px; align-items: center; margin-right: 4px; margin-left: 4px;">
+                <ui:Label tabindex="-1" text="Select an asset" parse-escape-sequences="true" display-tooltip-when-elided="true" style="font-size: 18px;" />
+                <ui:Button parse-escape-sequences="true" display-tooltip-when-elided="true" name="Close" style="border-top-width: 0; border-right-width: 0; border-bottom-width: 0; border-left-width: 0; width: 40px; height: 40px; align-items: center; justify-content: center; background-color: rgba(188, 188, 188, 0); margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 10px; padding-right: 10px; padding-bottom: 10px; padding-left: 10px;">
+                    <ui:VisualElement style="background-image: url(&apos;../../../Shared/UI/Sprites/delete.png?fileID=2800000&amp;guid=2fba3b8e11a714aeca7937eb158f6f0b&amp;type=3#delete&apos;); width: 20px; height: 20px; -unity-background-scale-mode: scale-to-fit;" />
+                </ui:Button>
+            </ui:VisualElement>
+            <ui:DropdownField label="Asset" index="-1" choices="System.Collections.Generic.List`1[System.String]" name="AssetSelection" style="flex-grow: 1;" />
+            <ui:DropdownField label="Version" index="-1" choices="System.Collections.Generic.List`1[System.String]" name="VersionSelection" style="flex-grow: 1;" />
+            <ui:Button text="Add" parse-escape-sequences="true" display-tooltip-when-elided="true" name="Action" class="button-blue sample-button" style="width: 120px; align-self: flex-end;" />
         </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

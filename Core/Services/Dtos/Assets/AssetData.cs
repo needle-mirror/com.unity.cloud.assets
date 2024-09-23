@@ -60,7 +60,10 @@ namespace Unity.Cloud.Assets
         public IEnumerable<ProjectId> LinkedProjectIds { get; set; }
 
         /// <inheritdoc />
-        public string PreviewFile { get; set; }
+        public DatasetId PreviewFileDatasetId { get; set; }
+
+        /// <inheritdoc />
+        public string PreviewFilePath { get; set; }
 
         /// <inheritdoc />
         public string PreviewFileUrl { get; set; }

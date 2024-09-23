@@ -51,11 +51,15 @@ namespace Unity.Cloud.Documentation.Assets
 
                 for (var i = 0; i < assets.Length; ++i)
                 {
+                    GUI.enabled = m_Behaviour.CurrentAsset?.Descriptor.AssetId != assets[i].Descriptor.AssetId;
+
                     if (GUILayout.Button(assets[i].Name))
                     {
                         m_Behaviour.CurrentAsset = assets[i];
                         Debug.Log($"Selected: {assets[i].Descriptor.AssetId}");
                     }
+
+                    GUI.enabled = true;
                 }
 
                 GUILayout.EndScrollView();

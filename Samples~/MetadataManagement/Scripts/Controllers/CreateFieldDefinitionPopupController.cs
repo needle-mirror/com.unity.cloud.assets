@@ -23,7 +23,7 @@ namespace Unity.Cloud.Assets.Samples.MetadataManagement
         readonly Dictionary<TextField, int> m_TextFieldToIndex = new();
 
         public CreateFieldDefinitionPopupController(VisualElement root, ValidateFieldDefinitionName validateFieldDefinitionName)
-            : base(root, "CreateFieldPopup", null)
+            : base(root, "CreateFieldPopup")
         {
             m_NameInput = m_PopupWindow.Q<TextField>("Name");
             m_NameInput.RegisterCallback<InputEvent>(OnInputChanged);

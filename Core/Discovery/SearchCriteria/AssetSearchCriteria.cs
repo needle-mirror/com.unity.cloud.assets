@@ -54,7 +54,7 @@ namespace Unity.Cloud.Assets
         public MetadataSearchCriteria Metadata { get; } = new(nameof(Asset.Metadata), "metadata");
 
         /// <inheritdoc cref="IAsset.PreviewFile"/>
-        public StringSearchCriteria PreviewFile { get; } = new(nameof(IAsset.PreviewFile), "previewFile");
+        public StringSearchCriteria PreviewFile { get; } = new("PreviewFile", "previewFile");
 
         /// <inheritdoc cref="IAsset.SourceProject"/>
         public SearchCriteria<string> SourceProjectId { get; } = new(nameof(IAsset.SourceProject), "sourceProjectId");

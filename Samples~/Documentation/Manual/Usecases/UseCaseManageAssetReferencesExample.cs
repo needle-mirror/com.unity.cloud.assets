@@ -12,11 +12,11 @@ namespace Unity.Cloud.Documentation.Assets
     using Unity.Cloud.Assets;
     using Unity.Cloud.Common;
 
-    public class UseCaseAssetReferenceManagementExampleUI : IAssetManagementUI
+    public class UseCaseManageAssetReferencesExampleUI : IAssetManagementUI
     {
         readonly AssetManagementBehaviour m_Behaviour;
 
-        public UseCaseAssetReferenceManagementExampleUI(AssetManagementBehaviour behaviour)
+        public UseCaseManageAssetReferencesExampleUI(AssetManagementBehaviour behaviour)
         {
             m_Behaviour = behaviour;
         }
@@ -29,13 +29,33 @@ namespace Unity.Cloud.Documentation.Assets
 #pragma warning restore S1186 // Methods should not be empty
 #pragma warning restore S4487 // Unread "private" fields should be removed
 
-    public class UseCaseAssetReferenceManagementExample : IAssetManagementUI
+    public class UseCaseManageAssetReferencesExample : IAssetManagementUI
     {
-        readonly UseCaseAssetReferenceManagementExampleBehaviour m_Behaviour;
+        readonly UseCaseManageAssetReferencesExampleBehaviour m_Behaviour;
 
-        public UseCaseAssetReferenceManagementExample(AssetManagementBehaviour behaviour)
+        public UseCaseManageAssetReferencesExample(AssetManagementBehaviour behaviour)
         {
-            m_Behaviour = new UseCaseAssetReferenceManagementExampleBehaviour(behaviour);
+            m_Behaviour = new UseCaseManageAssetReferencesExampleBehaviour(behaviour);
+        }
+
+        public bool IsTargetMode => m_SelectionMode == SelectionMode.Target;
+
+        public AssetVersion SelectedVersion
+        {
+            get
+            {
+                return m_SelectionMode switch
+                {
+                    SelectionMode.Source => new AssetVersion(m_SourceVersion),
+                    SelectionMode.Target => new AssetVersion(m_TargetVersion),
+                    _ => default
+                };
+            }
+        }
+        public string TargetLabel
+        {
+            get => m_TargetLabel;
+            set => m_TargetLabel = value;
         }
 
         #region Example_UIContent
@@ -46,13 +66,14 @@ namespace Unity.Cloud.Documentation.Assets
             Target,
         }
 
+        IAsset m_SelectedAsset;
+
         SelectionMode m_SelectionMode;
         Vector2 m_SourceScrollPosition;
         Vector2 m_TargetScrollPosition;
 
         IAsset m_SourceAsset;
         string m_SourceVersion;
-        string m_SourceLabel;
 
         IAsset m_TargetAsset;
         string m_TargetVersion;
@@ -60,22 +81,45 @@ namespace Unity.Cloud.Documentation.Assets
 
         public void OnGUI()
         {
-            if (!m_Behaviour.IsProjectSelected) return;
+            if (!m_Behaviour.IsProjectSelected)
+            {
+                m_SelectedAsset = null;
+                m_SourceAsset = null;
+                m_TargetAsset = null;
+                return;
+            }
+
+            if (m_SelectedAsset != m_Behaviour.CurrentAsset)
+            {
+                m_SelectedAsset = m_Behaviour.CurrentAsset;
+
+                OnCurrentAssetChanged();
+            }
 
             GUILayout.BeginVertical();
 
             m_SelectionMode = (SelectionMode) GUILayout.SelectionGrid((int) m_SelectionMode, new[] {"Source", "Target"}, 2);
 
-            TrySetSourceAndTarget();
+            switch (m_SelectionMode)
+            {
+                case SelectionMode.Source:
+                    m_Behaviour.CurrentAsset = m_SourceAsset;
+                    break;
+
+                case SelectionMode.Target:
+                    m_Behaviour.CurrentAsset = m_TargetAsset;
+                    break;
+            }
 
             if (GUILayout.Button("Create Reference"))
             {
-                _ = m_Behaviour.CreateReference(m_SourceAsset, m_TargetAsset.Descriptor.AssetId, m_TargetVersion, m_TargetLabel);
+                _ = m_Behaviour.CreateReferenceAsync(m_SourceAsset, m_TargetAsset.Descriptor.AssetId, m_TargetVersion, m_TargetLabel);
             }
 
             GUILayout.BeginHorizontal(GUILayout.ExpandWidth(true));
 
-            DisplayAssetReference(m_SourceAsset, ref m_SourceVersion, ref m_SourceLabel, SelectionMode.Source);
+            var dummyString = string.Empty;
+            DisplayAssetReference(m_SourceAsset, ref m_SourceVersion, ref dummyString, SelectionMode.Source);
             DisplayAssetReference(m_TargetAsset, ref m_TargetVersion, ref m_TargetLabel, SelectionMode.Target);
 
             GUILayout.EndHorizontal();
@@ -93,20 +137,38 @@ namespace Unity.Cloud.Documentation.Assets
 
             GUILayout.BeginVertical();
 
-            GUILayout.Label(selectionMode.ToString());
+            GUILayout.Label($"{selectionMode} - {asset.Name}");
 
             GUILayout.Space(5);
 
-            GUILayout.Label(asset.Name);
-            GUILayout.Label(asset.Descriptor.AssetId.ToString());
+            GUILayout.Label("Id: " + asset.Descriptor.AssetId);
 
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("Ver.", GUILayout.Width(40));
             version = GUILayout.TextField(version);
-            label = GUILayout.TextField(label);
+            GUILayout.EndHorizontal();
 
-            if (GUILayout.Button("Refresh"))
+            if (selectionMode == SelectionMode.Target)
             {
-                _ = m_Behaviour.ListReferences(asset.Descriptor.AssetId, version, selectionMode.ToString());
+                GUILayout.BeginHorizontal();
+                GUILayout.Label("Label", GUILayout.Width(40));
+                label = GUILayout.TextField(label);
+                GUILayout.EndHorizontal();
             }
+
+            GUILayout.BeginHorizontal();
+
+            if (GUILayout.Button("Refresh Ver.", GUILayout.Width(100)))
+            {
+                _ = m_Behaviour.ListReferencesAsync(asset.Descriptor.AssetId, version, selectionMode.ToString());
+            }
+
+            if (GUILayout.Button("Show All", GUILayout.Width(100)))
+            {
+                _ = m_Behaviour.ListReferencesAsync(asset.Descriptor.AssetId, string.Empty, selectionMode.ToString());
+            }
+
+            GUILayout.EndHorizontal();
 
             DisplayReferences(selectionMode, asset);
 
@@ -134,10 +196,11 @@ namespace Unity.Cloud.Documentation.Assets
 
                     GUILayout.BeginHorizontal();
                     GUILayout.Label($"Ref. {reference.ReferenceId}");
-                    if (GUILayout.Button("Remove"))
+                    if (GUILayout.Button("Remove", GUILayout.Width(80)))
                     {
-                        _ = m_Behaviour.RemoveReference(asset, reference.ReferenceId);
+                        _ = m_Behaviour.RemoveReferenceAsync(asset, reference.ReferenceId);
                     }
+
                     GUILayout.EndHorizontal();
 
                     var isSource = reference.SourceAssetId == asset.Descriptor.AssetId;
@@ -171,28 +234,39 @@ namespace Unity.Cloud.Documentation.Assets
             }
         }
 
-        void TrySetSourceAndTarget()
+        void OnCurrentAssetChanged()
         {
             if (m_Behaviour.CurrentAsset == null) return;
 
             switch (m_SelectionMode)
             {
                 case SelectionMode.Source:
-                    if (m_SourceAsset?.Descriptor.AssetId != m_Behaviour.CurrentAsset.Descriptor.AssetId)
+                    if (m_Behaviour.CurrentAsset == null)
+                    {
+                        m_SourceAsset = null;
+                        m_SourceVersion = string.Empty;
+                    }
+                    else
                     {
                         m_SourceAsset = m_Behaviour.CurrentAsset;
                         m_SourceVersion = m_SourceAsset.Descriptor.AssetVersion.ToString();
-                        _ = m_Behaviour.ListReferences(m_SourceAsset.Descriptor.AssetId, m_SourceVersion, SelectionMode.Source.ToString());
+                        _ = m_Behaviour.ListReferencesAsync(m_SourceAsset.Descriptor.AssetId, m_SourceVersion, SelectionMode.Source.ToString());
                     }
 
                     break;
 
                 case SelectionMode.Target:
-                    if (m_TargetAsset?.Descriptor.AssetId != m_Behaviour.CurrentAsset.Descriptor.AssetId)
+                    if (m_Behaviour.CurrentAsset == null)
+                    {
+                        m_TargetAsset = null;
+                        m_TargetVersion = string.Empty;
+                        m_TargetLabel = string.Empty;
+                    }
+                    else
                     {
                         m_TargetAsset = m_Behaviour.CurrentAsset;
-                        m_TargetVersion = m_TargetAsset.Descriptor.AssetVersion.ToString();
-                        _ = m_Behaviour.ListReferences(m_TargetAsset.Descriptor.AssetId, m_TargetVersion, SelectionMode.Target.ToString());
+                        m_TargetVersion = string.IsNullOrEmpty(m_TargetLabel) ? m_TargetAsset.Descriptor.AssetVersion.ToString() : string.Empty;
+                        _ = m_Behaviour.ListReferencesAsync(m_TargetAsset.Descriptor.AssetId, m_TargetVersion, SelectionMode.Target.ToString());
                     }
 
                     break;
@@ -202,15 +276,20 @@ namespace Unity.Cloud.Documentation.Assets
         #endregion
     }
 
-    class UseCaseAssetReferenceManagementExampleBehaviour
+    class UseCaseManageAssetReferencesExampleBehaviour
     {
         readonly AssetManagementBehaviour m_Behaviour;
 
-        public IAsset CurrentAsset => m_Behaviour.CurrentAsset;
         public bool IsProjectSelected => m_Behaviour.IsProjectSelected;
-        public IAssetProject CurrentProject => m_Behaviour.CurrentProject;
+        IAssetProject CurrentProject => m_Behaviour.CurrentProject;
 
-        public UseCaseAssetReferenceManagementExampleBehaviour(AssetManagementBehaviour behaviour)
+        public IAsset CurrentAsset
+        {
+            get => m_Behaviour.CurrentAsset;
+            set => m_Behaviour.CurrentAsset = value;
+        }
+
+        public UseCaseManageAssetReferencesExampleBehaviour(AssetManagementBehaviour behaviour)
         {
             m_Behaviour = behaviour;
         }
@@ -219,7 +298,7 @@ namespace Unity.Cloud.Documentation.Assets
 
         public Dictionary<string, List<IAssetReference>> References { get; } = new();
 
-        public async Task ListReferences(AssetId assetId, string version, string id)
+        public async Task ListReferencesAsync(AssetId assetId, string version, string id)
         {
             References.Remove(id);
 
@@ -248,7 +327,11 @@ namespace Unity.Cloud.Documentation.Assets
             }
         }
 
-        public async Task CreateReference(IAsset asset, AssetId referencedAssetId, string version, string label)
+        #endregion
+
+        #region Example_Behaviour_CreateReference
+
+        public async Task CreateReferenceAsync(IAsset asset, AssetId referencedAssetId, string version, string label)
         {
             IAssetReference assetReference = null;
 
@@ -270,15 +353,23 @@ namespace Unity.Cloud.Documentation.Assets
 
             if (assetReference != null)
             {
+                References["Source"].Add(assetReference);
+                References["Target"].Add(assetReference);
                 Debug.Log($"Reference created: {assetReference.ReferenceId}");
             }
         }
 
-        public async Task RemoveReference(IAsset asset, string referenceId)
+        #endregion
+
+        #region Example_Behaviour_RemoveReference
+
+        public async Task RemoveReferenceAsync(IAsset asset, string referenceId)
         {
             try
             {
                 await asset.RemoveReferenceAsync(referenceId, default);
+                References["Source"].RemoveAll(reference => reference.ReferenceId == referenceId);
+                References["Target"].RemoveAll(reference => reference.ReferenceId == referenceId);
             }
             catch (Exception e)
             {

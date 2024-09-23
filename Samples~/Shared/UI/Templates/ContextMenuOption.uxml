@@ -1,4 +1,0 @@
-<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
-    <Style src="../StyleSheets/ContextMenuStyleSheet.uss?fileID=7433441132597879392&amp;guid=aad11b3cc0a914227ad16f5524ef8075&amp;type=3#ContextMenuStyleSheet" />
-    <ui:Button display-tooltip-when-elided="true" class="ContextMenuEntry" />
-</ui:UXML>

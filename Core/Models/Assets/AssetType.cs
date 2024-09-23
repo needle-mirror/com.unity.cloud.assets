@@ -23,7 +23,9 @@ namespace Unity.Cloud.Assets
         [EnumMember(Value = "Script")]
         Script,
         [EnumMember(Value = "Video")]
-        Video
+        Video,
+        [EnumMember(Value = "Unity Editor")]
+        Unity_Editor,
     }
 
     public static class AssetTypeExtensions
@@ -44,6 +46,7 @@ namespace Unity.Cloud.Assets
                 AssetType.Other => "Other",
                 AssetType.Script => "Script",
                 AssetType.Video => "Video",
+                AssetType.Unity_Editor => "Unity Editor",
                 _ => string.Empty
             };
         }
@@ -82,6 +85,9 @@ namespace Unity.Cloud.Assets
                     break;
                 case var s when s.OrdinalEquals("Video"):
                     assetType = AssetType.Video;
+                    break;
+                case var s when s.OrdinalEquals("Unity Editor"):
+                    assetType = AssetType.Unity_Editor;
                     break;
                 default:
                     return false;

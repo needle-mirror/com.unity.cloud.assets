@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Unity.Cloud.Common;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -42,7 +43,6 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             }
         }
 
-        VisualTreeAsset m_DatasetListItemTemplate;
         VisualTreeAsset m_AssetTagsTemplate;
 
         VisualElement m_RightPanel;
@@ -64,6 +64,10 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
         VisualElement m_VersionContainer;
         ScrollView m_VersionScrollView;
+
+        VisualElement m_ReferencesContainer;
+        ScrollView m_ReferencesScrollView;
+        AddReferencesPopupController m_AddReferencePopup;
 
         Button m_SaveButton;
         Button m_FreezeButton;
@@ -87,9 +91,8 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
         bool IsEditable => m_CurrentAsset is {IsFrozen: false};
 
-        public void Init(VisualElement assetCreationPanel, VisualTreeAsset datasetListItemTemplate, VisualTreeAsset tagsTemplate, AddMetadataPopupController addMetadataPopup)
+        public void Init(VisualElement assetCreationPanel, VisualTreeAsset tagsTemplate, AddMetadataPopupController addMetadataPopup)
         {
-            m_DatasetListItemTemplate = datasetListItemTemplate;
             m_AssetTagsTemplate = tagsTemplate;
 
             m_DatasetContainer = assetCreationPanel.Q("DatasetContainer");
@@ -98,9 +101,14 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             m_VersionContainer = assetCreationPanel.Q("VersionContainer");
             m_VersionScrollView = m_VersionContainer.Q<ScrollView>();
 
+            m_ReferencesContainer = assetCreationPanel.Q("ReferencesContainer");
+            m_ReferencesScrollView = m_ReferencesContainer.Q<ScrollView>();
+            m_AddReferencePopup = new AddReferencesPopupController(assetCreationPanel);
+
             _ = new TabsController(assetCreationPanel,
                 ("Datasets", m_DatasetContainer),
-                ("History", m_VersionContainer)
+                ("History", m_VersionContainer),
+                ("References", m_ReferencesContainer)
             );
 
             m_RightPanel = assetCreationPanel.Q("RightPanel");
@@ -221,6 +229,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
             _ = ListDatasets(asset, IsEditable, token);
             _ = ListVersions(asset, token);
+            _ = ListReferences(asset, token);
         }
 
         public void Clear()
@@ -251,6 +260,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             m_AssetTagsContainer.Clear();
             m_DatasetScrollView.Clear();
             m_VersionScrollView.Clear();
+            m_ReferencesScrollView.Clear();
             m_MetadataController.Clear();
             m_StatusController.Clear();
             m_StatusDropdown.choices = new List<string>();
@@ -288,19 +298,18 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
         void AddDatasetRow(IDataset dataset, bool canUpdate)
         {
-            var item = m_DatasetListItemTemplate.Instantiate();
+            var rowItem = new RowItem();
+            rowItem.AddLabel(dataset.Name);
+            if (!string.IsNullOrEmpty(dataset.Description))
+            {
+                rowItem.AddLabel(dataset.Description);
+            }
 
-            item.Q<Label>("DatasetNameLabel").text = dataset.Name;
-
-            var description = item.Q<Label>("DatasetDescriptionLabel");
-            description.text = dataset.Description;
-            description.Show(!string.IsNullOrWhiteSpace(dataset.Description));
-
-            item.RegisterCallback<ClickEvent>(_ =>
+            rowItem.RegisterCallback<ClickEvent>(_ =>
             {
                 OnDatasetOpen?.Invoke(dataset, canUpdate);
             });
-            m_DatasetScrollView.Add(item);
+            m_DatasetScrollView.Add(rowItem);
         }
 
         async Task ListVersions(IAsset asset, CancellationToken cancellationToken)
@@ -315,16 +324,138 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
         void AddVersionRow(IAsset asset)
         {
-            var item = m_DatasetListItemTemplate.Instantiate();
-
-            item.Q<Label>("DatasetNameLabel").text = asset.IsFrozen ? $"Ver. {asset.FrozenSequenceNumber}" : $"Pending";
-            item.Q<Label>("DatasetDescriptionLabel").text = asset.Descriptor.AssetVersion.ToString();
-
-            item.RegisterCallback<ClickEvent>(_ =>
+            var rowItem = new RowItem();
+            rowItem.AddLabel(asset.IsFrozen ? $"Ver. {asset.FrozenSequenceNumber}" : $"Pending");
+            rowItem.AddLabel(asset.Descriptor.AssetVersion.ToString());
+            rowItem.RegisterCallback<ClickEvent>(_ =>
             {
                 OpenAsset(asset);
             });
-            m_VersionScrollView.Add(item);
+            m_VersionScrollView.Add(rowItem);
+        }
+
+        async Task ListReferences(IAsset asset, CancellationToken cancellationToken)
+        {
+            var targetFoldout = new Foldout
+            {
+                text = "References",
+                value = true
+            };
+            m_ReferencesScrollView.Add(targetFoldout);
+            var sourceFoldout = new Foldout
+            {
+                text = "Is referenced by",
+                value = true
+            };
+            m_ReferencesScrollView.Add(sourceFoldout);
+
+            await foreach (var reference in asset.ListReferencesAsync(Range.All, cancellationToken))
+            {
+                if (reference.SourceAssetId == asset.Descriptor.AssetId && reference.SourceAssetVersion == asset.Descriptor.AssetVersion)
+                {
+                    if (reference.IsValid)
+                    {
+                        _ = AddReferenceRow(targetFoldout, reference.ProjectDescriptor, reference.ReferenceId, reference.TargetAssetId, reference.TargetAssetVersion, reference.TargetLabel);
+                    }
+                    else
+                    {
+                        AddInvalidReferenceRow(targetFoldout, reference.ReferenceId, reference.TargetAssetId, reference.TargetAssetVersion, reference.TargetLabel);
+                    }
+                }
+                else
+                {
+                    if (reference.IsValid)
+                    {
+                        _ = AddReferenceRow(sourceFoldout, reference.ProjectDescriptor, reference.ReferenceId, reference.SourceAssetId, reference.SourceAssetVersion);
+                    }
+                    else
+                    {
+                        AddInvalidReferenceRow(sourceFoldout, reference.ReferenceId, reference.SourceAssetId, reference.SourceAssetVersion);
+                    }
+                }
+            }
+
+            var addButton = new Button {text = "Add Reference"};
+            addButton.AddToClassList("sample-button");
+            addButton.AddToClassList("button-blue");
+            targetFoldout.Add(addButton);
+            addButton.clicked += () =>
+            {
+                m_AddReferencePopup.Show(m_CurrentAsset.Descriptor.ProjectDescriptor, async (assetId, version, label) =>
+                {
+                    IAssetReference reference;
+                    if (version.HasValue)
+                    {
+                        reference = await m_CurrentAsset.AddReferenceAsync(assetId, version.Value, default);
+                    }
+                    else
+                    {
+                        reference = await m_CurrentAsset.AddReferenceAsync(assetId, label, default);
+                    }
+                    _ = AddReferenceRow(targetFoldout, reference.ProjectDescriptor, reference.ReferenceId, reference.TargetAssetId, reference.TargetAssetVersion, reference.TargetLabel);
+                });
+            };
+        }
+
+        void AddInvalidReferenceRow(VisualElement parent, string referenceId, AssetId assetId, AssetVersion? assetVersion = null, string label = null)
+        {
+            var rowItem = new RowItem(referenceId);
+            rowItem.AddLabel(assetId + " INVALID\n" + (assetVersion?.ToString() ?? label));
+            parent.Add(rowItem);
+
+            AddRemoveButton(rowItem, referenceId);
+        }
+
+        async Task AddReferenceRow(VisualElement parent, ProjectDescriptor projectDescriptor, string referenceId, AssetId assetId, AssetVersion? assetVersion = null, string label = null)
+        {
+            var rowItem = new RowItem(referenceId);
+
+            var title = rowItem.AddLabel($"{assetId}\n{assetVersion?.ToString() ?? label}");
+
+            parent.Add(rowItem);
+            rowItem.SendToBack();
+
+            IAsset asset;
+            if (assetVersion.HasValue)
+            {
+                var descriptor = new AssetDescriptor(projectDescriptor, assetId, assetVersion.Value);
+                asset = await PlatformServices.AssetRepository.GetAssetAsync(descriptor, default);
+            }
+            else
+            {
+                asset = await PlatformServices.AssetRepository.GetAssetAsync(projectDescriptor, assetId, label, default);
+            }
+
+            title.text = $"{asset.Name}\n({label ?? (asset.IsFrozen ? $"Ver. {asset.FrozenSequenceNumber}" : "Ver.1 - Pending")})";
+            rowItem.AddLabel(asset.Type.GetValueAsString());
+
+            rowItem.RegisterCallback<ClickEvent>(_ =>
+            {
+                OpenAsset(asset);
+            });
+
+            AddRemoveButton(rowItem, referenceId);
+        }
+
+        void AddRemoveButton(RowItem rowItem, string referenceId)
+        {
+            var button = new Button
+            {
+                text = "Remove",
+                style = {width = 80}
+            };
+            button.AddToClassList("sample-button");
+            button.AddToClassList("button-blue");
+            rowItem.Add(button);
+            button.RegisterCallback<ClickEvent>(evt =>
+            {
+                evt.StopPropagation();
+            });
+            button.clicked += async () =>
+            {
+                await m_CurrentAsset.RemoveReferenceAsync(referenceId, default);
+                rowItem.RemoveFromHierarchy();
+            };
         }
 
         void AsyncAction(Func<Task> action)

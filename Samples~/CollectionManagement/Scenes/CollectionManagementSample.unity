@@ -190,12 +190,11 @@ GameObject:
   m_Component:
   - component: {fileID: 472770736}
   - component: {fileID: 472770735}
-  - component: {fileID: 472770740}
   - component: {fileID: 472770737}
   - component: {fileID: 472770739}
   - component: {fileID: 472770738}
   m_Layer: 5
-  m_Name: Sample
+  m_Name: SampleManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -277,22 +276,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_OrganizationListUiDocument: {fileID: 472770735}
-  m_ProjectListUiDocument: {fileID: 472770735}
   m_ListItemTemplate: {fileID: 9197481963319205126, guid: 934d61f4884ef4bd58a5f15dce4f2289, type: 3}
   m_IncludeAllProject: 0
---- !u!114 &472770740
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 472770734}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9fe7246f2d084e0fa132db197deb5e54, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_OrganizationController: {fileID: 472770739}
 --- !u!1 &1866004488
 GameObject:
   m_ObjectHideFlags: 0
@@ -485,5 +470,5 @@ SceneRoots:
   m_Roots:
   - {fileID: 1866004491}
   - {fileID: 2030513173}
-  - {fileID: 472770736}
   - {fileID: 374964114}
+  - {fileID: 472770736}

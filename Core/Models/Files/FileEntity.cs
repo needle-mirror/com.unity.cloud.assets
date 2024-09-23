@@ -85,8 +85,8 @@ namespace Unity.Cloud.Assets
                 AuthoringInfo = AuthoringInfo,
                 Tags = Tags?.ToArray(),
                 SystemTags = SystemTags?.ToArray(),
-                MetadataEntity = { Properties = MetadataEntity.Properties },
-                SystemMetadataEntity = { Properties = SystemMetadataEntity.Properties },
+                MetadataEntity = {Properties = MetadataEntity.Properties},
+                SystemMetadataEntity = {Properties = SystemMetadataEntity.Properties},
                 SizeBytes = SizeBytes,
                 UserChecksum = UserChecksum,
                 PreviewUrl = PreviewUrl,
@@ -153,7 +153,7 @@ namespace Unity.Cloud.Assets
             {
                 try
                 {
-                    DownloadUrl = await m_DataSource.GetFileDownloadUrlAsync(Descriptor, cancellationToken);
+                    DownloadUrl = await m_DataSource.GetFileDownloadUrlAsync(Descriptor, null, cancellationToken);
                 }
                 catch (NotFoundException)
                 {
@@ -187,6 +187,12 @@ namespace Unity.Cloud.Assets
             {
                 DownloadUrl = null; // Discard the url as it can only be used once.
             }
+        }
+
+        /// <inheritdoc />
+        public Task<Uri> GetResizedImageDownloadUrlAsync(int maxDimension, CancellationToken cancellationToken)
+        {
+            return m_DataSource.GetFileDownloadUrlAsync(Descriptor, maxDimension, cancellationToken);
         }
 
         /// Not exposed in the interface

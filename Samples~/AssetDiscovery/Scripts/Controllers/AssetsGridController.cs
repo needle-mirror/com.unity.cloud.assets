@@ -92,10 +92,13 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
             }
 
             // When a thumbnail is successfully retrieved, set it as the background image and the default is cleared.`
-            _ = ThumbnailController.GetThumbnail(asset, texture2D =>
+            ThumbnailController.GetThumbnail(asset, texture2D =>
             {
-                icon.style.backgroundImage = null;
-                container.style.backgroundImage = new StyleBackground(texture2D);
+                if (texture2D != null)
+                {
+                    icon.style.backgroundImage = null;
+                    container.style.backgroundImage = new StyleBackground(texture2D);
+                }
             });
         }
 

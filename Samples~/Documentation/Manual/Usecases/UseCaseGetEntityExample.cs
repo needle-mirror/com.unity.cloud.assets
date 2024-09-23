@@ -69,6 +69,13 @@ namespace Unity.Cloud.Documentation.Assets
             return await assetRepository.GetAssetAsync(assetDescriptor, CancellationToken.None);
         }
 
+        public static async Task<IAsset> GetAssetByLabelAsync(IAssetRepository assetRepository, string organizationId, string projectId, string assetId, string label)
+        {
+            var projectDescriptor = new ProjectDescriptor(new OrganizationId(organizationId), new ProjectId(projectId));
+
+            return await assetRepository.GetAssetAsync(projectDescriptor, new AssetId(assetId), label, CancellationToken.None);
+        }
+
         public static async Task<IDataset> GetDatasetAsync(IAssetRepository assetRepository, string organizationId, string projectId, string assetId, string assetVersion, string datasetId)
         {
             var projectDescriptor = new ProjectDescriptor(new OrganizationId(organizationId), new ProjectId(projectId));

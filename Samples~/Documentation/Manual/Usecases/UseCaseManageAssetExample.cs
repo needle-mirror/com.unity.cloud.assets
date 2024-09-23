@@ -38,9 +38,6 @@ namespace Unity.Cloud.Documentation.Assets
         readonly UseCaseManageAssetExampleBehaviour m_Behaviour;
         readonly string[] m_AssetTypeList;
 
-        IAsset m_CurrentAsset;
-        AssetUpdate m_AssetUpdate;
-
         public UseCaseManageAssetExample(AssetManagementBehaviour behaviour)
         {
             m_Behaviour = new UseCaseManageAssetExampleBehaviour(behaviour);
@@ -49,7 +46,10 @@ namespace Unity.Cloud.Documentation.Assets
 
         #region Example_UIContent
 
-        static GUILayoutOption s_LabelWidth = GUILayout.Width(40);
+        static GUILayoutOption s_LabelWidth = GUILayout.Width(60);
+
+        IAsset m_CurrentAsset;
+        AssetUpdate m_AssetUpdate;
 
         public void OnGUI()
         {
@@ -125,6 +125,17 @@ namespace Unity.Cloud.Documentation.Assets
             assetUpdate.Tags = tags.Split(',').ToList();
 
             GUILayout.EndHorizontal();
+
+            GUILayout.BeginHorizontal();
+
+            GUILayout.Label("Preview:", s_LabelWidth);
+
+            assetUpdate.PreviewFile = GUILayout.TextField(assetUpdate.PreviewFile, GUILayout.ExpandWidth(true));
+
+            GUILayout.EndHorizontal();
+
+            GUILayout.Label("Description:");
+            assetUpdate.Description = GUILayout.TextArea(assetUpdate.Description, GUILayout.ExpandWidth(true));
 
             if (GUILayout.Button("Update"))
             {

@@ -1,7 +1,6 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
     <ui:Template name="ContextMenu" src="../../../Shared/UI/Templates/ContextMenu.uxml?fileID=9197481963319205126&amp;guid=013acd66da79b4563b22404be89cbf17&amp;type=3#ContextMenu" />
-    <Style src="../../../Shared/UI/StyleSheets/ContextMenuStyleSheet.uss?fileID=7433441132597879392&amp;guid=aad11b3cc0a914227ad16f5524ef8075&amp;type=3#ContextMenuStyleSheet" />
-    <Style src="../../../Shared/UI/StyleSheets/Popups.uss?fileID=7433441132597879392&amp;guid=ea7c14029cf904c2e9d83863be857eec&amp;type=3#Popups" />
+    <Style src="../../../Shared/UI/StyleSheets/SampleSheet.uss?fileID=7433441132597879392&amp;guid=7376c3d25e9f04a989663c45cc94f5c7&amp;type=3#SampleSheet" />
     <Style src="../StyleSheets/MetadataManagementStylSheet.uss?fileID=7433441132597879392&amp;guid=5d5faa98f3d1d48d79dc07a48eaf142a&amp;type=3#MetadataManagementStylSheet" />
     <ui:VisualElement style="flex-direction: row; justify-content: space-between; width: 100%; height: 100%;">
         <ui:VisualElement name="FieldDefinitionInfoPanel" style="flex-grow: 1;">

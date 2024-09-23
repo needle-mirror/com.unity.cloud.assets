@@ -113,6 +113,14 @@ namespace Unity.Cloud.Assets
         Task DownloadAsync(Stream targetStream, IProgress<HttpProgress> progress, CancellationToken cancellationToken);
 
         /// <summary>
+        /// Returns the download URL for the file, resized to <paramref name="maxDimension"/> if it is an image.
+        /// </summary>
+        /// <param name="maxDimension">The maximum width or height of the image (whichever is larger), while maintaining the same aspect ratio. </param>
+        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
+        /// <returns>A task whose result is the download url of the file. </returns>
+        Task<Uri> GetResizedImageDownloadUrlAsync(int maxDimension, CancellationToken cancellationToken) => throw new NotImplementedException();
+
+        /// <summary>
         /// Returns the upload URL for the file.
         /// </summary>
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>

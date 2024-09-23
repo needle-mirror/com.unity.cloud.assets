@@ -16,9 +16,6 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
         UIDocument m_UiDocument;
 
         [SerializeField]
-        OrganizationController m_OrganizationController;
-
-        [SerializeField]
         ProjectController m_ProjectController;
 
         [SerializeField]
@@ -32,15 +29,6 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
 
         [SerializeField]
         VisualTreeAsset m_AssetsGridItemTemplate;
-
-        [SerializeField]
-        VisualTreeAsset m_InformationItemTemplate;
-
-        [SerializeField]
-        VisualTreeAsset m_InformationTagsTemplate;
-
-        [SerializeField]
-        VisualTreeAsset m_DataSetInformationPanelItemTemplate;
 
         [SerializeField]
         DefaultThumbnail[] m_DefaultThumbnails;
@@ -73,7 +61,7 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
                 m_UiDocumentRoot = m_UiDocument.rootVisualElement;
 
             m_AssetsGridController = new AssetsGridController();
-            m_AssetInformationPanelController = new AssetInformationPanelController(m_OrganizationController);
+            m_AssetInformationPanelController = new AssetInformationPanelController(m_ProjectController);
 
             m_ContentPanel = m_UiDocumentRoot.Q<VisualElement>("Content");
 
@@ -102,7 +90,7 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
             }
 
             m_AssetsGridController.Init(assetGridLayout, m_AssetsGridItemTemplate, thumbnails);
-            m_AssetInformationPanelController.Init(assetInformationLayout, m_InformationItemTemplate, m_InformationTagsTemplate, m_DataSetInformationPanelItemTemplate, this);
+            m_AssetInformationPanelController.Init(assetInformationLayout);
 
             m_ProjectController.ShowContent += ShowAssetDiscoveryLayout;
             m_ProjectController.HideContent += HideAssetDiscoveryLayout;
@@ -112,6 +100,7 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
             m_AssetsGridController.AssetSelected += OnAssetSelected;
 
             Application.lowMemory += OnLowMemory;
+            UnityEngine.Device.Application.lowMemory += OnLowMemory;
         }
 
         void OnDestroy()

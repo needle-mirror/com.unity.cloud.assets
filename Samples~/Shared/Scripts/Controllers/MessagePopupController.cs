@@ -13,7 +13,7 @@ namespace Unity.Cloud.Assets.Samples
         Action m_OnCancel;
 
         public MessagePopupController(VisualElement root)
-            : base(root, "MessagePopup", null)
+            : base(root, "MessagePopup")
         {
             m_Title = m_PopupWindow.Q<Label>("Title");
             m_Message = m_PopupWindow.Q<Label>("Message");

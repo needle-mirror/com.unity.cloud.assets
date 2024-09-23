@@ -12,7 +12,7 @@ namespace Unity.Cloud.Assets.Samples
         Action<string> m_OnAccept;
 
         public TextInputPopupController(VisualElement root)
-            : base(root, "TextInputPopup", null)
+            : base(root, "TextInputPopup")
         {
             m_Title = m_PopupWindow.Q<Label>("Title");
             m_Message = m_PopupWindow.Q<Label>("Message");

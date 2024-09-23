@@ -27,6 +27,14 @@ namespace Unity.Cloud.Assets
         Task<IAssetProject> GetAssetProjectAsync(ProjectDescriptor projectDescriptor, CancellationToken cancellationToken);
 
         /// <summary>
+        /// Enables a pre-existing dashboard project in asset manager.
+        /// </summary>
+        /// <param name="projectDescriptor">The object containing the necessary information for identifying the project. </param>
+        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
+        /// <returns>A task whose result is an <see cref="IAssetProject"/>. </returns>
+        Task<IAssetProject> EnableProjectForAssetManagerAsync(ProjectDescriptor projectDescriptor, CancellationToken cancellationToken) => throw new NotImplementedException();
+
+        /// <summary>
         /// Creates a new <see cref="IAssetProject"/> in the specified organization.
         /// </summary>
         /// <param name="organizationId">The organization to create the project in. </param>
@@ -78,6 +86,16 @@ namespace Unity.Cloud.Assets
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task whose result is an <see cref="IAsset"/>. </returns>
         Task<IAsset> GetAssetAsync(AssetDescriptor assetDescriptor, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Retrieves an <see cref="IAsset"/> by its id and label.
+        /// </summary>
+        /// <param name="projectDescriptor">The project the asset belongs to. </param>
+        /// <param name="assetId">The id of the asset. </param>
+        /// <param name="label">The label associated to the asset version. </param>
+        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
+        /// <returns>A task whose result is an <see cref="IAsset"/>. </returns>
+        Task<IAsset> GetAssetAsync(ProjectDescriptor projectDescriptor, AssetId assetId, string label, CancellationToken cancellationToken) => throw new NotImplementedException();
 
         /// <summary>
         /// Retrieves an <see cref="IDataset"/> from an asset version.

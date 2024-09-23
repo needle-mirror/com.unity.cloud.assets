@@ -1,5 +1,5 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
-    <Style src="../../../Shared/UI/StyleSheets/ContextMenuStyleSheet.uss?fileID=7433441132597879392&amp;guid=aad11b3cc0a914227ad16f5524ef8075&amp;type=3#ContextMenuStyleSheet" />
+    <Style src="../../../Shared/UI/StyleSheets/SampleSheet.uss?fileID=7433441132597879392&amp;guid=7376c3d25e9f04a989663c45cc94f5c7&amp;type=3#SampleSheet" />
     <ui:VisualElement name="AssetMenu" class="ContextMenuContainer ContextMenu" style="transition-property: all; transition-duration: 0.25s; transition-timing-function: ease-out-back; transition-delay: 0s; position: absolute; left: -85px; background-color: rgb(36, 36, 36); border-top-left-radius: 4px; border-top-right-radius: 4px; border-bottom-right-radius: 4px; border-bottom-left-radius: 4px; padding-top: 2px; padding-right: 4px; padding-bottom: 2px; padding-left: 4px; top: auto; right: auto;">
         <ui:Button text="Open" display-tooltip-when-elided="true" name="Open" class="ContextMenuEntry" />
         <ui:Button text="Remove" display-tooltip-when-elided="true" name="Remove" class="ContextMenuEntry" />
