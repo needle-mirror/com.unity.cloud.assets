@@ -173,5 +173,12 @@ namespace Unity.Cloud.Assets
             get => default;
             set => throw new NotImplementedException();
         }
+
+        [DataMember(Name = "autoSubmit")]
+        bool AutoSubmit
+        {
+            get => default;
+            set => throw new NotImplementedException();
+        }
     }
 }

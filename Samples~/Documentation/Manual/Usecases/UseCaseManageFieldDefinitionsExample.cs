@@ -139,9 +139,16 @@ namespace Unity.Cloud.Documentation.Assets
                         }
                     }
 
-                    if (GUILayout.Button("Delete"))
+                    if (fields[i].IsDeleted)
                     {
-                        _ = m_Behaviour.DeleteFieldDefinition(fields[i]);
+                        GUILayout.Space(64);
+                    }
+                    else
+                    {
+                        if (GUILayout.Button("Delete", GUILayout.Width(60)))
+                        {
+                            _ = m_Behaviour.DeleteFieldDefinition(fields[i]);
+                        }
                     }
 
                     GUILayout.EndHorizontal();
@@ -158,7 +165,7 @@ namespace Unity.Cloud.Documentation.Assets
             GUILayout.Label("Field Key *:");
             m_FieldDefinitionCreation.Key = GUILayout.TextField(m_FieldDefinitionCreation.Key).Trim();
 
-            GUILayout.Label("Display Name:");
+            GUILayout.Label("Display Name *:");
             m_FieldDefinitionCreation.DisplayName = GUILayout.TextField(m_FieldDefinitionCreation.DisplayName);
 
             GUILayout.Label("Type *:");
@@ -166,11 +173,11 @@ namespace Unity.Cloud.Documentation.Assets
             type = GUILayout.SelectionGrid(type, m_FieldTypeList, 3);
             m_FieldDefinitionCreation.Type = Enum.Parse<FieldDefinitionType>(m_FieldTypeList[type], true);
 
-            var isEmpty = string.IsNullOrEmpty(m_FieldDefinitionCreation.Key);
+            var isEmpty = string.IsNullOrEmpty(m_FieldDefinitionCreation.Key) || string.IsNullOrEmpty(m_FieldDefinitionCreation.DisplayName);
             var isUnique = m_Behaviour.FieldDefinitions != null && m_Behaviour.FieldDefinitions.All(x => x.Descriptor.FieldKey != m_FieldDefinitionCreation.Key);
-            var canCreate = !isEmpty && isUnique;
 
-            GUI.enabled = canCreate;
+            GUI.enabled = !isEmpty && isUnique;
+
             if (GUILayout.Button("Create"))
             {
                 _ = m_Behaviour.CreateFieldDefinitionAsync(m_FieldDefinitionCreation, CancellationToken.None);
@@ -190,7 +197,7 @@ namespace Unity.Cloud.Documentation.Assets
             var field = m_Behaviour.CurrentFieldDefinition;
 
             GUILayout.Label($"Field Definition: {field.Descriptor.FieldKey}");
-            GUILayout.Label($"Is deleted: {field.IsDeleted}");
+            GUILayout.Label(field.IsDeleted ? "Deleted" : "Active");
             GUILayout.Label($"Created on: {field.AuthoringInfo?.Created:yyyy-M-d dddd}");
             GUILayout.Label($"Updated on: {field.AuthoringInfo?.Updated:yyyy-M-d dddd}");
 

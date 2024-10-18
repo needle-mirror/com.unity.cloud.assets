@@ -73,11 +73,11 @@ namespace Unity.Cloud.Assets.Samples
 
         public static string GetVersionText(this IAsset asset, bool includeParentVersion = false)
         {
-            var versionText = asset.IsFrozen ? $"Ver. {asset.FrozenSequenceNumber}" : $"Pending";
-            if (!asset.IsFrozen && includeParentVersion)
+            var versionText = asset.State switch
             {
-                versionText += $" from Ver. {asset.ParentFrozenSequenceNumber}";
-            }
+                AssetState.Frozen => $"Ver. {asset.FrozenSequenceNumber}",
+                _ => includeParentVersion ? $"Pending from Ver. {asset.ParentFrozenSequenceNumber}" : "Pending"
+            };
 
             var version = asset.Descriptor.AssetVersion.ToString();
             if (version.Length > 8)

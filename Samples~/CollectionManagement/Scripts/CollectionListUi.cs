@@ -12,16 +12,16 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
     {
         public class CollectionListController : ListController<IAssetCollection>
         {
-            public override void Initialize(ListView listView, VisualTreeAsset itemTemplate, Action<IEnumerable<object>> onSelectionChange)
+            public override void Initialize(ListView listView, Func<VisualElement> makeItem, Action<IEnumerable<object>> onSelectionChange)
             {
-                base.Initialize(listView, itemTemplate, onSelectionChange);
+                base.Initialize(listView, makeItem, onSelectionChange);
 
                 m_ListView.selectionType = SelectionType.None;
             }
 
             protected override void OnBindItem(VisualElement element, int i)
             {
-                element.Q<Label>("ItemNameLabel").text = m_List[i].Name;
+                element.Q<Label>().text = m_List[i].Name;
 
                 RegisterSelectionCallback(element, i);
             }

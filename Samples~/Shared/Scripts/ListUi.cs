@@ -23,14 +23,14 @@ namespace Unity.Cloud.Assets.Samples
 
         protected abstract string EmptyListMessage { get; }
 
-        public virtual void Initialize(VisualElement uiDocumentRoot, VisualTreeAsset listItemTemplate)
+        public virtual void Initialize(VisualElement uiDocumentRoot, Func<VisualElement> makeItem)
         {
             m_Container = uiDocumentRoot.Q<VisualElement>(VisualElementName);
             m_DisplayMessageContainer = m_Container.Q<VisualElement>("DisplayMessageContainer");
             m_DisplayMessage = m_Container.Q<Label>("DisplayMessage");
             var listView = m_Container.Q<ListView>();
 
-            m_ListController.Initialize(listView, listItemTemplate, OnSelectionChange);
+            m_ListController.Initialize(listView, makeItem, OnSelectionChange);
         }
 
         public void SetName(string name)
@@ -98,11 +98,11 @@ namespace Unity.Cloud.Assets.Samples
             if (entryArray.Length > 0)
             {
                 m_DisplayMessageContainer.style.display = DisplayStyle.None;
-
                 m_ListController.UpdateList(entryArray);
             }
             else
             {
+                m_ListController.UpdateList(entryArray);
                 SetDisplayMessage(EmptyListMessage);
             }
 

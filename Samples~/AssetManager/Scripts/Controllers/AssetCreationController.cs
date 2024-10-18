@@ -100,7 +100,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
                 var createdAsset = await m_AssetProject.CreateAssetAsync(m_CurrentAssetCreation, default);
                 if (createdAsset == null)
                 {
-                    DialogService.ShowMessage("Error", "Failed to create asset.");
+                    DialogService.ShowMessage("Unknown error.", "Failed to create asset.");
                 }
                 else
                 {
@@ -110,12 +110,12 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             catch (OperationCanceledException oe)
             {
                 oe.LogException();
-                DialogService.ShowMessage("Error", "Failed to create asset. Request canceled.");
+                DialogService.ShowMessage("Cancelled", "Failed to create asset. Request cancelled.");
             }
             catch (Exception e)
             {
                 e.LogException();
-                DialogService.ShowMessage("Error", "Failed to create asset.");
+                DialogService.ShowMessage(e, "Creation failed", $"Failed to create asset with reason: {e.Message}");
             }
             finally
             {

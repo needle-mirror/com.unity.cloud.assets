@@ -21,7 +21,7 @@ namespace Unity.Cloud.Assets
         public AssetDescriptor Descriptor { get; }
 
         /// <inheritdoc />
-        public bool IsFrozen { get; set; }
+        public AssetState State { get; set; }
 
         /// <inheritdoc />
         public int FrozenSequenceNumber { get; set; }
@@ -204,7 +204,24 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc />
         public async Task<int> FreezeAsync(string changeLog, CancellationToken cancellationToken)
         {
-            return await m_DataSource.FreezeAssetVersionAsync(Descriptor, changeLog, cancellationToken);
+            return await m_DataSource.FreezeAssetVersionAsync(Descriptor, changeLog, false, cancellationToken) ?? -1;
+        }
+
+        /// <inheritdoc />
+        public Task FreezeAsync(IAssetFreeze assetFreeze, CancellationToken cancellationToken)
+        {
+            bool? forceFreeze = assetFreeze.Operation switch
+            {
+                AssetFreezeOperation.CancelTransformations => true,
+                AssetFreezeOperation.IgnoreIfTransformations => false,
+                _ => null
+            };
+            return m_DataSource.FreezeAssetVersionAsync(Descriptor, assetFreeze.ChangeLog, forceFreeze, cancellationToken);
+        }
+
+        public Task CancelPendingFreezeAsync(CancellationToken cancellationToken)
+        {
+            return m_DataSource.CancelFreezeAssetVersionAsync(Descriptor, cancellationToken);
         }
 
         /// <inheritdoc />
@@ -230,13 +247,7 @@ namespace Unity.Cloud.Assets
 
             // We shouldn't be auto-refreshing
 
-            var filter = new FieldsFilter
-            {
-                AssetFields = AssetFields.none,
-                DatasetFields = DatasetFields.none,
-                FileFields = FileFields.none
-            };
-            var data = await m_DataSource.GetAssetAsync(Descriptor, filter, cancellationToken);
+            var data = await m_DataSource.GetAssetAsync(Descriptor, new FieldsFilter(), cancellationToken);
             SourceProject = new ProjectDescriptor(Descriptor.OrganizationId, data.SourceProjectId);
             m_LinkedProjects = data.LinkedProjectIds?
                 .Select(projectId => new ProjectDescriptor(Descriptor.OrganizationId, projectId))
@@ -489,7 +500,7 @@ namespace Unity.Cloud.Assets
                 PreviewFile = PreviewFile,
                 Status = Status,
                 StatusName = StatusName,
-                IsFrozen = IsFrozen,
+                State = State,
                 AuthoringInfo = AuthoringInfo,
                 MetadataEntity = {Properties = MetadataEntity.Properties},
                 SystemMetadataEntity = {Properties = SystemMetadataEntity.Properties}

@@ -1,6 +1,6 @@
 {
   "name": "com.unity.cloud.assets",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "displayName": "Unity Cloud Assets",
   "description": "Unity Cloud Assets makes it easy to discover, create, update, delete, and manage Unity assets through the Assets service interface.",
   "unity": "2022.3",
@@ -8,19 +8,19 @@
     "com.unity.cloud.common": "1.1.0"
   },
   "relatedPackages": {
-    "com.unity.cloud.assets.tests": "1.4.0"
+    "com.unity.cloud.assets.tests": "1.5.0"
   },
   "_upm": {
-    "changelog": "### Added\n- Added `IAssetRepository.EnableProjectForAssetManagerAsync` to enable the Asset Manager feature for a project; this allows a project to be retrieved as an `IAssetProject`.\n- Added documentation for asset to asset references.\n- Added `IAsset.PreviewFileDescriptor`\n- Added `IFile.GetResizedImageDownloadUrlAsync` to get the download url of an image file with a specified max dimension.\n\n### Changed\n- Improved sample code snippets.\n\n### Fixed\n- Fixed bug where organization search returned asset results with missing ProjectId.\n- Fixes missing script in Asset Discovery sample\n\n### Removed\n- [Experimental][Breaking] Removed `StatusDescriptor` and `StatusTransitionDescriptor`. IStatus and IStatusTransition expose separate properties for `StatusFlowDescriptor` and string ids instead.\n\n### Deprecated\n- Deprecated `IAsset.PreviewFile`; use `IAsset.PreviewFileDescriptor` instead."
+    "changelog": "### Added\n- Added `HasCollections` property to `IAssetProject`.\n- Added `CountAssetsAsync` and `CountCollectionsAsync` to `IAssetProject`.\n- Added `AssetState` enum and `State` property to `IAsset`.\n- Added overloaded `FreezeAsync(IAssetFreeze, CancellationToken)` and `CancelFreezeAsync` to `IAsset`.\n\n### Changed\n- Improved sample code snippets.\n- Improved documentation code snippets.\n\n### Deprecated\n- Deprecated `IAsset.IsFrozen`; use `IAsset.State` instead.\n- Deprecated `IAsset.FreezeAsync(string, CancellationToken)`; use `IAsset.FreezeAsync(IAssetFreeze, CancellationToken)` instead."
   },
   "upmCi": {
-    "footprint": "d26ed53c14ded742f4835b2e3316e1f7fe9ea1cd"
+    "footprint": "97996a1b4af6a64b6055d1bdaff6ea2c578af58a"
   },
-  "documentationUrl": "https://docs.unity3d.com/Packages/com.unity.cloud.assets@1.4/manual/index.html",
+  "documentationUrl": "https://docs.unity3d.com/Packages/com.unity.cloud.assets@1.5/manual/index.html",
   "repository": {
     "url": "https://github.cds.internal.unity3d.com/unity/digital-twins-sdk.git",
     "type": "git",
-    "revision": "6f5fc1a1ad6b65fd4bee1f4f07afa8498eea362b"
+    "revision": "790e5d8ebb4a9cc2f4ade29f1e059dd5838a83ff"
   },
   "samples": [
     {

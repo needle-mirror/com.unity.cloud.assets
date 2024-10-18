@@ -104,15 +104,13 @@ namespace Unity.Cloud.Assets.Samples
             {
                 m_Versions.Add(version.Descriptor.AssetVersion);
 
-                var versionString = "Ver. 1 - Pending";
-                if (version.IsFrozen)
+                var versionString = version.State switch
                 {
-                    versionString = $"Ver. {version.FrozenSequenceNumber}";
-                }
-                else if (version.ParentFrozenSequenceNumber > 0)
-                {
-                    versionString = $"WIP of Ver.{version.ParentFrozenSequenceNumber}";
-                }
+                    AssetState.Frozen => $"Ver. {version.FrozenSequenceNumber}",
+                    AssetState.PendingFreeze => $"Pending",
+                    AssetState.Unfrozen => version.ParentFrozenSequenceNumber > 0 ? $"WIP of Ver.{version.ParentFrozenSequenceNumber}" : "Ver. 1 - Pending",
+                    _ => "Ver. 1 - Pending"
+                };
 
                 combinedChoices.Add(versionString);
             }

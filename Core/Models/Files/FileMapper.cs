@@ -11,8 +11,8 @@ namespace Unity.Cloud.Assets
         {
             file.m_LinkedDatasets = fileData.DatasetIds?.Select(id => new DatasetDescriptor(assetDescriptor, id)).ToArray() ?? Array.Empty<DatasetDescriptor>();
 
-            file.Tags = fileData.Tags;
-            file.SystemTags = fileData.SystemTags;
+            file.Tags = fileData.Tags ?? Array.Empty<string>();
+            file.SystemTags = fileData.SystemTags ?? Array.Empty<string>();
             file.Status = fileData.Status;
 
             if (includeFields.HasFlag(FileFields.description))

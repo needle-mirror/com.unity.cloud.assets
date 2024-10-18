@@ -74,7 +74,7 @@ namespace Unity.Cloud.Assets.Samples.MetadataManagement
             catch (Exception e)
             {
                 e.LogException();
-                DialogService.ShowMessage("Creation failed", $"Failed to create field definition with reason: {e.Message}");
+                DialogService.ShowMessage(e, "Creation failed", $"Failed to create field definition of type {fieldCreation.Type} with reason: {e.Message}");
             }
 
             m_FieldDefinitionController.RefreshList();
@@ -106,7 +106,7 @@ namespace Unity.Cloud.Assets.Samples.MetadataManagement
             catch (Exception e)
             {
                 e.LogException();
-                DialogService.ShowMessage("Update failed", $"Failed to update field definition with reason: {e.Message}");
+                DialogService.ShowMessage(e, "Update failed", $"Failed to update field definition with reason: {e.Message}");
             }
         }
 
@@ -121,7 +121,7 @@ namespace Unity.Cloud.Assets.Samples.MetadataManagement
             catch (Exception e)
             {
                 e.LogException();
-                DialogService.ShowMessage("Deletion failed", $"Failed to delete field definition with reason: {e.Message}");
+                DialogService.ShowMessage(e, "Deletion failed", $"Failed to delete field definition with reason: {e.Message}");
             }
         }
     }

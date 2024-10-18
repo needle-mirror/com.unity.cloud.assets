@@ -10,9 +10,6 @@ namespace Unity.Cloud.Assets.Samples
     public class ProjectController : OrganizationController
     {
         [SerializeField]
-        VisualTreeAsset m_ListItemTemplate;
-
-        [SerializeField]
         bool m_IncludeAllProject = true;
 
         readonly ProjectListUi m_ProjectListUi = new();
@@ -30,7 +27,7 @@ namespace Unity.Cloud.Assets.Samples
         {
             base.Start();
 
-            m_ProjectListUi.Initialize(RootVisualElement, m_ListItemTemplate);
+            m_ProjectListUi.Initialize(RootVisualElement, null);
             m_ProjectListUi.Hide();
 
             var contextMenu = new ContextMenuController(RootVisualElement.Q("LeftPanelContextMenu"));

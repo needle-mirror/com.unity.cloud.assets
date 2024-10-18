@@ -1,11 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using Unity.Cloud.Assets;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace Samples.MetadataManagement.Scripts
+namespace Unity.Cloud.Assets.Samples.MetadataManagement
 {
     public interface IEditableFieldDefinitionValue
     {

@@ -1,7 +1,6 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
     <ui:Template name="StatusTemplate" src="../Templates/StatusTemplate.uxml?fileID=9197481963319205126&amp;guid=02c1df81689a54319b4bb2e41ab08ec6&amp;type=3#StatusTemplate" />
     <ui:Template name="MetadataItemTemplate" src="../Templates/MetadataItemTemplate.uxml?fileID=9197481963319205126&amp;guid=0dac7e5e1bbd74c689b5c756d31a29c5&amp;type=3#MetadataItemTemplate" />
-    <ui:Template name="TransformationProgressBar" src="../Templates/TransformationProgressBar.uxml?fileID=9197481963319205126&amp;guid=27c2d97f5d3174588b1881cd7c7e4a40&amp;type=3#TransformationProgressBar" />
     <Style src="../StyleSheets/AssetCreationPanelStyleSheet.uss?fileID=7433441132597879392&amp;guid=2a9d0e7b4e75049048525c21e638987e&amp;type=3#AssetCreationPanelStyleSheet" />
     <ui:VisualElement style="height: 100%; width: 100%; background-color: rgb(19, 19, 19); justify-content: center; min-width: 100%; min-height: 100%; max-width: 100%; max-height: 100%;">
         <ui:VisualElement name="Header" style="flex-direction: row; padding-top: 2px; padding-right: 2px; padding-bottom: 2px; padding-left: 2px; justify-content: space-between;">
@@ -46,7 +45,6 @@
                     <ui:Button text="Generate Thumbnail" display-tooltip-when-elided="true" visible="false" name="DatasetGeneratePreviewButton" class="button-blue sample-button" />
                 </ui:VisualElement>
                 <ui:ScrollView name="TransformationInfo" style="max-height: 20%; overflow: hidden;" />
-                <ui:Instance template="TransformationProgressBar" name="TransformationProgressBar" style="display: none;" />
             </ui:VisualElement>
         </ui:VisualElement>
     </ui:VisualElement>

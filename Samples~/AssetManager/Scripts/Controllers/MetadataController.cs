@@ -299,7 +299,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
                 return;
             }
 
-            var fieldTemplate = visualElement.Q<TemplateContainer>("MultiSelectionMetadataTemplate");
+            var parent = visualElement.Q("MultiSelection");
 
             if (selectionFieldDefinition == null)
             {
@@ -311,8 +311,15 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
             foreach (var choice in choices)
             {
-                var toggle = fieldTemplate.templateSource.Instantiate().Q<Toggle>();
-                fieldTemplate.parent.Add(toggle);
+                var toggle = new Toggle
+                {
+                    style =
+                    {
+                        flexDirection = FlexDirection.RowReverse,
+                        alignSelf = Align.FlexStart
+                    }
+                };
+                parent.Add(toggle);
                 toggle.style.display = DisplayStyle.Flex;
 
                 toggle.label = choice;

@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Unity.Cloud.Common;
@@ -38,12 +39,13 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
             m_ContentPanel = rootVisualElement.Q<VisualElement>("ContentPanel");
 
-            var popupContainer = rootVisualElement.Q("PopupContainer");
+            var popups = m_PopupTemplate.Instantiate().Children().ToList();
+            foreach (var child in popups)
+            {
+                rootVisualElement.Add(child);
+            }
 
-            // Keep order to ensure correct display overlay
-            var popups = m_PopupTemplate.Instantiate();
-            popupContainer.Add(popups);
-            m_AddMetadataPopupController = new AddMetadataPopupController(popups);
+            m_AddMetadataPopupController = new AddMetadataPopupController(rootVisualElement);
 
             InstantiateDatasetCreationPanel();
             InstantiateAssetCreationPanel();

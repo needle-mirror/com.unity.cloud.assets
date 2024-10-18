@@ -51,7 +51,7 @@
 .details-container {
     flex-direction: row;
     flex-wrap: nowrap;
-    align-items: flex-start;
+    align-items: center;
     justify-content: space-between;
 }
 
@@ -59,20 +59,23 @@
     align-items: flex-start;
     flex-grow: 0;
     flex-shrink: 0;
+    margin: 4px 0;
+    padding: 4px;
     color: rgb(159, 159, 159);
 }
 
 .details-value-container {
-    flex-grow: 1;
     flex-direction: row;
+    flex-grow: 1;
     flex-wrap: wrap;
-    align-items: flex-start;
+    justify-content: flex-end;
 }
 
 .details-value {
+    flex-shrink: 1;
     flex-wrap: wrap-reverse;
-    margin: 0 4px 0 12px;
-    padding-left: 2px;
+    margin: 2px 12px 2px 4px;
+    padding: 4px;
     -unity-font-style: bold;
     font-size: 14px;
     color: rgb(210, 210, 210);

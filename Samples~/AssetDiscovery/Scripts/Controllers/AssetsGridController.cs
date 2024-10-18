@@ -31,7 +31,7 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
 
         public void Init(VisualElement root, VisualTreeAsset assetsGridItemTemplate, Dictionary<AssetType, Texture2D> defaultThumbnails)
         {
-            root.style.minWidth = new StyleLength { value = new Length(60.0f, LengthUnit.Percent) };
+            root.style.minWidth = new StyleLength {value = new Length(60.0f, LengthUnit.Percent)};
 
             m_AssetGridItemTemplate = assetsGridItemTemplate;
             m_DefaultThumbnails = defaultThumbnails;
@@ -121,6 +121,8 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
         {
             if (m_AssetGridList != null && m_AssetGridList.childCount != 0)
                 m_AssetGridList.Clear();
+
+            ThumbnailController.RefreshCancellationToken();
 
             m_CurrentSelectedButton = null;
         }

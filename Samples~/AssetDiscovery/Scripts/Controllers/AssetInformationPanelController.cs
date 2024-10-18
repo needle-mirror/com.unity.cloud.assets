@@ -29,6 +29,7 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
             nameof(IAsset.Name),
             nameof(IAsset.Metadata),
             nameof(IAsset.SystemMetadata),
+            nameof(IAsset.PreviewFileDescriptor),
         };
 
         const string k_NoneLabel = "None";
@@ -109,7 +110,7 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
             m_CancelPopulateAsset = new CancellationTokenSource();
 
             m_AssetInformationContainer.Q<Label>("Name").text = asset.Name;
-            m_AssetInformationContainer.Q<Label>("Version").text = asset.IsFrozen ? $"Ver. {asset.FrozenSequenceNumber}" : "Pending";
+            m_AssetInformationContainer.Q<Label>("Version").text = asset.State == AssetState.Frozen ? $"Ver. {asset.FrozenSequenceNumber}" : "Pending";
 
             m_AssetInformationScrollView.Clear();
 

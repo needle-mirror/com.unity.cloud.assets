@@ -16,11 +16,11 @@ namespace Unity.Cloud.Assets.Samples
         public IEnumerable<T> AllItems => m_List;
         public IEnumerable<object> SelectedItems => m_ListView.selectedItems;
 
-        public virtual void Initialize(ListView listView, VisualTreeAsset itemTemplate, Action<IEnumerable<object>> onSelectionChange)
+        public virtual void Initialize(ListView listView, Func<VisualElement> makeItem, Action<IEnumerable<object>> onSelectionChange)
         {
             m_ListView = listView;
 
-            m_ListView.makeItem = () => OnMakeItem(itemTemplate);
+            m_ListView.makeItem = makeItem ?? MakeDefaultItem;
             m_ListView.bindItem = OnBindItem;
             m_ListView.unbindItem = OnUnbindItem;
 
@@ -82,11 +82,6 @@ namespace Unity.Cloud.Assets.Samples
             m_ListView.SetSelectionWithoutNotify(indices);
         }
 
-        protected virtual VisualElement OnMakeItem(VisualTreeAsset itemTemplate)
-        {
-            return itemTemplate.Instantiate();
-        }
-
         protected abstract void OnBindItem(VisualElement element, int i);
 
         protected virtual void OnUnbindItem(VisualElement element, int i)
@@ -128,6 +123,17 @@ namespace Unity.Cloud.Assets.Samples
                     }
                 }
             }
+        }
+
+        static VisualElement MakeDefaultItem()
+        {
+            var container = new VisualElement();
+
+            var label = new Label();
+            label.AddToClassList("list-label");
+            container.Add(label);
+
+            return container;
         }
     }
 }

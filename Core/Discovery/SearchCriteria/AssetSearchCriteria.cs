@@ -14,7 +14,11 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc cref="AssetVersion"/>
         public SearchCriteria<string> Version { get; } = new(nameof(AssetDescriptor.AssetVersion), "assetVersion");
 
+        /// <inheritdoc cref="IAsset.State"/>
+        public AssetStateSearchCriteria State { get; } = new(nameof(IAsset.State));
+
         /// <inheritdoc cref="IAsset.IsFrozen"/>
+        [Obsolete("Use State instead.")]
         public NullableSearchCriteria<bool> IsFrozen { get; } = new(nameof(IAsset.IsFrozen), "isFrozen");
 
         /// <inheritdoc cref="IAsset.FrozenSequenceNumber"/>

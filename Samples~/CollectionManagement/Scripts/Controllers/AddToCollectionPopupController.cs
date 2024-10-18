@@ -10,10 +10,10 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
 
         public event Action<IEnumerable<IAsset>> AssetsAddedToCollection;
 
-        public AddToCollectionPopupController(VisualElement root, VisualTreeAsset listItemTemplate)
+        public AddToCollectionPopupController(VisualElement root, Func<VisualElement> makeItem)
             : base(root, "AddToCollectionPopup")
         {
-            m_AssetListUi.Initialize(m_PopupWindow, listItemTemplate);
+            m_AssetListUi.Initialize(m_PopupWindow, makeItem);
         }
 
         public void ApplyFilter(IEnumerable<IAsset> itemToFilter)

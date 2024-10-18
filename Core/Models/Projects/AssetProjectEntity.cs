@@ -22,6 +22,9 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc />
         public IDeserializable Metadata { get; set; }
 
+        /// <inheritdoc/>
+        public bool HasCollection { get; set; }
+
         internal AssetProjectEntity(IAssetDataSource dataSource, ProjectDescriptor projectDescriptor)
         {
             m_DataSource = dataSource;
@@ -92,6 +95,12 @@ namespace Unity.Cloud.Assets
         }
 
         /// <inheritdoc />
+        public Task<int> CountAssetsAsync(CancellationToken cancellationToken)
+        {
+            return m_DataSource.GetAssetCountAsync(Descriptor, cancellationToken);
+        }
+
+        /// <inheritdoc />
         public Task LinkAssetsAsync(ProjectDescriptor sourceProjectDescriptor, IEnumerable<AssetId> assetIds, CancellationToken cancellationToken)
         {
             return m_DataSource.LinkAssetsToProjectAsync(sourceProjectDescriptor, Descriptor, assetIds, cancellationToken);
@@ -107,6 +116,12 @@ namespace Unity.Cloud.Assets
         public CollectionQueryBuilder QueryCollections()
         {
             return new CollectionQueryBuilder(m_DataSource, Descriptor);
+        }
+
+        /// <inheritdoc />
+        public Task<int> CountCollectionsAsync(CancellationToken cancellationToken)
+        {
+            return m_DataSource.GetCollectionCountAsync(Descriptor, cancellationToken);
         }
 
         /// <inheritdoc />

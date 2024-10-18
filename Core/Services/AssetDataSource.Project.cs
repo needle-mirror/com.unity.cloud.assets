@@ -38,7 +38,6 @@ namespace Unity.Cloud.Assets
                     cancellationToken);
 
                 var jsonContent = await response.GetContentAsString();
-
                 cancellationToken.ThrowIfCancellationRequested();
 
                 var projectPageDto = IsolatedSerialization.DeserializeWithDefaultConverters<ProjectPageDto>(jsonContent);
@@ -65,12 +64,11 @@ namespace Unity.Cloud.Assets
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var request = new ProjectRequest(projectDescriptor.ProjectId);
+            var request = ProjectRequest.GetProjectRequset(projectDescriptor.ProjectId);
             var response = await RateLimitedServiceClient(request, HttpMethod.Get).GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(),
                 cancellationToken);
 
             var jsonContent = await response.GetContentAsString();
-
             cancellationToken.ThrowIfCancellationRequested();
 
             return IsolatedSerialization.DeserializeWithDefaultConverters<ProjectData>(jsonContent);
@@ -98,7 +96,6 @@ namespace Unity.Cloud.Assets
                 ServiceHttpClientOptions.Default(), cancellationToken);
 
             var jsonContent = await response.GetContentAsString();
-
             cancellationToken.ThrowIfCancellationRequested();
 
             var projectDto = IsolatedSerialization.DeserializeWithDefaultConverters<CreatedProjectDto>(jsonContent);
@@ -108,6 +105,36 @@ namespace Unity.Cloud.Assets
                 Name = projectCreation.Name,
                 Metadata = projectCreation.Metadata
             };
+        }
+
+        /// <inheritdoc/>
+        public async Task<int> GetCollectionCountAsync(ProjectDescriptor projectDescriptor, CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var request = ProjectRequest.GetCollectionCountRequest(projectDescriptor.ProjectId);
+            var response = await RateLimitedServiceClient(request, HttpMethod.Get).GetAsync(GetPublicRequestUri(request),
+                ServiceHttpClientOptions.Default(), cancellationToken);
+
+            var jsonContent = await response.GetContentAsString();
+            cancellationToken.ThrowIfCancellationRequested();
+
+            return IsolatedSerialization.DeserializeWithDefaultConverters<CounterDto>(jsonContent).Count;
+        }
+
+        /// <inheritdoc/>
+        public async Task<int> GetAssetCountAsync(ProjectDescriptor projectDescriptor, CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var request = ProjectRequest.GetAssetCountRequest(projectDescriptor.ProjectId);
+            var response = await RateLimitedServiceClient(request, HttpMethod.Get).GetAsync(GetPublicRequestUri(request),
+                ServiceHttpClientOptions.Default(), cancellationToken);
+
+            var jsonContent = await response.GetContentAsString();
+            cancellationToken.ThrowIfCancellationRequested();
+
+            return IsolatedSerialization.DeserializeWithDefaultConverters<CounterDto>(jsonContent).Count;
         }
 
         /// <inheritdoc />

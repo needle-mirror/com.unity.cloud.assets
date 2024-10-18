@@ -189,12 +189,12 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             catch (OperationCanceledException oe)
             {
                 oe.LogException();
-                DialogService.ShowMessage("Error", $"Failed to remove file: {file.Descriptor.Path}. Request cenceled.");
+                DialogService.ShowMessage("Cancelled", $"Failed to remove file: {file.Descriptor.Path}. Request cenceled.");
             }
             catch (Exception e)
             {
                 e.LogException();
-                DialogService.ShowMessage("Error", $"Failed to remove file: {file.Descriptor.Path}.");
+                DialogService.ShowMessage(e, "Remove file failed", $"Failed to remove file {file.Descriptor.Path} with reason: {e.Message}");
             }
         }
 
@@ -296,13 +296,13 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
                 assetFile = await dataset.UploadFileAsync(fileCreation, fileStream, progress, CancellationToken.None);
                 if (assetFile == null)
                 {
-                    DialogService.ShowMessage("Error", $"Failed to upload file: {filePath}");
+                    DialogService.ShowMessage("Unknown error", $"Failed to upload file: {filePath}");
                 }
             }
             catch (Exception e)
             {
                 e.LogException();
-                DialogService.ShowMessage("Error", $"Failed to upload file: {filePath}.");
+                DialogService.ShowMessage(e, "Upload file failed", $"Failed to upload file {filePath} with reason: {e.Message}");
                 assetFile = null;
             }
 

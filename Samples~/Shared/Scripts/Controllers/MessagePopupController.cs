@@ -17,6 +17,7 @@ namespace Unity.Cloud.Assets.Samples
         {
             m_Title = m_PopupWindow.Q<Label>("Title");
             m_Message = m_PopupWindow.Q<Label>("Message");
+            m_Message.enableRichText = true;
             m_CancelButton = m_PopupWindow.Q<Button>("Cancel");
             if (m_CancelButton != null)
                 m_CancelButton.clicked += OnCancel;

@@ -17,9 +17,9 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
             public event Action<IAsset> RemoveAsset;
 
-            public override void Initialize(ListView listView, VisualTreeAsset itemTemplate, Action<IEnumerable<object>> onSelectionChange)
+            public override void Initialize(ListView listView, Func<VisualElement> makeItem, Action<IEnumerable<object>> onSelectionChange)
             {
-                base.Initialize(listView, itemTemplate, onSelectionChange);
+                base.Initialize(listView, makeItem, onSelectionChange);
 
                 listView.RegisterCallback<ClickEvent>(HandleOutClickEvent);
 
@@ -35,15 +35,6 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
                 openButton.RegisterCallback<ClickEvent>(OnOpenButtonClick);
                 var removeButton = m_MenuPopup.Q<Button>("Remove");
                 removeButton.RegisterCallback<ClickEvent>(OnRemoveButtonClick);
-            }
-
-            protected override VisualElement OnMakeItem(VisualTreeAsset itemTemplate)
-            {
-                var item = base.OnMakeItem(itemTemplate);
-
-                ManageAssetListItemStyling(item);
-
-                return item;
             }
 
             protected override void OnBindItem(VisualElement element, int i)
@@ -98,21 +89,6 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
                 ClearMenuPopupOwner();
             }
 
-            static void ManageAssetListItemStyling(VisualElement element)
-            {
-                element.Q("LeftTopPanel").RegisterCallback<MouseOverEvent>(_ =>
-                {
-                    element.Q("LeftTopPanel").style.backgroundColor = new Color(0.14f, 0.14f, 0.14f, 1f);
-                    element.Q("RightPanel").style.backgroundColor = new Color(0.19f, 0.19f, 0.19f, 1f);
-                });
-
-                element.Q("LeftTopPanel").RegisterCallback<MouseOutEvent>(_ =>
-                {
-                    element.Q("LeftTopPanel").style.backgroundColor = new Color(0.07f, 0.07f, 0.07f, 1f);
-                    element.Q("RightPanel").style.backgroundColor = new Color(0.14f, 0.14f, 0.14f, 1f);
-                });
-            }
-
             void OnExpandButtonClick(EventBase evt)
             {
                 evt.StopImmediatePropagation();
@@ -164,9 +140,9 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             remove => m_ListController.RemoveAsset -= value;
         }
 
-        public override void Initialize(VisualElement uiDocumentRoot, VisualTreeAsset listItemTemplate)
+        public override void Initialize(VisualElement uiDocumentRoot, Func<VisualElement> makeItem)
         {
-            base.Initialize(uiDocumentRoot, listItemTemplate);
+            base.Initialize(uiDocumentRoot, makeItem);
 
             uiDocumentRoot.RegisterCallback<ClickEvent>(m_ListController.HandleOutClickEvent);
         }

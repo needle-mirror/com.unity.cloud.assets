@@ -10,8 +10,8 @@ namespace Unity.Cloud.Assets
         internal static void MapFrom(this DatasetEntity dataset, IAssetDataSource assetDataSource, IDatasetData datasetData, DatasetFields includeFields)
         {
             dataset.Name = datasetData.Name;
-            dataset.Tags = datasetData.Tags;
-            dataset.SystemTags = datasetData.SystemTags;
+            dataset.Tags = datasetData.Tags ?? Array.Empty<string>();
+            dataset.SystemTags = datasetData.SystemTags ?? Array.Empty<string>();
             dataset.Status = datasetData.Status;
             dataset.IsVisible = datasetData.IsVisible ?? false;
             dataset.WorkflowName = datasetData.WorkflowName;

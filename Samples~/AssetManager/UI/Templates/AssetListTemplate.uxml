@@ -1,17 +1,18 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
     <ui:Template name="AssetListItemMenuPopup" src="../Templates/AssetListItemMenuPopup.uxml?fileID=9197481963319205126&amp;guid=e897434ae87a74dfd979782968472e93&amp;type=3#AssetListItemMenuPopup" />
-    <Style src="../StyleSheets/AssetListStyleSheet.uss?fileID=7433441132597879392&amp;guid=5d7fd9da907ac410c98b37643d5cf632&amp;type=3#AssetListStyleSheet" />
-    <ui:VisualElement name="ListContainer">
+    <Style src="../../../Shared/UI/StyleSheets/SampleSheet.uss?fileID=7433441132597879392&amp;guid=7376c3d25e9f04a989663c45cc94f5c7&amp;type=3#SampleSheet" />
+    <Style src="../StyleSheets/AssetCreationPanelStyleSheet.uss?fileID=7433441132597879392&amp;guid=2a9d0e7b4e75049048525c21e638987e&amp;type=3#AssetCreationPanelStyleSheet" />
+    <ui:VisualElement name="ListContainer" style="flex-grow: 1; background-color: rgb(19, 19, 19);">
         <ui:VisualElement name="AssetListTopBar" style="height: 10%; flex-direction: row; align-items: center; justify-content: center;">
             <ui:VisualElement name="AssetListTitle" style="flex-direction: row; align-items: center; justify-content: space-between; width: 95%;">
-                <ui:Label text="Manage Assets" display-tooltip-when-elided="true" name="AssetListLabel" />
-                <ui:Button text="Add Asset" display-tooltip-when-elided="true" name="AddAssetButton" />
+                <ui:Label text="Manage Assets" display-tooltip-when-elided="true" name="AssetListLabel" class="title-label" />
+                <ui:Button text="Add Asset" display-tooltip-when-elided="true" name="AddAssetButton" class="sample-button button-blue" />
             </ui:VisualElement>
         </ui:VisualElement>
         <ui:VisualElement name="AssetListContent" style="height: 90%; align-items: center;">
             <ui:VisualElement name="AssetListBox" style="width: 95%; height: 95%;">
                 <ui:VisualElement name="AssetListTopBar" style="min-height: 30px; max-height: 30px; flex-direction: row;">
-                    <ui:VisualElement name="LeftTopPanel" class="AssetListLeftBar" style="justify-content: flex-start; width: auto;">
+                    <ui:VisualElement name="LeftTopPanel" class="AssetListLeftBar" style="justify-content: flex-start; border-top-left-radius: 4px; border-bottom-left-radius: 0; border-top-right-radius: 0; border-bottom-right-radius: 0; flex-grow: 1;">
                         <ui:VisualElement style="flex-grow: 1; flex-direction: row; flex-shrink: 1; overflow: hidden; min-width: 100px;">
                             <ui:VisualElement name="TitleContainer" class="AssetListItem" style="width: 35%; min-width: 100px;">
                                 <ui:Label text="Title" display-tooltip-when-elided="true" name="TitleLabel" />
@@ -42,7 +43,7 @@
                     <ui:ListView focusable="true" selection-type="None" show-bound-collection-size="false" fixed-item-height="50" virtualization-method="DynamicHeight" style="flex-grow: 1; min-height: 0; max-height: none;" />
                     <ui:Instance template="AssetListItemMenuPopup" name="AssetListItemMenuPopup" style="display: none;" />
                 </ui:VisualElement>
-                <ui:VisualElement name="AssetListBottomBar" class="AssetListLeftBar" style="min-height: 30px; max-height: 30px;">
+                <ui:VisualElement name="AssetListBottomBar" class="AssetListLeftBar" style="min-height: 30px; max-height: 30px; border-top-left-radius: 0; border-bottom-left-radius: 4px; border-top-right-radius: 0; border-bottom-right-radius: 4px;">
                     <ui:VisualElement name="DisplayMessageContainer" style="align-self: center; align-items: center; width: 100%;">
                         <ui:Label text="Empty" display-tooltip-when-elided="true" name="DisplayMessage" style="font-size: 16px; color: rgb(210, 210, 210); -unity-font-style: italic; white-space: normal;" />
                     </ui:VisualElement>

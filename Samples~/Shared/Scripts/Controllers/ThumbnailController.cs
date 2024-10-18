@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.Threading;
 using Unity.Cloud.Common;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -21,25 +22,34 @@ namespace Unity.Cloud.Assets.Samples
             public bool IsLoaded { get; private set; }
             public Texture2D Texture2D { get; private set; }
 
-            public ThumbnailDownloadEntry(IAsset asset, Action<AssetId> onLifetimeComplete)
+            public ThumbnailDownloadEntry(IAsset asset, Action<AssetId> onLifetimeComplete, CancellationToken token)
             {
                 m_AssetId = asset.Descriptor.AssetId;
                 m_OnLifetimeComplete = onLifetimeComplete;
 
-                _ = GetDownloadUrl(asset);
+                _ = GetDownloadUrl(asset, token);
             }
 
-            async Task GetDownloadUrl(IAsset asset)
+            async Task GetDownloadUrl(IAsset asset, CancellationToken token)
             {
                 Uri previewFileUrl = null;
                 try
                 {
-                    var file = await PlatformServices.AssetRepository.GetFileAsync(asset.PreviewFileDescriptor, default);
-                    previewFileUrl = await file.GetResizedImageDownloadUrlAsync(k_Dimension, default);
+                    var file = await PlatformServices.AssetRepository.GetFileAsync(asset.PreviewFileDescriptor, token);
+                    previewFileUrl = await file.GetResizedImageDownloadUrlAsync(k_Dimension, token);
+                }
+                catch (TaskCanceledException)
+                {
+                    m_OnLifetimeComplete?.Invoke(m_AssetId);
+                    return;
                 }
                 catch (NotFoundException)
                 {
                     // No preview available
+                }
+                catch (ObjectDisposedException)
+                {
+                    // Ignore
                 }
                 catch (Exception e)
                 {
@@ -90,17 +100,22 @@ namespace Unity.Cloud.Assets.Samples
             }
         }
 
+        static CancellationTokenSource m_CancellationTokenSource = new();
         static Dictionary<AssetId, ThumbnailDownloadEntry> m_ThumbnailCache = new();
+
+        public static void RefreshCancellationToken()
+        {
+            m_CancellationTokenSource.Cancel();
+            m_CancellationTokenSource.Dispose();
+            m_CancellationTokenSource = new CancellationTokenSource();
+        }
 
         public static void GetThumbnail(IAsset asset, Action<Texture2D> thumbnailReadyCallback)
         {
             if (!m_ThumbnailCache.TryGetValue(asset.Descriptor.AssetId, out var thumbnail))
             {
                 // Create new thumbnail entry
-                thumbnail = new ThumbnailDownloadEntry(asset, assetId =>
-                {
-                    m_ThumbnailCache.Remove(assetId);
-                });
+                thumbnail = new ThumbnailDownloadEntry(asset, RemoveThumbnail, m_CancellationTokenSource.Token);
                 m_ThumbnailCache.Add(asset.Descriptor.AssetId, thumbnail);
 
                 lock (thumbnail.Listeners)
@@ -123,6 +138,11 @@ namespace Unity.Cloud.Assets.Samples
                     }
                 }
             }
+        }
+
+        static void RemoveThumbnail(AssetId assetId)
+        {
+            m_ThumbnailCache.Remove(assetId);
         }
     }
 }

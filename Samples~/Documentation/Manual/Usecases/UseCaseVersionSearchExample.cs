@@ -109,7 +109,13 @@ namespace Unity.Cloud.Documentation.Assets
 
         void DisplayVersion(IAsset asset)
         {
-            var version = asset.IsFrozen ? $"Ver. {asset.FrozenSequenceNumber}" : $"WIP from Ver. {asset.ParentFrozenSequenceNumber}";
+            var version = asset.State switch
+            {
+                AssetState.Frozen => $"Ver. {asset.FrozenSequenceNumber}",
+                AssetState.Unfrozen => $"WIP from Ver. {asset.ParentFrozenSequenceNumber}",
+                AssetState.PendingFreeze => "Pending",
+                _ => ""
+            };
 
             var labels = asset.Labels.Select(x => x.LabelName).ToArray();
             if (labels.Length > 0)
@@ -145,22 +151,22 @@ namespace Unity.Cloud.Documentation.Assets
                 GUILayout.Label($"Parent Sequence Number: {m_CurrentVersion.ParentFrozenSequenceNumber}");
             }
 
-            GUILayout.Label($"Frozen: {m_CurrentVersion.IsFrozen}");
+            GUILayout.Label($"State: {m_CurrentVersion.State}");
 
-            if (m_CurrentVersion.IsFrozen)
+            if (m_CurrentVersion.State == AssetState.Unfrozen)
+            {
+                if (GUILayout.Button("Freeze version"))
+                {
+                    _ = m_Behaviour.FreezeVersion(m_CurrentVersion);
+                }
+            }
+            else
             {
                 GUILayout.Label($"Frozen Sequence Number: {m_CurrentVersion.FrozenSequenceNumber}");
 
                 if (GUILayout.Button("Create new version"))
                 {
                     _ = m_Behaviour.CreateVersion(m_CurrentVersion);
-                }
-            }
-            else
-            {
-                if (GUILayout.Button("Freeze version"))
-                {
-                    _ = m_Behaviour.FreezeVersion(m_CurrentVersion);
                 }
             }
 
@@ -215,12 +221,17 @@ namespace Unity.Cloud.Documentation.Assets
 
         public async Task FreezeVersion(IAsset asset)
         {
-            var sequenceNumber = await asset.FreezeAsync("Use case coding example submission.", CancellationToken.None);
+            await asset.FreezeAsync(new AssetFreeze
+            {
+                ChangeLog = "Use case coding example submission.",
+                Operation = AssetFreezeOperation.CancelTransformations
+            }, CancellationToken.None);
 
+            // Refresh all versions
             var tasks = AssetVersions.Select(version => version.RefreshAsync(CancellationToken.None)).ToList();
             await Task.WhenAll(tasks);
 
-            Debug.Log($"Version frozen with sequence number: {sequenceNumber}");
+            Debug.Log($"Version frozen with sequence number: {asset.FrozenSequenceNumber}");
         }
 
         #endregion

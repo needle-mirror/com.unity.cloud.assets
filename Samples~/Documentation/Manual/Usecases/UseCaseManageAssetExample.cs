@@ -80,7 +80,7 @@ namespace Unity.Cloud.Documentation.Assets
             }
             else
             {
-                GUI.enabled = !m_CurrentAsset.IsFrozen;
+                GUI.enabled = m_CurrentAsset.State == AssetState.Unfrozen;
                 DisplayAsset(m_AssetUpdate);
                 GUI.enabled = true;
             }

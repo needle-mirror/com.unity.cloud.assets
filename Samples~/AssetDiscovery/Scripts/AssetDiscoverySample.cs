@@ -150,6 +150,8 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
             // On project selected, clear the content
             HideInformationRightPanel();
 
+            m_ProjectAssetsList.Clear();
+
             if (m_ProjectController.IsAllProjectSelected)
             {
                 m_SearchBarUi.DisplaySearchBar(m_ProjectController.SelectedOrganizationId);

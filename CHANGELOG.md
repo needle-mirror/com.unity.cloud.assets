@@ -5,6 +5,22 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [1.5.0] - 2024-10-18
+
+### Added
+- Added `HasCollections` property to `IAssetProject`.
+- Added `CountAssetsAsync` and `CountCollectionsAsync` to `IAssetProject`.
+- Added `AssetState` enum and `State` property to `IAsset`.
+- Added overloaded `FreezeAsync(IAssetFreeze, CancellationToken)` and `CancelFreezeAsync` to `IAsset`.
+
+### Changed
+- Improved sample code snippets.
+- Improved documentation code snippets.
+
+### Deprecated
+- Deprecated `IAsset.IsFrozen`; use `IAsset.State` instead.
+- Deprecated `IAsset.FreezeAsync(string, CancellationToken)`; use `IAsset.FreezeAsync(IAssetFreeze, CancellationToken)` instead.
+
 ## [1.4.0] - 2024-09-23
 
 ### Added

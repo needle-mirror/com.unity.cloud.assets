@@ -83,6 +83,8 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc />
         public string StatusFlowName { get; set; }
 
+        public bool AutoSubmit { get; set; }
+
         internal AssetData()
             : this(AssetId.None, AssetVersion.None) { }
 

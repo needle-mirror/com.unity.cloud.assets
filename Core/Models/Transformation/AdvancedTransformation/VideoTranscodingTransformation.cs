@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Drawing;
 
 namespace Unity.Cloud.Assets
 {
@@ -39,7 +38,7 @@ namespace Unity.Cloud.Assets
                 {"outputFolder", OutputFolder},
                 {"outputPrefix", OutputPrefix},
                 {"outputSuffix", OutputSuffix},
-                {"forceConvertZUpToYUp", TransformationUtilities.GetValue(CreateThumbnail)}
+                {"createThumbnail", TransformationUtilities.GetValue(CreateThumbnail)}
             };
 
             return parameters;

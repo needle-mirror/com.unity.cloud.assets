@@ -17,9 +17,15 @@ namespace Unity.Cloud.Assets
         AssetDescriptor Descriptor { get; }
 
         /// <summary>
+        /// The state of the asset.
+        /// </summary>
+        AssetState State => throw new NotImplementedException();
+
+        /// <summary>
         /// Whether the asset version is frozen.
         /// </summary>
-        bool IsFrozen => false;
+        [Obsolete("Use State instead.")]
+        bool IsFrozen => State == AssetState.Frozen;
 
         /// <summary>
         /// The sequence number of the asset. This will only be populated if the version is frozen.
@@ -174,7 +180,7 @@ namespace Unity.Cloud.Assets
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task with no result. </returns>
         /// <exception cref="InvalidArgumentException">If the asset is frozen, because it cannot be modified. </exception>
-        /// <remarks>Can only be called on a version that is not frozen. </remarks>
+        /// <remarks>Can only be called on a version that is unfrozen. </remarks>
         Task UpdateAsync(IAssetUpdate assetUpdate, CancellationToken cancellationToken);
 
         /// <summary>
@@ -208,14 +214,33 @@ namespace Unity.Cloud.Assets
         Task<IAsset> CreateUnfrozenVersionAsync(CancellationToken cancellationToken) => throw new NotImplementedException();
 
         /// <summary>
-        /// Submits the asset to freeze the current version.
+        /// Freezes the current version.
         /// </summary>
         /// <param name="changeLog">The change log for the new version. </param>
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task whose result is a frozen sequence number. </returns>
         /// <exception cref="InvalidArgumentException">If the asset is frozen, because it cannot be re-submitted. </exception>
-        /// <remarks>Can only be called on a version that is not frozen. </remarks>
+        /// <exception cref="InvalidArgumentException">If there are on-going transformations. </exception>
+        /// <remarks>Can only be called on a version that is unfrozen. </remarks>
+        [Obsolete("Use FreezeAsync(IAssetFreeze, CancellationToken) instead.")]
         Task<int> FreezeAsync(string changeLog, CancellationToken cancellationToken) => throw new NotImplementedException();
+
+        /// <summary>
+        /// Freezes the current version.
+        /// </summary>
+        /// <param name="assetFreeze">The object containing information to freeze the current version. </param>
+        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
+        /// <returns>A task with no result.</returns>
+        /// <exception cref="InvalidArgumentException">If the asset is frozen, because it cannot be re-submitted. </exception>
+        /// <remarks>Can only be called on a version that is unfrozen. </remarks>
+        Task FreezeAsync(IAssetFreeze assetFreeze, CancellationToken cancellationToken) => throw new NotImplementedException();
+
+        /// <summary>
+        /// If the asset is pending freeze, cancels the freeze.
+        /// </summary>
+        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
+        /// <returns>A task with no result.</returns>
+        Task CancelPendingFreezeAsync(CancellationToken cancellationToken) => throw new NotImplementedException();
 
         /// <summary>
         /// Returns an object that can be used to query the asset's versions.
@@ -277,7 +302,7 @@ namespace Unity.Cloud.Assets
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task whose result is the newly created dataset. </returns>
         /// <exception cref="InvalidArgumentException">If the asset is frozen, because it cannot be modified. </exception>
-        /// <remarks>Can only be called on a version that is not frozen. </remarks>
+        /// <remarks>Can only be called on a version that is unfrozen. </remarks>
         [Obsolete("Use CreateDatasetAsync(IDatasetCreation, CancellationToken) instead.")]
         Task<IDataset> CreateDatasetAsync(DatasetCreation datasetCreation, CancellationToken cancellationToken);
 
@@ -288,7 +313,7 @@ namespace Unity.Cloud.Assets
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task whose result is the newly created dataset. </returns>
         /// <exception cref="InvalidArgumentException">If the asset is frozen, because it cannot be modified. </exception>
-        /// <remarks>Can only be called on a version that is not frozen. </remarks>
+        /// <remarks>Can only be called on a version that is unfrozen. </remarks>
         Task<IDataset> CreateDatasetAsync(IDatasetCreation datasetCreation, CancellationToken cancellationToken) => throw new NotImplementedException();
 
         /// <summary>

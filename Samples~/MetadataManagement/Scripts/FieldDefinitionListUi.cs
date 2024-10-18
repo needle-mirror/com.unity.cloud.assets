@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Unity.Cloud.Common;
 using UnityEngine;
@@ -15,7 +14,7 @@ namespace Unity.Cloud.Assets.Samples.MetadataManagement
         {
             protected override void OnBindItem(VisualElement element, int i)
             {
-                var label = element.Q<Label>("ItemNameLabel");
+                var label = element.Q<Label>();
                 label.enableRichText = true;
 
                 var fieldDefinition = m_List[i];

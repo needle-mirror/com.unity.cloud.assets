@@ -2,10 +2,30 @@
     <ui:Template name="LoginBar" src="./Templates/LoginBar.uxml?fileID=9197481963319205126&amp;guid=9fa56a2abec2c41e39ce0436d53028a5&amp;type=3#LoginBar" />
     <ui:Template name="AssetBrowserTemplate" src="./Templates/AssetBrowserTemplate.uxml?fileID=9197481963319205126&amp;guid=fd3907f00ee0cd64e8bc4e96c180c751&amp;type=3#AssetBrowserTemplate" />
     <Style src="./StyleSheets/SampleSheet.uss?fileID=7433441132597879392&amp;guid=7376c3d25e9f04a989663c45cc94f5c7&amp;type=3#SampleSheet" />
-    <ui:VisualElement name="MainContainer" style="background-color: rgb(19, 19, 19); width: 100%; height: 100%; flex-grow: 1;">
-        <ui:VisualElement style="width: 100%; height: 100%;">
+    <ui:VisualElement name="MainContainer" style="background-color: rgb(19, 19, 19); flex-grow: 1;">
             <ui:Instance template="LoginBar" name="LoginBar" />
             <ui:Instance template="AssetBrowserTemplate" name="AssetBrowserTemplate" style="flex-grow: 1;" />
+        <ui:VisualElement name="TextInputPopup" class="Popup">
+            <ui:VisualElement style="flex-direction: row; justify-content: space-between;">
+                <ui:Label text="Title" name="Title" style="font-size: 18px; -unity-font-style: bold; margin-bottom: 8px; color: rgb(210, 210, 210); margin-top: 8px; margin-left: 8px; margin-right: 2px; padding-left: 0; padding-right: 0; padding-top: 0; padding-bottom: 0; flex-grow: 1;" />
+                <ui:Button display-tooltip-when-elided="true" name="Close" class="close-icon" />
+            </ui:VisualElement>
+            <ui:Label display-tooltip-when-elided="true" name="Message" text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua." class="popup-field" style="display: flex; white-space: normal;" />
+            <ui:TextField picking-mode="Ignore" value="filler text" class="popup-field" />
+            <ui:VisualElement style="align-items: center; margin-top: 7px; margin-bottom: 7px; flex-shrink: 0;">
+                <ui:Button text="Ok" name="Action" class="sample-button button-blue" style="min-width: 160px;" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement name="MessagePopup" class="Popup">
+            <ui:VisualElement style="flex-direction: row; justify-content: space-between;">
+                <ui:Label text="Title" name="Title" style="font-size: 18px; -unity-font-style: bold; margin-bottom: 8px; color: rgb(210, 210, 210); margin-top: 8px; margin-left: 8px; margin-right: 2px; padding-left: 0; padding-right: 0; padding-top: 0; padding-bottom: 0; flex-grow: 1;" />
+                <ui:Button display-tooltip-when-elided="true" name="Close" class="close-icon" />
+            </ui:VisualElement>
+            <ui:Label display-tooltip-when-elided="true" name="Message" text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua." class="popup-field" style="color: rgb(197, 197, 197); white-space: normal;" />
+            <ui:VisualElement style="align-items: center; justify-content: center; flex-shrink: 0; margin-top: 7px; margin-bottom: 7px; flex-direction: row;">
+                <ui:Button text="Cancel" name="Cancel" class="sample-button" style="min-width: 80px;" />
+                <ui:Button text="Ok" name="Action" class="sample-button button-blue" style="min-width: 80px;" />
+            </ui:VisualElement>
         </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

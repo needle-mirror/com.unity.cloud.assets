@@ -1,36 +1,50 @@
 using System;
-using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace Unity.Cloud.Assets.Samples.AssetManager
 {
     public class TransformationController
     {
-        class TransformationUI
+        class TransformationUI : VisualElement
         {
             readonly ITransformation m_Transformation;
-            readonly VisualElement m_UI;
-            readonly Action<TransformationUI> m_OnCancel;
             CancellationTokenSource m_CancellationTokenSource;
 
-            public TransformationUI(ITransformation transformation, VisualElement ui, Action<TransformationUI> onCancel = null)
+            public TransformationUI(ITransformation transformation)
             {
                 m_Transformation = transformation;
                 m_CancellationTokenSource = new CancellationTokenSource();
-                m_UI = ui;
-                m_OnCancel = onCancel;
 
-                var progressBar = ui.Q<ProgressBar>();
-                progressBar.title = GetProgressLabel();
-                progressBar.value = transformation.Status == TransformationStatus.Succeeded ? 100 : 0;
+                style.flexDirection = FlexDirection.Row;
+                style.alignItems = Align.Center;
 
-                var cancelButton = ui.Q<Button>();
+                var progressBar = new ProgressBar
+                {
+                    title = GetProgressLabel(),
+                    value = transformation.Status == TransformationStatus.Succeeded ? 100 : 0,
+                    style = {flexGrow = 1}
+                };
+                progressBar.RegisterCallback<ClickEvent>(e =>
+                {
+                    e.StopPropagation();
+                    if (transformation.Status is TransformationStatus.Failed or TransformationStatus.Error)
+                    {
+                        DialogService.ShowMessage("Error", transformation.ErrorMessage);
+                    }
+                });
+                Add(progressBar);
+
+                var cancelButton = new Button();
+                cancelButton.AddToClassList("close-icon");
                 cancelButton.RegisterCallback<ClickEvent>(OnCancel);
+                Add(cancelButton);
 
                 if (transformation.Status is TransformationStatus.Pending or TransformationStatus.Running)
-                    _ = UpdateProgressBarAsync(ui.Q<ProgressBar>(), m_CancellationTokenSource.Token);
+                    _ = UpdateProgressBarAsync(progressBar, m_CancellationTokenSource.Token);
             }
 
             public void Cancel()
@@ -53,18 +67,20 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
                 Cancel();
 
-                m_UI.RemoveFromHierarchy();
-                m_OnCancel?.Invoke(this);
+                RemoveFromHierarchy();
             }
 
             string GetProgressLabel()
             {
                 var workflowType = m_Transformation.WorkflowType switch
                 {
-                    WorkflowType.Data_Streaming => "Data Streaming",
+                    WorkflowType.Data_Streaming => "Streamable",
                     WorkflowType.Thumbnail_Generation => "Thumbnail",
                     WorkflowType.Transcode_Video => "Video",
                     WorkflowType.GLB_Preview => "GLB",
+                    WorkflowType.Metadata_Extraction => "Metadata",
+                    WorkflowType.Generic_Polygon_Target => "Polygon",
+                    WorkflowType.Custom => "Custom",
                     _ => "Unknown"
                 };
 
@@ -137,28 +153,21 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             }
         }
 
-        readonly VisualTreeAsset m_TransformationTemplate;
         readonly ScrollView m_TransformationContainer;
-
-        readonly List<TransformationUI> m_TransformationUis = new();
 
         public TransformationController(VisualElement datasetPanel)
         {
-            var transformationTemplate = datasetPanel.Q<TemplateContainer>("TransformationProgressBar");
-            m_TransformationTemplate = transformationTemplate.templateSource;
-
             m_TransformationContainer = datasetPanel.Q<ScrollView>("TransformationInfo");
         }
 
         public void Clear()
         {
-            m_TransformationContainer.Clear();
-
-            foreach (var ui in m_TransformationUis)
+            foreach (var ui in m_TransformationContainer.Children().Select(x => x as TransformationUI))
             {
-                ui.Cancel();
+                ui?.Cancel();
             }
-            m_TransformationUis.Clear();
+
+            m_TransformationContainer.Clear();
         }
 
         public async Task PopulateTransformationProgress(IDataset dataset)
@@ -172,16 +181,8 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
         public void AddTransformationProgress(ITransformation transformation)
         {
-            var ui = m_TransformationTemplate.Instantiate();
-            var progressUi = new TransformationUI(transformation, ui, OnCancel);
-
+            var ui = new TransformationUI(transformation);
             m_TransformationContainer.Add(ui);
-            m_TransformationUis.Add(progressUi);
-        }
-
-        void OnCancel(TransformationUI ui)
-        {
-            m_TransformationUis.Remove(ui);
         }
     }
 }

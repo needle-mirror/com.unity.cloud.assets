@@ -7,18 +7,11 @@ using UnityEngine.UIElements;
 
 namespace Unity.Cloud.Assets.Samples.CollectionManagement
 {
-    [Serializable]
     public class AssetPanelUi
     {
         readonly CollectionAssetListUi m_CollectionAssetListUi = new();
         ContextMenuController m_ContextMenu;
         AddToCollectionPopupController m_AddToCollectionPopup;
-
-        [SerializeField]
-        VisualTreeAsset m_ListItemTemplate;
-
-        [SerializeField]
-        VisualTreeAsset m_PopupListItemTemplate;
 
         IAssetProject m_CurrentProject;
         CancellationTokenSource m_CancellationTokenSource = new();
@@ -33,10 +26,10 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
 
         public void Initialize(VisualElement uiDocumentRoot)
         {
-            m_CollectionAssetListUi.Initialize(uiDocumentRoot, m_ListItemTemplate);
+            m_CollectionAssetListUi.Initialize(uiDocumentRoot, default);
             m_CollectionAssetListUi.AssetSelected += OnAssetSelected;
             m_CollectionAssetListUi.ListUpdated += OnCollectionAssetListUiUpdated;
-            m_AddToCollectionPopup = new AddToCollectionPopupController(uiDocumentRoot, m_PopupListItemTemplate);
+            m_AddToCollectionPopup = new AddToCollectionPopupController(uiDocumentRoot, default);
 
             m_ContextMenu = new ContextMenuController(uiDocumentRoot.Q("AssetsContextMenu"));
             m_ContextMenu.RegisterButtonAction("Add", m_AddToCollectionPopup.Show);

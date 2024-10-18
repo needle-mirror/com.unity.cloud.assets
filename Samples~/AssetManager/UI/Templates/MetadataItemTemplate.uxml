@@ -1,6 +1,5 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
     <ui:Template name="ContextMenu" src="../../../Shared/UI/Templates/ContextMenu.uxml?fileID=9197481963319205126&amp;guid=013acd66da79b4563b22404be89cbf17&amp;type=3#ContextMenu" />
-    <ui:Template name="MultiSelectionMetadataTemplate" src="../Templates/MultiSelectionMetadataTemplate.uxml?fileID=9197481963319205126&amp;guid=18b0be96bc5fd42f5915557ecb33d451&amp;type=3#MultiSelectionMetadataTemplate" />
     <Style src="../StyleSheets/AssetCreationPanelStyleSheet.uss?fileID=7433441132597879392&amp;guid=2a9d0e7b4e75049048525c21e638987e&amp;type=3#AssetCreationPanelStyleSheet" />
     <Style src="../../../Shared/UI/StyleSheets/SampleSheet.uss?fileID=7433441132597879392&amp;guid=7376c3d25e9f04a989663c45cc94f5c7&amp;type=3#SampleSheet" />
     <ui:VisualElement style="flex-direction: row; align-items: flex-start; flex-wrap: nowrap; padding-top: 2px; padding-bottom: 2px;">
@@ -18,9 +17,7 @@
                 <ui:TextField picking-mode="Ignore" label="Label" name="UrlLabel" style="margin-left: 0;" />
                 <ui:TextField picking-mode="Ignore" label="Uri" value="https://" name="Uri" style="margin-left: 0;" />
             </ui:VisualElement>
-            <ui:VisualElement style="flex-grow: 1; flex-direction: row; flex-wrap: wrap;">
-                <ui:Instance template="MultiSelectionMetadataTemplate" name="MultiSelectionMetadataTemplate" class="MetadataValue" />
-            </ui:VisualElement>
+            <ui:VisualElement name="MultiSelection" style="flex-grow: 1; flex-direction: row; flex-wrap: wrap;" />
         </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

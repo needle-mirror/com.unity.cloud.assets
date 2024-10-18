@@ -4,9 +4,9 @@
     <Style src="../StyleSheets/MetadataManagementStylSheet.uss?fileID=7433441132597879392&amp;guid=5d5faa98f3d1d48d79dc07a48eaf142a&amp;type=3#MetadataManagementStylSheet" />
     <ui:VisualElement style="flex-direction: row; justify-content: space-between; width: 100%; height: 100%;">
         <ui:VisualElement name="FieldDefinitionInfoPanel" style="flex-grow: 1;">
-            <ui:VisualElement name="DisplayName" style="flex-direction: row;">
-                <ui:Label tabindex="-1" text="Label" parse-escape-sequences="true" display-tooltip-when-elided="true" class="unity-base-field__label" style="-unity-font-style: bold; font-size: 18px;" />
-                <ui:TextField picking-mode="Ignore" label="Display Name" value="filler text" />
+            <ui:VisualElement name="DisplayName" class="metadata-name" style="flex-direction: row; align-items: center;">
+                <ui:Label tabindex="-1" text="Label" parse-escape-sequences="true" display-tooltip-when-elided="true" class="unity-base-field__label" />
+                <ui:TextField picking-mode="Ignore" label="Display Name" value="filler text" class="popup-field" />
             </ui:VisualElement>
             <ui:Label tabindex="-1" text="Label" parse-escape-sequences="true" display-tooltip-when-elided="true" name="Key" class="unity-base-field__label" style="-unity-font-style: italic;" />
             <ui:Label tabindex="-1" text="Label" parse-escape-sequences="true" display-tooltip-when-elided="true" name="Origin" class="unity-base-field__label" />
@@ -16,31 +16,27 @@
             <ui:Label tabindex="-1" text="Label" parse-escape-sequences="true" display-tooltip-when-elided="true" name="Multiselection" class="unity-base-field__label" />
             <ui:VisualElement name="AcceptedValues" style="flex-direction: row;">
                 <ui:Label tabindex="-1" text="Label" parse-escape-sequences="true" display-tooltip-when-elided="true" class="unity-base-field__label" />
-                <ui:ListView focusable="true" show-add-remove-footer="true" reorderable="true" selection-type="Single" show-foldout-header="true" header-title="Accepted Values" show-border="true" show-bound-collection-size="false" name="ListView" style="background-color: rgb(56, 56, 56); flex-grow: 1; color: rgb(27, 27, 28);" />
+                <ui:ListView focusable="true" show-add-remove-footer="true" reorderable="true" selection-type="Single" show-foldout-header="true" header-title="Accepted Values" show-border="true" show-bound-collection-size="false" name="ListView" virtualization-method="DynamicHeight" style="flex-grow: 1; color: rgb(27, 27, 27);" />
             </ui:VisualElement>
-            <ui:Button text="Update" parse-escape-sequences="true" display-tooltip-when-elided="true" name="Update" style="width: 30%;" />
+            <ui:Button text="Update" parse-escape-sequences="true" display-tooltip-when-elided="true" name="Update" class="sample-button button-blue" style="align-self: flex-end; min-width: 160px;" />
             <ui:Instance template="ContextMenu" name="FieldContextMenu" class="ContextMenuContainer" />
         </ui:VisualElement>
-        <ui:VisualElement picking-mode="Ignore" class="PopupContainer" style="width: 90%; height: 90%; justify-content: space-around; align-self: center; left: 5%;">
-            <ui:VisualElement name="CreateFieldPopup" class="Popup" style="min-width: 400px; max-width: 100%; max-height: 100%; min-height: 0;">
+    </ui:VisualElement>
+    <ui:VisualElement name="CreateFieldPopup" class="Popup">
                 <ui:VisualElement style="flex-direction: row; align-items: center; justify-content: space-between; flex-shrink: 0;">
                     <ui:Label text="New Field Definition" style="font-size: 18px; -unity-font-style: bold; margin-bottom: 9px; color: rgb(210, 210, 210); margin-top: 7px; margin-left: 7px; margin-right: 2px; padding-left: 0; padding-right: 0; padding-top: 0; padding-bottom: 0;" />
-                    <ui:Button display-tooltip-when-elided="true" name="Close" class="PopupClose" />
+                    <ui:Button display-tooltip-when-elided="true" name="Close" class="close-icon" />
                 </ui:VisualElement>
-                <ui:VisualElement>
-                    <ui:TextField password="false" name="Name" label="Unique Id *" style="align-items: stretch; flex-direction: row;" />
-                    <ui:TextField password="false" name="DisplayName" label="Display Name *" style="align-items: stretch; flex-direction: row;" />
-                    <ui:EnumField label="Type *" type="Unity.Cloud.Assets.FieldDefinitionType, Unity.Cloud.Assets" name="Type" />
-                    <ui:Toggle label="Multiselect" name="Multiselection" />
-                    <ui:VisualElement style="flex-direction: row;">
-                        <ui:ListView focusable="true" name="AcceptedValues" header-title="Accepted Values" show-add-remove-footer="true" show-foldout-header="true" show-bound-collection-size="false" selection-type="None" reorderable="true" style="color: rgb(206, 206, 206); flex-grow: 1;" />
+        <ui:TextField password="false" name="Name" label="Unique Id *" class="popup-field" />
+        <ui:TextField password="false" name="DisplayName" label="Display Name *" class="popup-field" />
+        <ui:EnumField label="Type *" type="Unity.Cloud.Assets.FieldDefinitionType, Unity.Cloud.Assets" name="Type" class="popup-field" />
+        <ui:Toggle label="Multiselect" name="Multiselection" class="popup-field" />
+        <ui:VisualElement name="VisualElement" class="popup-field" style="flex-direction: row;">
+            <ui:ListView focusable="true" name="AcceptedValues" header-title="Accepted Values" show-add-remove-footer="true" show-foldout-header="true" selection-type="None" reorderable="true" virtualization-method="DynamicHeight" show-bound-collection-size="false" style="flex-grow: 1;" />
                     </ui:VisualElement>
-                    <ui:Label display-tooltip-when-elided="true" name="ErrorLabel" text="Error:" class="PopupError" style="display: none;" />
-                </ui:VisualElement>
+        <ui:Label display-tooltip-when-elided="true" name="ErrorLabel" text="Error:" class="error-label" />
                 <ui:VisualElement style="align-items: center; margin-top: 7px; margin-bottom: 7px; flex-shrink: 0;">
-                    <ui:Button text="Create" name="Action" style="margin-left: 7px; margin-right: 2px; min-width: 120px;" />
-                </ui:VisualElement>
-            </ui:VisualElement>
+            <ui:Button text="Create" name="Action" class="sample-button button-blue" style="min-width: 160px;" />
         </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

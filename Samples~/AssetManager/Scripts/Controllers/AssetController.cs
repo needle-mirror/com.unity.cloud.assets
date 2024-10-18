@@ -54,12 +54,31 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             var addButton = AssetListPanel.Q<Button>("AddAssetButton");
             addButton.RegisterCallback<ClickEvent>(_ => CreateAsset?.Invoke());
 
-            m_AssetListUi.Initialize(AssetListPanel, m_AssetListItemTemplate);
+            m_AssetListUi.Initialize(AssetListPanel, MakeItem);
             m_AssetListUi.RemoveAsset += OnRemoveAsset;
 
             ProjectSelected += OnProjectSelected;
 
             Application.lowMemory += OnLowMemory;
+        }
+
+        VisualElement MakeItem()
+        {
+            var element = m_AssetListItemTemplate.Instantiate();
+
+            element.Q("LeftTopPanel").RegisterCallback<MouseOverEvent>(_ =>
+            {
+                element.Q("LeftTopPanel").style.backgroundColor = new Color(0.14f, 0.14f, 0.14f, 1f);
+                element.Q("RightPanel").style.backgroundColor = new Color(0.19f, 0.19f, 0.19f, 1f);
+            });
+
+            element.Q("LeftTopPanel").RegisterCallback<MouseOutEvent>(_ =>
+            {
+                element.Q("LeftTopPanel").style.backgroundColor = new Color(0.07f, 0.07f, 0.07f, 1f);
+                element.Q("RightPanel").style.backgroundColor = new Color(0.14f, 0.14f, 0.14f, 1f);
+            });
+
+            return element;
         }
 
         protected override void OnDestroy()

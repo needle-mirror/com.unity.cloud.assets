@@ -89,7 +89,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
         public Func<Task> PrepareAssetUpdateAsync { get; set; }
         public IAsset CurrentAsset => m_CurrentAsset;
 
-        bool IsEditable => m_CurrentAsset is {IsFrozen: false};
+        bool IsEditable => m_CurrentAsset is {State: AssetState.Unfrozen};
 
         public void Init(VisualElement assetCreationPanel, VisualTreeAsset tagsTemplate, AddMetadataPopupController addMetadataPopup)
         {
@@ -193,7 +193,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             m_RightPanel?.Show();
 
             m_CurrentAsset = asset;
-            m_AssetUpdate = new AssetUpdate(asset);
+            m_AssetUpdate = new AssetUpdate();
 
             m_SaveButton.SetEnabled(IsEditable);
             m_FreezeButton.Show(IsEditable);
@@ -217,13 +217,13 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
             m_SequenceNumber.tooltip = asset.Descriptor.AssetVersion.ToString();
             m_SequenceNumber.text = $"Ver. {asset.FrozenSequenceNumber}";
-            m_SequenceNumber.Show(asset.IsFrozen);
+            m_SequenceNumber.Show(asset.State == AssetState.Frozen);
 
             m_ParentSequenceNumber.text = $"Parent Ver. {asset.ParentFrozenSequenceNumber}";
             m_ParentSequenceNumber.Show(asset.ParentFrozenSequenceNumber > 0);
 
             Action<string> addTagAction = tag => AddTag(tag, IsEditable);
-            addTagAction.AddTags(m_AssetUpdate.Tags);
+            addTagAction.AddTags(GetUpdateTags());
 
             _ = m_MetadataController.PopulateMetadataAsync(asset, IsEditable);
 
@@ -280,12 +280,17 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
         void AddTags(FocusInEvent evt)
         {
-            m_AssetTagsField.ParseTags(m_AssetUpdate.Tags, tag => AddTag(tag, true));
+            m_AssetTagsField.ParseTags(GetUpdateTags(), tag => AddTag(tag, true));
         }
 
         void AddTag(string tag, bool canRemove)
         {
-            m_AssetTagsContainer.AddTag(tag, m_AssetUpdate.Tags, m_AssetTagsTemplate, canRemove);
+            m_AssetTagsContainer.AddTag(tag, GetUpdateTags(), m_AssetTagsTemplate, canRemove);
+        }
+
+        List<string> GetUpdateTags()
+        {
+            return m_AssetUpdate.Tags ?? (m_AssetUpdate.Tags = m_CurrentAsset.Tags?.ToList() ?? new List<string>());
         }
 
         async Task ListDatasets(IAsset asset, bool canUpdate, CancellationToken cancellationToken)
@@ -325,7 +330,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
         void AddVersionRow(IAsset asset)
         {
             var rowItem = new RowItem();
-            rowItem.AddLabel(asset.IsFrozen ? $"Ver. {asset.FrozenSequenceNumber}" : $"Pending");
+            rowItem.AddLabel(asset.State == AssetState.Frozen ? $"Ver. {asset.FrozenSequenceNumber}" : $"Pending");
             rowItem.AddLabel(asset.Descriptor.AssetVersion.ToString());
             rowItem.RegisterCallback<ClickEvent>(_ =>
             {
@@ -426,7 +431,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
                 asset = await PlatformServices.AssetRepository.GetAssetAsync(projectDescriptor, assetId, label, default);
             }
 
-            title.text = $"{asset.Name}\n({label ?? (asset.IsFrozen ? $"Ver. {asset.FrozenSequenceNumber}" : "Ver.1 - Pending")})";
+            title.text = $"{asset.Name}\n({label ?? (asset.State == AssetState.Frozen ? $"Ver. {asset.FrozenSequenceNumber}" : "Ver.1 - Pending")})";
             rowItem.AddLabel(asset.Type.GetValueAsString());
 
             rowItem.RegisterCallback<ClickEvent>(_ =>
@@ -497,7 +502,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             catch (Exception e)
             {
                 e.LogException();
-                DialogService.ShowMessage("Error", $"An error occured while saving the asset.");
+                DialogService.ShowMessage(e, "Update failed", $"Failed to update the asset with reason: {e.Message}");
             }
             finally
             {
@@ -513,7 +518,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
             try
             {
-                await m_CurrentAsset.FreezeAsync("Asset Manager sample submission.", CancellationToken.None);
+                await m_CurrentAsset.FreezeAsync(new AssetFreeze("Asset Manager sample submission."), CancellationToken.None);
                 await Task.Delay(1000); // There is a delay between the AM service and the search database
 
                 OnAssetUpdated?.Invoke(m_CurrentAsset);

@@ -16,30 +16,50 @@ namespace Unity.Cloud.Assets
             asset.m_LinkedProjects = assetData.LinkedProjectIds?.Select(projectId => new ProjectDescriptor(organizationId, projectId)).ToArray() ?? Array.Empty<ProjectDescriptor>();
             asset.SourceProject = new ProjectDescriptor(organizationId, assetData.SourceProjectId);
 
-            asset.IsFrozen = assetData.IsFrozen;
-            asset.FrozenSequenceNumber = assetData.VersionNumber;
-            asset.Changelog = assetData.Changelog;
-            asset.ParentVersion = assetData.ParentVersion;
-            asset.ParentFrozenSequenceNumber = assetData.ParentVersionNumber;
-
-            asset.Description = assetData.Description ?? string.Empty;
             asset.Name = assetData.Name;
             asset.Tags = assetData.Tags ?? Array.Empty<string>();
             asset.SystemTags = assetData.SystemTags ?? Array.Empty<string>();
             asset.Type = assetData.Type ?? AssetType.Other;
             asset.Status = assetData.Status;
             asset.StatusName = assetData.Status;
-            asset.StatusFlowDescriptor = new StatusFlowDescriptor(organizationId, assetData.StatusFlowId);
-            asset.Labels = assetData.Labels?.Select(x => new LabelDescriptor(organizationId, x)) ?? Array.Empty<LabelDescriptor>();
-            asset.ArchivedLabels = assetData.ArchivedLabels?.Select(x => new LabelDescriptor(organizationId, x)) ?? Array.Empty<LabelDescriptor>();
-            asset.PreviewFile = assetData.PreviewFilePath ?? string.Empty;
-            var previewFileDatasetDescriptor = new DatasetDescriptor(assetDescriptor, assetData.PreviewFileDatasetId);
-            asset.PreviewFileDescriptor = new FileDescriptor(previewFileDatasetDescriptor, assetData.PreviewFilePath ?? string.Empty);
 
-            if (includeFields.AssetFields.HasFlag(AssetFields.previewFileUrl))
+            if (includeFields.AssetFields.HasFlag(AssetFields.description))
             {
-                Uri.TryCreate(assetData.PreviewFileUrl, UriKind.RelativeOrAbsolute, out var previewFileDownloadUrl);
-                asset.PreviewFileUrl = previewFileDownloadUrl;
+                asset.Description = assetData.Description ?? string.Empty;
+            }
+
+            if (includeFields.AssetFields.HasFlag(AssetFields.versioning))
+            {
+                if (assetData.IsFrozen)
+                {
+                    asset.State = AssetState.Frozen;
+                }
+                else if (assetData.AutoSubmit)
+                {
+                    asset.State = AssetState.PendingFreeze;
+                }
+                else
+                {
+                    asset.State = AssetState.Unfrozen;
+                }
+                asset.FrozenSequenceNumber = assetData.VersionNumber;
+                asset.Changelog = assetData.Changelog;
+                asset.ParentVersion = assetData.ParentVersion;
+                asset.ParentFrozenSequenceNumber = assetData.ParentVersionNumber;
+            }
+
+            if (includeFields.AssetFields.HasFlag(AssetFields.labels))
+            {
+                asset.Labels = assetData.Labels?.Select(x => new LabelDescriptor(organizationId, x)) ?? Array.Empty<LabelDescriptor>();
+                asset.ArchivedLabels = assetData.ArchivedLabels?.Select(x => new LabelDescriptor(organizationId, x)) ?? Array.Empty<LabelDescriptor>();
+            }
+
+            if (includeFields.AssetFields.HasFlag(AssetFields.previewFile))
+            {
+                asset.StatusFlowDescriptor = new StatusFlowDescriptor(organizationId, assetData.StatusFlowId);
+                asset.PreviewFile = assetData.PreviewFilePath ?? string.Empty;
+                var previewFileDatasetDescriptor = new DatasetDescriptor(assetDescriptor, assetData.PreviewFileDatasetId);
+                asset.PreviewFileDescriptor = new FileDescriptor(previewFileDatasetDescriptor, assetData.PreviewFilePath ?? string.Empty);
             }
 
             if (includeFields.AssetFields.HasFlag(AssetFields.authoring))
@@ -50,6 +70,12 @@ namespace Unity.Cloud.Assets
 
             if (includeFields.AssetFields.HasFlag(AssetFields.systemMetadata))
                 asset.SystemMetadataEntity.Properties = assetData.SystemMetadata?.From();
+
+            if (includeFields.AssetFields.HasFlag(AssetFields.previewFileUrl))
+            {
+                Uri.TryCreate(assetData.PreviewFileUrl, UriKind.RelativeOrAbsolute, out var previewFileDownloadUrl);
+                asset.PreviewFileUrl = previewFileDownloadUrl;
+            }
         }
 
         internal static AssetCreateData From(this IAssetCreation assetCreation)
@@ -152,7 +178,8 @@ namespace Unity.Cloud.Assets
                 ArchivedLabels = asset.ArchivedLabels?.Select(x => x.LabelName),
                 ParentVersion = asset.ParentVersion,
                 ParentVersionNumber = asset.ParentFrozenSequenceNumber,
-                IsFrozen = asset.IsFrozen,
+                IsFrozen = asset.State == AssetState.Frozen,
+                AutoSubmit = asset.State == AssetState.PendingFreeze,
                 VersionNumber = asset.FrozenSequenceNumber,
                 Changelog = asset.Changelog,
             };

@@ -14,7 +14,7 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
         {
             protected override void OnBindItem(VisualElement element, int i)
             {
-                element.Q<Label>("ItemNameLabel").text = m_List[i].Name;
+                element.Q<Label>().text = m_List[i].Name;
             }
         }
 

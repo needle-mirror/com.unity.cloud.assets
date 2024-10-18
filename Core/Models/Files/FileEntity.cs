@@ -130,13 +130,7 @@ namespace Unity.Cloud.Assets
         {
             if (PreviewUrl == null)
             {
-                var filter = new FieldsFilter
-                {
-                    AssetFields = AssetFields.files,
-                    DatasetFields = DatasetFields.none,
-                    FileFields = FileFields.previewURL
-                };
-
+                var filter = new FieldsFilter {FileFields = FileFields.previewURL};
                 var fileData = await m_DataSource.GetFileAsync(Descriptor, filter, cancellationToken);
                 this.MapFrom(m_DataSource, Descriptor.DatasetDescriptor.AssetDescriptor, fileData, filter.FileFields);
             }

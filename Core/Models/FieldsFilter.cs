@@ -8,7 +8,6 @@ namespace Unity.Cloud.Assets
     {
         /// <summary>
         /// Only the default fields will be populated.
-        /// Also included are a list of pre-determined defaults, <see cref="FieldsFilterUtilities.s_DefaultAssetFields"/>.
         /// </summary>
         none = 0,
         all = ~none,
@@ -25,6 +24,9 @@ namespace Unity.Cloud.Assets
         /// Will populate the file cache with only the default fields; use FileFields to specify which fields to populate.
         /// </summary>
         files = 128,
+        versioning = 256,
+        labels = 512,
+        previewFile = 1024,
     }
 
     [Flags]
@@ -78,7 +80,7 @@ namespace Unity.Cloud.Assets
 
         public static FieldsFilter DefaultAssetIncludes => new()
         {
-            AssetFields = AssetFields.description | AssetFields.authoring,
+            AssetFields = AssetFields.description | AssetFields.authoring | AssetFields.versioning | AssetFields.labels | AssetFields.previewFile,
             DatasetFields = DatasetFields.none,
             FileFields = FileFields.none,
         };

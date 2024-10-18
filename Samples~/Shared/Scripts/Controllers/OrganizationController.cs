@@ -38,8 +38,7 @@ namespace Unity.Cloud.Assets.Samples
             m_OrganizationListUi.OrganizationSelected += OnOrganizationSelected;
             m_OrganizationListUi.Hide();
 
-            var popupContainer = RootVisualElement.Q("PopupContainer");
-            DialogService.Initialize(popupContainer);
+            DialogService.Initialize(RootVisualElement);
         }
 
         protected virtual void OnDestroy()

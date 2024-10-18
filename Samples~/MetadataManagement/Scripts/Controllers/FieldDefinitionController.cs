@@ -14,9 +14,6 @@ namespace Unity.Cloud.Assets.Samples.MetadataManagement
         [SerializeField]
         UIDocument m_FieldListUiDocument;
 
-        [SerializeField]
-        VisualTreeAsset m_ListItemTemplate;
-
         readonly FieldDefinitionListUi m_FieldDefinitionListUi = new();
 
         ContextMenuController m_ContextMenu;
@@ -35,7 +32,7 @@ namespace Unity.Cloud.Assets.Samples.MetadataManagement
         {
             base.Start();
 
-            m_FieldDefinitionListUi.Initialize(m_FieldListUiDocument.rootVisualElement, m_ListItemTemplate);
+            m_FieldDefinitionListUi.Initialize(m_FieldListUiDocument.rootVisualElement, null);
             m_FieldDefinitionListUi.SetName("Field Definitions");
             m_FieldDefinitionListUi.Hide();
 

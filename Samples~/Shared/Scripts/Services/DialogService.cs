@@ -1,4 +1,6 @@
 using System;
+using System.Linq;
+using Unity.Cloud.Common;
 using UnityEngine.UIElements;
 
 namespace Unity.Cloud.Assets.Samples
@@ -17,6 +19,21 @@ namespace Unity.Cloud.Assets.Samples
         public static void ShowMessage(string title, string message)
         {
             m_MessagePopupController?.ShowMessage(title, message);
+        }
+
+        public static void ShowMessage(Exception exception, string title, string placeholderMessage = null)
+        {
+            if (exception is ServiceException serviceException)
+            {
+                title ??= serviceException.Title;
+                placeholderMessage = serviceException.Detail ?? placeholderMessage;
+
+                foreach (var detail in serviceException.Details)
+                {
+                    placeholderMessage += $"\n\n<color=#ee2222>{detail}</color>";
+                }
+            }
+            m_MessagePopupController?.ShowMessage(title, placeholderMessage);
         }
 
         public static void ShowMessage(string title, string message, Action onAccept, Action onCancel = null)

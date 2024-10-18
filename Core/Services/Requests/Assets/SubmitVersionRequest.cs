@@ -11,12 +11,16 @@ namespace Unity.Cloud.Assets
         [DataMember(Name = "changeLog")]
         readonly string m_ChangeLog;
 
-        public SubmitVersionRequest(ProjectId projectId, AssetId assetId, AssetVersion assetVersion, string changeLog)
+        [DataMember(Name = "forceFreeze")]
+        readonly bool? m_ForceFreeze;
+
+        public SubmitVersionRequest(ProjectId projectId, AssetId assetId, AssetVersion assetVersion, string changeLog, bool? forceFreeze = default)
             : base(projectId, assetId, assetVersion)
         {
             m_RequestUrl += $"/submit";
 
             m_ChangeLog = changeLog;
+            m_ForceFreeze = forceFreeze;
         }
 
         public override HttpContent ConstructBody()

@@ -97,11 +97,11 @@ To complete the UI, follow these steps:
 3. Go to **Create** > **C# Script**. Name your script `UseCaseAssetMetadataExampleUI`.
 4. Open the `UseCaseAssetMetadataExampleUI` script you created and replace the content of the file with the following code sample:
 
-[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseAssetCollectionExample.cs#Example_UIClass)]
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseManageAssetMetadataExample.cs#Example_UIClass)]
 
 5. In the same script, replace the `OnGUI` function with the following code:
 
-[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseAssetCollectionExample.cs#Example_UIContent)]
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseManageAssetMetadataExample.cs#Example_UIContent)]
 
 6. Open the `AssetManagementUI` script you created and replace the content of the `Awake` function with the following code:
 

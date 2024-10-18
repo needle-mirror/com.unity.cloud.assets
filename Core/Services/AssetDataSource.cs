@@ -83,7 +83,7 @@ namespace Unity.Cloud.Assets
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var (offset, length) = await parameters.PaginationRange.GetOffsetAndLengthAsync(token => GetTotalCount(projectDescriptor, token), cancellationToken);
+            var (offset, length) = await parameters.PaginationRange.GetOffsetAndLengthAsync(token => GetAssetCountAsync(projectDescriptor, token), cancellationToken);
             if (length == 0) yield break;
 
             var request = new SearchRequest(projectDescriptor.ProjectId, parameters);
@@ -237,18 +237,6 @@ namespace Unity.Cloud.Assets
             var request = new ChangeAssetStatusRequest(assetDescriptor.ProjectId, assetDescriptor.AssetId, assetDescriptor.AssetVersion, statusName);
             return RateLimitedServiceClient(request, HttpClientExtensions.HttpMethodPatch).PatchAsync(GetPublicRequestUri(request), request.ConstructBody(),
                 ServiceHttpClientOptions.Default(), cancellationToken);
-        }
-
-        async Task<int> GetTotalCount(ProjectDescriptor projectDescriptor, CancellationToken cancellationToken)
-        {
-            var parameters = new SearchAndAggregateRequestParameters(AssetTypeSearchCriteria.SearchKey);
-            var aggregations = await GetAssetAggregateAsync(projectDescriptor, parameters, cancellationToken);
-            var total = 0;
-            foreach (var aggregate in aggregations)
-            {
-                total += aggregate.Count;
-            }
-            return total;
         }
 
         async Task<int> GetAcrossProjectsTotalCount(OrganizationId organizationId, IEnumerable<ProjectId> projectIds, CancellationToken cancellationToken)

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -122,7 +123,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             m_DatasetVisibleToggle.SetEnabled(canUpdate);
 
             Action<string> addTagAction = tag => AddTag(tag, canUpdate);
-            addTagAction.AddTags(m_DatasetUpdate.Tags);
+            addTagAction.AddTags(GetUpdateTags());
 
             _ = m_FileController.ListExistingFiles(dataset, canUpdate);
 
@@ -178,7 +179,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             catch (Exception e)
             {
                 e.LogException();
-                DialogService.ShowMessage("Error", $"An error occurred while saving the dataset.");
+                DialogService.ShowMessage(e, "Update failed", $"Failed to update dataset with reason: {e.Message}");
             }
             finally
             {
@@ -189,7 +190,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
         public void OnAssetCreated(IAsset createdAsset, IDataset sourceDataset)
         {
             m_CurrentDataset = sourceDataset;
-            m_DatasetUpdate = new DatasetUpdate(m_CurrentDataset);
+            m_DatasetUpdate = new DatasetUpdate();
 
             ClosePanel(createdAsset);
         }
@@ -247,12 +248,17 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
         void AddTags(FocusInEvent evt)
         {
-            m_DatasetTagsField.ParseTags(m_DatasetUpdate.Tags, tag => AddTag(tag, true));
+            m_DatasetTagsField.ParseTags(GetUpdateTags(), tag => AddTag(tag, true));
         }
 
         void AddTag(string tag, bool canRemove)
         {
-            m_DatasetTagsContainer.AddTag(tag, m_DatasetUpdate.Tags, m_DatasetTagsTemplate, canRemove);
+            m_DatasetTagsContainer.AddTag(tag, GetUpdateTags(), m_DatasetTagsTemplate, canRemove);
+        }
+
+        List<string> GetUpdateTags()
+        {
+            return m_DatasetUpdate.Tags ?? (m_DatasetUpdate.Tags = m_CurrentDataset.Tags?.ToList() ?? new List<string>());
         }
 
         void GenerateThumbnailPreview(ClickEvent evt)
@@ -282,12 +288,12 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             catch (OperationCanceledException oe)
             {
                 oe.LogException();
-                DialogService.ShowMessage("Error", $"Failed to start transformation {workflowType}. Request canceled.");
+                DialogService.ShowMessage("Cancelled", $"Failed to start transformation {workflowType}. Request cancelled.");
             }
             catch (Exception e)
             {
                 e.LogException();
-                DialogService.ShowMessage("Error", $"Transformation of type {workflowType} failed.");
+                DialogService.ShowMessage(e, "Start transformation failed", $"Failed to start transformation of type {workflowType} with reason: {e.Message}");
             }
             finally
             {

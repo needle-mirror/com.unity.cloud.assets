@@ -16,6 +16,7 @@ namespace Unity.Cloud.Assets
             {
                 Name = data.Name,
                 Metadata = data.Metadata,
+                HasCollection = data.HasCollection
             };
         }
     }

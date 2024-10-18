@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using Unity.Cloud.Common;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -17,13 +16,9 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
         ProjectController m_ProjectController;
         [SerializeField]
         VisualTreeAsset m_LayoutTemplate;
-        [SerializeField]
-        protected VisualTreeAsset m_CollectionListItemTemplate;
 
         readonly CollectionListUi m_CollectionListUi = new();
-
-        [SerializeField]
-        AssetPanelUi m_AssetPanelUi = new();
+        readonly AssetPanelUi m_AssetPanelUi = new();
 
         CollectionsContextMenuController m_ContextMenu;
 
@@ -45,7 +40,7 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
             m_ContextMenu.CollectionUpdated += OnCollectionUpdated;
             m_ContextMenu.CollectionDeleted += OnCollectionDeleted;
 
-            m_CollectionListUi.Initialize(uiDocumentRoot, m_CollectionListItemTemplate);
+            m_CollectionListUi.Initialize(uiDocumentRoot, default);
             m_CollectionListUi.CollectionSelected += OnCollectionSelected;
 
             m_AssetPanelUi.Initialize(uiDocumentRoot);
@@ -116,7 +111,7 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
             }
             catch (Exception e)
             {
-                DialogService.ShowMessage("Failed to create collection", $"{e.Message}");
+                DialogService.ShowMessage(e, "Creation failed", $"Failed to create collection {collectionCreation.Name} with reason: {e.Message}");
             }
 
             // Force refresh the list of collections

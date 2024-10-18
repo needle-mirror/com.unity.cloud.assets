@@ -26,9 +26,9 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
         {
             m_ActionButton.SetEnabled(false);
 
-            m_FieldInfo = root.Q<Label>("FieldInfo");
+            m_FieldInfo = m_PopupWindow.Q<Label>("FieldInfo");
 
-            m_DropdownField = root.Q<DropdownField>();
+            m_DropdownField = m_PopupWindow.Q<DropdownField>();
             m_DropdownField.RegisterCallback<ChangeEvent<string>>(OnFieldDefinitionSelected);
         }
 

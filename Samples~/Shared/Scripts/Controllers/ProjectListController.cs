@@ -16,7 +16,7 @@ namespace Unity.Cloud.Assets.Samples
                 label = m_List[i].ToString();
             }
 
-            element.Q<Label>("ItemNameLabel").text = label;
+            element.Q<Label>().text = label;
         }
     }
 }

@@ -135,7 +135,7 @@ namespace Unity.Cloud.Assets
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task with no result. </returns>
         /// <exception cref="InvalidArgumentException">If this version of the asset is frozen, because it cannot be modified. </exception>
-        /// <remarks>Can only be called if the version of the asset is not frozen. </remarks>
+        /// <remarks>Can only be called if the version of the asset is unfrozen. </remarks>
         Task UploadAsync(Stream sourceStream, IProgress<HttpProgress> progress, CancellationToken cancellationToken);
 
         /// <summary>
@@ -145,7 +145,7 @@ namespace Unity.Cloud.Assets
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task with no result. </returns>
         /// <exception cref="InvalidArgumentException">If this version of the asset is frozen, because it cannot be modified. </exception>
-        /// <remarks>Can only be called if the version of the asset is not frozen. </remarks>
+        /// <remarks>Can only be called if the version of the asset is unfrozen. </remarks>
         Task UpdateAsync(IFileUpdate fileUpdate, CancellationToken cancellationToken);
 
         /// <summary>
