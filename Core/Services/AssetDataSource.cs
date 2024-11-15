@@ -274,11 +274,8 @@ namespace Unity.Cloud.Assets
 
             httpRequestMessage.Headers.Add(blobTypeHeaderKey, blobTypeHeaderValue);
 
-            var httpClientOptions = new ServiceHttpClientOptions(true, false, false,
-                false, retryPolicy: new NoRetryPolicy());
-
-            var response = await RateLimitedServiceClient("UploadFile", HttpMethod.Put).SendAsync(httpRequestMessage, httpClientOptions,
-                HttpCompletionOption.ResponseContentRead, progress, cancellationToken);
+            var response = await RateLimitedServiceClient("UploadFile", HttpMethod.Put)
+                .SendAsync(httpRequestMessage, ServiceHttpClientOptions.SkipDefaultAuthenticationOption(), HttpCompletionOption.ResponseContentRead, progress, cancellationToken);
 
             var result = response.EnsureSuccessStatusCode();
             if (!result.IsSuccessStatusCode)
@@ -301,7 +298,7 @@ namespace Unity.Cloud.Assets
             httpRequestMessage.Method = HttpMethod.Get;
             httpRequestMessage.RequestUri = downloadUri;
 
-            using var response = await m_ServiceHttpClient.SendAsync(httpRequestMessage, HttpCompletionOption.ResponseContentRead, progress, cancellationToken);
+            using var response = await m_ServiceHttpClient.SendAsync(httpRequestMessage, ServiceHttpClientOptions.SkipDefaultAuthenticationOption(), HttpCompletionOption.ResponseContentRead, progress, cancellationToken);
             response.EnsureSuccessStatusCode();
 
             var source = await response.Content.ReadAsStreamAsync();
@@ -450,7 +447,12 @@ namespace Unity.Cloud.Assets
 
         IServiceHttpClient RateLimitedServiceClient(ApiRequest request, HttpMethod httpMethod)
         {
-            var requestKey = request.GetType().ToString() + httpMethod;
+            return RateLimitedServiceClient(request, httpMethod.ToString());
+        }
+
+        IServiceHttpClient RateLimitedServiceClient(ApiRequest request, string httpMethod)
+        {
+            var requestKey = request.GetType() + httpMethod;
 
             if (m_HttpClients.TryGetValue(requestKey, out var client)) return client;
 

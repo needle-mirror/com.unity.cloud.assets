@@ -126,6 +126,8 @@ namespace Unity.Cloud.Documentation.Assets
 
             GUILayout.EndHorizontal();
 
+            GUILayout.Label("Preview DatasetId: " + m_CurrentAsset.PreviewFileDescriptor.DatasetId);
+
             GUILayout.BeginHorizontal();
 
             GUILayout.Label("Preview:", s_LabelWidth);

@@ -11,7 +11,7 @@ namespace Unity.Cloud.Assets
     /// <summary>
     /// This is a class containing the information about an asset.
     /// </summary>
-    sealed class Asset : IAsset
+    sealed class AssetEntity : IAsset
     {
         readonly IAssetDataSource m_DataSource;
 
@@ -90,7 +90,7 @@ namespace Unity.Cloud.Assets
         internal MetadataContainerEntity MetadataEntity { get; }
         internal ReadOnlyMetadataContainerEntity SystemMetadataEntity { get; }
 
-        internal Asset(IAssetDataSource dataSource, AssetDescriptor assetDescriptor)
+        internal AssetEntity(IAssetDataSource dataSource, AssetDescriptor assetDescriptor)
         {
             m_DataSource = dataSource;
             Descriptor = assetDescriptor;
@@ -486,7 +486,7 @@ namespace Unity.Cloud.Assets
 
         IAsset Copy(AssetDescriptor assetDescriptor)
         {
-            return new Asset(m_DataSource, assetDescriptor)
+            return new AssetEntity(m_DataSource, assetDescriptor)
             {
                 m_LinkedProjects = m_LinkedProjects.ToArray(),
                 SourceProject = SourceProject,

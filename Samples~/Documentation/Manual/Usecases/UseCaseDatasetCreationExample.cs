@@ -94,7 +94,7 @@ namespace Unity.Cloud.Documentation.Assets
             }
             else
             {
-                m_DatasetListScrollPosition = GUILayout.BeginScrollView(m_DatasetListScrollPosition);
+                m_DatasetListScrollPosition = GUILayout.BeginScrollView(m_DatasetListScrollPosition, GUILayout.MinHeight(Screen.height * 0.7f));
 
                 for (var i = 0; i < datasets.Count; ++i)
                 {
@@ -129,7 +129,6 @@ namespace Unity.Cloud.Documentation.Assets
         {
             Datasets = new List<IDataset>();
 
-            _ = CurrentAsset.RefreshAsync(CancellationToken.None);
             var asyncList = CurrentAsset.ListDatasetsAsync(Range.All, CancellationToken.None);
             await foreach (var dataset in asyncList)
             {

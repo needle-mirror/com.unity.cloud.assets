@@ -93,7 +93,7 @@ namespace Unity.Cloud.Assets
                             select("isFrozen");
                             select("autoSubmit");
                             select("versionNumber");
-                            select("changelog");
+                            select("changeLog");
                             select("parentAssetVersion");
                             select("parentVersionNumber");
                             break;

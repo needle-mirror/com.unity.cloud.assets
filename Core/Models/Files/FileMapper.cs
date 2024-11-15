@@ -70,26 +70,6 @@ namespace Unity.Cloud.Assets
             return fileData.From(assetDataSource, fileDescriptor, includeFields);
         }
 
-        internal static FileData From(this FileEntity fileEntity)
-        {
-            return new FileData
-            {
-                Path = fileEntity.Descriptor.Path,
-                Description = fileEntity.Description,
-                Tags = fileEntity.Tags,
-                SystemTags = fileEntity.SystemTags,
-                Metadata = fileEntity.MetadataEntity?.From() ?? new Dictionary<string, object>(),
-                CreatedBy = fileEntity.AuthoringInfo?.CreatedBy.ToString(),
-                Created = fileEntity.AuthoringInfo?.Created,
-                UpdatedBy = fileEntity.AuthoringInfo?.UpdatedBy.ToString(),
-                Updated = fileEntity.AuthoringInfo?.Updated,
-                SizeBytes = fileEntity.SizeBytes,
-                UserChecksum = fileEntity.UserChecksum,
-                DownloadUrl = fileEntity.DownloadUrl?.ToString(),
-                PreviewUrl = fileEntity.PreviewUrl?.ToString()
-            };
-        }
-
         internal static IFileBaseData From(this IFileUpdate fileUpdate)
         {
             return new FileBaseData

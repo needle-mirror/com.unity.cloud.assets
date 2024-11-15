@@ -137,7 +137,10 @@ namespace Unity.Cloud.Assets
             assetCollectionCreation.Validate();
 
             var creationPath = CollectionPath.CombinePaths(assetCollectionCreation.ParentPath, assetCollectionCreation.Name);
-            var assetCollection = new AssetCollection(m_DataSource, new CollectionDescriptor(Descriptor, creationPath), assetCollectionCreation.Name, assetCollectionCreation.Description, assetCollectionCreation.ParentPath);
+            var assetCollection = new AssetCollection(m_DataSource, new CollectionDescriptor(Descriptor, creationPath))
+            {
+                Description = assetCollectionCreation.Description
+            };
 
             var collectionPath = await m_DataSource.CreateCollectionAsync(Descriptor, assetCollection.From(), cancellationToken);
             if (creationPath != collectionPath)

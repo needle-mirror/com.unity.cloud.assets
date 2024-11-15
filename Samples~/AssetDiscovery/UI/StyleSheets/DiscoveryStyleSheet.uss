@@ -51,7 +51,7 @@
 .details-container {
     flex-direction: row;
     flex-wrap: nowrap;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
 }
 
@@ -59,7 +59,7 @@
     align-items: flex-start;
     flex-grow: 0;
     flex-shrink: 0;
-    margin: 4px 0;
+    margin: 2px 0;
     padding: 4px;
     color: rgb(159, 159, 159);
 }

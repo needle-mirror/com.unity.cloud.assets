@@ -54,8 +54,8 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc cref="IAsset.ArchivedLabels"/>
         public ListSearchCriteria<string> ArchivedLabels { get; } = new(nameof(IAsset.ArchivedLabels), "archivedLabels");
 
-        /// <inheritdoc cref="Asset.Metadata"/>
-        public MetadataSearchCriteria Metadata { get; } = new(nameof(Asset.Metadata), "metadata");
+        /// <inheritdoc cref="IAsset.Metadata"/>
+        public MetadataSearchCriteria Metadata { get; } = new(nameof(IAsset.Metadata), "metadata");
 
         /// <inheritdoc cref="IAsset.PreviewFile"/>
         public StringSearchCriteria PreviewFile { get; } = new("PreviewFile", "previewFile");

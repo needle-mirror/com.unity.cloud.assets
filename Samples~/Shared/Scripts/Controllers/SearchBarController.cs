@@ -78,7 +78,7 @@ namespace Unity.Cloud.Assets.Samples
         readonly Dictionary<SearchFilter, KeyValuePair<string, int>[]> m_SearchValuesByCategory = new();
         readonly List<SearchValue> m_SearchValues = new();
 
-        SearchFilter m_CurrentSearchFilter;
+        SearchFilter m_CurrentSearchFilter = SearchFilter.Name;
 
         CancellationTokenSource m_SearchCancellationToken;
         CancellationTokenSource m_AggregationCancellationToken;
@@ -114,7 +114,7 @@ namespace Unity.Cloud.Assets.Samples
             m_SearchBarChipsContainer = m_Root.Q<VisualElement>("SearchBarChipsContainer");
 
             var filter = m_Root.Q<EnumField>();
-            m_CurrentSearchFilter = (SearchFilter) filter.value;
+            filter.Init(m_CurrentSearchFilter);
             filter.RegisterValueChangedCallback(evt =>
             {
                 m_CurrentSearchFilter = (SearchFilter) evt.newValue;

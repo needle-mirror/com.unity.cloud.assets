@@ -3,17 +3,17 @@
     <Style src="../StyleSheets/AssetCreationPanelStyleSheet.uss?fileID=7433441132597879392&amp;guid=2a9d0e7b4e75049048525c21e638987e&amp;type=3#AssetCreationPanelStyleSheet" />
     <Style src="../../../Shared/UI/StyleSheets/SampleSheet.uss?fileID=7433441132597879392&amp;guid=7376c3d25e9f04a989663c45cc94f5c7&amp;type=3#SampleSheet" />
     <ui:VisualElement style="flex-direction: row; align-items: flex-start; flex-wrap: nowrap; padding-top: 2px; padding-bottom: 2px;">
-        <ui:VisualElement style="flex-grow: 1; margin-right: 4px;">
+        <ui:VisualElement style="flex-grow: 1; margin-right: 4px; margin-top: 7px; margin-bottom: 7px;">
             <ui:Label text="label" display-tooltip-when-elided="true" name="MetadataKey" style="align-items: flex-start; margin-right: 32px; overflow: hidden; align-self: flex-start;" />
             <ui:Instance template="ContextMenu" class="ContextMenuContainer" style="flex-direction: row-reverse;" />
         </ui:VisualElement>
-        <ui:VisualElement name="MetadataValue" style="align-items: flex-start; justify-content: flex-start; flex-direction: column; flex-grow: 1; min-width: 65%;">
-            <ui:Label tabindex="-1" text="Label" parse-escape-sequences="true" display-tooltip-when-elided="true" name="NoEdit" class="MetadataValue" style="-unity-font-style: normal; white-space: normal; align-self: stretch;" />
-            <ui:TextField picking-mode="Ignore" value="filler text" name="Text" class="MetadataValue" style="margin-left: 0;" />
-            <ui:DoubleField value="42.2" name="Number" class="MetadataValue" style="margin-left: 0;" />
-            <ui:Toggle name="Boolean" class="MetadataValue" style="margin-left: 0; flex-grow: 0;" />
-            <ui:DropdownField index="-1" choices="System.Collections.Generic.List`1[System.String]" name="SingleSelection" class="MetadataValue" style="margin-left: 0;" />
-            <ui:VisualElement name="Url" class="MetadataValue" style="width: 100%;">
+        <ui:VisualElement name="MetadataValue" style="align-items: flex-start; justify-content: flex-start; flex-direction: column; flex-grow: 1; width: 75%;">
+            <ui:Label tabindex="-1" text="Label" parse-escape-sequences="true" display-tooltip-when-elided="true" name="NoEdit" class="MetadataValue" style="-unity-font-style: normal; white-space: normal; align-self: stretch; margin-top: 9px; margin-bottom: 9px; padding-top: 4px; padding-right: 2px; padding-bottom: 4px; padding-left: 2px;" />
+            <ui:TextField picking-mode="Ignore" value="filler text" name="Text" class="MetadataValue" style="margin-left: 0; align-self: stretch;" />
+            <ui:DoubleField value="42.2" name="Number" class="MetadataValue" style="margin-left: 0; align-self: stretch;" />
+            <ui:Toggle name="Boolean" class="MetadataValue" style="margin-left: 0; flex-grow: 0; margin-top: 9px; margin-bottom: 9px;" />
+            <ui:DropdownField index="-1" choices="System.Collections.Generic.List`1[System.String]" name="SingleSelection" class="MetadataValue" style="margin-left: 0; align-self: stretch;" />
+            <ui:VisualElement name="Url" class="MetadataValue" style="align-self: stretch;">
                 <ui:TextField picking-mode="Ignore" label="Label" name="UrlLabel" style="margin-left: 0;" />
                 <ui:TextField picking-mode="Ignore" label="Uri" value="https://" name="Uri" style="margin-left: 0;" />
             </ui:VisualElement>

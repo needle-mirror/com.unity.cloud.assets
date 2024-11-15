@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Unity.Cloud.Common;
 
 namespace Unity.Cloud.Assets
@@ -38,27 +37,6 @@ namespace Unity.Cloud.Assets
             var dataset = new DatasetEntity(assetDataSource, datasetDescriptor);
             dataset.MapFrom(assetDataSource, datasetData, includeFields);
             return dataset;
-        }
-
-        internal static DatasetData From(this DatasetEntity datasetEntity)
-        {
-            return new DatasetData
-            {
-                DatasetId = datasetEntity.Descriptor.DatasetId,
-                Name = datasetEntity.Name,
-                Description = datasetEntity.Description,
-                CreatedBy = datasetEntity.AuthoringInfo?.CreatedBy.ToString(),
-                Created = datasetEntity.AuthoringInfo?.Created,
-                UpdatedBy = datasetEntity.AuthoringInfo?.UpdatedBy.ToString(),
-                Updated = datasetEntity.AuthoringInfo?.Updated,
-                FileOrder = datasetEntity.FileOrder,
-                Metadata = datasetEntity.MetadataEntity?.From() ?? new Dictionary<string, object>(),
-                Tags = datasetEntity.Tags?.ToList(),
-                SystemTags = datasetEntity.SystemTags,
-                Status = datasetEntity.Status,
-                IsVisible = datasetEntity.IsVisible,
-                WorkflowName = datasetEntity.WorkflowName,
-            };
         }
 
         internal static IDatasetUpdateData From(this IDatasetUpdate dataset)

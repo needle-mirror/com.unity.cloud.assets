@@ -7,7 +7,7 @@ namespace Unity.Cloud.Assets
 {
     static partial class EntityMapper
     {
-        internal static void MapFrom(this Asset asset, IAssetDataSource assetDataSource, AssetDescriptor assetDescriptor, IAssetData assetData, FieldsFilter includeFields)
+        internal static void MapFrom(this AssetEntity asset, IAssetDataSource assetDataSource, AssetDescriptor assetDescriptor, IAssetData assetData, FieldsFilter includeFields)
         {
             includeFields ??= new FieldsFilter();
 
@@ -113,7 +113,7 @@ namespace Unity.Cloud.Assets
             };
         }
 
-        internal static Asset From(this IAssetData data, IAssetDataSource assetDataSource, OrganizationId organizationId, IEnumerable<ProjectId> availableProjects, FieldsFilter includeFields)
+        internal static AssetEntity From(this IAssetData data, IAssetDataSource assetDataSource, OrganizationId organizationId, IEnumerable<ProjectId> availableProjects, FieldsFilter includeFields)
         {
             var validProjects = new HashSet<ProjectId>(availableProjects);
             validProjects.IntersectWith(data.LinkedProjectIds ?? Array.Empty<ProjectId>());
@@ -127,15 +127,15 @@ namespace Unity.Cloud.Assets
             return data.From(assetDataSource, new ProjectDescriptor(organizationId, projectId), includeFields);
         }
 
-        internal static Asset From(this IAssetData data, IAssetDataSource assetDataSource, ProjectDescriptor projectDescriptor, FieldsFilter includeFields)
+        internal static AssetEntity From(this IAssetData data, IAssetDataSource assetDataSource, ProjectDescriptor projectDescriptor, FieldsFilter includeFields)
         {
             var descriptor = new AssetDescriptor(projectDescriptor, data.Id, data.Version);
             return data.From(assetDataSource, descriptor, includeFields);
         }
 
-        internal static Asset From(this IAssetData data, IAssetDataSource assetDataSource, AssetDescriptor assetDescriptor, FieldsFilter includeFields)
+        internal static AssetEntity From(this IAssetData data, IAssetDataSource assetDataSource, AssetDescriptor assetDescriptor, FieldsFilter includeFields)
         {
-            var asset = new Asset(assetDataSource, assetDescriptor);
+            var asset = new AssetEntity(assetDataSource, assetDescriptor);
             asset.MapFrom(assetDataSource, assetDescriptor, data, includeFields);
             return asset;
         }
@@ -154,7 +154,7 @@ namespace Unity.Cloud.Assets
             return new AssetDescriptor(projectDescriptor, ids.Id, ids.Version);
         }
 
-        internal static AssetData From(this Asset asset)
+        internal static AssetData From(this AssetEntity asset)
         {
             return new AssetData(asset.Descriptor.AssetId, asset.Descriptor.AssetVersion)
             {

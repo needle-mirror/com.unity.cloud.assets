@@ -42,12 +42,3 @@ If the browser fails to redirect you to the Editor, and selecting **Launch Appli
 **I can't see my assets**
 
 If you can't see any assets, verify that your Organization have the asset management feature flag enabled. To enable the feature flag, [request access to the beta](https://docs.unity3d.com/docs-asset-manager/manual/request-access.html).
-
-### Asset Database Uploader sample
-
-**I can't create and upload my assets**
-
-If you can't create and upload any assets:
-
-* Verify that your Organization have the asset management feature flag enabled. To enable the feature flag, [request access to the beta](https://docs.unity3d.com/docs-asset-manager/manual/request-access.html).
-* Based on your user role, verify that you have permission to create and upload assets. To get permission, contact your Unity Organization or Project administrator.

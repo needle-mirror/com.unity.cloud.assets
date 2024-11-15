@@ -5,6 +5,14 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [1.5.1] - 2024-11-15
+
+### Changed
+- Updated deprecated documentation.
+
+### Fixed
+- Fixed IAsset.Changelog not being populated.
+
 ## [1.5.0] - 2024-10-18
 
 ### Added
@@ -41,6 +49,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Deprecated
 - Deprecated `IAsset.PreviewFile`; use `IAsset.PreviewFileDescriptor` instead.
+- Deprecated `IAsset.IsFrozen`; use `IAsset.State` instead.
+- Deprecated `IAsset.FreezeAsync(string, CancellationToken)`; use `IAsset.FreezeAsync(IAssetFreeze, CancellationToken)` instead.
 
 ## [1.4.0-exp.3] - 2024-08-26
 
