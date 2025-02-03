@@ -7,13 +7,12 @@ namespace Unity.Cloud.Documentation.Assets
     using System.Threading;
     using System.Threading.Tasks;
     using Unity.Cloud.Assets;
+    using Unity.Cloud.Common;
     using Unity.Cloud.Identity;
     using UnityEngine;
 
     public class AssetManagementBehaviour
     {
-        const int k_DefaultCancellationTimeout = 5000;
-
         IOrganization[] m_AvailableOrganizations;
 
         CancellationTokenSource m_ProjectCancellationTokenSrc = new();
@@ -26,7 +25,10 @@ namespace Unity.Cloud.Documentation.Assets
         public IAssetProject CurrentProject { get; private set; }
         public bool IsProjectSelected => CurrentProject != null;
         public List<IAsset> AvailableAssets { get; } = new();
+        public Dictionary<AssetId, AssetProperties> AssetProperties { get; } = new();
         public IAsset CurrentAsset { get; set; }
+
+        readonly Dictionary<ProjectId, string> m_ProjectNames = new();
 
         public void Clear()
         {
@@ -57,6 +59,7 @@ namespace Unity.Cloud.Documentation.Assets
             CurrentProject = project;
             if (CurrentProject != null)
             {
+                Debug.Log($"Selected project: {GetProjectName(project.Descriptor.ProjectId)}");
                 _ = GetAssetsAsync();
             }
         }
@@ -107,6 +110,9 @@ namespace Unity.Cloud.Documentation.Assets
                 await foreach (var project in projects)
                 {
                     AvailableProjects.Add(project);
+
+                    var properties = await project.GetPropertiesAsync(token);
+                    m_ProjectNames[project.Descriptor.ProjectId] = properties.Name;
                 }
             }
             catch (OperationCanceledException oe)
@@ -123,7 +129,12 @@ namespace Unity.Cloud.Documentation.Assets
             }
         }
 
-        public async Task GetAssetsAsync(IAsset currentAsset = null)
+        public string GetProjectName(ProjectId projectId)
+        {
+            return m_ProjectNames.TryGetValue(projectId, out var name) ? name : projectId.ToString();
+        }
+
+        public async Task GetAssetsAsync(AssetDescriptor? selectedAsset = null)
         {
             m_AssetCancellationTokenSrc.Cancel();
             m_AssetCancellationTokenSrc.Dispose();
@@ -135,11 +146,19 @@ namespace Unity.Cloud.Documentation.Assets
                 var assets = CurrentProject.QueryAssets().ExecuteAsync(token);
 
                 AvailableAssets.Clear();
-                CurrentAsset = currentAsset;
+                AssetProperties.Clear();
+                CurrentAsset = null;
 
                 await foreach (var asset in assets)
                 {
                     AvailableAssets.Add(asset);
+                    if (asset.Descriptor == selectedAsset)
+                    {
+                        CurrentAsset = asset;
+                    }
+
+                    var properties = await asset.GetPropertiesAsync(token);
+                    AssetProperties[asset.Descriptor.AssetId] = properties;
                 }
             }
             catch (OperationCanceledException oe)

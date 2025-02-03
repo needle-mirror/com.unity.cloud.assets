@@ -107,7 +107,7 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
         {
             try
             {
-                await SelectedProject.CreateCollectionAsync(collectionCreation, CancellationToken.None);
+                await SelectedProject.CreateCollectionLiteAsync(collectionCreation, CancellationToken.None);
             }
             catch (Exception e)
             {

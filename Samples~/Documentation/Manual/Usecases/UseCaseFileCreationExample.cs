@@ -84,7 +84,7 @@ namespace Unity.Cloud.Documentation.Assets
                 return;
             }
 
-            DisplayDatasets(m_Behaviour.Datasets?.ToArray());
+            DisplayDatasets(m_Behaviour.Datasets.ToArray());
 
             GUILayout.EndVertical();
         }
@@ -108,7 +108,7 @@ namespace Unity.Cloud.Documentation.Assets
 
             foreach (var dataset in datasets)
             {
-                DisplayDataset(dataset);
+                DisplayDataset(dataset.Descriptor.DatasetId);
 
                 GUILayout.Space(10);
             }
@@ -116,26 +116,26 @@ namespace Unity.Cloud.Documentation.Assets
             GUILayout.EndScrollView();
         }
 
-        void DisplayDataset(IDataset dataset)
+        void DisplayDataset(DatasetId datasetId)
         {
             GUILayout.BeginHorizontal();
 
-            GUILayout.Label(dataset.Name + " (" + dataset.Status + ")");
+            GUILayout.Label(m_Behaviour.GetDatasetName(datasetId));
 
             GUILayout.Space(5);
 
-            TryUploadFolder(dataset);
-            TryUploadFile(dataset);
+            TryUploadFolder(datasetId);
+            TryUploadFile(datasetId);
 
-            var expanded = m_Expanded.GetValueOrDefault(dataset.Descriptor.DatasetId);
+            var expanded = m_Expanded.GetValueOrDefault(datasetId);
             if (GUILayout.Button(expanded ? "-" : "+", GUILayout.Width(20)))
             {
                 expanded = !expanded;
-                m_Expanded[dataset.Descriptor.DatasetId] = expanded;
+                m_Expanded[datasetId] = expanded;
 
                 if (!expanded)
                 {
-                    m_Behaviour.DatasetFiles.Remove(dataset.Descriptor.DatasetId);
+                    m_Behaviour.DatasetFiles.Remove(datasetId);
                 }
             }
 
@@ -147,18 +147,18 @@ namespace Unity.Cloud.Documentation.Assets
 
                 GUILayout.Space(25);
 
-                DisplayFiles(dataset);
+                DisplayFiles(datasetId);
 
                 GUILayout.EndHorizontal();
             }
 
-            if (m_SelectedFile != null)
+            if (!string.IsNullOrEmpty(m_SelectedFilePath))
             {
                 m_WindowRect = GUILayout.Window(0, m_WindowRect, DisplayWindow, "Select files to link");
             }
         }
 
-        void TryUploadFolder(IDataset dataset)
+        void TryUploadFolder(DatasetId datasetId)
         {
 #if UNITY_EDITOR
             if (GUILayout.Button("Upload folder", GUILayout.Width(90)))
@@ -166,13 +166,13 @@ namespace Unity.Cloud.Documentation.Assets
                 var folderPath = UnityEditor.EditorUtility.OpenFolderPanel("Folder to upload", "Assets", string.Empty);
                 if (!string.IsNullOrEmpty(folderPath))
                 {
-                    _ = m_Behaviour.UploadFolderAsync(dataset, folderPath, m_OverrideActions[m_OverrideFileActionIndex]);
+                    _ = m_Behaviour.UploadFolderAsync(datasetId, folderPath, m_OverrideActions[m_OverrideFileActionIndex]);
                 }
             }
 #endif
         }
 
-        void TryUploadFile(IDataset dataset)
+        void TryUploadFile(DatasetId datasetId)
         {
 #if UNITY_EDITOR
             if (GUILayout.Button("Upload file", GUILayout.Width(90)))
@@ -183,23 +183,23 @@ namespace Unity.Cloud.Documentation.Assets
                 {
                     _ = m_OverrideFileActionIndex switch
                     {
-                        1 => m_Behaviour.ReplaceFile(dataset, filePath, folderPath),
-                        2 => m_Behaviour.ReuploadFile(dataset, filePath, folderPath),
-                        _ => m_Behaviour.UploadFile(dataset, filePath, folderPath)
+                        1 => m_Behaviour.ReplaceFile(datasetId, filePath, folderPath),
+                        2 => m_Behaviour.ReuploadFile(datasetId, filePath, folderPath),
+                        _ => m_Behaviour.UploadFile(datasetId, filePath, folderPath)
                     };
                 }
             }
 #endif
         }
 
-        void DisplayFiles(IDataset dataset)
+        void DisplayFiles(DatasetId datasetId)
         {
-            if (!m_Behaviour.DatasetFiles.ContainsKey(dataset.Descriptor.DatasetId))
+            if (!m_Behaviour.DatasetFiles.ContainsKey(datasetId))
             {
-                _ = m_Behaviour.GetFilesAsync(dataset.Descriptor.DatasetId);
+                _ = m_Behaviour.GetFilesAsync(datasetId);
             }
 
-            var files = m_Behaviour.DatasetFiles.GetValueOrDefault(dataset.Descriptor.DatasetId);
+            var files = m_Behaviour.DatasetFiles.GetValueOrDefault(datasetId);
 
             if (files == null)
             {
@@ -207,7 +207,7 @@ namespace Unity.Cloud.Documentation.Assets
                 return;
             }
 
-            var enumerable = files.ToArray();
+            var enumerable = files.ToList();
             if (!enumerable.Any())
             {
                 GUILayout.Label("No files.");
@@ -216,45 +216,55 @@ namespace Unity.Cloud.Documentation.Assets
 
             GUILayout.BeginVertical();
 
+            enumerable.Sort((a, b) => string.Compare(a.Key, b.Key, StringComparison.Ordinal));
             foreach (var file in enumerable)
             {
-                DisplayFile(dataset, file);
+                DisplayFile(datasetId, file.Key, file.Value);
             }
 
             GUILayout.EndVertical();
         }
 
-        void DisplayFile(IDataset dataset, IFile file)
+        void DisplayFile(DatasetId datasetId, string filePath, FileProperties fileProperties)
         {
             GUILayout.BeginHorizontal();
 
-            var size = file.SizeBytes < 1000 ? "<1" : MathF.Round(file.SizeBytes / 1000f).ToString("F0");
-            GUILayout.Label($"{file.Descriptor.Path} ({size} KB)");
+            var size = fileProperties.SizeBytes < 1000 ? "<1" : MathF.Round(fileProperties.SizeBytes / 1000f).ToString("F0");
+            GUILayout.Label($"{filePath} ({size} KB)");
 
             if (GUILayout.Button("Link to", k_DefaultButtonSize))
             {
                 m_WindowRect = new Rect(Screen.width * 0.4f, Screen.height * 0.4f, Screen.width * 0.2f, Screen.height * 0.2f);
-                m_SelectedFile = file;
-                m_AvailableDatasets = m_Behaviour.Datasets?.Where(f => !m_SelectedFile.LinkedDatasets.Contains(dataset.Descriptor)).ToList();
+                m_SelectedDatasetId = datasetId;
+                m_SelectedFilePath = filePath;
+                m_SelectedFileProperties = fileProperties;
+
+                var alreadyLinkedDatasetIds = m_SelectedFileProperties.LinkedDatasets.Select(d => d.DatasetId).ToHashSet();
+                m_AvailableDatasets = m_Behaviour.Datasets
+                    .Select(d => d.Descriptor.DatasetId)
+                    .Where(id => !alreadyLinkedDatasetIds.Contains(id))
+                    .ToList();
             }
 
             if (GUILayout.Button("Unlink", k_DefaultButtonSize))
             {
-                _ = m_Behaviour.UnlinkFile(dataset, file);
+                _ = m_Behaviour.UnlinkFile(datasetId, filePath);
             }
 
             GUILayout.EndHorizontal();
         }
 
         Rect m_WindowRect;
-        IFile m_SelectedFile;
-        List<IDataset> m_AvailableDatasets;
+        DatasetId m_SelectedDatasetId;
+        string m_SelectedFilePath;
+        FileProperties m_SelectedFileProperties;
+        List<DatasetId> m_AvailableDatasets;
 
         void DisplayWindow(int windowId)
         {
             GUILayout.BeginVertical();
 
-            GUILayout.Label($"Link {m_SelectedFile.Descriptor.Path} to:");
+            GUILayout.Label($"Link {m_SelectedFilePath} to:");
 
             if (m_AvailableDatasets.Count == 0)
             {
@@ -266,22 +276,22 @@ namespace Unity.Cloud.Documentation.Assets
                 {
                     GUILayout.BeginHorizontal();
 
-                    GUILayout.Label(m_AvailableDatasets[i].Name);
+                    GUILayout.Label(m_Behaviour.GetDatasetName(m_AvailableDatasets[i]));
 
                     if (GUILayout.Button("Link", k_DefaultButtonSize))
                     {
-                        _ = m_Behaviour.LinkFile(m_AvailableDatasets[i], m_SelectedFile);
+                        _ = m_Behaviour.LinkFile(m_AvailableDatasets[i], m_SelectedDatasetId, m_SelectedFilePath);
                         m_AvailableDatasets.RemoveAt(i);
 
                         // Force a refresh of the dataset files, including the already linked ones of the selected one
-                        foreach (var linkedDatasetId in m_SelectedFile.LinkedDatasets.Select(d => d.DatasetId))
+                        foreach (var linkedDataset in m_SelectedFileProperties.LinkedDatasets)
                         {
-                            m_Behaviour.DatasetFiles.Remove(linkedDatasetId);
-                            m_Expanded.Remove(linkedDatasetId);
+                            m_Behaviour.DatasetFiles.Remove(linkedDataset.DatasetId);
+                            m_Expanded.Remove(linkedDataset.DatasetId);
                         }
 
-                        m_Behaviour.DatasetFiles.Remove(m_AvailableDatasets[i].Descriptor.DatasetId);
-                        m_Expanded.Remove(m_AvailableDatasets[i].Descriptor.DatasetId);
+                        m_Behaviour.DatasetFiles.Remove(m_AvailableDatasets[i]);
+                        m_Expanded.Remove(m_AvailableDatasets[i]);
 
                         GUILayout.EndHorizontal();
                         break;
@@ -295,7 +305,8 @@ namespace Unity.Cloud.Documentation.Assets
 
             if (GUILayout.Button("Close", k_DefaultButtonSize))
             {
-                m_SelectedFile = null;
+                m_SelectedFilePath = null;
+                m_SelectedFileProperties = default;
                 m_AvailableDatasets = null;
             }
 
@@ -319,49 +330,54 @@ namespace Unity.Cloud.Documentation.Assets
 
         #region Example_Behaviour_RefreshDatasets
 
-        public List<IDataset> Datasets { get; private set; }
+        public List<IDataset> Datasets { get; } = new();
+        Dictionary<DatasetId, string> DatasetNames { get; } = new();
 
         public async Task GetDatasets()
         {
-            Datasets = null;
+            Datasets.Clear();
+            DatasetNames.Clear();
 
             if (CurrentAsset == null) return;
 
-            var datasets = new List<IDataset>();
             var asyncList = CurrentAsset.ListDatasetsAsync(Range.All, CancellationToken.None);
             await foreach (var dataset in asyncList)
             {
-                datasets.Add(dataset);
-            }
+                Datasets.Add(dataset);
 
-            Datasets = datasets;
+                var properties = await dataset.GetPropertiesAsync(CancellationToken.None);
+
+                DatasetNames[dataset.Descriptor.DatasetId] = properties.Name;
+            }
+        }
+
+        public string GetDatasetName(DatasetId datasetId)
+        {
+            return DatasetNames.TryGetValue(datasetId, out var datasetName) ? datasetName : datasetId.ToString();
         }
 
         #endregion
 
         #region Example_Behaviour_RefreshFiles
 
-        public Dictionary<DatasetId, IEnumerable<IFile>> DatasetFiles { get; } = new();
+        public Dictionary<DatasetId, Dictionary<string, FileProperties>> DatasetFiles { get; } = new();
 
         public async Task GetFilesAsync(DatasetId datasetId)
         {
             DatasetFiles.Remove(datasetId);
 
-            var dataset = Datasets?.FirstOrDefault(d => d.Descriptor.DatasetId == datasetId);
+            var dataset = await CurrentAsset.GetDatasetAsync(datasetId, CancellationToken.None);
             if (dataset == null) return;
 
-            DatasetFiles[datasetId] = null;
+            var fileProperties = new Dictionary<string, FileProperties>();
+            DatasetFiles[datasetId] = fileProperties;
 
-            var files = new List<IFile>();
             var fileList = dataset.ListFilesAsync(Range.All, CancellationToken.None);
             await foreach (var file in fileList)
             {
-                files.Add(file);
+                var properties = await file.GetPropertiesAsync(CancellationToken.None);
+                fileProperties[file.Descriptor.Path] = properties;
             }
-
-            files.Sort((a, b) => string.Compare(a.Descriptor.Path, b.Descriptor.Path, StringComparison.Ordinal));
-
-            DatasetFiles[datasetId] = files;
         }
 
         #endregion
@@ -390,7 +406,7 @@ namespace Unity.Cloud.Documentation.Assets
             return string.IsNullOrEmpty(folderPath) ? filePath : Path.GetRelativePath(folderPath, filePath);
         }
 
-        public async Task UploadFile(IDataset dataset, string filePath, string folderPath = "", bool refreshFiles = true)
+        public async Task UploadFile(DatasetId datasetId, string filePath, string folderPath = "", bool refreshFiles = true)
         {
             var fileCreation = new FileCreation(GetRelativePath(folderPath, filePath))
             {
@@ -402,15 +418,15 @@ namespace Unity.Cloud.Documentation.Assets
                 var progress = new LogProgress(filePath);
 
                 var fileStream = File.OpenRead(filePath);
-                var file = await dataset.UploadFileAsync(fileCreation, fileStream, progress, default);
-                await dataset.RefreshAsync(default);
+                var dataset = await CurrentAsset.GetDatasetAsync(datasetId, CancellationToken.None);
+                var fileDescriptor = await dataset.UploadFileLiteAsync(fileCreation, fileStream, progress, CancellationToken.None);
 
                 if (refreshFiles)
                 {
-                    _ = GetFilesAsync(dataset.Descriptor.DatasetId);
+                    _ = GetFilesAsync(datasetId);
                 }
 
-                Debug.Log($"File upload: {file.Descriptor.Path} added and uploaded.");
+                Debug.Log($"File upload: {fileDescriptor.Path} added and uploaded.");
             }
             catch (Exception e)
             {
@@ -418,86 +434,88 @@ namespace Unity.Cloud.Documentation.Assets
             }
         }
 
-        public async Task ReplaceFile(IDataset dataset, string filePath, string folderPath = "", bool refreshFiles = true)
+        public async Task ReplaceFile(DatasetId datasetId, string filePath, string folderPath = "", bool refreshFiles = true)
         {
             var path = GetRelativePath(folderPath, filePath);
 
-            if (DatasetFiles.TryGetValue(dataset.Descriptor.DatasetId, out var files))
+            try
             {
-                var file = files.FirstOrDefault(f => f.Descriptor.Path == path);
-                if (file != null)
-                {
-                    try
-                    {
-                        await dataset.RemoveFileAsync(file.Descriptor.Path, CancellationToken.None);
-                    }
-                    catch (Exception e)
-                    {
-                        Debug.LogError($"Failed to remove file for replace: {file.Descriptor.Path}. {e}");
-                        return;
-                    }
-                }
+                var dataset = await CurrentAsset.GetDatasetAsync(datasetId, CancellationToken.None);
+                await dataset.RemoveFileAsync(path, CancellationToken.None);
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"Failed to remove file for replace: {path}. {e}");
+                return;
             }
 
-            await UploadFile(dataset, filePath, folderPath, refreshFiles);
+            await UploadFile(datasetId, filePath, folderPath, refreshFiles);
         }
 
-        public async Task ReuploadFile(IDataset dataset, string filePath, string folderPath = "", bool refreshFiles = true)
+        public async Task ReuploadFile(DatasetId datasetId, string filePath, string folderPath = "", bool refreshFiles = true)
         {
             var path = GetRelativePath(folderPath, filePath);
 
-            if (DatasetFiles.TryGetValue(dataset.Descriptor.DatasetId, out var files))
+            IFile file = null;
+
+            try
             {
-                var file = files.FirstOrDefault(f => f.Descriptor.Path == path);
-                if (file != null)
-                {
-                    try
-                    {
-                        var logProgress = new LogProgress(path);
-
-                        var fileStream = File.OpenRead(filePath);
-                        await file.UploadAsync(fileStream, logProgress, default);
-                        await dataset.RefreshAsync(default);
-
-                        if (refreshFiles)
-                        {
-                            _ = GetFilesAsync(dataset.Descriptor.DatasetId);
-                        }
-
-                        Debug.Log($"Re-uplaoded file: {file.Descriptor.Path}.");
-                    }
-                    catch (Exception e)
-                    {
-                        Debug.LogError($"Failed to re-upload file: {file.Descriptor.Path}. {e}");
-                    }
-
-                    return;
-                }
+                var datasetDescriptor = new DatasetDescriptor(CurrentAsset.Descriptor, datasetId);
+                var fileDescriptor = new FileDescriptor(datasetDescriptor, path);
+                file = PlatformServices.AssetRepository.GetFileAsync(fileDescriptor, CancellationToken.None).Result;
+            }
+            catch (NotFoundException)
+            {
+                Debug.LogError($"File not found: {path}.");
             }
 
-            await UploadFile(dataset, filePath, folderPath, refreshFiles);
+            if (file == null)
+            {
+                await UploadFile(datasetId, filePath, folderPath, refreshFiles);
+                return;
+            }
+
+            try
+            {
+                var logProgress = new LogProgress(path);
+
+                var fileStream = File.OpenRead(filePath);
+                await file.UploadAsync(fileStream, logProgress, CancellationToken.None);
+
+                if (refreshFiles)
+                {
+                    _ = GetFilesAsync(datasetId);
+                }
+
+                Debug.Log($"Re-uplaoded file: {path}.");
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"Failed to re-upload file: {path}. {e}");
+            }
         }
 
         #endregion
 
         #region Example_Behaviour_AddFileReference
 
-        public async Task LinkFile(IDataset dataset, IFile file)
+        public async Task LinkFile(DatasetId datasetId, DatasetId sourceDatasetId, string filePath)
         {
             try
             {
-                await dataset.AddExistingFileAsync(file.Descriptor.Path, file.Descriptor.DatasetId, CancellationToken.None);
-                Debug.Log($"File: {file.Descriptor.Path} linked to dataset {dataset.Descriptor.DatasetId}.");
+                var dataset = await CurrentAsset.GetDatasetAsync(datasetId, CancellationToken.None);
+                await dataset.AddExistingFileAsync(filePath, sourceDatasetId, CancellationToken.None);
+                Debug.Log($"File: {filePath} linked to dataset {datasetId}.");
 
                 // If the dataset files are already loaded, refresh them
-                if (DatasetFiles.ContainsKey(dataset.Descriptor.DatasetId))
+                if (DatasetFiles.ContainsKey(datasetId))
                 {
-                    _ = GetFilesAsync(dataset.Descriptor.DatasetId);
+                    _ = GetFilesAsync(datasetId);
                 }
             }
             catch (Exception e)
             {
-                Debug.LogError($"Failed to link file: {file.Descriptor.Path}. {e}");
+                Debug.LogError($"Failed to link file: {filePath}. {e}");
             }
         }
 
@@ -505,22 +523,23 @@ namespace Unity.Cloud.Documentation.Assets
 
         #region Example_Behaviour_RemoveFileReference
 
-        public async Task UnlinkFile(IDataset dataset, IFile file)
+        public async Task UnlinkFile(DatasetId datasetId, string filePath)
         {
             try
             {
-                await dataset.RemoveFileAsync(file.Descriptor.Path, CancellationToken.None);
-                Debug.Log($"File: {file.Descriptor.Path} unlinked from dataset {dataset.Descriptor.DatasetId}.");
+                var dataset = await CurrentAsset.GetDatasetAsync(datasetId, CancellationToken.None);
+                await dataset.RemoveFileAsync(filePath, CancellationToken.None);
+                Debug.Log($"File: {filePath} unlinked from dataset {datasetId}.");
 
                 // If the dataset files are already loaded, refresh them
-                if (DatasetFiles.ContainsKey(dataset.Descriptor.DatasetId))
+                if (DatasetFiles.ContainsKey(datasetId))
                 {
-                    _ = GetFilesAsync(dataset.Descriptor.DatasetId);
+                    _ = GetFilesAsync(datasetId);
                 }
             }
             catch (Exception e)
             {
-                Debug.LogError($"Failed to unlink file: {file.Descriptor.Path}. {e}");
+                Debug.LogError($"Failed to unlink file: {filePath}. {e}");
             }
         }
 
@@ -528,7 +547,7 @@ namespace Unity.Cloud.Documentation.Assets
 
         #region Example_Behaviour_UploadFolder
 
-        public async Task UploadFolderAsync(IDataset dataset, string folderPath, string uploadType)
+        public async Task UploadFolderAsync(DatasetId datasetId, string folderPath, string uploadType)
         {
             var parentDirectoryPath = Directory.GetParent(folderPath)?.FullName;
             var files = Directory.GetFiles(folderPath, "*.*", SearchOption.AllDirectories);
@@ -539,13 +558,13 @@ namespace Unity.Cloud.Documentation.Assets
                 switch (uploadType)
                 {
                     case "Replace":
-                        tasks.Add(ReplaceFile(dataset, file, parentDirectoryPath, false));
+                        tasks.Add(ReplaceFile(datasetId, file, parentDirectoryPath, false));
                         break;
                     case "Reupload":
-                        tasks.Add(ReuploadFile(dataset, file, parentDirectoryPath, false));
+                        tasks.Add(ReuploadFile(datasetId, file, parentDirectoryPath, false));
                         break;
                     default:
-                        tasks.Add(UploadFile(dataset, file, parentDirectoryPath, false));
+                        tasks.Add(UploadFile(datasetId, file, parentDirectoryPath, false));
                         break;
                 }
             }
@@ -554,7 +573,7 @@ namespace Unity.Cloud.Documentation.Assets
             {
                 await Task.WhenAll(tasks);
 
-                _ = GetFilesAsync(dataset.Descriptor.DatasetId);
+                _ = GetFilesAsync(datasetId);
 
                 Debug.Log($"Folder: {folderPath} uploaded.");
             }

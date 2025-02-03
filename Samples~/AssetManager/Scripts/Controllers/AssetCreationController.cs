@@ -128,7 +128,8 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             var sourceDataset = await createdAsset.GetSourceDatasetAsync(CancellationToken.None);
             if (sourceDataset == null)
             {
-                Debug.LogError($"No datasets found for created asset {createdAsset.Name}.");
+                Debug.LogError($"Cannot upload file; default dataset not found.");
+                return;
             }
 
             await m_FileController.UploadFiles(sourceDataset, m_ProgressBar);

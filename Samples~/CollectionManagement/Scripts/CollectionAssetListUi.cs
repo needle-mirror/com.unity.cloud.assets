@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using UnityEngine.UIElements;
 
 namespace Unity.Cloud.Assets.Samples.CollectionManagement
@@ -18,7 +20,7 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
 
             protected override void OnBindItem(VisualElement element, int i)
             {
-                element.Q<Label>().text = m_List[i].Name;
+                _ = PopulateItemAsync(element, m_List[i]);
 
                 RegisterSelectionCallback(element, i);
             }
@@ -26,6 +28,13 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
             protected override void OnUnbindItem(VisualElement element, int i)
             {
                 UnregisterSelectionCallback(element, i);
+            }
+
+            static async Task PopulateItemAsync(VisualElement element, IAsset asset)
+            {
+                var properties = await asset.GetPropertiesAsync(CancellationToken.None);
+
+                element.Q<Label>().text = properties.Name;
             }
         }
 

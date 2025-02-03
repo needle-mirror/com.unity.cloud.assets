@@ -32,5 +32,8 @@ namespace Unity.Cloud.Assets
 
         /// <inheritdoc />
         public string WorkflowName { get; set; }
+
+        /// <inheritdoc />
+        public IEnumerable<FileData> Files { get; set; }
     }
 }

@@ -20,31 +20,31 @@ namespace Unity.Cloud.Assets.Samples
             Tags,
             SystemTags,
             PreviewFile,
-            FileName
+            FileName,
+            FileSize
         }
 
         struct SearchValue
         {
             public string Name { get; }
-            public SearchFilter Type { get; }
             public int Count { get; }
 
-            public SearchValue(string name, SearchFilter type, int count)
+            public SearchValue(string name, int count)
             {
                 Name = name;
-                Type = type;
                 Count = count;
             }
         }
 
-        static readonly Dictionary<SearchFilter, GroupableField> k_SearchFilterToGroupableField = new()
+        static readonly Dictionary<SearchFilter, Groupable[]> k_SearchFilterToGroupableField = new()
         {
-            {SearchFilter.Name, GroupableField.Name},
-            {SearchFilter.Type, GroupableField.Type},
-            {SearchFilter.Status, GroupableField.Status},
-            {SearchFilter.Tags, GroupableField.Tags},
-            {SearchFilter.SystemTags, GroupableField.SystemTags},
-            {SearchFilter.PreviewFile, GroupableField.PreviewFile},
+            {SearchFilter.Name, new Groupable[] {GroupableField.Name}},
+            {SearchFilter.Type, new Groupable[] {GroupableField.Type}},
+            {SearchFilter.Status, new Groupable[] {GroupableField.Status}},
+            {SearchFilter.Tags, new Groupable[] {GroupableField.Tags, GroupableField.DatasetTags, GroupableField.FileTags}},
+            {SearchFilter.SystemTags, new Groupable[] {GroupableField.SystemTags, GroupableField.DatasetSystemTags, GroupableField.FileSystemTags}},
+            {SearchFilter.PreviewFile, new Groupable[] {GroupableField.PreviewFile}},
+            {SearchFilter.FileName, new Groupable[] {GroupableField.FilePath}},
         };
 
         static readonly HashSet<SearchFilter> k_UniqueSearchFilters = new()
@@ -53,7 +53,8 @@ namespace Unity.Cloud.Assets.Samples
             SearchFilter.Type,
             SearchFilter.Status,
             SearchFilter.PreviewFile,
-            SearchFilter.FileName
+            SearchFilter.FileName,
+            SearchFilter.FileSize
         };
 
         const string k_SearchBarPlaceholder = "Search by ";
@@ -243,7 +244,16 @@ namespace Unity.Cloud.Assets.Samples
         {
             m_OrganizationId = null;
             m_CurrentProject = project;
-            m_SearchBarProjectLabel.text = project != null ? $"In: {project.Name}" : "";
+            if (project == null)
+            {
+                m_SearchBarProjectLabel.text = "";
+            }
+            else
+            {
+                var propertiesAsync = project.GetPropertiesAsync(default);
+                propertiesAsync.Wait();
+                m_SearchBarProjectLabel.text = $"In: {propertiesAsync.Result.Name}";
+            }
 
             ClearSearchBar();
         }
@@ -284,28 +294,53 @@ namespace Unity.Cloud.Assets.Samples
 
         async Task GetValuesForFilter(SearchFilter searchFilter, CancellationToken cancellationToken)
         {
-            if (!k_SearchFilterToGroupableField.TryGetValue(searchFilter, out var criterion)) return;
+            if (!k_SearchFilterToGroupableField.TryGetValue(searchFilter, out var criteria)) return;
 
-            IReadOnlyDictionary<string, int> aggregation = default;
+            IAsyncEnumerable<KeyValuePair<GroupableFieldValue, int>> aggregation = null;
+            var searchValues = new List<KeyValuePair<string, int>>();
 
-            if (m_OrganizationId.HasValue)
+            foreach (var criterion in criteria)
             {
-                aggregation = await m_AssetRepository.GroupAndCountAssets(m_OrganizationId.Value)
-                    .LimitTo(102)
-                    .ExecuteAsync(criterion, cancellationToken);
+                if (criteria.Length > 1)
+                {
+                    var displayName = criterion.ToString();
+                    if (displayName.Contains('.'))
+                    {
+                        displayName = displayName.Replace('.', ' ');
+                    }
+                    else
+                    {
+                        displayName = "assets " + displayName;
+                    }
+                    searchValues.Add(new KeyValuePair<string, int>($"=== {displayName} ===", 0));
+                }
+
+                if (m_OrganizationId.HasValue)
+                {
+                    aggregation = m_AssetRepository.GroupAndCountAssets(m_OrganizationId.Value)
+                        .LimitTo(int.MaxValue)
+                        .ExecuteAsync(criterion, cancellationToken);
+                }
+                else if (m_CurrentProject != null)
+                {
+                    aggregation = m_CurrentProject.GroupAndCountAssets()
+                        .LimitTo(int.MaxValue)
+                        .ExecuteAsync(criterion, cancellationToken);
+                }
+
+                if (aggregation == null) return;
+
+                if (cancellationToken.IsCancellationRequested) return;
+
+                await foreach (var aggregationValue in aggregation)
+                {
+                    searchValues.Add(new KeyValuePair<string, int>(aggregationValue.Key.AsString(), aggregationValue.Value));
+                }
             }
-            else if (m_CurrentProject != null)
-            {
-                aggregation = await m_CurrentProject.GroupAndCountAssets()
-                    .LimitTo(102)
-                    .ExecuteAsync(criterion, cancellationToken);
-            }
 
-            if (cancellationToken.IsCancellationRequested) return;
-
-            if (aggregation is {Count: > 0})
+            if (searchValues.Count > 0)
             {
-                m_SearchValuesByCategory[searchFilter] = aggregation.ToArray();
+                m_SearchValuesByCategory[searchFilter] = searchValues.ToArray();
             }
         }
 
@@ -388,6 +423,8 @@ namespace Unity.Cloud.Assets.Samples
             assetSearchFilter.Any().Files.Tags.WithValue(tags);
             assetSearchFilter.Any().Files.SystemTags.WithValue(systemTags);
 
+            var minimumMatch = 0;
+
             for (var i = 0; i < queries.Length; ++i)
             {
                 var (type, queryValue) = ParseQuery(queries[i]);
@@ -400,14 +437,15 @@ namespace Unity.Cloud.Assets.Samples
                 }
                 else
                 {
-                    PopulateSearchFilter(assetSearchFilter, type.Value, queryValue, tags, systemTags);
+                    PopulateSearchFilter(assetSearchFilter, type.Value, queryValue, tags, systemTags, ref minimumMatch);
                 }
             }
 
+            assetSearchFilter.Any().WhereMinimumMatchEquals(minimumMatch);
             return assetSearchFilter;
         }
 
-        static void PopulateSearchFilter(AssetSearchFilter assetSearchFilter, SearchFilter type, string queryValue, ICollection<string> tags, ICollection<string> systemTags)
+        static void PopulateSearchFilter(AssetSearchFilter assetSearchFilter, SearchFilter type, string queryValue, ICollection<string> tags, ICollection<string> systemTags, ref int mimimumMatch)
         {
             switch (type)
             {
@@ -422,9 +460,11 @@ namespace Unity.Cloud.Assets.Samples
                     break;
                 case SearchFilter.Tags:
                     tags.Add(queryValue);
+                    ++mimimumMatch;
                     break;
                 case SearchFilter.SystemTags:
                     systemTags.Add(queryValue);
+                    ++mimimumMatch;
                     break;
                 case SearchFilter.PreviewFile:
                     assetSearchFilter.Include().PreviewFile.WithValue(queryValue);
@@ -432,7 +472,55 @@ namespace Unity.Cloud.Assets.Samples
                 case SearchFilter.FileName:
                     assetSearchFilter.Include().Files.Path.WithValue(queryValue);
                     break;
+                case SearchFilter.FileSize:
+                    var split = queryValue.Split('&');
+                    if (split.Length == 2)
+                    {
+                        if (TryParseNumericCondition(split[0], out var range1)
+                            && TryParseNumericCondition(split[1], out var range2))
+                        {
+                            assetSearchFilter.Include().Files.Size.WithValue(range1.And(range2));
+                        }
+                    }
+                    else if (TryParseNumericCondition(queryValue, out var range))
+                    {
+                        assetSearchFilter.Include().Files.Size.WithValue(range);
+                    }
+                    else if (long.TryParse(queryValue, out var fileSizeLong))
+                    {
+                        assetSearchFilter.Include().Files.Size.WithValue(fileSizeLong);
+                    }
+
+                    break;
             }
+        }
+
+        static bool TryParseNumericCondition(string str, out NumericRange numericRange)
+        {
+            str = str.Trim();
+            if (str.StartsWith("<="))
+            {
+                numericRange = NumericRange.LessThanOrEqual(double.Parse(str[2..]));
+                return true;
+            }
+            if (str.StartsWith("<"))
+            {
+                numericRange = NumericRange.LessThan(double.Parse(str[1..]));
+                return true;
+            }
+            if (str.StartsWith(">="))
+            {
+                numericRange = NumericRange.GreaterThanOrEqual(double.Parse(str[2..]));
+                return true;
+            }
+            if (str.StartsWith(">"))
+            {
+                numericRange = NumericRange.GreaterThan(double.Parse(str[1..]));
+                return true;
+            }
+
+            numericRange = default;
+            return false;
         }
 
         static void PopulateSearchFilter(AssetSearchFilter assetSearchFilter, SearchFilter type, Regex regex)
@@ -446,7 +534,7 @@ namespace Unity.Cloud.Assets.Samples
                     assetSearchFilter.Include().PreviewFile.WithValue(regex);
                     break;
                 case SearchFilter.FileName:
-                    assetSearchFilter.Include().PreviewFile.WithValue(regex);
+                    assetSearchFilter.Include().Files.Path.WithValue(regex);
                     break;
             }
         }
@@ -540,13 +628,13 @@ namespace Unity.Cloud.Assets.Samples
                 {
                     if (!criterionValue.Key.Contains(searchString, StringComparison.InvariantCultureIgnoreCase)) continue;
 
-                    filteredSearchValues.Add(new SearchValue(criterionValue.Key, m_CurrentSearchFilter, criterionValue.Value));
+                    filteredSearchValues.Add(new SearchValue(criterionValue.Key, criterionValue.Value));
                     count += criterionValue.Value;
                 }
 
                 if (filteredSearchValues.Count > 0)
                 {
-                    m_SearchValues.Add(new SearchValue($"=== {count} Results ===", m_CurrentSearchFilter, count));
+                    m_SearchValues.Add(new SearchValue($"=== {count} Results ===", count));
                     m_SearchValues.AddRange(filteredSearchValues);
                 }
             }
@@ -605,17 +693,20 @@ namespace Unity.Cloud.Assets.Samples
 
         void SetDefaultSearchBarText()
         {
-            var regexHint = string.Empty;
+            var searchHint = string.Empty;
             switch (m_CurrentSearchFilter)
             {
                 case SearchFilter.Name:
                 case SearchFilter.PreviewFile:
                 case SearchFilter.FileName:
-                    regexHint = " (begin query with '/' for regex)";
+                    searchHint = " (begin query with '/' for regex)";
+                    break;
+                case SearchFilter.FileSize:
+                    searchHint = "in bytes (e.g. '1000', '>1000', '<=1000&>500')";
                     break;
             }
 
-            m_SearchBarField.SetValueWithoutNotify($"{k_SearchBarPlaceholder}{m_CurrentSearchFilter}{regexHint}");
+            m_SearchBarField.SetValueWithoutNotify($"{k_SearchBarPlaceholder}{m_CurrentSearchFilter}{searchHint}");
         }
     }
 }

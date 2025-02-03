@@ -16,7 +16,7 @@ Once you have a handle on an `IAssetProject`, you can get an asset by its ID, li
 
 [!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseGetEntityExample.cs#Example_GetAsset)]
 
-This will return an asset with a default version, usually the latest version.
+This will search the versions of an asset and return the first result. The query can be modified to return the oldest or latest version of an asset.
 
 If you want to get a specific version of an asset, you can do so by providing the version or label, like so:
 

@@ -1,5 +1,3 @@
-using System.Text;
-
 namespace Unity.Cloud.Documentation.Assets
 {
 #pragma warning disable S4487 // Unread "private" fields should be removed
@@ -23,11 +21,17 @@ namespace Unity.Cloud.Documentation.Assets
     public class UseCaseManageLabelsExampleUI : IAssetManagementUI
     {
         readonly AssetManagementBehaviour m_Behaviour;
-        GUIStyle m_ErrorLabelStyle;
+        List<string> m_ColorNames;
+        string[] m_ColorSelection;
 
         public UseCaseManageLabelsExampleUI(AssetManagementBehaviour behaviour)
         {
             m_Behaviour = behaviour;
+
+            m_ColorNames = Enum.GetNames(typeof(KnownColor)).ToList();
+            m_ColorSelection = m_ColorNames
+                .Select(n => $"<color=#{Color.FromName(n).ToArgb().ToString("X")[2..]}>\x25A0</color>")
+                .ToArray();
         }
 
         public void OnGUI() { }
@@ -42,20 +46,26 @@ namespace Unity.Cloud.Documentation.Assets
     public class UseCaseManageLabelsExample : IAssetManagementUI
     {
         readonly UseCaseManageLabelsExampleBehaviour m_Behaviour;
-        GUIStyle m_ErrorLabelStyle;
+        List<string> m_ColorNames;
+        string[] m_ColorSelection;
 
         public UseCaseManageLabelsExample(AssetManagementBehaviour behaviour)
         {
             m_Behaviour = new UseCaseManageLabelsExampleBehaviour(behaviour);
+
+            m_ColorNames = Enum.GetNames(typeof(KnownColor)).ToList();
+            m_ColorSelection = m_ColorNames
+                .Select(n => $"<color=#{Color.FromName(n).ToArgb().ToString("X")[2..]}>\x25A0</color>")
+                .ToArray();
         }
 
         #region Example_UIContent
 
+        GUIStyle m_ErrorLabelStyle;
+        
         IOrganization m_CurrentOrganization;
         LabelCreation m_LabelCreation = new();
         Vector2 m_LabelsScrollPosition;
-        List<string> m_ColorNames;
-        string[] m_ColorSelection;
 
         public void OnGUI()
         {
@@ -64,21 +74,13 @@ namespace Unity.Cloud.Documentation.Assets
                 m_ErrorLabelStyle = new GUIStyle(GUI.skin.label) {normal = {textColor = UnityColor.red}};
             }
 
-            if (m_ColorNames == null)
-            {
-                m_ColorNames = Enum.GetNames(typeof(KnownColor)).ToList();
-                m_ColorSelection = m_ColorNames
-                    .Select(n => $"<color=#{Color.FromName(n).ToArgb().ToString("X")[2..]}>\x25A0</color>")
-                    .ToArray();
-            }
-
             if (!m_Behaviour.IsOrganizationSelected) return;
 
             if (m_CurrentOrganization != m_Behaviour.CurrentOrganization)
             {
                 m_CurrentOrganization = m_Behaviour.CurrentOrganization;
-                m_Behaviour.SetCurrentLabel(null);
-                m_Behaviour.Labels = null;
+                _ = m_Behaviour.GetLabels();
+                return;
             }
 
             GUILayout.BeginVertical();
@@ -90,7 +92,7 @@ namespace Unity.Cloud.Documentation.Assets
                 return;
             }
 
-            if (GUILayout.Button("Refresh", GUILayout.Width(60)) || m_Behaviour.Labels == null)
+            if (GUILayout.Button("Refresh", GUILayout.Width(60)))
             {
                 _ = m_Behaviour.GetLabels();
             }
@@ -111,7 +113,7 @@ namespace Unity.Cloud.Documentation.Assets
 
             GUILayout.BeginVertical();
 
-            if (m_Behaviour.CurrentLabel == null)
+            if (string.IsNullOrEmpty(m_Behaviour.CurrentLabelName))
             {
                 CreateLabel();
             }
@@ -135,28 +137,26 @@ namespace Unity.Cloud.Documentation.Assets
             {
                 m_LabelsScrollPosition = GUILayout.BeginScrollView(m_LabelsScrollPosition, GUILayout.MinWidth(Screen.width * 0.3f), GUILayout.Height(Screen.height * 0.8f));
 
-                for (var i = 0; i < m_Behaviour.Labels.Count; ++i)
+                var labels = m_Behaviour.Labels.ToArray();
+                foreach (var label in labels)
                 {
-                    DisplayLabel(m_Behaviour.Labels[i], label =>
+                    DisplayLabel(label.Descriptor.LabelName, () =>
                     {
-                        if (label.IsSystemLabel) return;
-
                         if (GUILayout.Button("Archive", GUILayout.Width(80)))
                         {
-                            _ = label.ArchiveAsync(CancellationToken.None);
+                            _ = m_Behaviour.ArchiveLabelAsync(label.Descriptor.LabelName);
                         }
                     });
                 }
 
-                for (var i = 0; i < m_Behaviour.ArchivedLabels.Count; ++i)
+                var archivedLabels = m_Behaviour.ArchivedLabels.ToArray();
+                foreach (var archivedLabel in archivedLabels)
                 {
-                    DisplayLabel(m_Behaviour.ArchivedLabels[i], label =>
+                    DisplayLabel(archivedLabel.Descriptor.LabelName, () =>
                     {
-                        if (label.IsSystemLabel) return;
-
                         if (GUILayout.Button("Unarchive", GUILayout.Width(80)))
                         {
-                            _ = label.UnarchiveAsync(CancellationToken.None);
+                            _ = m_Behaviour.UnarchiveLabelAsync(archivedLabel.Descriptor.LabelName);
                         }
                     });
                 }
@@ -183,8 +183,8 @@ namespace Unity.Cloud.Documentation.Assets
             }
 
             var isEmpty = string.IsNullOrEmpty(m_LabelCreation.Name);
-            var isUnique = m_Behaviour.Labels != null && m_Behaviour.Labels.All(x => x.Descriptor.LabelName != m_LabelCreation.Name);
-            isUnique &= m_Behaviour.ArchivedLabels != null && m_Behaviour.ArchivedLabels.All(x => x.Descriptor.LabelName != m_LabelCreation.Name);
+            var isUnique = m_Behaviour.Labels.All(x => x.Descriptor.LabelName != m_LabelCreation.Name);
+            isUnique &= m_Behaviour.ArchivedLabels.All(x => x.Descriptor.LabelName != m_LabelCreation.Name);
             var canCreate = !isEmpty && isUnique;
 
             GUI.enabled = canCreate;
@@ -202,59 +202,74 @@ namespace Unity.Cloud.Documentation.Assets
             GUI.enabled = true;
         }
 
-        void DisplayLabel(ILabel label, Action<ILabel> action)
+        void DisplayLabel(string labelName, Action action)
         {
             GUILayout.BeginHorizontal();
 
-            GUILayout.Label(label.Descriptor.LabelName);
+            GUILayout.Label(labelName);
+
+            GUI.enabled = labelName != m_Behaviour.CurrentLabelName;
 
             if (GUILayout.Button("Select", GUILayout.Width(60)))
             {
-                m_Behaviour.SetCurrentLabel(label);
+                m_Behaviour.SetCurrentLabel(labelName);
             }
 
-            action?.Invoke(label);
+            GUI.enabled = true;
+
+            if (m_Behaviour.LabelProperties.TryGetValue(labelName, out var properties))
+            {
+                if (!properties.IsSystemLabel)
+                {
+                    action?.Invoke();
+                }
+            }
 
             GUILayout.EndHorizontal();
         }
 
         void DisplayLabel()
         {
-            var label = m_Behaviour.CurrentLabel;
-
-            var isArchived = m_Behaviour.ArchivedLabels.Contains(label);
-
-            GUILayout.Label($"Label: {label.Descriptor.LabelName}" + (isArchived ? " (archived)" : string.Empty));
-            GUILayout.Label($"Is system: {label.IsSystemLabel}");
-            GUILayout.Label($"Is assignable: {label.IsAssignable}");
-            GUILayout.Label($"Created on: {label.AuthoringInfo?.Created:yyyy-M-d dddd}");
-            GUILayout.Label($"Updated on: {label.AuthoringInfo?.Updated:yyyy-M-d dddd}");
-
-            if (label.IsSystemLabel)
+            if (!m_Behaviour.LabelProperties.TryGetValue(m_Behaviour.CurrentLabelName, out var properties))
             {
-                GUILayout.Label($"Description: {label.Description}");
-                GUILayout.Label($"Color: {label.DisplayColor.Name}");
+                GUILayout.Label(" ! Label properties not loaded !");
+                return;
+            }
+
+            var isArchived = m_Behaviour.ArchivedLabels.Any(l => l.Descriptor.LabelName == m_Behaviour.CurrentLabelName);
+
+            GUILayout.Label($"Label: {m_Behaviour.CurrentLabelName}" + (isArchived ? " (archived)" : string.Empty));
+            GUILayout.Label($"Is system: {properties.IsSystemLabel}");
+            GUILayout.Label($"Is assignable: {properties.IsAssignable}");
+            GUILayout.Label($"Created on: {properties.AuthoringInfo?.Created:yyyy-M-d dddd}");
+            GUILayout.Label($"Updated on: {properties.AuthoringInfo?.Updated:yyyy-M-d dddd}");
+
+            if (properties.IsSystemLabel)
+            {
+                GUILayout.Label($"Description: {properties.Description}");
+                GUILayout.Label($"Color: {properties.DisplayColor?.Name ?? "None"}");
             }
             else
             {
                 GUILayout.Space(5f);
 
-                m_Behaviour.LabelUpdate.Description = GUILayout.TextArea(m_Behaviour.LabelUpdate.Description);
+                m_Behaviour.CurrentLabelUpdate.Description = GUILayout.TextArea(m_Behaviour.CurrentLabelUpdate.Description);
 
-                GUILayout.Label($"Color: {m_Behaviour.LabelUpdate.DisplayColor?.Name ?? label.DisplayColor.Name}");
-                var index = m_Behaviour.LabelUpdate.DisplayColor == null
-                    ? m_ColorNames.IndexOf(label.DisplayColor.Name)
-                    : m_ColorNames.IndexOf(m_Behaviour.LabelUpdate.DisplayColor.Value.Name);
+                var color = m_Behaviour.CurrentLabelUpdate.DisplayColor?.Name ?? properties.DisplayColor?.Name;
+                GUILayout.Label($"Color: {color ?? "None"}");
+                var index = m_Behaviour.CurrentLabelUpdate.DisplayColor == null
+                    ? m_ColorNames.IndexOf(properties.DisplayColor?.Name)
+                    : m_ColorNames.IndexOf(m_Behaviour.CurrentLabelUpdate.DisplayColor.Value.Name);
                 index = GUILayout.SelectionGrid(index, m_ColorSelection, 16);
                 if (index >= 0)
                 {
-                    m_Behaviour.LabelUpdate.DisplayColor = Color.FromName(m_ColorNames[index]);
+                    m_Behaviour.CurrentLabelUpdate.DisplayColor = Color.FromName(m_ColorNames[index]);
                 }
 
                 GUILayout.Space(5f);
                 if (GUILayout.Button("Update"))
                 {
-                    _ = m_Behaviour.UpdateLabel();
+                    _ = m_Behaviour.UpdateCurrentLabelAsync();
                 }
             }
         }
@@ -278,16 +293,20 @@ namespace Unity.Cloud.Documentation.Assets
 
         #region Example_Behaviour_RefreshLabels
 
-        public List<ILabel> Labels { get; set; }
-        public List<ILabel> ArchivedLabels { get; set; }
-        public ILabel CurrentLabel { get; private set; }
-        public LabelUpdate LabelUpdate { get; private set; }
+        public List<ILabel> Labels { get; } = new();
+        public List<ILabel> ArchivedLabels { get; } = new();
+        public Dictionary<string, LabelProperties> LabelProperties { get; } = new();
+
+        public string CurrentLabelName { get; private set; }
+        public LabelUpdate CurrentLabelUpdate { get; private set; }
 
         public async Task GetLabels()
         {
-            Labels = new List<ILabel>();
-            ArchivedLabels = new List<ILabel>();
-            CurrentLabel = null;
+            var currentLabelName = CurrentLabelName;
+            CurrentLabelName = null;
+
+            Labels.Clear();
+            ArchivedLabels.Clear();
 
             var filter = new LabelSearchFilter();
             filter.IsArchived.WhereEquals(false);
@@ -298,6 +317,13 @@ namespace Unity.Cloud.Documentation.Assets
             await foreach (var label in asyncList)
             {
                 Labels.Add(label);
+
+                if (label.Descriptor.LabelName == currentLabelName)
+                {
+                    SetCurrentLabel(currentLabelName);
+                }
+
+                LabelProperties[label.Descriptor.LabelName] = await label.GetPropertiesAsync(CancellationToken.None);
             }
 
             filter.IsArchived.WhereEquals(true);
@@ -307,13 +333,29 @@ namespace Unity.Cloud.Documentation.Assets
             await foreach (var label in asyncList)
             {
                 ArchivedLabels.Add(label);
+
+                if (label.Descriptor.LabelName == currentLabelName)
+                {
+                    SetCurrentLabel(currentLabelName);
+                }
+
+                LabelProperties[label.Descriptor.LabelName] = await label.GetPropertiesAsync(CancellationToken.None);
             }
         }
 
-        public void SetCurrentLabel(ILabel label)
+        public void SetCurrentLabel(string labelName)
         {
-            CurrentLabel = label;
-            LabelUpdate = CurrentLabel != null ? new LabelUpdate() : null;
+            CurrentLabelName = labelName;
+            CurrentLabelUpdate = null;
+
+            if (LabelProperties.TryGetValue(labelName, out var properties))
+            {
+                CurrentLabelUpdate = new LabelUpdate
+                {
+                    Description = properties.Description,
+                    DisplayColor = properties.DisplayColor
+                };
+            }
         }
 
         #endregion
@@ -324,10 +366,9 @@ namespace Unity.Cloud.Documentation.Assets
         {
             try
             {
-                await PlatformServices.AssetRepository.CreateLabelAsync(CurrentOrganization.Id, labelCreation, cancellationToken);
+                await PlatformServices.AssetRepository.CreateLabelLiteAsync(CurrentOrganization.Id, labelCreation, cancellationToken);
 
-                Labels = null;
-                ArchivedLabels = null;
+                await GetLabels();
 
                 Debug.Log($"Label {labelCreation.Name} created.");
             }
@@ -341,39 +382,41 @@ namespace Unity.Cloud.Documentation.Assets
 
         #region Example_Behaviour_ArchiveLabel
 
-        public async Task ArchiveLabel(ILabel label)
+        public async Task ArchiveLabelAsync(string labelName)
         {
             try
             {
+                var labelDescriptor = new LabelDescriptor(CurrentOrganization.Id, labelName);
+                var label = await PlatformServices.AssetRepository.GetLabelAsync(labelDescriptor, CancellationToken.None);
+
                 await label.ArchiveAsync(CancellationToken.None);
-                await label.RefreshAsync(CancellationToken.None);
 
-                Labels = null;
-                ArchivedLabels = null;
+                Debug.Log($"Label {label.Descriptor.LabelName} archived.");
 
-                Debug.Log($"Label {label.Name} archived.");
+                await GetLabels();
             }
             catch (Exception e)
             {
-                Debug.LogError($"Failed to archive label {label.Name}: {e.Message}");
+                Debug.LogError($"Failed to archive label {labelName}: {e.Message}");
             }
         }
 
-        public async Task UnarchiveLabel(ILabel label)
+        public async Task UnarchiveLabelAsync(string labelName)
         {
             try
             {
+                var labelDescriptor = new LabelDescriptor(CurrentOrganization.Id, labelName);
+                var label = await PlatformServices.AssetRepository.GetLabelAsync(labelDescriptor, CancellationToken.None);
+
                 await label.UnarchiveAsync(CancellationToken.None);
-                await label.RefreshAsync(CancellationToken.None);
 
-                Labels = null;
-                ArchivedLabels = null;
+                Debug.Log($"Label {label.Descriptor.LabelName} unarchived.");
 
-                Debug.Log($"Label {label.Name} unarchived.");
+                await GetLabels();
             }
             catch (Exception e)
             {
-                Debug.LogError($"Failed to unarchive label {label.Name}: {e.Message}");
+                Debug.LogError($"Failed to unarchive label {labelName}: {e.Message}");
             }
         }
 
@@ -381,18 +424,26 @@ namespace Unity.Cloud.Documentation.Assets
 
         #region Example_Behaviour_UpdateLabel
 
-        public async Task UpdateLabel()
+        public async Task UpdateCurrentLabelAsync()
         {
+            if (string.IsNullOrEmpty(CurrentLabelName) || CurrentLabelUpdate == null) return;
+
             try
             {
-                await CurrentLabel.UpdateAsync(LabelUpdate, CancellationToken.None);
-                await CurrentLabel.RefreshAsync(CancellationToken.None);
+                var label = Labels.FirstOrDefault(l => l.Descriptor.LabelName == CurrentLabelName)
+                            ?? ArchivedLabels.FirstOrDefault(l => l.Descriptor.LabelName == CurrentLabelName);
+                if (label == null) return;
 
-                Debug.Log($"Label {CurrentLabel.Name} updated.");
+                await label.UpdateAsync(CurrentLabelUpdate, CancellationToken.None);
+                await label.RefreshAsync(CancellationToken.None);
+
+                LabelProperties[CurrentLabelName] = await label.GetPropertiesAsync(CancellationToken.None);
+
+                Debug.Log($"Label {CurrentLabelName} updated.");
             }
             catch (Exception e)
             {
-                Debug.LogError($"Failed to update label {CurrentLabel.Name}: {e.Message}");
+                Debug.LogError($"Failed to update label {CurrentLabelName}: {e.Message}");
             }
         }
 

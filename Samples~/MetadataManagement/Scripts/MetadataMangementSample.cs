@@ -17,34 +17,32 @@ namespace Unity.Cloud.Assets.Samples.MetadataManagement
 
         CreateFieldDefinitionPopupController m_CreatePopup;
         FieldDefinitionPanelController m_FieldDefinitionPanel;
-        ContextMenuController m_InfoPanelContextMenu;
 
         void Start()
         {
             var uiDocumentRoot = m_UiDocument.rootVisualElement;
 
             var sampleContainer = uiDocumentRoot.Q("ContentPanel");
+            sampleContainer.style.flexDirection = FlexDirection.Column;
+
             var layout = m_LayoutTemplate.Instantiate();
-            layout.style.height = Length.Percent(100);
-            layout.style.width = Length.Percent(100);
             sampleContainer.Add(layout);
 
-            m_FieldDefinitionPanel = new FieldDefinitionPanelController(uiDocumentRoot.Q("FieldDefinitionInfoPanel"));
+            var contextMenu = new ContextMenuController(uiDocumentRoot.Q("FieldContextMenu"));
+            m_FieldDefinitionPanel = new FieldDefinitionPanelController(uiDocumentRoot.Q("FieldDefinitionInfoPanel"), contextMenu);
             m_FieldDefinitionPanel.UpdateFieldDefinition += OnUpdateFieldDefinition;
+            m_FieldDefinitionPanel.DeleteFieldDefinition += OnDeleteFieldDefinition;
 
-            m_InfoPanelContextMenu = new ContextMenuController(uiDocumentRoot.Q("FieldContextMenu"));
-            m_InfoPanelContextMenu.RegisterButtonAction("Edit", () => SetEditEnabled(true));
-            m_InfoPanelContextMenu.RegisterButtonAction("StopEdit", () => SetEditEnabled(false), "Stop Editing");
-            m_InfoPanelContextMenu.SetButtonVisibility("StopEdit", false);
-            m_InfoPanelContextMenu.RegisterButtonAction("Delete", OnDeleteFieldDefinition);
+            var popupVisual = layout.Q("CreateFieldPopup");
+            sampleContainer.Add(popupVisual);
 
-            m_CreatePopup = new CreateFieldDefinitionPopupController(layout, m_FieldDefinitionController.ValidateFieldDefinitionKey);
+            m_CreatePopup = new CreateFieldDefinitionPopupController(popupVisual, m_FieldDefinitionController.ValidateFieldDefinitionKey);
             m_CreatePopup.FieldDefinitionCreated += OnFieldDefinitionCreated;
 
             m_FieldDefinitionController.HideContent += HideContent;
             m_FieldDefinitionController.FieldDefinitionSelected += OnFieldDefinitionSelected;
             m_FieldDefinitionController.RegisterContextButton("Create", m_CreatePopup.Show);
-            m_FieldDefinitionController.RegisterContextButton("Hide Deleted", m_FieldDefinitionController.HideDeletedFieldDefinitions, true);
+            m_FieldDefinitionController.RegisterContextButton("Hide Deleted", m_FieldDefinitionController.HideDeletedFieldDefinitions);
             m_FieldDefinitionController.RegisterContextButton("Show Deleted", m_FieldDefinitionController.ShowDeletedFieldDefinitions, false);
         }
 
@@ -69,7 +67,7 @@ namespace Unity.Cloud.Assets.Samples.MetadataManagement
         {
             try
             {
-                await m_FieldDefinitionController.AssetRepository.CreateFieldDefinitionAsync(m_FieldDefinitionController.SelectedOrganizationId, fieldCreation, CancellationToken.None);
+                await m_FieldDefinitionController.AssetRepository.CreateFieldDefinitionLiteAsync(m_FieldDefinitionController.SelectedOrganizationId, fieldCreation, CancellationToken.None);
             }
             catch (Exception e)
             {
@@ -80,28 +78,22 @@ namespace Unity.Cloud.Assets.Samples.MetadataManagement
             m_FieldDefinitionController.RefreshList();
         }
 
-        void OnFieldDefinitionSelected()
+        void OnFieldDefinitionSelected(IFieldDefinition selectedFieldDefinition)
         {
-            var selectedFieldDefinition = m_FieldDefinitionController.SelectedFieldDefinition;
-            m_InfoPanelContextMenu.SetEnabled(selectedFieldDefinition is {IsDeleted: false});
             m_FieldDefinitionPanel.SetFieldDefinition(selectedFieldDefinition);
         }
 
-        void SetEditEnabled(bool isEditable)
+        async void OnUpdateFieldDefinition(string fieldDefinitionKey, Func<IFieldDefinition, Task> fieldDefinitionUpdate)
         {
-            m_FieldDefinitionPanel.SetEditEnabled(isEditable);
-            m_InfoPanelContextMenu.SetButtonVisibility("Edit", !isEditable);
-            m_InfoPanelContextMenu.SetButtonVisibility("StopEdit", isEditable);
-        }
+            if (string.IsNullOrEmpty(fieldDefinitionKey)) return;
 
-        async void OnUpdateFieldDefinition(Func<CancellationToken, Task> fieldDefinitionUpdate)
-        {
             try
             {
-                SetEditEnabled(false);
-                await fieldDefinitionUpdate(CancellationToken.None);
+                var descriptor = new FieldDefinitionDescriptor(m_FieldDefinitionController.SelectedOrganizationId, fieldDefinitionKey);
+                var fieldDefinition = await m_FieldDefinitionController.AssetRepository.GetFieldDefinitionAsync(descriptor, CancellationToken.None);
+                await fieldDefinitionUpdate(fieldDefinition);
                 m_FieldDefinitionController.RefreshList();
-                OnFieldDefinitionSelected();
+
             }
             catch (Exception e)
             {
@@ -110,13 +102,15 @@ namespace Unity.Cloud.Assets.Samples.MetadataManagement
             }
         }
 
-        async void OnDeleteFieldDefinition()
+        async void OnDeleteFieldDefinition(string fieldDefinitionKey)
         {
+            if (string.IsNullOrEmpty(fieldDefinitionKey)) return;
+
             try
             {
-                await m_FieldDefinitionController.AssetRepository.DeleteFieldDefinitionAsync(m_FieldDefinitionController.SelectedFieldDefinition.Descriptor, CancellationToken.None);
+                var descriptor = new FieldDefinitionDescriptor(m_FieldDefinitionController.SelectedOrganizationId, fieldDefinitionKey);
+                await m_FieldDefinitionController.AssetRepository.DeleteFieldDefinitionAsync(descriptor, CancellationToken.None);
                 m_FieldDefinitionController.RefreshList();
-                OnFieldDefinitionSelected();
             }
             catch (Exception e)
             {

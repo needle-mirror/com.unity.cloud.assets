@@ -1,49 +1,45 @@
 # Sample: Discover assets
 
-You can use the Asset Discovery sample to search and download assets from your Organizations and Projects.
+Use the Asset Discovery sample to search and download assets from your organizations and projects.
 
-You can use the Unity Cloud Assets package to filter assets in a Project based on a set of search criteria.
-You will need at least a Consumer Role to be able to download assets
+Filter assets in a project based on a set of search criteria by using the Unity Cloud Assets package.
 
-| Organization or Asset Manager Project role                                                                           | Search | Download |
-|:-----------------------------------------------------------------------------------------------------|:-------|:---------|
-| [`Asset Management Viewer`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles)      | yes    | No       |
-| [`Asset Management Consumer`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles)    | yes    | yes      |
-| [`Asset Management Contributor`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles) | yes    | yes      |
-| [`Organization Owner`](https://docs.unity.com/cloud/en-us/accounts/roles-and-permissions)        | yes    | yes      |
+>[!NOTE]
+>To download assets, you need the [`Asset Manager Admin`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles#organization-level-roles) role at the organization level. At the project level, you need either the [`Asset Manager Contributor`]( https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles#project-level-roles) or the [`Asset Manager Consumer`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles#project-level-roles) add-on role. Asset Manager Contributors can manage assets only for the specific projects to which they have access.
 
 ## Before you start
 
-Before you use the Asset Discovery sample, you must have the following:
+Before you use the Asset Discovery sample, make sure you have the following:
 
-* Installed [Assets](installation.md) package
-* Installed [Identity](https://docs.unity3d.com/Packages/com.unity.cloud.identity@latest) package
-* A valid [Unity ID Account](https://id.unity.com/)
-* Access to your [Unity Gaming Services account](https://dashboard.unity3d.com/)
-* Access to [Asset Manager service](https://docs.unity3d.com/docs-asset-manager/manual/get-started.html)
-* At least one asset in an Asset Management Project, see: [Asset Manager documentation](https://docs.unity3d.com/docs-asset-manager/manual/add-asset.html)
-* A Unity Project with the Asset Manager service enabled, see: [Asset Manager documentation](https://docs.unity3d.com/docs-asset-manager/manual/modify-project.html)
+* An installed [Assets](installation.md) package.
+* An installed [Identity](https://docs.unity3d.com/Packages/com.unity.cloud.identity@latest) package.
+* A valid [Unity ID account](https://id.unity.com/).
+* Access to your [Unity Gaming Services account](https://dashboard.unity3d.com/).
+* Access to the [Asset Manager service](https://docs.unity3d.com/docs-asset-manager/manual/get-started.html).
+* At least one asset in an Asset Management project. Read more about [adding assets using the Asset SDK](get-started-management.md#Create-an-asset) and adding [a single asset](https://docs.unity.com/cloud/en-us/asset-manager/single-asset) or [multiple assets](https://docs.unity.com/cloud/en-us/asset-manager/multiple-assets) through the dashboard.
+* A Unity project with the Asset Manager service enabled. Read more about [creating a Unity project](https://docs.unity.com/cloud/en-us/asset-manager/new-asset-manager-project).
 
 >[!NOTE]
->While the Assets package doesn't depend on the Identity service, it is used in the sample to control the authentication process.
+>Although the Assets package does not depend on the Identity service, the sample uses the service to control the authentication process.
 
 ## Known limitations
 
 The Asset Discovery sample has the following limitations:
 
-- Projects and organizations with a large number of assets may experience performance issues. When building the sample as a standalone application, the application may crash due to memory limitations.
+- Projects and organizations with a large number of assets may experience performance issues.
+- When building the sample as a standalone application, the application may crash due to memory limitations.
 
 ## Install the sample
 
 To install the sample, follow these steps:
 
-1. In your Unity Project window, go to **Package Manager** > **Unity Cloud Assets**.
+1. In the Unity Editor, go to **Window** > **Package Manager** > **Unity Cloud Assets**.
 2. Expand the **Samples** section.
-3. On the right of the Asset Discovery sample, select **Import**.
+3. Select **Import** next to `Asset Discovery`.
 
    ![Screenshot of the samples import section of the package manager window](images/import-discovery-sample.png)
 
-4. After the import process completes, you can view the imported sample in the `Assets/Samples/Unity Cloud Assets` folder.
+5. After the import process completes, check the imported sample in the `Assets/Samples/Unity Cloud Assets` folder.
 
    ![Screenshot of the imported sample](images/tac-sample-discovery-scene.png)
 
@@ -52,39 +48,42 @@ To install the sample, follow these steps:
 To run the sample, follow these steps:
 
 1. Go to `Assets/Samples/Unity Cloud Assets/<package-version>/Asset Discovery/Scenes/AssetDiscoverySample.unity` and run the scene.
-2. Select an Organization. The list of Projects from that Organization appears on the left column.
-   </br>
+2. Select an organization. The list of projects from that organization appears on the left column.
+ 
    ![Screenshot of the organization selection](images/organizations.png)
-3. Select a Project. The list of assets from that project appears on the right column.
-   </br>
+3. Select a project. The list of assets from that project appears on the right column.
+
    ![Screenshot of the project list](images/project-list.png)
-   </br>
+
    ![Screenshot of the login window](images/assets-list.png)
 
 ### Search for specific assets
 
 To search for specific assets by tag or name in this sample, follow these steps:
 
-1. Select a Project.
-2. In the search bar, type the keywords by which you want to search your assets and select **Search**.
-   </br>
+1. Select a project.
+2. In the search bar, do the following:
+   1.  Select the search criteria: Name, Type, Status, Tags, System Tags, PreviewFile, or FileName.
+   2.  Enter the keywords that you want to search for in asset tags and asset names.
+   3.  Select **Search**.
+  
    ![Screenshot of the created topic](images/search.png)
 
->[!NOTE]
->While using the SDK, you will be able to build different and more complex queries. For more information on asset search, see the [Search Assets manual](use-case-search-assets.md).
+>[!TIP]
+>While using the SDK, build different and more complex queries. Read more about [asset search](use-case-search-assets.md).
 
 #### Search prompts
 
-As you type in the search bar, the sample will display a list of keyword suggestions based on your search. These keywords are aggregated from the tags and names of your assets.
-To select a keyword, select it. The search bar will add it as a parameter and the sample will refresh the asset list to match the new search.
+As you enter text in the search bar, the sample suggests keywords that are derived from the tags and names of your assets.
+Select a keyword. The sample updates the search results accordingly.
 
-### See asset details and download files
+### Review the asset details and download the files
 
-To see your asset information in this sample, select one of the assets in the grid. The asset details view appears.
-</br>
+To view your asset information in this sample, select an asset in the grid. The asset details view appears.
+
 ![Screenshot of the created topic](images/asset-details.png)
 
-The details view shows you the following information about your asset:
+The details view displays the following information about the selected asset:
 
 * Name
 * Description
@@ -97,12 +96,12 @@ The details view shows you the following information about your asset:
 
 To download your asset information in this sample, follow these steps:
 
-1. Select one of the assets in the grid. The asset details view appears.
-2. In the details view, select **Download**.
-3. A prompt appears to confirm the download location. Select **Ok** to download the asset.
+1. Select an asset in the table. The asset details view appears.
+2. Select **Download**. The download location confirmation prompt appears.
+3. Select **Ok** to download the asset.
 
 >[!NOTE]
->To download assets, you need the right permissions in your Project to consume assets. Refer to the the [Asset Manager documentation](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles) for more information on permissions.
+>To download assets, you need the [`Asset Manager Admin`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles#organization-level-roles) role at the organization level. At the project level, you need either the [`Asset Manager Contributor`]( https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles#project-level-roles) or the [`Asset Manager Consumer`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles#project-level-roles) add-on role. Asset Manager Contributors can manage assets only for the specific projects to which they have access.
 
 ## Main components
 
@@ -110,17 +109,31 @@ This section describes the scripts that make up the main components of the Asset
 
 ### Platform services script
 
-The `PlatformServices` class initializes and disposes of dependencies required by the `IAssetRepository`. You can use this class to manage the Unity Cloud services and dependencies you use in your application.
+The `PlatformServices` class handles the initialization and disposal of dependencies necessary for the `IAssetRepository` interface. Use this class to manage the Unity Cloud services and dependencies in your application.
 
 To open the platform services script, go to your `Assets/Samples/Unity Cloud Assets/<package-version>/Shared/Scripts/Services/PlatformServices.cs` file.
 
-The `PlatformServices` class has two accompanying classes called `PlatformServicesInitialization` and `PlatformServicesShutdown` that call the initialization and shutdown methods through Unity's standard `Monobehaviour` methods `Awake()`, `Start()` and `OnDestroy()`.
+Use the following classes with the `PlatformServices` class:
+
+* `PlatformServicesInitialization` 
+* `PlatformServicesShutdown`
+
+These classes use the following standard Unity `Monobehaviour` methods to run the initialization and shutdown methods:
+
+* `Awake()`
+* `Start()`
+* `OnDestroy()`
 
 ### Project controller script
 
-The `ProjectController` class inherits from the `OrganizationController` class which enables signing into your application and uses your ID to grant access to the Asset Discovery sample. For more information on authentication, see the **Get user information** use case in the [Identity package documentation](https://docs.unity3d.com/Packages/com.unity.cloud.identity@latest).
-The `ProjectController` class uses the `IOrganizationRepository` of the `PlatformServices` to retrieve the list of organizations you have access to.
-The `ProjectController` class uses the `IAssetRepository` of the `PlatformServices` to retrieve the list of projects you have access to for the selected organization.
+The `ProjectController` class inherits the following from the `OrganizationController` class:
+
+* Sign in to your application.
+* Use your ID to grant access to the Asset Discovery sample.
+
+Read more about [authentication](https://docs.unity3d.com/Packages/com.unity.cloud.identity@latest?subfolder=/manual/use-case-getting-user-information.html).
+The `ProjectController` class uses the `IOrganizationRepository` interface of the `PlatformServices` class to retrieve the list of your organizations.
+The `ProjectController` class uses the `IAssetRepository` interface of the `PlatformServices` class to retrieve the list of your projects for the selected organization.
 
 To open the project controller script, go to your `Assets/Samples/Unity Cloud Assets/<package-version>/Shared/Scripts/Controllers/ProjectController.cs` file.
 
@@ -129,7 +142,7 @@ To open the project controller script, go to your `Assets/Samples/Unity Cloud As
 The `AssetDiscoverySample` shows you how to do the following:
 
 * Integrate the login flow with the `ProjectController` class.
-* Retrieve Organizations and Projects from the Assets service.
+* Retrieve organizations and projects from the Assets service.
 * Retrieve assets from the Assets service.
 * Search for assets by tag or name.
 
@@ -137,12 +150,8 @@ To open the Asset Discovery sample script, go to your `Assets/Samples/Unity Clou
 
 ### Shared UI scripts
 
-The `UI` sample includes a set of UI scripts and prefabs used by Unity Cloud Assets samples. To open shared UI scripts, go to `Assets/Samples/Unity Cloud Assets/<package-version>/Shared/Scripts/Controllers`.
-
-## Go further with your sample
-
-This section describes other actions you can perform with the Asset Discovery sample.
+The `UI` sample includes a set of UI scripts and prefabs that Unity Cloud Assets samples use. To open shared UI scripts, go to `Assets/Samples/Unity Cloud Assets/<package-version>/Shared/Scripts/Controllers`.
 
 ## Troubleshooting
 
-Refer to the [troubleshooting](troubleshooting.md#sample-issues) section for help with sample issues.
+In case of issues with samples, refer to [troubleshooting](troubleshooting.md#sample-issues).

@@ -1,12 +1,32 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace Unity.Cloud.Assets.Samples.MetadataManagement
 {
     public class CreateFieldDefinitionPopupController : PopupController
     {
+        class AcceptedValue : TextField
+        {
+            int m_Index = -1;
+
+            public AcceptedValue(Action<string, int> onValueChanged)
+            {
+                this.RegisterValueChangedCallback(evt =>
+                {
+                    onValueChanged?.Invoke(evt.newValue, m_Index);
+                });
+            }
+
+            public void SetValueWithoutNotify(string newValue, int index)
+            {
+                m_Index = index;
+                SetValueWithoutNotify(newValue);
+            }
+        }
+
         public event Action<IFieldDefinitionCreation> FieldDefinitionCreated;
 
         readonly TextField m_NameInput;
@@ -19,8 +39,6 @@ namespace Unity.Cloud.Assets.Samples.MetadataManagement
         readonly Label m_ErrorLabel;
 
         readonly ValidateFieldDefinitionName m_ValidateFieldDefinitionName;
-
-        readonly Dictionary<TextField, int> m_TextFieldToIndex = new();
 
         public CreateFieldDefinitionPopupController(VisualElement root, ValidateFieldDefinitionName validateFieldDefinitionName)
             : base(root, "CreateFieldPopup")
@@ -38,19 +56,11 @@ namespace Unity.Cloud.Assets.Samples.MetadataManagement
 
             m_AcceptedValuesInput = m_PopupWindow.Q<ListView>("AcceptedValues");
             m_AcceptedValuesInput.itemsSource = m_AcceptedValues;
-            m_AcceptedValuesInput.makeItem = () => new TextField();
+            m_AcceptedValuesInput.makeItem = () => new AcceptedValue(OnValueChanged);
             m_AcceptedValuesInput.bindItem = (element, i) =>
             {
-                var textField = (TextField) element;
-                textField.value = m_AcceptedValues[i];
-                m_TextFieldToIndex[textField] = i;
-                textField.RegisterValueChangedCallback(OnValueChanged);
-            };
-            m_AcceptedValuesInput.unbindItem = (element, _) =>
-            {
-                var textField = (TextField) element;
-                textField.UnregisterValueChangedCallback(OnValueChanged);
-                m_TextFieldToIndex.Remove(textField);
+                var acceptedValue = (AcceptedValue) element;
+                acceptedValue.SetValueWithoutNotify(m_AcceptedValues[i] ?? string.Empty, i);
             };
 
             m_ErrorLabel = m_PopupWindow.Q<Label>("ErrorLabel");
@@ -72,7 +82,9 @@ namespace Unity.Cloud.Assets.Samples.MetadataManagement
             m_AcceptedValuesInput.Clear();
             m_AcceptedValues.Clear();
 
+            m_AcceptedValuesInput.Rebuild();
             SetFieldDefinitionType(m_TypeInput.value);
+            m_ActionButton.SetEnabled(false);
 
             FieldDefinitionCreated?.Invoke(newField);
 
@@ -81,24 +93,22 @@ namespace Unity.Cloud.Assets.Samples.MetadataManagement
 
         IFieldDefinitionCreation CreateFieldDefinition(FieldDefinitionType type)
         {
-            switch (type)
+            return type switch
             {
-                case FieldDefinitionType.Selection:
-                    return new SelectionFieldDefinitionCreation
-                    {
-                        Key = m_NameInput.value.Trim(),
-                        DisplayName = m_DisplayNameInput.value.Trim(),
-                        Multiselection = m_MultiSelectionInput.value,
-                        AcceptedValues = m_AcceptedValues.Where(x => !string.IsNullOrWhiteSpace(x)).ToList()
-                    };
-                default:
-                    return new FieldDefinitionCreation
-                    {
-                        Key = m_NameInput.value.Trim(),
-                        DisplayName = m_DisplayNameInput.value.Trim(),
-                        Type = (FieldDefinitionType) m_TypeInput.value,
-                    };
-            }
+                FieldDefinitionType.Selection => new SelectionFieldDefinitionCreation
+                {
+                    Key = m_NameInput.value.Trim(),
+                    DisplayName = m_DisplayNameInput.value.Trim(),
+                    Multiselection = m_MultiSelectionInput.value,
+                    AcceptedValues = m_AcceptedValues.Where(x => !string.IsNullOrWhiteSpace(x)).ToList()
+                },
+                _ => new FieldDefinitionCreation
+                {
+                    Key = m_NameInput.value.Trim(),
+                    DisplayName = m_DisplayNameInput.value.Trim(),
+                    Type = (FieldDefinitionType) m_TypeInput.value,
+                }
+            };
         }
 
         void OnInputChanged(InputEvent _)
@@ -121,18 +131,16 @@ namespace Unity.Cloud.Assets.Samples.MetadataManagement
             m_ActionButton.SetEnabled(!string.IsNullOrWhiteSpace(m_DisplayNameInput.value) && isValid);
         }
 
-        void OnValueChanged(ChangeEvent<string> evt)
+        void OnValueChanged(string newValue, int index)
         {
-            var textField = (TextField) evt.target;
-            if (m_TextFieldToIndex.TryGetValue(textField, out var index))
-            {
-                m_AcceptedValues[index] = evt.newValue;
-            }
+            if (index < 0 || index >= m_AcceptedValues.Count) return;
+
+            m_AcceptedValues[index] = newValue;
         }
 
         void SetFieldDefinitionType(Enum type)
         {
-            var isSelection = (FieldDefinitionType)type == FieldDefinitionType.Selection;
+            var isSelection = (FieldDefinitionType) type == FieldDefinitionType.Selection;
             m_MultiSelectionInput.SetEnabled(isSelection);
             m_AcceptedValuesInput.SetEnabled(isSelection);
         }

@@ -167,8 +167,15 @@ namespace Unity.Cloud.Documentation.Assets
         async Task PopulateAcceptedValues(FieldDefinitionDescriptor descriptor)
         {
             var fieldDefinition = await PlatformServices.AssetRepository.GetFieldDefinitionAsync(descriptor, default);
-            if (fieldDefinition.Type == FieldDefinitionType.Selection)
-                m_AcceptedValues.UnionWith(fieldDefinition.AsSelectionFieldDefinition().AcceptedValues);
+            try
+            {
+                var selectionFieldDefinitionProperties = await fieldDefinition.AsSelectionFieldDefinition().GetPropertiesAsync(default);
+                m_AcceptedValues.UnionWith(selectionFieldDefinitionProperties.AcceptedValues);
+            }
+            catch (Exception)
+            {
+                // Fail silently
+            }
         }
 
         public void Display()
@@ -209,8 +216,15 @@ namespace Unity.Cloud.Documentation.Assets
         async Task PopulateAcceptedValues(FieldDefinitionDescriptor descriptor)
         {
             var fieldDefinition = await PlatformServices.AssetRepository.GetFieldDefinitionAsync(descriptor, default);
-            if (fieldDefinition.Type == FieldDefinitionType.Selection)
-                m_AcceptedValues.UnionWith(fieldDefinition.AsSelectionFieldDefinition().AcceptedValues);
+            try
+            {
+                var selectionFieldDefinitionProperties = await fieldDefinition.AsSelectionFieldDefinition().GetPropertiesAsync(default);
+                m_AcceptedValues.UnionWith(selectionFieldDefinitionProperties.AcceptedValues);
+            }
+            catch (Exception)
+            {
+                // Fail silently
+            }
         }
 
         public void Display()

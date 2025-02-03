@@ -19,11 +19,14 @@ namespace Unity.Cloud.Assets.Samples.MetadataManagement
 
         readonly Button m_Update;
 
+        readonly ContextMenuController m_InfoPanelContextMenu;
+
         IFieldDefinition m_FieldDefinition;
 
-        public event Action<Func<CancellationToken, Task>> UpdateFieldDefinition;
+        public event Action<string, Func<IFieldDefinition, Task>> UpdateFieldDefinition;
+        public event Action<string> DeleteFieldDefinition;
 
-        public FieldDefinitionPanelController(VisualElement rootVisualElement)
+        public FieldDefinitionPanelController(VisualElement rootVisualElement, ContextMenuController contextMenuController)
         {
             m_RootVisualElement = rootVisualElement;
 
@@ -40,26 +43,22 @@ namespace Unity.Cloud.Assets.Samples.MetadataManagement
             m_Update = rootVisualElement.Q<Button>("Update");
             m_Update.RegisterCallback<ClickEvent>(_ =>
             {
-                UpdateFieldDefinition?.Invoke(UpdateFieldDefinitionAsync);
+                if (m_FieldDefinition == null) return;
+                SetEditEnabled(false);
+                UpdateFieldDefinition?.Invoke(m_FieldDefinition.Descriptor.FieldKey, UpdateFieldDefinitionAsync);
+            });
+
+            m_InfoPanelContextMenu = contextMenuController;
+            m_InfoPanelContextMenu.RegisterButtonAction("Edit", () => SetEditEnabled(true));
+            m_InfoPanelContextMenu.RegisterButtonAction("StopEdit", () => SetEditEnabled(false), "Stop Editing");
+            m_InfoPanelContextMenu.SetButtonVisibility("StopEdit", false);
+            m_InfoPanelContextMenu.RegisterButtonAction("Delete", () =>
+            {
+                if (m_FieldDefinition == null) return;
+                DeleteFieldDefinition?.Invoke(m_FieldDefinition.Descriptor.FieldKey);
             });
 
             Hide();
-        }
-
-        async Task UpdateFieldDefinitionAsync(CancellationToken cancellationToken)
-        {
-            var update = new FieldDefinitionUpdate(m_FieldDefinition)
-            {
-                DisplayName = ((EditableDisplayName) m_EditableFieldDefinitionValues[0]).DisplayName
-            };
-            await m_FieldDefinition.UpdateAsync(update, cancellationToken);
-
-            if (m_FieldDefinition.Type == FieldDefinitionType.Selection)
-            {
-                await m_FieldDefinition
-                    .AsSelectionFieldDefinition()
-                    .SetSelectionValuesAsync(((EditableSelection) m_EditableFieldDefinitionValues[1]).AcceptedValues, cancellationToken);
-            }
         }
 
         public void SetFieldDefinition(IFieldDefinition fieldDefinition)
@@ -75,15 +74,8 @@ namespace Unity.Cloud.Assets.Samples.MetadataManagement
             m_RootVisualElement.style.display = DisplayStyle.Flex;
 
             m_Key.text = $"{m_FieldDefinition.Descriptor.FieldKey}";
-            m_Origin.text = $"Origin: {m_FieldDefinition.Origin.ToString()}";
-            m_AuthoringInfo_Created.text = $"Created: {m_FieldDefinition.AuthoringInfo?.Created.ToString() ?? "unknown"}";
-            m_AuthoringInfo_Updated.text = $"Updated: {m_FieldDefinition.AuthoringInfo?.Updated.ToString() ?? "unknown"}";
-            m_Type.text = $"Type: {m_FieldDefinition.Type.ToString()}";
 
-            foreach (var editableField in m_EditableFieldDefinitionValues)
-            {
-                editableField.Initialize(m_FieldDefinition);
-            }
+            _ = PopulateAsync(fieldDefinition);
         }
 
         public void Hide()
@@ -92,13 +84,46 @@ namespace Unity.Cloud.Assets.Samples.MetadataManagement
             m_RootVisualElement.style.display = DisplayStyle.None;
         }
 
-        public void SetEditEnabled(bool isEditable)
+        void SetEditEnabled(bool isEditable)
         {
+            m_InfoPanelContextMenu.SetButtonVisibility("Edit", !isEditable);
+            m_InfoPanelContextMenu.SetButtonVisibility("StopEdit", isEditable);
+
             foreach (var editableField in m_EditableFieldDefinitionValues)
             {
                 editableField.SetEditable(isEditable);
             }
+
             m_Update.style.display = isEditable ? DisplayStyle.Flex : DisplayStyle.None;
+        }
+
+        async Task PopulateAsync(IFieldDefinition fieldDefinition)
+        {
+            var properties = await fieldDefinition.GetPropertiesAsync(CancellationToken.None);
+
+            m_InfoPanelContextMenu.SetEnabled(!properties.IsDeleted);
+
+            m_Origin.text = $"Origin: {properties.Origin.ToString()}";
+            m_AuthoringInfo_Created.text = $"Created: {properties.AuthoringInfo?.Created.ToString() ?? "unknown"}";
+            m_AuthoringInfo_Updated.text = $"Updated: {properties.AuthoringInfo?.Updated.ToString() ?? "unknown"}";
+            m_Type.text = $"Type: {properties.Type.ToString()}";
+
+            foreach (var editableField in m_EditableFieldDefinitionValues)
+            {
+                editableField.Initialize(properties);
+            }
+        }
+
+        async Task UpdateFieldDefinitionAsync(IFieldDefinition fieldDefinition)
+        {
+            var tasks = new List<Task>();
+
+            foreach (var editableField in m_EditableFieldDefinitionValues)
+            {
+                tasks.Add(editableField.OnUpdateAsync(fieldDefinition, CancellationToken.None));
+            }
+
+            await Task.WhenAll(tasks);
         }
     }
 }

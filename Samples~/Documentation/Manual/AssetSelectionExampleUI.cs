@@ -31,7 +31,7 @@ namespace Unity.Cloud.Documentation.Assets
 
             GUILayout.BeginVertical();
 
-            GUILayout.Label($"{m_Behaviour.CurrentOrganization.Name} >> {m_Behaviour.CurrentProject.Name}");
+            GUILayout.Label($"{m_Behaviour.CurrentOrganization.Name} >> {m_Behaviour.GetProjectName(m_Behaviour.CurrentProject.Descriptor.ProjectId)}");
             GUILayout.Space(15f);
 
             SelectAnAsset();
@@ -51,12 +51,15 @@ namespace Unity.Cloud.Documentation.Assets
 
                 for (var i = 0; i < assets.Length; ++i)
                 {
-                    GUI.enabled = m_Behaviour.CurrentAsset?.Descriptor.AssetId != assets[i].Descriptor.AssetId;
+                    var assetId = assets[i].Descriptor.AssetId;
 
-                    if (GUILayout.Button(assets[i].Name))
+                    GUI.enabled = assetId != m_Behaviour.CurrentAsset?.Descriptor.AssetId;
+
+                    var name = m_Behaviour.AssetProperties.TryGetValue(assetId, out var properties) ? properties.Name : assetId.ToString();
+
+                    if (GUILayout.Button(name))
                     {
-                        m_Behaviour.CurrentAsset = assets[i];
-                        Debug.Log($"Selected: {assets[i].Descriptor.AssetId}");
+                        _ = m_Behaviour.CurrentAsset = assets[i];
                     }
 
                     GUI.enabled = true;

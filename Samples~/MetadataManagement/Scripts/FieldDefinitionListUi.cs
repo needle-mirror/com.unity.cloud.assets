@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Unity.Cloud.Common;
 using UnityEngine;
@@ -17,29 +18,23 @@ namespace Unity.Cloud.Assets.Samples.MetadataManagement
                 var label = element.Q<Label>();
                 label.enableRichText = true;
 
-                var fieldDefinition = m_List[i];
-                var isDeleted = fieldDefinition.IsDeleted;
+                _ = PopulateItemAsync(label, m_List[i]);
+            }
+
+            static async Task PopulateItemAsync(Label label, IFieldDefinition fieldDefinition)
+            {
+                var properties = await fieldDefinition.GetPropertiesAsync(CancellationToken.None);
+
+                var isDeleted = properties.IsDeleted;
                 var strikethroughTag = isDeleted ? "<s>" : string.Empty;
                 var strikethroughEndTag = isDeleted ? "</s>" : string.Empty;
-                label.text = $"{strikethroughTag}{fieldDefinition.DisplayName}{strikethroughEndTag}";
+                label.text = $"{strikethroughTag}{properties.DisplayName}{strikethroughEndTag}";
             }
         }
 
         readonly List<IFieldDefinition> m_FieldDefinitions = new();
-        IFieldDefinition m_SelectedFieldDefinition;
 
-        public event Action FieldDefinitionSelected;
-
-        public IFieldDefinition SelectedFieldDefinition
-        {
-            get => m_SelectedFieldDefinition;
-            private set
-            {
-                m_SelectedFieldDefinition = value;
-                Debug.Log($"Field definition selected: {m_SelectedFieldDefinition?.DisplayName}");
-                FieldDefinitionSelected?.Invoke();
-            }
-        }
+        public event Action<IFieldDefinition> FieldDefinitionSelected;
 
         public IEnumerable<IFieldDefinition> FieldDefinitions => m_ListController.AllItems;
 
@@ -69,10 +64,7 @@ namespace Unity.Cloud.Assets.Samples.MetadataManagement
             m_ListController.ApplyFilter(Filter);
             UpdateList(m_FieldDefinitions);
 
-            if (m_SelectedFieldDefinition != null && Filter != null && !Filter(m_SelectedFieldDefinition))
-            {
-                SelectedFieldDefinition = null;
-            }
+            FieldDefinitionSelected?.Invoke(null);
         }
 
         static IAsyncEnumerable<IFieldDefinition> GetFieldDefinitionsAsync(IAssetRepository assetRepository, OrganizationId organizationId)
@@ -96,7 +88,7 @@ namespace Unity.Cloud.Assets.Samples.MetadataManagement
         protected override void OnSelectionChange(IEnumerable<object> selectedItems)
         {
             var selection = selectedItems.FirstOrDefault();
-            SelectedFieldDefinition = selection as IFieldDefinition;
+            FieldDefinitionSelected?.Invoke(selection as IFieldDefinition);
         }
     }
 }

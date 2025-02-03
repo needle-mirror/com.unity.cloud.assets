@@ -40,14 +40,14 @@ namespace Unity.Cloud.Documentation.Assets
             m_Behaviour = new UseCaseVersionSearchExampleBehaviour(behaviour);
         }
 
-        protected IAsset CurrentVersion => m_CurrentVersion;
+        protected IAsset CurrentAsset => m_Behaviour.CurrentAsset;
+        protected AssetVersion? CurrentVersion => m_Behaviour.CurrentVersion;
 
         #region Example_UIContent
 
         string m_SortingField = "versionNumber";
         SortingOrder m_SortingOrder = SortingOrder.Descending;
         AssetId m_CurrentAssetId;
-        IAsset m_CurrentVersion;
 
         public void OnGUI()
         {
@@ -56,7 +56,6 @@ namespace Unity.Cloud.Documentation.Assets
             if (m_Behaviour.CurrentAsset.Descriptor.AssetId != m_CurrentAssetId)
             {
                 m_CurrentAssetId = m_Behaviour.CurrentAsset.Descriptor.AssetId;
-                m_CurrentVersion = null;
                 SearchAssetVersions();
             }
 
@@ -79,19 +78,15 @@ namespace Unity.Cloud.Documentation.Assets
 
             GUILayout.Label("Versions: ");
 
-            if (m_Behaviour.AssetVersions == null)
+            if (m_Behaviour.VersionProperties.Count == 0)
             {
                 GUILayout.Label("Loading...");
             }
-            else if (m_Behaviour.AssetVersions.Count == 0)
-            {
-                GUILayout.Label("No versions found.");
-            }
             else
             {
-                foreach (var asset in m_Behaviour.AssetVersions)
+                foreach (var kvp in m_Behaviour.VersionProperties)
                 {
-                    DisplayVersion(asset);
+                    DisplayVersion(kvp.Key, kvp.Value);
                 }
             }
 
@@ -107,66 +102,78 @@ namespace Unity.Cloud.Documentation.Assets
             _ = m_Behaviour.SearchVersions(m_SortingField, m_SortingOrder);
         }
 
-        void DisplayVersion(IAsset asset)
+        void DisplayVersion(AssetVersion version, AssetProperties properties)
         {
-            var version = asset.State switch
+            var versionStr = properties.State switch
             {
-                AssetState.Frozen => $"Ver. {asset.FrozenSequenceNumber}",
-                AssetState.Unfrozen => $"WIP from Ver. {asset.ParentFrozenSequenceNumber}",
+                AssetState.Frozen => $"Ver. {properties.FrozenSequenceNumber}",
+                AssetState.Unfrozen => $"WIP from Ver. {properties.ParentFrozenSequenceNumber}",
                 AssetState.PendingFreeze => "Pending",
                 _ => ""
             };
 
-            var labels = asset.Labels.Select(x => x.LabelName).ToArray();
+            var labels = properties.Labels.Select(x => x.LabelName).ToArray();
             if (labels.Length > 0)
             {
-                version += $" ({string.Join(", ", labels)})";
+                versionStr += $" ({string.Join(", ", labels)})";
             }
 
             GUILayout.BeginHorizontal();
 
-            GUILayout.Label(version, GUILayout.ExpandWidth(true));
+            GUILayout.Label(versionStr, GUILayout.ExpandWidth(true));
+
+            GUI.enabled = m_Behaviour.CurrentVersion != version;
 
             if (GUILayout.Button("Select", GUILayout.Width(60)))
             {
-                m_CurrentVersion = asset;
+                m_Behaviour.CurrentVersion = version;
             }
+
+            GUI.enabled = true;
 
             GUILayout.EndHorizontal();
         }
 
         void DisplayCurrentVersion()
         {
-            if (m_CurrentVersion == null)
+            if (m_Behaviour.CurrentVersion == null)
             {
                 GUILayout.Label("! No version selected. !");
                 return;
             }
 
-            GUILayout.BeginVertical();
+            var version = m_Behaviour.CurrentVersion.Value;
 
-            GUILayout.Label($"Version: {m_CurrentVersion.Descriptor.AssetVersion}");
-            if (m_CurrentVersion.ParentFrozenSequenceNumber > 0)
+            if (!m_Behaviour.VersionProperties.TryGetValue(version, out var properties))
             {
-                GUILayout.Label($"Parent Sequence Number: {m_CurrentVersion.ParentFrozenSequenceNumber}");
+                GUILayout.Label("! Version properties not loaded. !");
+                return;
             }
 
-            GUILayout.Label($"State: {m_CurrentVersion.State}");
+            GUILayout.BeginVertical();
 
-            if (m_CurrentVersion.State == AssetState.Unfrozen)
+            GUILayout.Label($"Version: {version}");
+            if (properties.ParentFrozenSequenceNumber > 0)
+            {
+                GUILayout.Label($"Parent Sequence Number: {properties.ParentFrozenSequenceNumber}");
+            }
+
+            GUILayout.Label($"State: {properties.State}");
+
+            if (properties.State == AssetState.Unfrozen)
             {
                 if (GUILayout.Button("Freeze version"))
                 {
-                    _ = m_Behaviour.FreezeVersion(m_CurrentVersion);
+                    _ = m_Behaviour.FreezeVersion(version);
                 }
             }
             else
             {
-                GUILayout.Label($"Frozen Sequence Number: {m_CurrentVersion.FrozenSequenceNumber}");
+                GUILayout.Label($"Frozen Sequence Number: {properties.FrozenSequenceNumber}");
 
                 if (GUILayout.Button("Create new version"))
                 {
-                    _ = m_Behaviour.CreateVersion(m_CurrentVersion);
+                    _ = m_Behaviour.CreateVersion(version);
                 }
             }
 
@@ -180,6 +187,7 @@ namespace Unity.Cloud.Documentation.Assets
     {
         readonly AssetManagementBehaviour m_Behaviour;
 
+        public IAssetProject CurrentProject => m_Behaviour.CurrentProject;
         public IAsset CurrentAsset => m_Behaviour.CurrentAsset;
 
         public UseCaseVersionSearchExampleBehaviour(AssetManagementBehaviour behaviour)
@@ -189,13 +197,15 @@ namespace Unity.Cloud.Documentation.Assets
 
         #region Example_SearchVersions
 
-        public List<IAsset> AssetVersions { get; private set; }
+        public Dictionary<AssetVersion, AssetProperties> VersionProperties { get; } = new();
+
+        public AssetVersion? CurrentVersion { get; set; }
 
         VersionQueryBuilder m_CurrentQuery;
 
         public async Task SearchVersions(string sortingField, SortingOrder sortingOrder)
         {
-            m_CurrentQuery = CurrentAsset.QueryVersions()
+            m_CurrentQuery = CurrentProject.QueryAssetVersions(CurrentAsset.Descriptor.AssetId)
                 .OrderBy(sortingField, sortingOrder);
 
             await PopulateVersions(m_CurrentQuery);
@@ -207,11 +217,19 @@ namespace Unity.Cloud.Documentation.Assets
 
             var results = query.ExecuteAsync(CancellationToken.None);
 
-            AssetVersions = new List<IAsset>();
+            var currentVersion = CurrentVersion;
+            CurrentVersion = null;
+
+            VersionProperties.Clear();
             await foreach (var asset in results)
             {
-                AssetVersions ??= new List<IAsset>();
-                AssetVersions.Add(asset);
+                var properties = await asset.GetPropertiesAsync(CancellationToken.None);
+                VersionProperties.Add(asset.Descriptor.AssetVersion, properties);
+
+                if (currentVersion.HasValue && asset.Descriptor.AssetVersion == currentVersion.Value)
+                {
+                    CurrentVersion = asset.Descriptor.AssetVersion;
+                }
             }
         }
 
@@ -219,31 +237,34 @@ namespace Unity.Cloud.Documentation.Assets
 
         #region Example_FreezeVersion
 
-        public async Task FreezeVersion(IAsset asset)
+        public async Task FreezeVersion(AssetVersion assetVersion)
         {
+            var asset = await CurrentAsset.WithVersionAsync(assetVersion, CancellationToken.None);
+
             await asset.FreezeAsync(new AssetFreeze
             {
                 ChangeLog = "Use case coding example submission.",
                 Operation = AssetFreezeOperation.CancelTransformations
             }, CancellationToken.None);
+            await asset.RefreshAsync(CancellationToken.None);
 
-            // Refresh all versions
-            var tasks = AssetVersions.Select(version => version.RefreshAsync(CancellationToken.None)).ToList();
-            await Task.WhenAll(tasks);
+            var properties = await asset.GetPropertiesAsync(CancellationToken.None);
+            Debug.Log($"Version frozen with sequence number: {properties.FrozenSequenceNumber}");
 
-            Debug.Log($"Version frozen with sequence number: {asset.FrozenSequenceNumber}");
+            await PopulateVersions(m_CurrentQuery);
         }
 
         #endregion
 
         #region Example_CreateVersion
 
-        public async Task CreateVersion(IAsset asset)
+        public async Task CreateVersion(AssetVersion assetVersion)
         {
-            var version = await asset.CreateUnfrozenVersionAsync(CancellationToken.None);
+            var version = await CurrentAsset.WithVersionAsync(assetVersion, CancellationToken.None);
+            var asset = await version.CreateUnfrozenVersionAsync(CancellationToken.None);
             await PopulateVersions(m_CurrentQuery);
 
-            Debug.Log($"New version created with version: {version.Descriptor.AssetVersion}");
+            Debug.Log($"New version created with version: {asset.Descriptor.AssetVersion}");
         }
 
         #endregion

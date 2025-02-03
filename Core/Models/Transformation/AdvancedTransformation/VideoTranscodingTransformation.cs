@@ -1,7 +1,11 @@
+using System;
 using System.Collections.Generic;
 
 namespace Unity.Cloud.Assets
 {
+    /// <summary>
+    /// Transcode videos so that they can be scrubbed at high fidelity in the web viewer.
+    /// </summary>
     public sealed class VideoTranscodingTransformation : ITransformationCreation
     {
         /// <summary>

@@ -4,6 +4,9 @@ using System.Threading;
 
 namespace Unity.Cloud.Assets
 {
+    /// <summary>
+    /// An interface containing information about a status flow for an asset.
+    /// </summary>
     public interface IStatusFlow
     {
         /// <summary>

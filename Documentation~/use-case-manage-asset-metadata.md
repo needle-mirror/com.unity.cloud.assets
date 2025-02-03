@@ -1,26 +1,27 @@
 # Use case: Manage an asset's metadata
 
-You can use the Unity Cloud Assets package to:
+Use the Unity Cloud Assets package to perform the following:
 
 * View the metadata of an asset.
 * Add or remove a metadata entry from an asset.
 * Update the value of the metadata entry of an asset.
 
-The SDK supports different workflows for users with different roles.
-
-| Organization or Asset Manager Project role                                                           | View metadata | Update metadata |
-|:-----------------------------------------------------------------------------------------------------|:--------------|:----------------|
-| [`Asset Management Viewer`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles)      | yes           | no              |
-| [`Asset Management Consumer`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles)    | yes           | no              |
-| [`Asset Management Contributor`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles) | yes           | yes             |
-| [`Organization Owner`](https://docs.unity.com/cloud/en-us/accounts/roles-and-permissions)            | yes           | yes             |
+>[!NOTE]
+>To manage assets, you need the [`Asset Manager Admin`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles#organization-level-roles) role at the organization level or the [`Asset Manager Contributor`]( https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles#project-level-roles) add-on role at the project level. Asset Manager Contributors can manage assets only for the specific projects to which they have access.
 
 ## Before you start
 
-Before you start, you need assets in the cloud. There are several ways to do so:
+Before you start, do the following:
 
-* You can create assets through the [Get started with Assets](get-started-management.md).
-* You can create assets through the dashboard, see the [Managing assets on the dashboard](https://docs.unity3d.com/docs-asset-manager/manual/add-asset.html) documentation.
+1. Verify you have the required permissions. Read more about [verifying permissions](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles#verify-your-permissions).
+
+   >[!NOTE]
+   >Asset Manager roles define the permissions that you have for a single Asset Manager project. Depending on your work, permissions may vary across projects.
+
+2. Create assets in Unity Cloud in any of the following ways:
+
+   * Add assets using the [Asset SDK](get-started-management.md#Create-an-asset).
+   * Add [a single asset](https://docs.unity.com/cloud/en-us/asset-manager/single-asset) or [multiple assets](https://docs.unity.com/cloud/en-us/asset-manager/multiple-assets) through the dashboard.
 
 ## How do I...?
 
@@ -28,21 +29,21 @@ Before you start, you need assets in the cloud. There are several ways to do so:
 
 To fetch the metadata of an asset, follow these steps:
 
-1. Open the `AssetManagementBehaviour` script you created.
+1. Open the `AssetManagementBehaviour` script that you created as described in [Get started with Asset SDK](get-started-management.md#Create-the-behavior-for-managing-assets).
 2. Add the following code to the end of the class:
 
 [!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseManageAssetMetadataExample.cs#Example_Behaviour_FetchMetadata)]
 
-The code snippet populates a dictionary of metadata.
+The code snippet fills a dictionary with metadata.
 
 ### Add or update entries in an asset's metadata
 
-> [!NOTE] The keys for metadata must already exist in your organization's library.
-> To add and remove metadata keys, see the [Manage the field definitions in an organization](use-case-manage-fields.md).
+> [!NOTE] Metadata keys must be pre-existing in your organization's library.
+> Read more about [adding and removing metadata keys](use-case-manage-fields.md).
 
 To add or update an entry in the metadata of an asset, follow these steps:
 
-1. Open the `AssetManagementBehaviour` script you created.
+1. Open the `AssetManagementBehaviour` script that you created as described in [Get started with Asset SDK](get-started-management.md#Create-the-behavior-for-managing-assets).
 2. Add the following code to the end of the class:
 
 [!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseManageAssetMetadataExample.cs#Example_Behaviour_UpdateMetadata)]
@@ -50,13 +51,13 @@ To add or update an entry in the metadata of an asset, follow these steps:
 The code snippet does the following:
 
 * Adds or updates the specified metadata key with the provided value for the selected asset.
-* Prints a message to the console on success.
+* Displays a success message in the console.
 
 ### Remove an entry from an asset's metadata
 
 To remove an entry from the metadata:
 
-1. Open the `AssetManagementBehaviour` script you created.
+1. Open the `AssetManagementBehaviour` script that you created as described in [Get started with Asset SDK](get-started-management.md#Create-the-behavior-for-managing-assets).
 2. Add the following code to the end of the class:
 
 [!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseManageAssetMetadataExample.cs#Example_Behaviour_RemoveMetadata)]
@@ -64,20 +65,21 @@ To remove an entry from the metadata:
 The code snippet does the following:
 
 * Removes the specified metadata key from the selected asset.
-* Prints a message to the console on success.
+* Displays a success message in the console.
 
-### Add the UI for viewing and modifying the metadata of an asset
+### Add a UI for viewing and modifying the metadata of an asset
 
-To create the UI, begin by creating helper classes:
+To create the UI, start by creating helper classes:
 
-1. In your Unity Project window, go to **Assets** > **Scripts**.
+1. In the **Project** window of the Unity Editor, go to **Assets** > **Scripts**.
 2. Select and hold the `Assets/Scripts` folder.
-3. Go to **Create** > **C# Script**. Name your script `BooleanMetadataValueDisplayer`.
-4. Open the `BooleanMetadataValueDisplayer` script you created and replace the content of the file with the following code sample:
+3. Go to **Create** > **C# Script**.
+4. Name your script `BooleanMetadataValueDisplayer`.
+5. Open the file and replace its contents with the following code sample:
 
 [!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseManageAssetMetadataExample.cs#HelperClass_BooleanDisplay)]
 
-5. Repeat steps 3 and 4 to create the subsequent helper classes with the following scripts and code samples:
+6. Repeat steps 3, 4 and 5 to create subsequent helper classes with the following scripts and code samples:
 
 * For the `NumberMetadataValueDisplayer` script, use the following code sample:
 [!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseManageAssetMetadataExample.cs#HelperClass_NumberDisplay)]
@@ -92,22 +94,29 @@ To create the UI, begin by creating helper classes:
 
 To complete the UI, follow these steps:
 
-1. In your Unity Project window, go to **Assets** > **Scripts**.
+1. In the **Project** window of the Unity Editor, go to **Assets** > **Scripts**.
 2. Select and hold the `Assets/Scripts` folder.
-3. Go to **Create** > **C# Script**. Name your script `UseCaseAssetMetadataExampleUI`.
-4. Open the `UseCaseAssetMetadataExampleUI` script you created and replace the content of the file with the following code sample:
+3. Go to **Create** > **C# Script**.
+4. Name your script `UseCaseAssetMetadataExampleUI`.
+5. Open the file and replace its contents with the following code sample:
 
 [!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseManageAssetMetadataExample.cs#Example_UIClass)]
 
-5. In the same script, replace the `OnGUI` function with the following code:
+6. In the same script, replace the `OnGUI` function with the following code:
 
 [!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseManageAssetMetadataExample.cs#Example_UIContent)]
 
-6. Open the `AssetManagementUI` script you created and replace the content of the `Awake` function with the following code:
+7. Open the `AssetManagementUI` script that you created as described in [Get started with Asset SDK](get-started-management.md#Create-an-AssetManager) and replace the content of the `Awake` function with the following code:
 
 [!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseSetupExamples.cs#UseCaseAssetMetadata)]
 
 The code snippet displays the following UI elements:
 
-* A list of metadata with **Select** and **Delete** UI buttons for each metadata key.
-* When you select a metadata key, the UI displays an editable field containing the value and a UI button to **Update** the metadata value.
+* The list of metadata
+* For each metadata key, the **Select** and **Delete** buttons
+* If you select a metadata key:
+
+   * An editable field that contains the key value
+   * The **Update** button to save your modifications
+
+      > [!NOTE] This editable field displays only when you select a metadata key.

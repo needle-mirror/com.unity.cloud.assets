@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Unity.Cloud.Common;
@@ -15,12 +16,11 @@ namespace Unity.Cloud.Assets.Samples.MetadataManagement
         UIDocument m_FieldListUiDocument;
 
         readonly FieldDefinitionListUi m_FieldDefinitionListUi = new();
+        readonly HashSet<string> m_DeletedFieldDefinitionKeys = new();
 
         ContextMenuController m_ContextMenu;
 
-        public IFieldDefinition SelectedFieldDefinition => m_FieldDefinitionListUi.SelectedFieldDefinition;
-
-        public event Action FieldDefinitionSelected
+        public event Action<IFieldDefinition> FieldDefinitionSelected
         {
             add => m_FieldDefinitionListUi.FieldDefinitionSelected += value;
             remove => m_FieldDefinitionListUi.FieldDefinitionSelected -= value;
@@ -69,7 +69,7 @@ namespace Unity.Cloud.Assets.Samples.MetadataManagement
             m_ContextMenu.SetButtonVisibility("Hide Deleted", false);
             m_ContextMenu.SetButtonVisibility("Show Deleted", true);
 
-            m_FieldDefinitionListUi.Filter = x => !x.IsDeleted;
+            m_FieldDefinitionListUi.Filter = x => !m_DeletedFieldDefinitionKeys.Contains(x.Descriptor.FieldKey);
             m_FieldDefinitionListUi.Populate();
         }
 
@@ -108,6 +108,16 @@ namespace Unity.Cloud.Assets.Samples.MetadataManagement
         {
             await m_FieldDefinitionListUi.Populate(AssetRepository, organizationId);
             ContextMenu.SetEnabled(true);
+
+            m_DeletedFieldDefinitionKeys.Clear();
+            foreach (var field in m_FieldDefinitionListUi.FieldDefinitions)
+            {
+                var properties = await field.GetPropertiesAsync(default);
+                if (properties.IsDeleted)
+                {
+                    m_DeletedFieldDefinitionKeys.Add(field.Descriptor.FieldKey);
+                }
+            }
         }
     }
 }

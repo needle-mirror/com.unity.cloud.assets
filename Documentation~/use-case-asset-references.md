@@ -1,6 +1,6 @@
 # Use case: Manage references between assets
 
-You can use the Unity Cloud Assets package to perform the following:
+Use the Unity Cloud Assets package to perform the following:
 
 * Query the references of an asset.
 * Create or delete references between assets.
@@ -12,15 +12,16 @@ You can use the Unity Cloud Assets package to perform the following:
 
 Before you start, do the following:
 
-1. The required permissions. Read more about [verifying permissions](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles#verify-your-permissions).
+1. Verify you have the required permissions. Read more about [verifying permissions](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles#verify-your-permissions).
 
->[!NOTE]
->Asset Manager roles define permissions that you have for a single Asset Manager project. Depending on your work, permissions can vary across different projects.
+   >[!NOTE]
+   >Asset Manager roles define permissions that you have for a single Asset Manager project. Depending on your work, permissions might vary across different projects.
 
-2. Create assets in Unity Cloud any of the following ways:
+2. Create assets in Unity Cloud in any of the following ways:
 
    * Add assets using the [Asset SDK](get-started-management.md#Create-an-asset).
-   * Add [single](https://docs.unity.com/cloud/en-us/asset-manager/single-asset) or [multiple](https://docs.unity.com/cloud/en-us/asset-manager/multiple-assets) assets through the dashboard.
+   * Add [a single asset](https://docs.unity.com/cloud/en-us/asset-manager/single-asset) or [multiple assets](https://docs.unity.com/cloud/en-us/asset-manager/multiple-assets) through the dashboard.
+
 
 ## How do I...?
 
@@ -61,11 +62,11 @@ The code snippet removes the reference between the source asset and the target a
 
 To create a UI for displaying asset references, follow these steps:
 
-1. In your Unity Project window, go to **Assets** > **Scripts**.
+1. In the **Project** window of the Unity Editor, go to **Assets** > **Scripts**.
 2. Select and hold the `Assets/Scripts` folder.
 3. Go to **Create** > **C# Script**.
 4. Name your script `UseCaseManageAssetReferencesExampleUI`.
-5. Open the `UseCaseManageAssetReferencesExampleUI` script that you created in the previous step and replace the contents of the file with the following code sample:
+5. Open the file and replace its contents with the following code sample:
 
 [!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseManageAssetReferencesExample.cs#Example_UIClass)]
 

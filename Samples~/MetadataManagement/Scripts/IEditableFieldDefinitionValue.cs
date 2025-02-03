@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -7,16 +9,15 @@ namespace Unity.Cloud.Assets.Samples.MetadataManagement
 {
     public interface IEditableFieldDefinitionValue
     {
-        void Initialize(IFieldDefinition fieldDefinition);
+        void Initialize(FieldDefinitionProperties fieldDefinitionProperties);
         void SetEditable(bool editable);
+        Task OnUpdateAsync(IFieldDefinition fieldDefinition, CancellationToken cancellationToken);
     }
 
     public class EditableDisplayName : IEditableFieldDefinitionValue
     {
         readonly Label m_DisplayName;
         readonly TextField m_EditableDisplayName;
-
-        public string DisplayName => m_EditableDisplayName.value;
 
         public EditableDisplayName(VisualElement rootVisualElement)
         {
@@ -26,17 +27,26 @@ namespace Unity.Cloud.Assets.Samples.MetadataManagement
             SetEditable(false);
         }
 
-        public void Initialize(IFieldDefinition fieldDefinition)
+        public void Initialize(FieldDefinitionProperties fieldDefinitionProperties)
         {
-            var deletedTag = fieldDefinition.IsDeleted ? " (Deleted)" : "";
-            m_DisplayName.text = $"{fieldDefinition.DisplayName}{deletedTag}";
-            m_EditableDisplayName.value = fieldDefinition.DisplayName;
+            var deletedTag = fieldDefinitionProperties.IsDeleted ? " (Deleted)" : "";
+            m_DisplayName.text = $"{fieldDefinitionProperties.DisplayName}{deletedTag}";
+            m_EditableDisplayName.value = fieldDefinitionProperties.DisplayName;
         }
 
         public void SetEditable(bool editable)
         {
             m_DisplayName.style.display = editable ? DisplayStyle.None : DisplayStyle.Flex;
             m_EditableDisplayName.style.display = editable ? DisplayStyle.Flex : DisplayStyle.None;
+        }
+
+        public Task OnUpdateAsync(IFieldDefinition fieldDefinition, CancellationToken cancellationToken)
+        {
+            var update = new FieldDefinitionUpdate
+            {
+                DisplayName = m_EditableDisplayName.value
+            };
+            return fieldDefinition.UpdateAsync(update, cancellationToken);
         }
     }
 
@@ -47,7 +57,9 @@ namespace Unity.Cloud.Assets.Samples.MetadataManagement
         readonly Label m_AcceptedValues;
         readonly ListView m_EditableAcceptedValues;
 
-        public List<string> AcceptedValues { get; } = new();
+        readonly List<string> m_AcceptedValuesList = new();
+
+        bool m_IsSelection;
 
         public EditableSelection(VisualElement rootVisualElement)
         {
@@ -63,25 +75,28 @@ namespace Unity.Cloud.Assets.Samples.MetadataManagement
             SetEditable(false);
         }
 
-        public void Initialize(IFieldDefinition fieldDefinition)
+        public void Initialize(FieldDefinitionProperties fieldDefinitionProperties)
         {
-            if (fieldDefinition is not ISelectionFieldDefinition selectionFieldDefinition)
+            m_IsSelection = fieldDefinitionProperties.Type == FieldDefinitionType.Selection;
+            if (!m_IsSelection)
             {
                 m_Multiselection.style.display = DisplayStyle.None;
                 m_AcceptedValuesRoot.style.display = DisplayStyle.None;
                 return;
             }
 
-            AcceptedValues.Clear();
-            AcceptedValues.AddRange(selectionFieldDefinition.AcceptedValues);
+            var selectionProperties = fieldDefinitionProperties.AsSelectionFieldDefinitionProperties();
+
+            m_AcceptedValuesList.Clear();
+            m_AcceptedValuesList.AddRange(selectionProperties.AcceptedValues);
 
             m_Multiselection.style.display = DisplayStyle.Flex;
             m_AcceptedValuesRoot.style.display = DisplayStyle.Flex;
 
-            m_Multiselection.text = selectionFieldDefinition.Multiselection ? "Multi selection" : "Single selection";
+            m_Multiselection.text = selectionProperties.Multiselection ? "Multi selection" : "Single selection";
 
-            m_AcceptedValues.text = $"Accepted Values: {string.Join(", ", selectionFieldDefinition.AcceptedValues)}";
-            m_EditableAcceptedValues.itemsSource = AcceptedValues;
+            m_AcceptedValues.text = $"Accepted Values: {string.Join(", ", selectionProperties.AcceptedValues)}";
+            m_EditableAcceptedValues.itemsSource = m_AcceptedValuesList;
             m_EditableAcceptedValues.Rebuild();
             m_EditableAcceptedValues.itemsAdded += OnItemsAdded;
         }
@@ -92,10 +107,21 @@ namespace Unity.Cloud.Assets.Samples.MetadataManagement
             m_EditableAcceptedValues.style.display = editable ? DisplayStyle.Flex : DisplayStyle.None;
         }
 
+        public Task OnUpdateAsync(IFieldDefinition fieldDefinition, CancellationToken cancellationToken)
+        {
+            if (!m_IsSelection)
+            {
+                return Task.CompletedTask;
+            }
+
+            var selectionFieldDefinition = fieldDefinition.AsSelectionFieldDefinition();
+            return selectionFieldDefinition.SetSelectionValuesAsync(m_AcceptedValuesList, cancellationToken);
+        }
+
         void BindItem(VisualElement element, int i)
         {
             var textField = (TextField) element;
-            textField.SetValueWithoutNotify(AcceptedValues[i]);
+            textField.SetValueWithoutNotify(m_AcceptedValuesList[i]);
             textField.RegisterValueChangedCallback(OnValueChanged);
         }
 
@@ -108,10 +134,10 @@ namespace Unity.Cloud.Assets.Samples.MetadataManagement
 
         void OnValueChanged(ChangeEvent<string> evt)
         {
-            var index = AcceptedValues.IndexOf(evt.previousValue);
+            var index = m_AcceptedValuesList.IndexOf(evt.previousValue);
             if (index >= 0)
             {
-                AcceptedValues[index] = evt.newValue;
+                m_AcceptedValuesList[index] = evt.newValue;
             }
         }
 
@@ -119,7 +145,7 @@ namespace Unity.Cloud.Assets.Samples.MetadataManagement
         {
             foreach (var index in obj)
             {
-                AcceptedValues[index] = string.Empty;
+                m_AcceptedValuesList[index] = string.Empty;
             }
         }
     }

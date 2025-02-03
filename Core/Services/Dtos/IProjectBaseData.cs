@@ -1,4 +1,5 @@
-﻿using System.Runtime.Serialization;
+﻿using System.Collections.Generic;
+using System.Runtime.Serialization;
 
 namespace Unity.Cloud.Assets
 {
@@ -17,6 +18,6 @@ namespace Unity.Cloud.Assets
         /// The project metadata.
         /// </summary>
         [DataMember(Name = "metadata")]
-        IDeserializable Metadata { get; }
+        Dictionary<string, string> Metadata { get; }
     }
 }

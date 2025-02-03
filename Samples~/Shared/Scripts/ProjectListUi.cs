@@ -61,7 +61,7 @@ namespace Unity.Cloud.Assets.Samples
             IsAllProjectSelected = selectedProject != null && selectedProject is not IAssetProject;
             SelectedProject = selectedProject as IAssetProject;
 
-            Debug.Log($"Project Selected: {(IsAllProjectSelected ? "All" : SelectedProject?.Name ?? "None")}.");
+            Debug.Log($"Project Selected: {(IsAllProjectSelected ? "All" : SelectedProject?.Descriptor.ProjectId.ToString() ?? "None")}.");
             ProjectSelected?.Invoke();
         }
 

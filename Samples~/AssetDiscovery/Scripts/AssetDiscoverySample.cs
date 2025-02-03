@@ -36,10 +36,13 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
         VisualElement m_UiDocumentRoot;
         VisualElement m_ContentPanel;
 
-        IAssetsGridController m_AssetsGridController;
-        IAssetInformationPanelController m_AssetInformationPanelController;
+        AssetsGridController m_AssetsGridController;
+        AssetInformationPanelController m_AssetInformationPanelController;
 
         readonly List<IAsset> m_ProjectAssetsList = new();
+        OrganizationId m_OrganizationId;
+        Dictionary<string, string> m_FieldToName;
+        Dictionary<string, string> m_StatusFlowToName;
 
         IAsset m_SelectedAsset;
 
@@ -90,7 +93,7 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
             }
 
             m_AssetsGridController.Init(assetGridLayout, m_AssetsGridItemTemplate, thumbnails);
-            m_AssetInformationPanelController.Init(assetInformationLayout);
+            m_AssetInformationPanelController.Init(assetInformationLayout, GetFieldNameAsync, GetStatusFlowNameAsync);
 
             m_ProjectController.ShowContent += ShowAssetDiscoveryLayout;
             m_ProjectController.HideContent += HideAssetDiscoveryLayout;
@@ -140,9 +143,67 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
             DisplayAssetInformationPanel();
         }
 
-        void OnOrganizationSelected(OrganizationId orgId)
+        void OnOrganizationSelected(OrganizationId organizationId)
         {
             ClearContent();
+            PopulateOrganizationFields(organizationId);
+        }
+
+        void PopulateOrganizationFields(OrganizationId organizationId)
+        {
+            if (m_OrganizationId == organizationId) return;
+
+            m_OrganizationId = organizationId;
+
+            _ = PopulateFieldToName();
+            _ = PopluateStatusFlowToName();
+        }
+
+        async Task PopulateFieldToName()
+        {
+            m_FieldToName = null;
+
+            var dictionary = new Dictionary<string, string>();
+            await foreach (var fieldDefinition in PlatformServices.AssetRepository.ListFieldDefinitionsAsync(m_OrganizationId, Range.All, default))
+            {
+                var properties = await fieldDefinition.GetPropertiesAsync(default);
+                dictionary[fieldDefinition.Descriptor.FieldKey] = properties.DisplayName;
+            }
+
+            m_FieldToName = dictionary;
+        }
+
+        async Task<string> GetFieldNameAsync(string fieldKey)
+        {
+            while (m_StatusFlowToName == null)
+            {
+                await Task.Yield();
+            }
+
+            return m_FieldToName.GetValueOrDefault(fieldKey, fieldKey);
+        }
+
+        async Task PopluateStatusFlowToName()
+        {
+            m_StatusFlowToName = null;
+
+            var dictionary = new Dictionary<string, string>();
+            await foreach (var statusFlow in PlatformServices.AssetRepository.ListStatusFlowsAsync(m_OrganizationId, Range.All, default))
+            {
+                dictionary[statusFlow.Descriptor.StatusFlowId] = statusFlow.Name;
+            }
+
+            m_StatusFlowToName = dictionary;
+        }
+
+        async Task<string> GetStatusFlowNameAsync(string statusFlowId)
+        {
+            while (m_StatusFlowToName == null)
+            {
+                await Task.Yield();
+            }
+
+            return m_StatusFlowToName.GetValueOrDefault(statusFlowId, statusFlowId);
         }
 
         async void OnProjectSelected()

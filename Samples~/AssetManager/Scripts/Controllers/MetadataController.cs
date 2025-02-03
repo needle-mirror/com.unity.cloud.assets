@@ -280,7 +280,9 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
                 selectionFieldDefinition = fieldDefinition.AsSelectionFieldDefinition();
             }
 
-            var choices = selectionFieldDefinition.AcceptedValues;
+            var properties = await selectionFieldDefinition.GetPropertiesAsync(RefreshCancellationToken());
+
+            var choices = properties.AcceptedValues;
 
             dropdownField.choices = choices.ToList();
             dropdownField.SetValueWithoutNotify(metadata.SelectedValue);
@@ -307,7 +309,9 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
                 selectionFieldDefinition = fieldDefinition.AsSelectionFieldDefinition();
             }
 
-            var choices = selectionFieldDefinition.AcceptedValues;
+            var properties = await selectionFieldDefinition.GetPropertiesAsync(RefreshCancellationToken());
+
+            var choices = properties.AcceptedValues;
 
             foreach (var choice in choices)
             {
@@ -377,15 +381,17 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             m_AddMetadataController.Show(m_MetadataKeys, OnMetadataSelected);
         }
 
-        void OnMetadataSelected(IFieldDefinition fieldDefinition)
+        void OnMetadataSelected(IFieldDefinition fieldDefinition, FieldDefinitionProperties properties)
         {
+            if (fieldDefinition == null) return;
+
             var key = fieldDefinition.Descriptor.FieldKey;
 
             m_MetadataKeys.Add(key);
 
             var visualElement = CreateMetadataElement(key);
 
-            switch (fieldDefinition.Type)
+            switch (properties.Type)
             {
                 case FieldDefinitionType.Boolean:
                     var boolMetadata = new BooleanMetadata();
@@ -402,17 +408,17 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
                     break;
 
                 case FieldDefinitionType.Selection:
-                    var selectionFieldDefinition = fieldDefinition.AsSelectionFieldDefinition();
-                    if (selectionFieldDefinition.Multiselection)
+                    var selectionProperties = properties.AsSelectionFieldDefinitionProperties();
+                    if (selectionProperties.Multiselection)
                     {
                         var multiselectionField = new MultiSelectionMetadata();
                         m_MetadataValues[key] = multiselectionField;
 
-                        _ = PoplateMultiSelectionAsync(key, selectionFieldDefinition, multiselectionField, visualElement);
+                        _ = PoplateMultiSelectionAsync(key, fieldDefinition.AsSelectionFieldDefinition(), multiselectionField, visualElement);
                     }
                     else
                     {
-                        _ = PopulateSingleSelectionAsync(key, selectionFieldDefinition, new SingleSelectionMetadata(), visualElement);
+                        _ = PopulateSingleSelectionAsync(key, fieldDefinition.AsSelectionFieldDefinition(), new SingleSelectionMetadata(), visualElement);
                     }
 
                     break;
@@ -464,10 +470,10 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
         {
             label.text = key;
 
-            var fieldDefinition = await m_AddMetadataController.GetFieldDefinitionAsync(key);
-            if (fieldDefinition != null)
+            var displayName = await m_AddMetadataController.GetFieldDefinitionNameAsync(key);
+            if (!string.IsNullOrEmpty(displayName))
             {
-                label.text = fieldDefinition.DisplayName;
+                label.text = displayName;
             }
         }
 

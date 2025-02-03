@@ -98,36 +98,42 @@ namespace Unity.Cloud.Documentation.Assets
 
             GUILayout.BeginVertical();
 
-            m_SelectionMode = (SelectionMode) GUILayout.SelectionGrid((int) m_SelectionMode, new[] {"Source", "Target"}, 2);
-
-            switch (m_SelectionMode)
+            var selectionMode = (SelectionMode) GUILayout.SelectionGrid((int) m_SelectionMode, new[] {"Source", "Target"}, 2);
+            if (m_SelectionMode != selectionMode)
             {
-                case SelectionMode.Source:
-                    m_Behaviour.CurrentAsset = m_SourceAsset;
-                    break;
-
-                case SelectionMode.Target:
-                    m_Behaviour.CurrentAsset = m_TargetAsset;
-                    break;
+                m_SelectionMode = selectionMode;
+                m_Behaviour.CurrentAsset = m_SelectionMode switch
+                {
+                    SelectionMode.Source => m_SourceAsset,
+                    SelectionMode.Target => m_TargetAsset,
+                    _ => m_Behaviour.CurrentAsset
+                };
             }
+
+            GUI.enabled = m_SourceAsset != null && m_TargetAsset != null;
 
             if (GUILayout.Button("Create Reference"))
             {
-                _ = m_Behaviour.CreateReferenceAsync(m_SourceAsset, m_TargetAsset.Descriptor.AssetId, m_TargetVersion, m_TargetLabel);
+                if (m_SourceAsset != null && m_TargetAsset != null)
+                {
+                    _ = m_Behaviour.CreateReferenceAsync(m_SourceAsset,
+                        m_TargetAsset.Descriptor.AssetId, m_TargetVersion, m_TargetLabel);
+                }
             }
+
+            GUI.enabled = true;
 
             GUILayout.BeginHorizontal(GUILayout.ExpandWidth(true));
 
-            var dummyString = string.Empty;
-            DisplayAssetReference(m_SourceAsset, ref m_SourceVersion, ref dummyString, SelectionMode.Source);
-            DisplayAssetReference(m_TargetAsset, ref m_TargetVersion, ref m_TargetLabel, SelectionMode.Target);
+            DisplayAssetReference(m_SourceAsset, ref m_SourceVersion, SelectionMode.Source);
+            DisplayAssetReference(m_TargetAsset, ref m_TargetVersion, SelectionMode.Target, DisplayTargetLabelSelection);
 
             GUILayout.EndHorizontal();
 
             GUILayout.EndVertical();
         }
 
-        void DisplayAssetReference(IAsset asset, ref string version, ref string label, SelectionMode selectionMode)
+        void DisplayAssetReference(IAsset asset, ref string version, SelectionMode selectionMode, Action labelSelection = null)
         {
             if (asset == null)
             {
@@ -135,9 +141,15 @@ namespace Unity.Cloud.Documentation.Assets
                 return;
             }
 
+            if (!m_Behaviour.AssetProperties.TryGetValue(asset.Descriptor.AssetId, out var properties))
+            {
+                GUILayout.Label("Asset properties not loaded");
+                return;
+            }
+
             GUILayout.BeginVertical();
 
-            GUILayout.Label($"{selectionMode} - {asset.Name}");
+            GUILayout.Label($"{selectionMode} - {properties.Name}");
 
             GUILayout.Space(5);
 
@@ -148,13 +160,7 @@ namespace Unity.Cloud.Documentation.Assets
             version = GUILayout.TextField(version);
             GUILayout.EndHorizontal();
 
-            if (selectionMode == SelectionMode.Target)
-            {
-                GUILayout.BeginHorizontal();
-                GUILayout.Label("Label", GUILayout.Width(40));
-                label = GUILayout.TextField(label);
-                GUILayout.EndHorizontal();
-            }
+            labelSelection?.Invoke();
 
             GUILayout.BeginHorizontal();
 
@@ -234,10 +240,16 @@ namespace Unity.Cloud.Documentation.Assets
             }
         }
 
+        void DisplayTargetLabelSelection()
+        {
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("Label", GUILayout.Width(40));
+            m_TargetLabel = GUILayout.TextField(m_TargetLabel);
+            GUILayout.EndHorizontal();
+        }
+
         void OnCurrentAssetChanged()
         {
-            if (m_Behaviour.CurrentAsset == null) return;
-
             switch (m_SelectionMode)
             {
                 case SelectionMode.Source:
@@ -288,6 +300,8 @@ namespace Unity.Cloud.Documentation.Assets
             get => m_Behaviour.CurrentAsset;
             set => m_Behaviour.CurrentAsset = value;
         }
+
+        public Dictionary<AssetId, AssetProperties> AssetProperties => m_Behaviour.AssetProperties;
 
         public UseCaseManageAssetReferencesExampleBehaviour(AssetManagementBehaviour behaviour)
         {

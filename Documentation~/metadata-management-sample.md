@@ -1,35 +1,36 @@
 # Sample: Manage metadata field definitions
 
-You can use the Metadata Management sample to list and manage the metadata field definitions in your organization.
+Use the Metadata Management sample to list and manage the metadata field definitions in your organization.
 
 >[!NOTE]
 >To create, delete, and edit the field definitions of an organization, you need the [`Asset Manager Admin`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles#organization-level-roles) role at the organization level.
 
 ## Before you start
 
-Before you can use the Metadata Management sample, make sure you have the following:
+Before you use the Metadata Management sample, make sure you have the following:
 
 * An installed [Assets](installation.md) package.
 * An installed [Identity](https://docs.unity3d.com/Packages/com.unity.cloud.identity@latest) package.
-* A valid [Unity ID Account](https://id.unity.com/).
+* A valid [Unity ID account](https://id.unity.com/).
 * Access to your [Unity Gaming Services account](https://dashboard.unity3d.com/).
 * A Unity Project with the Asset Manager service enabled. Read more about [creating a Unity project](https://docs.unity.com/cloud/en-us/asset-manager/new-asset-manager-project).
-* Access to the [Asset Manager service](https://docs.unity3d.com/docs-asset-manager/manual/get-started.html)
+* Access to the [Asset Manager service](https://docs.unity3d.com/docs-asset-manager/manual/get-started.html).
 
 >[!NOTE]
->Although the Assets package itself does not depend on the Identity service, this service is used in the sample to control the authentication process.
+>Although the Assets package does not depend on the Identity service, the sample uses to control the authentication process.
 
 ## Install the sample
 
 To install the sample, follow these steps:
 
-1. In your Unity Project window, go to **Package Manager** > **Unity Cloud Assets**.
-2. Expand the **Samples** section.
-3. On the right of the Collection Management sample, select **Import**.
+1. Open your application project in the Unity Editor.
+2. Go to **Window** > **Package Manager** > **Unity Cloud Assets**.
+3. Expand the **Samples** section.
+4. Select **Import** next to `Metadata Management`.
 
    ![Screenshot of the samples import section of the package manager window](images/sample-import-metadata-management.png)
 
-4. After the import process completes, you can see the imported samples under the `Assets/Samples/Unity Cloud Assets` folder.
+5. After the import process completes, you can see the imported samples under the `Assets/Samples/Unity Cloud Assets` folder.
 
    ![Screenshot of the imported sample](images/tac-sample-metadata-scene.png)
 
@@ -50,7 +51,7 @@ To run the sample, follow these steps:
 
 To create a new field definition, follow these steps:
 
-1. Next to the `Field Definitions` label, select the **...** button to open the shortcut menu.
+1. Next to the `Field Definitions` label, select the ellipsis button (…).
 
    ![Screenshot of the context menu](images/metadata-list-context-menu.png)
    
@@ -59,8 +60,8 @@ To create a new field definition, follow these steps:
    ![Screenshot of creating field definition popup](images/create-field-definition-popup.png)
 
 3. Enter a unique ID and a display name for the field definition.
-4. Select a type for the field definition.
-5. (Optional) If you selected `Selection` as the type, enter the accepted values.
+4. Select the type of the field definition.
+5. Optionally, enter the accepted values if you selected `Selection` as the type of the field definition.
 6. Select **Create**.
 
 ### Edit an existing metadata field definition
@@ -68,7 +69,7 @@ To create a new field definition, follow these steps:
 To edit an existing field definition, follow these steps:
 
 1. Select an entry in the list.
-2. Next to the display name, select the **...** button to open the shortcut menu.
+2. Next to the display name, select the ellipsis button (…).
 
    ![Screenshot of the context menu](images/metadata-info-context-menu.png)
    
@@ -85,7 +86,7 @@ To edit an existing field definition, follow these steps:
 To delete an existing collection, follow these steps:
 
 1. Select an entry in the list.
-2. Next to the display name, select the **...** button to open the shortcut menu.
+2. Next to the display name, select the ellipsis button (…).
 
    ![Screenshot of the context menu](images/metadata-info-context-menu.png)
 
@@ -97,15 +98,24 @@ This section describes the scripts that make up the main components of the Metad
 
 ### Platform services script
 
-The `PlatformServices` class handles the initialization and disposal of dependencies necessary for the `IAssetRepository` interface. You can use this class to retrieve the `IFieldDefinition` interface you want to modify.
+The `PlatformServices` class handles the initialization and disposal of dependencies necessary for the `IAssetRepository` interface. Use this class to manage the Unity Cloud services and dependencies in your application.
 
 To open the platform services script, go to your `Assets/Samples/Unity Cloud Assets/<package-version>/Shared/Scripts/Services/PlatformServices.cs` file.
 
-The `PlatformServices` class includes two associated classes, `PlatformServicesInitialization` and `PlatformServicesShutdown`, which use Unity's standard `Monobehaviour` methods—`Awake()`, `Start()`, and `OnDestroy()`—to execute the initialization and shutdown methods.
+Use the following classes with the `PlatformServices` class:
+
+* `PlatformServicesInitialization` 
+* `PlatformServicesShutdown`
+
+These classes use the following standard Unity `Monobehaviour` methods to run the initialization and shutdown methods:
+
+* `Awake()`
+* `Start()`
+* `OnDestroy()`
 
 ### Field definition controller script
 
-The `FieldDefinitionController` class inherits from the `OrganizationController` class, which enables signing into your application and uses your ID to grant access to the Collection Management sample. Read more about [authentication](https://docs.unity3d.com/Packages/com.unity.cloud.identity@latest).
+To sign in to your application, use the `FieldDefinitionController` class. This class inherits from the `OrganizationController` class and uses your ID to grant access to the Collection Management sample. Read more about [authentication](https://docs.unity3d.com/Packages/com.unity.cloud.identity@latest).
 The `FieldDefinitionController` class uses the `IOrganizationRepository` of the `PlatformServices` class to retrieve the list of your organizations.
 The `FieldDefinitionController` class uses the `IAssetRepository` of the `PlatformServices` to retrieve the list of field definitions for the selected organization.
 
@@ -129,7 +139,7 @@ The Metadata field definition panel includes the following components:
 
 ### Shared UI scripts
 
-The `UI` sample includes a set of UI scripts and prefabs used by Unity Cloud Assets samples. To open shared UI scripts, go to `Assets/Samples/Unity Cloud Assets/<package-version>/Shared/Scripts/Controllers`.
+The `UI` sample includes a set of UI scripts and prefabs that Unity Cloud Assets samples use. To open shared UI scripts, go to `Assets/Samples/Unity Cloud Assets/<package-version>/Shared/Scripts/Controllers`.
 
 ## Troubleshooting
 

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -44,9 +45,8 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             m_SearchBarUi.ClearSearchQuery += OnClearSearchQuery;
 
             AssetListPanel = m_AssetListTemplate.Instantiate();
-            AssetListPanel.style.height = Length.Percent(100);
-            AssetListPanel.style.width = Length.Percent(100);
-            AssetListPanel.style.display = DisplayStyle.None;
+            AssetListPanel.style.flexGrow = 1;
+            AssetListPanel?.Hide();
 
             var contentPanel = RootVisualElement.Q<VisualElement>("ContentPanel");
             contentPanel.Add(AssetListPanel);

@@ -11,6 +11,7 @@ namespace Unity.Cloud.Documentation.Assets
     using System.Threading;
     using System.Threading.Tasks;
     using Unity.Cloud.Assets;
+    using Unity.Cloud.Common;
     using UnityEngine;
 
     public class UseCaseManageCollectionsExampleUI : IAssetManagementUI
@@ -46,7 +47,6 @@ namespace Unity.Cloud.Documentation.Assets
         Vector2 m_CollectionListScrollPosition;
 
         string m_NewCollectionName = "";
-        AssetCollectionUpdate m_CollectionUpdate;
         string m_NewParentPath = "";
 
         public void OnGUI()
@@ -123,15 +123,14 @@ namespace Unity.Cloud.Documentation.Assets
         {
             GUILayout.Label($"{collection.Name}", GUILayout.MaxWidth(Screen.width * 0.2f));
 
+            GUI.enabled = collection != m_Behaviour.CurrentCollection;
+
             if (GUILayout.Button("Select", GUILayout.Width(60)))
             {
-                m_Behaviour.SetCurrentCollection(collection);
-                m_CollectionUpdate = new AssetCollectionUpdate
-                {
-                    Name = collection.Name,
-                    Description = collection.Description
-                };
+                _ = m_Behaviour.SetCurrentCollection(collection);
             }
+
+            GUI.enabled = true;
 
             if (GUILayout.Button("Delete"))
             {
@@ -147,19 +146,25 @@ namespace Unity.Cloud.Documentation.Assets
                 return;
             }
 
+            if (m_Behaviour.CurrentCollectionUpdate == null)
+            {
+                GUILayout.Label("Loading collection...");
+                return;
+            }
+
             GUILayout.BeginVertical();
 
             GUILayout.Label($"{m_Behaviour.CurrentCollection.ParentPath}::{m_Behaviour.CurrentCollection.Name}");
 
             GUILayout.Label("Name: ");
-            m_CollectionUpdate.Name = GUILayout.TextField(m_CollectionUpdate.Name);
+            m_Behaviour.CurrentCollectionUpdate.Name = GUILayout.TextField(m_Behaviour.CurrentCollectionUpdate.Name);
 
             GUILayout.Label("Description: ");
-            m_CollectionUpdate.Description = GUILayout.TextArea(m_CollectionUpdate.Description, GUILayout.MinHeight(60));
+            m_Behaviour.CurrentCollectionUpdate.Description = GUILayout.TextArea(m_Behaviour.CurrentCollectionUpdate.Description, GUILayout.MinHeight(60));
 
             if (GUILayout.Button("Update"))
             {
-                _ = m_Behaviour.UpdateProjectAssetCollectionAsync(m_CollectionUpdate);
+                _ = m_Behaviour.UpdateProjectAssetCollectionAsync(m_Behaviour.CurrentCollectionUpdate);
             }
 
             GUILayout.Space(10f);
@@ -179,44 +184,46 @@ namespace Unity.Cloud.Documentation.Assets
         {
             GUILayout.BeginVertical();
 
-            var assets = m_Behaviour.CurrentCollectionAssets;
-            var currentAsset = m_Behaviour.CurrentAsset;
+            var currentAssetId = m_Behaviour.CurrentAsset?.Descriptor.AssetId ?? AssetId.None;
+            AssetProperties? currentAssetProperties = m_Behaviour.AssetProperties.TryGetValue(currentAssetId, out var properties) ? properties : null;
 
-            GUILayout.Label($"Selected Asset: {currentAsset?.Name ?? "! No asset selected !"}");
-            if (currentAsset != null && assets != null)
+            GUILayout.Label($"Selected Asset: {currentAssetProperties?.Name ?? "! No asset selected !"}");
+
+            var assetIds = m_Behaviour.CurrentCollectionAssetIds;
+
+            if (currentAssetProperties.HasValue)
             {
-                if (assets.Any(x => x.Descriptor.AssetId == currentAsset.Descriptor.AssetId))
+                if (assetIds.Any(id => id == currentAssetId))
                 {
                     GUILayout.Label("Asset is in collection.");
                 }
                 else if (GUILayout.Button("Add asset to collection"))
                 {
-                    _ = m_Behaviour.LinkAssetToCollectionAsync(m_Behaviour.CurrentAsset);
+                    _ = m_Behaviour.LinkAssetToCollectionAsync(currentAssetId);
                 }
             }
 
             GUILayout.Space(15f);
 
             GUILayout.Label("Assets in collection:");
-            if (assets != null)
+            foreach (var assetId in assetIds)
             {
-                foreach (var asset in assets)
-                {
-                    DrawAsset(asset);
-                }
+                DrawAsset(assetId);
             }
 
             GUILayout.EndVertical();
         }
 
-        void DrawAsset(IAsset asset)
+        void DrawAsset(AssetId assetId)
         {
+            AssetProperties? properties = m_Behaviour.AssetProperties.TryGetValue(assetId, out var p) ? p : null;
+
             GUILayout.BeginHorizontal();
 
-            GUILayout.Label($"{asset.Name}");
+            GUILayout.Label($"{properties?.Name ?? assetId.ToString()}");
             if (GUILayout.Button($"Remove from collection"))
             {
-                _ = m_Behaviour.UnlinkAssetFromCollectionAsync(asset);
+                _ = m_Behaviour.UnlinkAssetFromCollectionAsync(assetId);
             }
 
             GUILayout.EndHorizontal();
@@ -232,6 +239,7 @@ namespace Unity.Cloud.Documentation.Assets
         public bool IsProjectSelected => m_Behaviour.IsProjectSelected;
         public IAssetProject CurrentProject => m_Behaviour.CurrentProject;
         public IAsset CurrentAsset => m_Behaviour.CurrentAsset;
+        public Dictionary<AssetId, AssetProperties> AssetProperties => m_Behaviour.AssetProperties;
 
         public UseCaseManageCollectionsExampleBehaviour(AssetManagementBehaviour behaviour)
         {
@@ -242,7 +250,8 @@ namespace Unity.Cloud.Documentation.Assets
 
         public IEnumerable<IAssetCollection> AssetCollections { get; private set; }
         public IAssetCollection CurrentCollection { get; private set; }
-        public List<IAsset> CurrentCollectionAssets { get; } = new();
+        public AssetCollectionUpdate CurrentCollectionUpdate { get; private set; }
+        public List<AssetId> CurrentCollectionAssetIds { get; } = new();
 
         public async Task ListProjectAssetCollectionsAsync()
         {
@@ -258,21 +267,28 @@ namespace Unity.Cloud.Documentation.Assets
             AssetCollections = collections;
         }
 
-        public void SetCurrentCollection(IAssetCollection collection)
+        public async Task SetCurrentCollection(IAssetCollection collection)
         {
-            if (collection != CurrentCollection)
+            CurrentCollectionUpdate = null;
+            CurrentCollection = collection;
+
+            if (CurrentCollection != null)
             {
-                CurrentCollection = collection;
-                if (CurrentCollection != null)
+                var properties = await CurrentCollection.GetPropertiesAsync(CancellationToken.None);
+
+                CurrentCollectionUpdate = new AssetCollectionUpdate
                 {
-                    _ = RefreshCollectionAssets();
-                }
+                    Name = collection.Name,
+                    Description = properties.Description
+                };
+
+                await RefreshCollectionAssets();
             }
         }
 
         async Task RefreshCollectionAssets()
         {
-            CurrentCollectionAssets.Clear();
+            CurrentCollectionAssetIds.Clear();
 
             var searchFilter = new AssetSearchFilter();
             searchFilter.Collections.WhereContains(CurrentCollection.Descriptor.Path);
@@ -280,7 +296,13 @@ namespace Unity.Cloud.Documentation.Assets
             var assetList = CurrentProject.QueryAssets().SelectWhereMatchesFilter(searchFilter).ExecuteAsync(CancellationToken.None);
             await foreach (var asset in assetList)
             {
-                CurrentCollectionAssets.Add(asset);
+                if (!m_Behaviour.AssetProperties.ContainsKey(asset.Descriptor.AssetId))
+                {
+                    var properties = await asset.GetPropertiesAsync(CancellationToken.None);
+                    m_Behaviour.AssetProperties.Add(asset.Descriptor.AssetId, properties);
+                }
+
+                CurrentCollectionAssetIds.Add(asset.Descriptor.AssetId);
             }
         }
 
@@ -298,7 +320,7 @@ namespace Unity.Cloud.Documentation.Assets
 
             try
             {
-                await CurrentProject.CreateCollectionAsync(newCollection, CancellationToken.None);
+                await CurrentProject.CreateCollectionLiteAsync(newCollection, CancellationToken.None);
                 Debug.Log("Collection created at path: " + newPath);
 
                 // Refresh the list of collections.
@@ -348,9 +370,9 @@ namespace Unity.Cloud.Documentation.Assets
 
         #region Example_Behaviour_CollectionInsert
 
-        public async Task LinkAssetToCollectionAsync(IAsset asset)
+        public async Task LinkAssetToCollectionAsync(AssetId assetId)
         {
-            await CurrentCollection.LinkAssetsAsync(new[] {asset}, CancellationToken.None);
+            await CurrentCollection.LinkAssetsAsync(new[] {assetId}, CancellationToken.None);
             Debug.Log("Asset added to collection.");
 
             await RefreshCollectionAssets();
@@ -360,9 +382,9 @@ namespace Unity.Cloud.Documentation.Assets
 
         #region Example_Behaviour_CollectionRemove
 
-        public async Task UnlinkAssetFromCollectionAsync(IAsset asset)
+        public async Task UnlinkAssetFromCollectionAsync(AssetId assetId)
         {
-            await CurrentCollection.UnlinkAssetsAsync(new[] {asset}, CancellationToken.None);
+            await CurrentCollection.UnlinkAssetsAsync(new[] {assetId}, CancellationToken.None);
             Debug.Log("Asset added to collection.");
 
             await RefreshCollectionAssets();

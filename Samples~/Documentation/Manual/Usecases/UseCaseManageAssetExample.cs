@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace Unity.Cloud.Documentation.Assets
 {
 #pragma warning disable S4487 // Unread "private" fields should be removed
@@ -8,11 +6,13 @@ namespace Unity.Cloud.Documentation.Assets
     #region Example_UIClass
 
     using System;
+    using System.Collections.Generic;
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
     using UnityEngine;
     using Unity.Cloud.Assets;
+    using Unity.Cloud.Common;
 
     public class UseCaseManageAssetExampleUI : IAssetManagementUI
     {
@@ -50,6 +50,7 @@ namespace Unity.Cloud.Documentation.Assets
 
         IAsset m_CurrentAsset;
         AssetUpdate m_AssetUpdate;
+        string m_TagsString = string.Empty;
 
         public void OnGUI()
         {
@@ -63,13 +64,25 @@ namespace Unity.Cloud.Documentation.Assets
                 return;
             }
 
-            GUILayout.BeginVertical();
-
-            if (m_Behaviour.CurrentAsset != m_CurrentAsset)
+            if (!m_Behaviour.AssetProperties.TryGetValue(m_Behaviour.CurrentAsset.Descriptor.AssetId, out var properties))
             {
-                m_CurrentAsset = m_Behaviour.CurrentAsset;
-                _ = RefreshAssetAsync();
+                GUILayout.Label(" ! Asset properties not loaded !");
+                return;
             }
+
+            if (!m_Behaviour.CurrentAsset.Equals(m_CurrentAsset))
+            {
+                m_AssetUpdate = new AssetUpdate
+                {
+                    Name = properties.Name,
+                    Tags = properties.Tags?.ToList() ?? new List<string>(),
+                    PreviewFile = properties.PreviewFileDescriptor?.Path ?? "",
+                    Description = properties.Description,
+                };
+                m_TagsString = string.Join(',', m_AssetUpdate.Tags);
+            }
+
+            GUILayout.BeginVertical();
 
             GUILayout.Label("Asset selected:");
             GUILayout.Space(5f);
@@ -80,28 +93,21 @@ namespace Unity.Cloud.Documentation.Assets
             }
             else
             {
-                GUI.enabled = m_CurrentAsset.State == AssetState.Unfrozen;
-                DisplayAsset(m_AssetUpdate);
+                GUI.enabled = properties.State == AssetState.Unfrozen;
+                DisplayAsset(properties);
                 GUI.enabled = true;
             }
 
             GUILayout.EndVertical();
         }
 
-        async Task RefreshAssetAsync()
-        {
-            m_AssetUpdate = null;
-            await m_CurrentAsset.RefreshAsync(CancellationToken.None);
-            m_AssetUpdate = new AssetUpdate(m_CurrentAsset);
-        }
-
-        void DisplayAsset(AssetUpdate assetUpdate)
+        void DisplayAsset(AssetProperties assetProperties)
         {
             GUILayout.BeginHorizontal();
 
             GUILayout.Label("Name:", s_LabelWidth);
 
-            assetUpdate.Name = GUILayout.TextField(assetUpdate.Name, GUILayout.ExpandWidth(true));
+            m_AssetUpdate.Name = GUILayout.TextField(m_AssetUpdate.Name, GUILayout.ExpandWidth(true));
 
             GUILayout.EndHorizontal();
 
@@ -109,39 +115,49 @@ namespace Unity.Cloud.Documentation.Assets
 
             GUILayout.Label("Type:", s_LabelWidth);
 
-            var type = assetUpdate.Type.HasValue ? (int) assetUpdate.Type.Value : -1;
-            type = GUILayout.SelectionGrid(type, m_AssetTypeList, 4);
-            if (type != -1)
-                assetUpdate.Type = (AssetType) type;
+            var typeIndex = m_AssetUpdate.Type.HasValue ? (int) m_AssetUpdate.Type.Value : (int) assetProperties.Type;
+            typeIndex = GUILayout.SelectionGrid(typeIndex, m_AssetTypeList, 4);
+            if (typeIndex != -1 && assetProperties.Type != (AssetType) typeIndex)
+            {
+                m_AssetUpdate.Type = (AssetType) typeIndex;
+            }
 
             GUILayout.EndHorizontal();
 
             GUILayout.BeginHorizontal();
 
             GUILayout.Label("Tags:", s_LabelWidth);
-
-            var tags = string.Join(',', assetUpdate.Tags);
-            tags = GUILayout.TextField(tags, GUILayout.ExpandWidth(true));
-            assetUpdate.Tags = tags.Split(',').ToList();
+            m_TagsString = GUILayout.TextField(m_TagsString, GUILayout.ExpandWidth(true));
+            m_AssetUpdate.Tags = m_TagsString.Split(',')
+                .Select(tag => tag.Trim())
+                .Where(tag => !string.IsNullOrEmpty(tag))
+                .ToList();
 
             GUILayout.EndHorizontal();
 
-            GUILayout.Label("Preview DatasetId: " + m_CurrentAsset.PreviewFileDescriptor.DatasetId);
+            if (assetProperties.PreviewFileDescriptor.HasValue)
+            {
+                GUILayout.Label("Preview DatasetId: " + assetProperties.PreviewFileDescriptor.Value.DatasetId);
+            }
+            else
+            {
+                GUILayout.Label("No preview file.");
+            }
 
             GUILayout.BeginHorizontal();
 
             GUILayout.Label("Preview:", s_LabelWidth);
 
-            assetUpdate.PreviewFile = GUILayout.TextField(assetUpdate.PreviewFile, GUILayout.ExpandWidth(true));
+            m_AssetUpdate.PreviewFile = GUILayout.TextField(m_AssetUpdate.PreviewFile, GUILayout.ExpandWidth(true));
 
             GUILayout.EndHorizontal();
 
             GUILayout.Label("Description:");
-            assetUpdate.Description = GUILayout.TextArea(assetUpdate.Description, GUILayout.ExpandWidth(true));
+            m_AssetUpdate.Description = GUILayout.TextArea(m_AssetUpdate.Description, GUILayout.ExpandWidth(true));
 
             if (GUILayout.Button("Update"))
             {
-                _ = m_Behaviour.UpdateAssetAsync(assetUpdate);
+                _ = m_Behaviour.UpdateAssetAsync(m_AssetUpdate);
             }
         }
 
@@ -154,6 +170,7 @@ namespace Unity.Cloud.Documentation.Assets
 
         public bool IsProjectSelected => m_Behaviour.IsProjectSelected;
         public IAsset CurrentAsset => m_Behaviour.CurrentAsset;
+        public Dictionary<AssetId, AssetProperties> AssetProperties => m_Behaviour.AssetProperties;
 
         public UseCaseManageAssetExampleBehaviour(AssetManagementBehaviour behaviour)
         {

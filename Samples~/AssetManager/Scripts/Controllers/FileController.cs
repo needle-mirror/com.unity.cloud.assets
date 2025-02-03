@@ -177,11 +177,11 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
         {
             try
             {
-                var datasets = file.GetLinkedDatasetsAsync(Range.All, default);
+                var properties = await file.GetPropertiesAsync(default);
                 var taskList = new List<Task>();
-                await foreach (var dataset in datasets)
+                foreach (var dataset in properties.LinkedDatasets)
                 {
-                    taskList.Add(dataset.RemoveFileAsync(file.Descriptor.Path, default));
+                    taskList.Add(RemoveFileAsync(dataset, file.Descriptor.Path));
                 }
 
                 await Task.WhenAll(taskList);
@@ -198,11 +198,17 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             }
         }
 
+        static async Task RemoveFileAsync(DatasetDescriptor datasetDescriptor, string filePath)
+        {
+            var dataset = await PlatformServices.AssetRepository.GetDatasetAsync(datasetDescriptor, default);
+            await dataset.RemoveFileAsync(filePath, default);
+        }
+
         void AddFileRow(IFile file, bool canUpdate)
         {
             var fileItem = new RowItem();
             fileItem.AddLabel(file.Descriptor.Path);
-            fileItem.AddLabel(GetSizeAsUserFriendlyFormat(file.SizeBytes), 80);
+            fileItem.AddLabel("..", 80, "size");
 
             if (canUpdate)
             {
@@ -218,6 +224,16 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             }
 
             m_FileScrollView.Add(fileItem);
+
+            _ = PopulateFileRow(file, fileItem);
+        }
+
+        static async Task PopulateFileRow(IFile file, RowItem rowItem)
+        {
+            var properties = await file.GetPropertiesAsync(default);
+
+            var size = rowItem.Q<Label>("size");
+            size.text = GetSizeAsUserFriendlyFormat(properties.SizeBytes);
         }
 
         void BrowseFile(ClickEvent evt)

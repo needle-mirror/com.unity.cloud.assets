@@ -1,25 +1,27 @@
 # Use case: Start a transformation on a dataset
 
-You can use the Unity Cloud Assets package to start any transformation on a given dataset. You can also fetch any previously started transformations.
+Use the Unity Cloud Assets package to perform the following:
+* Start transformations on a given dataset.
+* Fetch any previously started transformations.
 
-The SDK supports different workflows for users with different roles:
-
-| Organization or Asset Manager Project role                                                           | List transformations | Start transformations |
-|------------------------------------------------------------------------------------------------------|:---------------------|-----------------------|
-| [`Asset Management Viewer`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles)      | no                   | no                    |
-| [`Asset Management Consumer`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles)    | yes                  | no                    |
-| [`Asset Management Contributor`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles) | yes                  | yes                   |
-| [`Organization Owner`](https://docs.unity.com/cloud/en-us/accounts/roles-and-permissions)            | yes                  | yes                   |
+>[!NOTE]
+>To manage assets, you need the [`Asset Manager Admin`](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles#organization-level-roles) role at the organization level or the [`Asset Manager Contributor`]( https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles#project-level-roles) add-on role at the project level. Asset Manager Contributors can manage assets only for the specific projects to which they have access.
 
 ## Before you start
 
-Before you start, you must:
+Before you start, do the following:
 
-1. Set up a Unity scene in the Unity Editor with an Organization and Project browser. See [Get started with Asset Management](get-started-management.md) for more information.
-2. Have some assets in the cloud. There are several ways to do so:
+1. Verify you have the required permissions. Read more about [verifying permissions](https://docs.unity.com/cloud/en-us/asset-manager/org-project-roles#verify-your-permissions).
 
-   * You can create assets through the [Get started with Asset Management](get-started-management.md).
-   * You can create assets through the dashboard; see the [Managing assets on the dashboard](https://docs.unity3d.com/docs-asset-manager/manual/add-asset.html) documentation.
+   >[!NOTE]
+   >Asset Manager roles define the permissions that you have for a single Asset Manager project. Depending on your work, permissions may vary across projects.
+
+2. Set up a Unity scene in the Unity Editor with an Organization and Project browser. Read more about [setting up a Unity scene](get-started-management.md#Set-up-a-Unity-scene).
+3. Create assets in Unity Cloud any of the following ways:
+
+   * Add assets using the [Asset SDK](get-started-management.md#Create-an-asset).
+   * Add [a single asset](https://docs.unity.com/cloud/en-us/asset-manager/single-asset) or [multiple assets](https://docs.unity.com/cloud/en-us/asset-manager/multiple-assets) through the dashboard.
+
 
 ## How do I...?
 
@@ -27,7 +29,7 @@ Before you start, you must:
 
 To start a transformation on a dataset, follow these steps:
 
-1. Open the `AssetManagementBehaviour` script you created.
+1. Open the `AssetManagementBehaviour` script that you created as described in [Get started with Asset SDK](get-started-management.md#Create-the-behavior-for-managing-assets).
 2. Add the following code to the end of the class:
 
 [!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseStartTransformationExample.cs#Example_Behaviour_StartTransformation)]
@@ -36,11 +38,11 @@ The code snippet starts a transformation on a selected dataset.
 
 ### Get a transformation
 
-To get a transformation that has been previously started on a dataset, whether already completed or not, follow these steps:
+To get a transformation that has been previously started on a dataset, regardless of its completion status, follow these steps:
 
-1. Open the `AssetManagementBehaviour` script you created.
+1. Open the `AssetManagementBehaviour` script that you created as described in [Get started with Asset SDK](get-started-management.md#Create-the-behavior-for-managing-assets).
 2. Add the following code to the end of the class:
 
 [!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseStartTransformationExample.cs#Example_Behaviour_GetTransformation)]
 
-The code snippet gets a transformation that has been previously started on the dataset.
+The code snippet gets a transformation that was previously started on the dataset.

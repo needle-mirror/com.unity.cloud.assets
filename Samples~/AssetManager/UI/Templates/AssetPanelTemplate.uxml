@@ -1,6 +1,7 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
     <ui:Template name="StatusTemplate" src="../Templates/StatusTemplate.uxml?fileID=9197481963319205126&amp;guid=02c1df81689a54319b4bb2e41ab08ec6&amp;type=3#StatusTemplate" />
     <ui:Template name="MetadataItemTemplate" src="../Templates/MetadataItemTemplate.uxml?fileID=9197481963319205126&amp;guid=0dac7e5e1bbd74c689b5c756d31a29c5&amp;type=3#MetadataItemTemplate" />
+    <Style src="../../../Shared/UI/StyleSheets/SampleSheet.uss?fileID=7433441132597879392&amp;guid=7376c3d25e9f04a989663c45cc94f5c7&amp;type=3#SampleSheet" />
     <Style src="../StyleSheets/AssetCreationPanelStyleSheet.uss?fileID=7433441132597879392&amp;guid=2a9d0e7b4e75049048525c21e638987e&amp;type=3#AssetCreationPanelStyleSheet" />
     <ui:VisualElement style="height: 100%; width: 100%; background-color: rgb(19, 19, 19); justify-content: center; min-width: 100%; min-height: 100%; max-width: 100%; max-height: 100%;">
         <ui:VisualElement name="Header" style="padding-top: 2px; padding-right: 2px; padding-bottom: 2px; padding-left: 2px; flex-direction: row; justify-content: space-between; flex-shrink: 0;">
@@ -35,19 +36,11 @@
                 </ui:VisualElement>
                 <ui:Instance template="StatusTemplate" />
                 <ui:ScrollView style="overflow: hidden; padding-left: 4px; flex-grow: 1;">
-                    <ui:VisualElement name="StatusSelection" style="flex-grow: 1; flex-shrink: 0;">
-                        <ui:DropdownField label="Status" index="0" choices="Draft, Ready for Review, Needs Changes, Approved" name="StatusSelectionDropdown" />
-                    </ui:VisualElement>
-                    <ui:VisualElement name="AssetDescription" style="min-height: 70px; flex-grow: 1; flex-shrink: 0;">
-                        <ui:TextField picking-mode="Ignore" label="Description" value="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua." text="Description" name="AssetDescriptionField" multiline="true" style="color: rgb(210, 210, 210); white-space: normal; flex-grow: 1; flex-wrap: wrap;" />
-                    </ui:VisualElement>
-                    <ui:VisualElement name="AssetType" style="flex-grow: 1; flex-shrink: 0;">
-                        <ui:EnumField label="Asset Type" type="Unity.Cloud.Assets.AssetType, Unity.Cloud.Assets" value="Other" name="AssetTypeDropdown" />
-                    </ui:VisualElement>
-                    <ui:VisualElement name="AssetTags" style="flex-shrink: 0;">
-                        <ui:TextField name="AssetTagsField" value="filler text" picking-mode="Ignore" label="Tags" />
-                        <ui:VisualElement name="AssetTagsChipContainer" style="flex-direction: row; flex-wrap: wrap; flex-grow: 1; padding-left: 125px; padding-top: 0; padding-right: 0; padding-bottom: 0; margin-top: 2px; margin-right: 4px; margin-bottom: 2px; margin-left: 4px;" />
-                    </ui:VisualElement>
+                    <ui:DropdownField label="Status" index="0" choices="Draft, Ready for Review, Needs Changes, Approved" name="StatusSelectionDropdown" />
+                    <ui:TextField picking-mode="Ignore" label="Description" name="AssetDescriptionField" multiline="true" placeholder-text=" " hide-placeholder-on-focus="true" style="white-space: normal;" />
+                    <ui:EnumField label="Asset Type" type="Unity.Cloud.Assets.AssetType, Unity.Cloud.Assets" value="Other" name="AssetTypeDropdown" />
+                    <ui:TextField name="AssetTagsField" picking-mode="Ignore" label="Tags" placeholder-text=" " hide-placeholder-on-focus="true" />
+                    <ui:VisualElement name="AssetTagsChipContainer" style="flex-direction: row; flex-wrap: wrap; flex-grow: 1; padding-left: 125px; padding-top: 0; padding-right: 0; padding-bottom: 0; margin-top: 2px; margin-right: 4px; margin-bottom: 2px; margin-left: 4px;" />
                     <ui:VisualElement name="Metadata" style="flex-grow: 1; flex-shrink: 0; margin-top: 2px; margin-right: 4px; margin-bottom: 2px; margin-left: 4px;">
                         <ui:Label tabindex="-1" text="Metadata" parse-escape-sequences="true" display-tooltip-when-elided="true" class="unity-base-field__label" style="align-self: flex-start;" />
                         <ui:VisualElement name="MetadataContainer" style="flex-grow: 1;" />
@@ -62,7 +55,7 @@
                 </ui:VisualElement>
             </ui:VisualElement>
         </ui:VisualElement>
-        <ui:VisualElement name="AddReferencePopup" style="position: absolute; left: 50%; top: 50%; align-items: stretch; background-color: rgb(19, 19, 19); padding-top: 8px; padding-right: 8px; padding-bottom: 8px; padding-left: 8px; border-left-color: rgb(28, 28, 28); border-right-color: rgb(28, 28, 28); border-top-color: rgb(28, 28, 28); border-bottom-color: rgb(28, 28, 28); border-top-width: 2px; border-right-width: 2px; border-bottom-width: 2px; border-left-width: 2px; border-top-left-radius: 8px; border-top-right-radius: 8px; border-bottom-right-radius: 8px; border-bottom-left-radius: 8px; translate: -50% -50px; transform-origin: center; rotate: 0; display: flex; flex-grow: 1; width: 60%;">
+        <ui:VisualElement name="AddReferencePopup" class="Popup" style="width: 60%;">
             <ui:VisualElement style="flex-grow: 1; flex-direction: row; justify-content: space-between; margin-top: 4px; margin-bottom: 4px; align-items: center; margin-right: 4px; margin-left: 4px;">
                 <ui:Label tabindex="-1" text="Select an asset" parse-escape-sequences="true" display-tooltip-when-elided="true" style="font-size: 18px;" />
                 <ui:Button parse-escape-sequences="true" display-tooltip-when-elided="true" name="Close" class="close-icon" />
@@ -70,6 +63,18 @@
             <ui:DropdownField label="Asset" index="-1" choices="System.Collections.Generic.List`1[System.String]" name="AssetSelection" style="flex-grow: 1;" />
             <ui:DropdownField label="Version" index="-1" choices="System.Collections.Generic.List`1[System.String]" name="VersionSelection" style="flex-grow: 1;" />
             <ui:Button text="Add" parse-escape-sequences="true" display-tooltip-when-elided="true" name="Action" class="button-blue sample-button" style="width: 120px; align-self: flex-end;" />
+        </ui:VisualElement>
+    </ui:VisualElement>
+    <ui:VisualElement name="AddMetadataPopup" class="Popup">
+        <ui:VisualElement style="flex-direction: row; align-items: center; justify-content: space-between; flex-shrink: 0;">
+            <ui:Label text="Add Metadata" style="font-size: 18px; -unity-font-style: bold; margin-bottom: 9px; margin-top: 7px; margin-left: 7px; margin-right: 2px; padding-left: 0; padding-right: 0; padding-top: 0; padding-bottom: 0; flex-grow: 1;" />
+            <ui:Button display-tooltip-when-elided="true" name="Close" class="close-icon" />
+        </ui:VisualElement>
+        <ui:DropdownField label="Available Fields" index="-1" focusable="false" choices="A, B, C, D" class="popup-field" style="margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; min-width: 400px;" />
+        <ui:Label tabindex="-1" text="Lorem ipsum dolor sit amet" parse-escape-sequences="true" display-tooltip-when-elided="true" name="FieldInfo" style="white-space: normal; -unity-text-align: upper-right; -unity-font-style: italic;" />
+        <ui:Label display-tooltip-when-elided="true" name="ErrorLabel" text="Error:" class="error-label" />
+        <ui:VisualElement name="VisualElement" style="align-items: center; flex-shrink: 0; margin-top: 7px; margin-bottom: 7px;">
+            <ui:Button text="Add" name="Action" class="sample-button button-blue" style="margin-left: 7px; margin-right: 2px; min-width: 120px;" />
         </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

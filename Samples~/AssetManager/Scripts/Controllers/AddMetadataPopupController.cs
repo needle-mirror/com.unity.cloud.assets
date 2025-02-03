@@ -14,10 +14,11 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
         readonly Label m_FieldInfo;
 
         readonly List<IFieldDefinition> m_FieldDefinitions = new();
+        readonly Dictionary<string, FieldDefinitionProperties> m_FieldDefinitionProperties = new();
         bool m_IsPopulated;
 
-        IFieldDefinition m_SelectedFieldDefinition;
-        Action<IFieldDefinition> m_OnAdd;
+        string m_SelectedFieldDefinition;
+        Action<IFieldDefinition, FieldDefinitionProperties> m_OnAdd;
 
         CancellationTokenSource m_FetchTokenSource;
 
@@ -47,14 +48,27 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             return m_FieldDefinitions.FirstOrDefault(x => x.Descriptor.FieldKey == key);
         }
 
-        public void Show(IEnumerable<string> existingKeys, Action<IFieldDefinition> onAdd)
+        public async Task<string> GetFieldDefinitionNameAsync(string key)
+        {
+            while (!m_IsPopulated)
+            {
+                await Task.Yield();
+            }
+
+            return m_FieldDefinitionProperties.GetValueOrDefault(key).DisplayName;
+        }
+
+        public void Show(IEnumerable<string> existingKeys, Action<IFieldDefinition, FieldDefinitionProperties> onAdd)
         {
             var hashset = new HashSet<string>(existingKeys);
 
             m_OnAdd = onAdd;
 
             m_DropdownField.index = -1;
-            m_DropdownField.choices = m_FieldDefinitions.Where(x => !hashset.Contains(x.Descriptor.FieldKey)).Select(x => x.DisplayName).ToList();
+            m_DropdownField.choices = m_FieldDefinitionProperties
+                .Where(x => !hashset.Contains(x.Key))
+                .Select(x => x.Value.DisplayName)
+                .ToList();
 
             m_FieldInfo.text = string.Empty;
 
@@ -63,7 +77,8 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
         protected override void OnClicked()
         {
-            m_OnAdd?.Invoke(m_SelectedFieldDefinition);
+            m_OnAdd?.Invoke(m_FieldDefinitions.FirstOrDefault(x => x.Descriptor.FieldKey == m_SelectedFieldDefinition),
+                m_FieldDefinitionProperties.GetValueOrDefault(m_SelectedFieldDefinition));
             base.OnClicked();
         }
 
@@ -80,6 +95,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             m_IsPopulated = false;
 
             m_FieldDefinitions.Clear();
+            m_FieldDefinitionProperties.Clear();
 
             var searchFilter = new FieldDefinitionSearchFilter();
             searchFilter.Deleted.WhereEquals(false);
@@ -90,6 +106,9 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             await foreach (var fieldDefinition in enumerable)
             {
                 m_FieldDefinitions.Add(fieldDefinition);
+
+                var properties = await fieldDefinition.GetPropertiesAsync(m_FetchTokenSource.Token);
+                m_FieldDefinitionProperties.Add(fieldDefinition.Descriptor.FieldKey, properties);
             }
 
             m_IsPopulated = true;
@@ -106,8 +125,9 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             m_ActionButton.SetEnabled(true);
 
             var fieldName = m_DropdownField.choices[m_DropdownField.index];
-            m_SelectedFieldDefinition = m_FieldDefinitions.First(x => x.DisplayName == fieldName);
-            m_FieldInfo.text = $"Key::{m_SelectedFieldDefinition.Descriptor.FieldKey}, {m_SelectedFieldDefinition.Type}";
+            var kvp = m_FieldDefinitionProperties.First(x => x.Value.DisplayName == fieldName);
+            m_SelectedFieldDefinition = kvp.Key;
+            m_FieldInfo.text = $"Key::{kvp.Key}, {kvp.Value.Type}";
         }
     }
 }

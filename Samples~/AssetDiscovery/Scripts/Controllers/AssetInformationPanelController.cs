@@ -10,26 +10,17 @@ using UnityEngine.UIElements;
 
 namespace Unity.Cloud.Assets.Samples.AssetDiscovery
 {
-    public interface IAssetInformationPanelController
+    public class AssetInformationPanelController
     {
-        void Init(VisualElement root);
-        void PopulateAssetPanel(IAsset asset);
-        Task PopulateDatasetsPanel(IAsyncEnumerable<IDataset> datasets);
-        void DisplayInformationPanel();
-        void HideInformationPanel();
-    }
+        public delegate Task<string> GetDisplayName(string key);
 
-    class AssetInformationPanelController : IAssetInformationPanelController
-    {
-        static readonly Type k_AssetType = typeof(IAsset);
+        static readonly Type k_AssetPropertiesType = typeof(AssetProperties);
         static readonly HashSet<string> k_AssetPropertiesToHide = new()
         {
-            nameof(IAsset.SourceProject),
-            nameof(IAsset.LinkedProjects),
-            nameof(IAsset.Name),
-            nameof(IAsset.Metadata),
-            nameof(IAsset.SystemMetadata),
-            nameof(IAsset.PreviewFileDescriptor),
+            nameof(AssetProperties.SourceProject),
+            nameof(AssetProperties.LinkedProjects),
+            nameof(AssetProperties.Name),
+            nameof(AssetProperties.PreviewFileDescriptor),
         };
 
         const string k_NoneLabel = "None";
@@ -38,9 +29,6 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
 
         readonly OrganizationController m_OrganizationController;
         IAsset m_SelectedAsset;
-        OrganizationId m_OrganizationId;
-        Dictionary<string, string> m_FieldToName;
-        Dictionary<string, string> m_StatusFlowToName;
 
         VisualElement m_RootPanel;
         ScrollView m_AssetInformationScrollView;
@@ -57,13 +45,19 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
 
         CancellationTokenSource m_CancelPopulateAsset;
 
+        GetDisplayName m_GetFieldName;
+        GetDisplayName m_GetStatusFlowName;
+
         public AssetInformationPanelController(OrganizationController organizationController)
         {
             m_OrganizationController = organizationController;
         }
 
-        public void Init(VisualElement root)
+        public void Init(VisualElement root, GetDisplayName getFieldName, GetDisplayName getStatusFlowName)
         {
+            m_GetFieldName = getFieldName;
+            m_GetStatusFlowName = getStatusFlowName;
+
             root.style.minWidth = new StyleLength {value = new Length(40.0f, LengthUnit.Percent)};
             m_RootPanel = root.Q<VisualElement>("RightPanel");
 
@@ -109,28 +103,47 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
 
             m_CancelPopulateAsset = new CancellationTokenSource();
 
-            m_AssetInformationContainer.Q<Label>("Name").text = asset.Name;
-            m_AssetInformationContainer.Q<Label>("Version").text = asset.State == AssetState.Frozen ? $"Ver. {asset.FrozenSequenceNumber}" : "Pending";
-
             m_AssetInformationScrollView.Clear();
 
             m_SelectedAsset = asset;
 
-            PopulateOrganizationFields(asset.Descriptor.OrganizationId);
-
-            var propertyNames = m_SelectedAsset.GetType().GetProperties().Select(property => property.Name)
-                .Where(name => !k_AssetPropertiesToHide.Contains(name));
-
-            foreach (var propertyName in propertyNames)
+            foreach (var property in CreatePropertyInformation(string.Empty, asset.Descriptor))
             {
-                var propertyValue = k_AssetType.GetProperty(propertyName)?.GetValue(m_SelectedAsset);
+                m_AssetInformationScrollView.Add(property);
+            }
 
-                if (string.IsNullOrEmpty(propertyValue?.ToString())) continue;
+            _ = PopulateAssetProperties(asset, m_CancelPopulateAsset.Token);
+            _ = PopulateMetadata(asset.SystemMetadata, m_AssetInformationScrollView, "SystemMetadata", m_CancelPopulateAsset.Token);
+            _ = PopulateMetadata(asset.Metadata as IReadOnlyMetadataContainer, m_AssetInformationScrollView, "Metadata", m_CancelPopulateAsset.Token);
+
+            m_AssetDownloadButton.tooltip = "";
+
+            if (m_InProgressDownloads.Contains(m_SelectedAsset.Descriptor.AssetId.ToString()))
+            {
+                UpdateDownloadButton(m_AssetDownloadButton, false);
+            }
+            else
+            {
+                m_AssetDownloadButton.text = "Download";
+                m_AssetDownloadButton.SetEnabled(false);
+            }
+        }
+
+        async Task PopulateAssetProperties(IAsset asset, CancellationToken cancellationToken)
+        {
+            var assetProperties = await asset.GetPropertiesAsync(cancellationToken);
+
+            m_AssetInformationContainer.Q<Label>("Name").text = assetProperties.Name;
+            m_AssetInformationContainer.Q<Label>("Version").text = assetProperties.State == AssetState.Frozen ? $"Ver. {assetProperties.FrozenSequenceNumber}" : "Pending";
+
+            foreach (var propertyInfo in k_AssetPropertiesType.GetProperties())
+            {
+                if (k_AssetPropertiesToHide.Contains(propertyInfo.Name)) continue;
 
                 var propertyInformation = CreatePropertyInformation
                 (
-                    propertyName,
-                    propertyValue
+                    propertyInfo.Name,
+                    propertyInfo.GetValue(assetProperties)
                 );
 
                 foreach (var property in propertyInformation)
@@ -138,18 +151,13 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
                     m_AssetInformationScrollView.Add(property);
                 }
             }
-
-            _ = PopulateMetadata(asset.SystemMetadata, m_AssetInformationScrollView, "SystemMetadata", m_CancelPopulateAsset.Token);
-            _ = PopulateMetadata(asset.Metadata as IReadOnlyMetadataContainer, m_AssetInformationScrollView, "Metadata", m_CancelPopulateAsset.Token);
-
-            m_AssetDownloadButton.tooltip = "";
-
-            UpdateDownloadButton(m_AssetDownloadButton, !m_InProgressDownloads.Contains(m_SelectedAsset.Descriptor.AssetId.ToString()));
         }
 
         public async Task PopulateDatasetsPanel(IAsyncEnumerable<IDataset> datasets)
         {
             m_DatasetScrollView.Clear();
+
+            var tasks = new List<Task<bool>>();
 
             await foreach (var dataset in datasets)
             {
@@ -161,42 +169,16 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
                 _ = PopulateMetadata(dataset.Metadata as IReadOnlyMetadataContainer, foldout.ScrollView, "Metadata", m_CancelPopulateAsset.Token);
 
                 m_DatasetScrollView.Add(foldout);
+
+                tasks.Add(foldout.CheckIfHasFilesTask);
             }
-        }
 
-        void PopulateOrganizationFields(OrganizationId organizationId)
-        {
-            if (m_OrganizationId == organizationId) return;
-            m_OrganizationId = organizationId;
+            await Task.WhenAll(tasks);
 
-            _ = PopulateFieldToName();
-            _ = PopluateStatusFlowToName();
-        }
-
-        async Task PopulateFieldToName()
-        {
-            m_FieldToName = null;
-
-            var dictionary = new Dictionary<string, string>();
-            await foreach (var fieldDefinition in PlatformServices.AssetRepository.ListFieldDefinitionsAsync(m_OrganizationId, Range.All, default))
+            if (tasks.Any(task => task.IsCompletedSuccessfully && task.Result))
             {
-                dictionary[fieldDefinition.Descriptor.FieldKey] = fieldDefinition.DisplayName;
+                UpdateDownloadButton(m_AssetDownloadButton, !m_InProgressDownloads.Contains(m_SelectedAsset.Descriptor.AssetId.ToString()));
             }
-
-            m_FieldToName = dictionary;
-        }
-
-        async Task PopluateStatusFlowToName()
-        {
-            m_StatusFlowToName = null;
-
-            var dictionary = new Dictionary<string, string>();
-            await foreach (var statusFlow in PlatformServices.AssetRepository.ListStatusFlowsAsync(m_OrganizationId, Range.All, default))
-            {
-                dictionary[statusFlow.Descriptor.StatusFlowId] = statusFlow.Name;
-            }
-
-            m_StatusFlowToName = dictionary;
         }
 
         IEnumerable<VisualElement> CreatePropertyInformation(string propertyName, object propertyValue)
@@ -207,12 +189,13 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
             {
                 case AssetDescriptor assetDescriptor:
                     AddItem(items, "Id", assetDescriptor.AssetId.ToString());
+                    AddItem(items, "Version", assetDescriptor.AssetVersion.ToString());
                     break;
                 case DatasetDescriptor datasetDescriptor:
                     AddItem(items, "Id", datasetDescriptor.DatasetId.ToString());
                     break;
                 case StatusFlowDescriptor statusFlowDescriptor:
-                    AddItem(items, "Status Flow", statusFlowDescriptor.StatusFlowId, valueSetter: (l, s) => _ = TrySetStatusFlowNameAsync(l, s));
+                    AddItem(items, "Status Flow", statusFlowDescriptor.StatusFlowId, valueSetter: (l, s) => _ = SetDisplayNameAsync(m_GetStatusFlowName, l, s));
                     break;
                 case AuthoringInfo authoringInfo:
                     AddItem(items, "Created On", authoringInfo.Created.ToString("MM/dd/yyyy"));
@@ -253,7 +236,7 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
         {
             var properties = new List<VisualElement>();
 
-            Action<Label, string> getFieldName = (l, s) => _ = TrySetFieldNameAsync(l, s);
+            Action<Label, string> getFieldName = (l, s) => _ = SetDisplayNameAsync(m_GetFieldName, l, s);
 
             await foreach (var kvp in metadata)
             {
@@ -348,30 +331,10 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
             }
         }
 
-        async Task TrySetFieldNameAsync(TextElement label, string key)
+        static async Task SetDisplayNameAsync(GetDisplayName getDisplayName, TextElement label, string key)
         {
-            while (m_FieldToName == null)
-            {
-                await Task.Yield();
-            }
-
-            if (m_FieldToName.TryGetValue(key, out var displayName))
-            {
-                label.text = displayName;
-            }
-        }
-
-        async Task TrySetStatusFlowNameAsync(TextElement label, string key)
-        {
-            while (m_StatusFlowToName == null)
-            {
-                await Task.Yield();
-            }
-
-            if (m_StatusFlowToName.TryGetValue(key, out var displayName))
-            {
-                label.text = displayName;
-            }
+            var displayName = await getDisplayName(key);
+            label.text = displayName;
         }
 
         public void DisplayInformationPanel()

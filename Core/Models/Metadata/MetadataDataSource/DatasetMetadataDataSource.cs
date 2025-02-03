@@ -39,7 +39,6 @@ namespace Unity.Cloud.Assets
         {
             return new FieldsFilter
             {
-                AssetFields = AssetFields.datasets,
                 DatasetFields = m_MetadataSpecification == MetadataDataSourceSpecification.metadata ? DatasetFields.metadata : DatasetFields.systemMetadata,
             };
         }

@@ -20,6 +20,7 @@ namespace Unity.Cloud.Assets
 
         public AssetUpdate() { }
 
+        [Obsolete("Use the default constructor instead.")]
         public AssetUpdate(IAsset asset)
         {
             Name = asset.Name;

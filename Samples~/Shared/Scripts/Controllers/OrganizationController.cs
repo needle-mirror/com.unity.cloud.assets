@@ -30,40 +30,35 @@ namespace Unity.Cloud.Assets.Samples
         public event Action HideContent;
         public event Action<OrganizationId> OrganizationSelected;
 
-        protected virtual void Start()
+        protected virtual async void Start()
         {
-            ProcessAuthenticator();
+            Authenticator.AuthenticationStateChanged += AuthenticationStateChanged;
 
             m_OrganizationListUi.Initialize(RootVisualElement);
             m_OrganizationListUi.OrganizationSelected += OnOrganizationSelected;
             m_OrganizationListUi.Hide();
 
             DialogService.Initialize(RootVisualElement);
+
+            await OnAuthenticationStateChanged(Authenticator.AuthenticationState);
         }
 
         protected virtual void OnDestroy()
         {
             if (Authenticator != null)
             {
-                Authenticator.AuthenticationStateChanged -= OnAuthenticationStateChanged;
+                Authenticator.AuthenticationStateChanged -= AuthenticationStateChanged;
             }
 
             m_OrganizationListUi.OrganizationSelected -= OnOrganizationSelected;
         }
 
-        void ProcessAuthenticator()
+        async void AuthenticationStateChanged(AuthenticationState newAuthenticationState)
         {
-            if (Authenticator.RequiresGUI)
-            {
-                Authenticator.AuthenticationStateChanged += OnAuthenticationStateChanged;
-            }
-            else
-            {
-                OnAuthenticationStateChanged(AuthenticationState.LoggedIn);
-            }
+            await OnAuthenticationStateChanged(newAuthenticationState);
         }
 
-        async void OnAuthenticationStateChanged(AuthenticationState newAuthenticationState)
+        async Task OnAuthenticationStateChanged(AuthenticationState newAuthenticationState)
         {
             switch (newAuthenticationState)
             {

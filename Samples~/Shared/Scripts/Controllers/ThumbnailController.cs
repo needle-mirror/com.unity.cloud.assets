@@ -22,20 +22,21 @@ namespace Unity.Cloud.Assets.Samples
             public bool IsLoaded { get; private set; }
             public Texture2D Texture2D { get; private set; }
 
-            public ThumbnailDownloadEntry(IAsset asset, Action<AssetId> onLifetimeComplete, CancellationToken token)
+            public ThumbnailDownloadEntry(AssetId assetId, FileDescriptor previewFileDescriptor, Action<AssetId> onLifetimeComplete, CancellationToken token)
             {
-                m_AssetId = asset.Descriptor.AssetId;
+                m_AssetId = assetId;
                 m_OnLifetimeComplete = onLifetimeComplete;
 
-                _ = GetDownloadUrl(asset, token);
+
+                _ = GetDownloadUrl(previewFileDescriptor, token);
             }
 
-            async Task GetDownloadUrl(IAsset asset, CancellationToken token)
+            async Task GetDownloadUrl(FileDescriptor fileDescriptor, CancellationToken token)
             {
                 Uri previewFileUrl = null;
                 try
                 {
-                    var file = await PlatformServices.AssetRepository.GetFileAsync(asset.PreviewFileDescriptor, token);
+                    var file = await PlatformServices.AssetRepository.GetFileAsync(fileDescriptor, token);
                     previewFileUrl = await file.GetResizedImageDownloadUrlAsync(k_Dimension, token);
                 }
                 catch (TaskCanceledException)
@@ -110,13 +111,13 @@ namespace Unity.Cloud.Assets.Samples
             m_CancellationTokenSource = new CancellationTokenSource();
         }
 
-        public static void GetThumbnail(IAsset asset, Action<Texture2D> thumbnailReadyCallback)
+        public static void GetThumbnail(AssetId assetId, FileDescriptor previewFileDescriptor, Action<Texture2D> thumbnailReadyCallback)
         {
-            if (!m_ThumbnailCache.TryGetValue(asset.Descriptor.AssetId, out var thumbnail))
+            if (!m_ThumbnailCache.TryGetValue(assetId, out var thumbnail))
             {
                 // Create new thumbnail entry
-                thumbnail = new ThumbnailDownloadEntry(asset, RemoveThumbnail, m_CancellationTokenSource.Token);
-                m_ThumbnailCache.Add(asset.Descriptor.AssetId, thumbnail);
+                thumbnail = new ThumbnailDownloadEntry(assetId, previewFileDescriptor, RemoveThumbnail, m_CancellationTokenSource.Token);
+                m_ThumbnailCache.Add(assetId, thumbnail);
 
                 lock (thumbnail.Listeners)
                 {

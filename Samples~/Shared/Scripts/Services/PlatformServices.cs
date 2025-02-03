@@ -28,21 +28,20 @@ namespace Unity.Cloud.Assets.Samples
         public static IOrganizationRepository OrganizationRepository => s_CompositeAuthenticator;
 
         /// <summary>
-        /// Returns an <see cref="IAssetRepository"/>.
-        /// </summary>
-        public static IAssetRepository AssetRepository { get; private set; }
-
-        /// <summary>
         /// Returns a <see cref="UnityHttpClient"/>
         /// </summary>
         public static IHttpClient HttpClient { get; private set; }
+
+        /// <summary>
+        /// Returns an <see cref="IAssetRepository"/>.
+        /// </summary>
+        public static IAssetRepository AssetRepository { get; private set; }
 
         public static void Create()
         {
             HttpClient = new UnityHttpClient();
             var serviceHostResolver = UnityRuntimeServiceHostResolverFactory.Create();
             var playerSettings = UnityCloudPlayerSettings.Instance;
-
             var platformSupport = PlatformSupportFactory.GetAuthenticationPlatformSupport();
 
             var compositeAuthenticatorSettings = new CompositeAuthenticatorSettingsBuilder(HttpClient, platformSupport, serviceHostResolver, playerSettings)

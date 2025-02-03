@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Cloud.Common;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -71,7 +72,7 @@ namespace Unity.Cloud.Assets.Samples
             }
         }
 
-        public static string GetVersionText(this IAsset asset, bool includeParentVersion = false)
+        public static string GetVersionText(this AssetVersion version, AssetProperties asset, bool includeParentVersion = false)
         {
             var versionText = asset.State switch
             {
@@ -79,13 +80,13 @@ namespace Unity.Cloud.Assets.Samples
                 _ => includeParentVersion ? $"Pending from Ver. {asset.ParentFrozenSequenceNumber}" : "Pending"
             };
 
-            var version = asset.Descriptor.AssetVersion.ToString();
-            if (version.Length > 8)
+            var versionStr = version.ToString();
+            if (versionStr.Length > 8)
             {
-                version = version[..8];
+                versionStr = versionStr[..8];
             }
 
-            return $"{versionText}\n<color=#888888>{version}</color>";
+            return $"{versionText}\n<color=#888888>{versionStr}</color>";
         }
     }
 }

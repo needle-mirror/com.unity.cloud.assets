@@ -14,37 +14,37 @@ A dataset is a set of files and metadata that are uploaded to an asset on the As
 * A dataset has two types of metadata:
   * primary type
   * system tag
-* A dataset can reference files contained in other datasets of the same asset. This avoid the duplication of data.
-* Files can be referenced in two different datasets of the same asset, to avoid duplication of data.
+* A dataset can reference files contained in other datasets of the same asset. This avoids data duplication.
+* Files can be referenced in two different datasets of the same asset. This avoids data duplication.
 
 ## Asset
 
-An asset is a collection of one or several datasets and metadata uploaded to the Asset Manager.
+An asset is a collection of one or several datasets and metadata uploaded to Asset Manager.
 
 * An asset is always part of at least one project.
-* An asset can be linked to multiple projects. They can optionally be part of a collection.
+* You can link an asset to multiple projects. Optionally, you can add this asset to those projects' collections.
 
 ## Projects
 
-Asset Projects are Unity Cloud Projects with the Asset Manager enabled. In Asset Manager Projects members of an Organization can add assets, collections, and users. They can also assign roles to users.  
+Asset projects are Unity Cloud projects with Asset Manager enabled. In Asset Manager projects, members of an organization can add assets, collections, and users. They can also assign roles to users.  
 
 ## Collections
 
-Within a project, assets can be linked to one or more collections. For information, see [the use case on collection](use-case-manage-collections.md).
+Within a project, you can link assets to one or more collections. Read more about [collections](use-case-manage-collections.md).
 
 ## Metadata
 
 Metadata exposes additional information about an asset, dataset, or file.
-Metadata keys are defined in an organization's library; to manage these keys, see [Manage the field definitions in an organization](use-case-manage-fields.md).
-Once keys have been created within an organization, they can be used to populate the metadata of assets, datasets, and files, see [Add or update an asset's metadata entries](use-case-manage-asset-metadata.md).
+Metadata keys are defined in an organization's library. Read more about [managing metadata keys](use-case-manage-fields.md).
+When you have created keys within an organization, use them to populate the metadata of assets, datasets, and files. Read more about [adding or updating an asset's metadata entries](use-case-manage-asset-metadata.md).
 
 ## Additional resources
 
-* For information about:
-  * creating assets, see the [Create files use case](use-case-create-files.md).
-  * finding assets in your projects, see the [Search assets use case](use-case-search-assets.md)
-  * searching asset across project see the [Search across projects use case](use-case-search-across-projects-assets.md).
-  * finding and downloading published assets in your Projects, see the [Asset Discovery Sample](./asset-discovery-sample.md)
-  * creating, viewing, and editing assets, see the [Asset Management Sample](./asset-management-sample.md).
+* Read more about:
+  * [Creating assets](use-case-create-files.md).
+  * [Finding assets in your projects](use-case-search-assets.md).
+  * [Searching across projects](use-case-search-across-projects-assets.md).
+  * [Finding and downloading published assets in your projects](./asset-discovery-sample.md)
+  * [Creating, viewing, and editing assets](./asset-management-sample.md).
 
-Unity Cloud Assets samples rely on functionality in the Unity Identity and Access Management SDK. For more information, see [Identity package for user login](https://docs.unity3d.com/Packages/com.unity.cloud.identity@latest).
+Unity Cloud Assets samples rely on functionality in the Unity Identity and Access Management SDK. Read more about the [Identity package](https://docs.unity3d.com/Packages/com.unity.cloud.identity@latest).

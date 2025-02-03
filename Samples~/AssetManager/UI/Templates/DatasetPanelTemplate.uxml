@@ -22,16 +22,10 @@
                 <ui:TextField picking-mode="Ignore" value="Dataset Name" name="DatasetNameField" style="-unity-font-style: bold; font-size: 20px;" />
                 <ui:Instance template="StatusTemplate" />
                 <ui:VisualElement name="Content" style="overflow: hidden; align-self: flex-end; width: 100%; padding-left: 4px;">
-                    <ui:VisualElement name="DatasetDescription" style="min-height: 70px; flex-grow: 1; flex-shrink: 0;">
-                        <ui:TextField picking-mode="Ignore" label="Description" value="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua." text="Description" name="DatasetDescriptionField" multiline="true" style="color: rgb(210, 210, 210); flex-grow: 1; white-space: normal; min-height: 70px;" />
-                    </ui:VisualElement>
-                    <ui:VisualElement name="DatasetTags" style="flex-shrink: 0;">
-                        <ui:TextField name="DatasetTagsField" value="filler text" picking-mode="Ignore" label="Tags" />
+                    <ui:TextField picking-mode="Ignore" label="Description" name="DatasetDescriptionField" multiline="true" placeholder-text=" " hide-placeholder-on-focus="true" style="white-space: normal;" />
+                    <ui:TextField name="DatasetTagsField" picking-mode="Ignore" label="Tags" placeholder-text=" " hide-placeholder-on-focus="true" />
                         <ui:VisualElement name="DatasetTagsChipContainer" style="flex-direction: row; flex-wrap: wrap; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 125px; margin-bottom: 2px; margin-top: 2px; margin-right: 4px; margin-left: 4px;" />
-                    </ui:VisualElement>
-                    <ui:VisualElement name="DatasetIsVisible" style="align-items: flex-start;">
-                        <ui:Toggle label="Visible" name="DatasetVisibleToggle" value="false" />
-                    </ui:VisualElement>
+                    <ui:Toggle label="Visible" name="DatasetVisibleToggle" style="align-self: flex-start;" />
                     <ui:VisualElement name="Metadata" style="flex-grow: 1; flex-shrink: 0; margin-top: 2px; margin-right: 4px; margin-bottom: 2px; margin-left: 4px;">
                         <ui:Label tabindex="-1" text="Metadata" parse-escape-sequences="true" display-tooltip-when-elided="true" class="unity-base-field__label" style="align-self: flex-start;" />
                         <ui:VisualElement name="MetadataContainer" style="flex-grow: 1;" />

@@ -64,7 +64,7 @@ assetSearchFilter.Collections.WhereContains("my awesome collection", "my other a
 
 var results = project.QueryAssets()
     .SelectWhereMatchesFilter(assetSearchFilter)
-    .OrderBy(nameof(IAsset.Name), SortingOrder.Descending)
+    .OrderBy("name", SortingOrder.Descending)
     .LimitTo(Range.EndAt(10))
     .ExecuteAsync(CancellationToken.None);
 
@@ -78,7 +78,7 @@ var results = project.QueryAssets()
 
 await foreach (var asset in results)
 {
-    Debug.Log(asset.Name + " is available for use.");
+    Debug.Log(asset.Descriptor.AssetId + " is available for use.");
 
     // Do something with each `asset` as it becomes available.
 }

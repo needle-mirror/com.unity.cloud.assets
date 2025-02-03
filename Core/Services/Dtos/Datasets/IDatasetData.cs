@@ -18,5 +18,8 @@ namespace Unity.Cloud.Assets
 
         [DataMember(Name = "workflowName")]
         string WorkflowName { get; }
+
+        [DataMember(Name = "files")]
+        IEnumerable<FileData> Files { get; }
     }
 }

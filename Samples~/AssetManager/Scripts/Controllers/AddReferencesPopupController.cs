@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Unity.Cloud.Common;
@@ -67,12 +66,17 @@ namespace Unity.Cloud.Assets.Samples
 
             var enumerable = PlatformServices.AssetRepository.QueryAssets(new[] {projectDescriptor})
                 .ExecuteAsync(m_FetchTokenSource.Token);
+
+            var choices = new List<string>();
             await foreach (var asset in enumerable)
             {
                 m_Assets.Add(asset);
+
+                var properties = await asset.GetPropertiesAsync(m_FetchTokenSource.Token);
+                choices.Add($"{properties.Name} ({asset.Descriptor.AssetId})");
             }
 
-            m_AssetSelection.choices = m_Assets.Select(x => $"{x.Name} ({x.Descriptor.AssetId})").ToList();
+            m_AssetSelection.choices = choices;
             m_AssetSelection.SetEnabled(true);
         }
 
@@ -99,16 +103,18 @@ namespace Unity.Cloud.Assets.Samples
 
             var combinedChoices = new List<string>(m_Labels);
 
-            var versionQuery = asset.QueryVersions().ExecuteAsync(cancellationToken);
+            var versionQuery = asset.ListVersionsAsync(Range.All, cancellationToken);
             await foreach (var version in versionQuery)
             {
                 m_Versions.Add(version.Descriptor.AssetVersion);
 
-                var versionString = version.State switch
+                var properties = await version.GetPropertiesAsync(cancellationToken);
+
+                var versionString = properties.State switch
                 {
-                    AssetState.Frozen => $"Ver. {version.FrozenSequenceNumber}",
+                    AssetState.Frozen => $"Ver. {properties.FrozenSequenceNumber}",
                     AssetState.PendingFreeze => $"Pending",
-                    AssetState.Unfrozen => version.ParentFrozenSequenceNumber > 0 ? $"WIP of Ver.{version.ParentFrozenSequenceNumber}" : "Ver. 1 - Pending",
+                    AssetState.Unfrozen => properties.ParentFrozenSequenceNumber > 0 ? $"WIP of Ver.{properties.ParentFrozenSequenceNumber}" : "Ver. 1 - Pending",
                     _ => "Ver. 1 - Pending"
                 };
 

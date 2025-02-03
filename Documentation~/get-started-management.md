@@ -40,7 +40,7 @@ To integrate the Unity Cloud Assets package in a Unity project, do the following
 
 To set up a Unity scene, follow these steps:
 
-1. In your Unity **Project** window, go to **Assets** > **Scenes**.
+1. In the **Project** window of the Unity Editor, go to **Assets** > **Scenes**.
 2. Select and hold the `Assets/Scenes` folder.
 3. Go to **Create** > **Scene**.
 4. <a name="a1"></a>Name the new scene `AssetManagementExample`.
@@ -50,7 +50,7 @@ To set up a Unity scene, follow these steps:
 To create an `AssetManager` object, first create a `MonoBehaviour` class to manage the UI and then create the `AssetManager` object in your scene as follows:
 
 1. Create a `MonoBehaviour` class to manage the UI:
-   1. In your Unity **Project** window, go to **Assets** > **Scripts**.
+   1. In the **Project** window of the Unity Editor, go to **Assets** > **Scripts**.
    2. Create an `Assets/Scripts` folder if the folder does not already exist.
    3. Select and hold the `Assets/Scripts` folder.
    4. Go to **Create** > **C# Script**.
@@ -64,8 +64,11 @@ To create an `AssetManager` object, first create a `MonoBehaviour` class to mana
 
 To set up the necessary components, follow these steps:
 
-1. Implement the platform services pattern. Read more about [dependency injection](https://docs.unity3d.com/Packages/com.unity.cloud.identity@latest?subfolder=/manual/best-practices-dependency-injection.html) in the [Identity package documentation](https://docs.unity3d.com/Packages/com.unity.cloud.identity@latest).
-2. Update the `PlatformServices` class in your `PlatformServices.cs` file as shown below:
+1. In the **Project** window of the Unity Editor, go to **Assets** > **Scripts**.
+2. Select and hold the `Assets/Scripts` folder.
+3. Go to **Create** > **C# Script**.
+4. Name your script `PlatformServices`.
+3. Open the file and replace its contents with the following code sample:
 
 [!code-cs [platform-services](../Samples/Documentation/Manual/PlatformServices.cs#PlatformServices)]
 
@@ -77,7 +80,7 @@ This script does the following:
 
 To initialize the `PlatformServices` class in your scene, follow these steps:
 
-1. In your Unity **Project** window, go to **Assets** > **Scripts**.
+1. In the **Project** window of the Unity Editor, go to **Assets** > **Scripts**.
 2. Select and hold the `Assets/Scripts` folder.
 3. Go to **Create** > **C# Script**.
 4. <a name="a3"></a>Name your script `PlatformServicesInitialization`.
@@ -95,7 +98,7 @@ This script does the following:
 
 To clean up the `PlatformServices` class in your scene, follow these steps:
 
-1. In your Unity **Project** window, go to **Assets** > **Scripts**.
+1. In the **Project** window of the Unity Editor, go to **Assets** > **Scripts**.
 2. Select and hold the `Assets/Scripts` folder.
 3. Go to **Create** > **C# Script**.
 4. Name your script `PlatformServicesShutdown`.
@@ -106,15 +109,18 @@ To clean up the `PlatformServices` class in your scene, follow these steps:
 
 This script cleans up of the services when the scene is closed.
 
+> [!NOTE]
+> Read more about the [platform services pattern implementation](https://docs.unity3d.com/Packages/com.unity.cloud.identity@latest?subfolder=/manual/best-practices-dependency-injection.html) in the [Identity package documentation](https://docs.unity3d.com/Packages/com.unity.cloud.identity@latest).
+
 ### Create the behavior for managing assets
 
 To create the behavior for asset management, follow these steps:
 
-1. In your Unity **Project** window, go to **Assets** > **Scripts**.
+1. In the **Project** window of the Unity Editor, go to **Assets** > **Scripts**.
 2. Select and hold the `Assets/Scripts` folder.
 3. Go to **Create** > **C# Script**.
-4. <a name="a5">Name your script `AssetManagementBehaviour`.
-5. Open the `AssetManagementBehaviour` script that you created in the previous step and replace the contents of the file with the following code sample:
+4. <a name="a5"></a>Name your script `AssetManagementBehaviour`.
+5. Open the file and replace its contents with the following code sample:
 
 [!code-cs [behaviour-script](../Samples/Documentation/Manual/GetStartedManagementExample.cs#Example)]
 
@@ -128,11 +134,11 @@ This script does the following:
 
 To create the interface for all UI scripts, follow these steps:
 
-1. In your Unity **Project** window, go to **Assets** > **Scripts**.
+1. In the **Project** window of the Unity Editor, go to **Assets** > **Scripts**.
 2. Select and hold the `Assets/Scripts` folder.
 3. Go to **Create** > **C# Script**. 
 4. Name your script `IAssetManagementUI`.
-5. Open the `IAssetManagementUI` script that you created in the previous step and replace the contents of the file with the following code sample:
+5. Open the file and replace its contents with the following code sample:
 
 [!code-cs [behaviour-script](../Samples/Documentation/Manual/IAssetManagementUI.cs#Example)]
 
@@ -142,11 +148,11 @@ To create the interface for all UI scripts, follow these steps:
 
 To create a UI for selecting an organization, do the following:
 
-1. In your Unity **Project** window, go to **Assets** > **Scripts**.
+1. In the **Project** window of the Unity Editor, go to **Assets** > **Scripts**.
 2. Select and hold the `Assets/Scripts` folder.
 3. Go to **Create** > **C# Script**. 
 4. Name your script `OrganizationSelectionExampleUI`.
-5. Open the `OrganizationSelectionExampleUI` script that you created in the previous step and replace the contents of the file with the following code sample:
+5. Open the file and replace its contents with the following code sample:
 
 [!code-cs [behaviour-script](../Samples/Documentation/Manual/OrganizationSelectionExampleUI.cs#Example)]
 
@@ -156,11 +162,11 @@ This script generates a UI to list and select organizations.
 
 To create a UI for selecting a project, do the following:
 
-1. In your Unity **Project** window, go to **Assets** > **Scripts**.
+1. In the **Project** window of the Unity Editor, go to **Assets** > **Scripts**.
 2. Select and hold the `Assets/Scripts` folder.
 3. Go to **Create** > **C# Script**.
 4. Name your script `ProjectSelectionExampleUI`.
-5. Open the `ProjectSelectionExampleUI` script that you created in the previous step and replace the contents of the file with the following code sample:
+5. Open the file and replace its contents with the following code sample:
 
 [!code-cs [behaviour-script](../Samples/Documentation/Manual/ProjectSelectionExampleUI.cs#Example)]
 
@@ -170,11 +176,11 @@ This script generates a UI to list and select projects.
 
 To create a UI for selecting an asset, do the following:
 
-1. In your Unity **Project** window, go to **Assets** > **Scripts**.
+1. In the **Project** window of the Unity Editor, go to **Assets** > **Scripts**.
 2. Select and hold the `Assets/Scripts` folder.
 3. Go to **Create** > **C# Script**.
 4. Name your script `AssetSelectionExampleUI`.
-5. Open the `AssetSelectionExampleUI` script that you created in the previous step and replace the contents of the file with the following code sample:
+5. Open the file and replace its contents with the following code sample:
 
 [!code-cs [behaviour-script](../Samples/Documentation/Manual/AssetSelectionExampleUI.cs#Example)]
 
@@ -196,11 +202,11 @@ This code snippet does the following:
 
 To create a UI for asset creation, follow these steps:
 
-1. In your Unity **Project** window, go to **Assets** > **Scripts**.
+1. In the **Project** window of the Unity Editor, go to **Assets** > **Scripts**.
 2. Select and hold the `Assets/Scripts` folder.
 3. Go to **Create** > **C# Script**.
 4. Name your script `UseCaseAssetCreationExampleUI`.
-5. Open the `UseCaseAssetCreationExampleUI` script that you created in the previous step and replace the contents of the file with the following code sample:
+5. Open the file and replace its contents with the following code sample:
 
 [!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseAssetCreationExample.cs#Example_UIClass)]
 
@@ -234,4 +240,4 @@ Read more about [uploading files](use-case-create-files.md).
 
 ### Grouping assets in collections
 
-Use collections to group of assets within a project. Read more about [managing collections](use-case-manage-collections.md).
+Use collections to group assets within a project. Read more about [managing collections](use-case-manage-collections.md).

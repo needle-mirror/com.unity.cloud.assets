@@ -25,8 +25,6 @@ namespace Unity.Cloud.Assets.Samples
 
         protected override void Start()
         {
-            base.Start();
-
             m_ProjectListUi.Initialize(RootVisualElement, null);
             m_ProjectListUi.Hide();
 
@@ -34,6 +32,8 @@ namespace Unity.Cloud.Assets.Samples
             contextMenu.SetEnabled(false);
 
             OrganizationSelected += PopulateProjectList;
+
+            base.Start();
         }
 
         public IAsyncEnumerable<IAsset> GetAssetsAcrossAllProjectsAsync(OrganizationId organizationId, CancellationToken cancellationToken)

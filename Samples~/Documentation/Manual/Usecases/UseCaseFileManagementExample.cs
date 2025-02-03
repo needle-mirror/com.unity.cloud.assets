@@ -48,6 +48,7 @@ namespace Unity.Cloud.Documentation.Assets
         Vector2 m_FilesScrollPosition;
 
         FileUpdate m_FileUpdate;
+        string m_TagsString = string.Empty;
 
         public void OnGUI()
         {
@@ -62,30 +63,34 @@ namespace Unity.Cloud.Documentation.Assets
             if (m_CurrentAsset != m_Behaviour.CurrentAsset)
             {
                 m_CurrentAsset = m_Behaviour.CurrentAsset;
-                m_Behaviour.CurrentDataset = null;
-                m_Behaviour.CurrentFile = null;
                 m_FileUpdate = null;
                 m_Behaviour.CancelTagGeneration();
-                _ = m_Behaviour.GetDataSetsAsync();
+                _ = m_Behaviour.GetDatasetsAsync();
             }
 
-            if (m_Behaviour.Datasets == null)
+            GUILayout.BeginVertical();
+
+            DisplayDatasetSelection(m_Behaviour.Datasets.ToArray());
+
+            GUILayout.EndVertical();
+
+            if (m_Behaviour.CurrentDatasetId == null)
             {
-                GUILayout.Label("Loading datasets...");
+                GUILayout.Label("! No dataset selected !");
                 return;
             }
 
             GUILayout.BeginVertical();
 
-            DisplayDatasetSelection();
+            DisplayFileSelection(m_Behaviour.FileProperties.Keys.ToArray());
 
             GUILayout.EndVertical();
 
-            GUILayout.BeginVertical();
-
-            DisplayFileSelection();
-
-            GUILayout.EndVertical();
+            if (m_Behaviour.CurrentFilePath == null)
+            {
+                GUILayout.Label("! No file selected !");
+                return;
+            }
 
             GUILayout.BeginVertical();
 
@@ -94,105 +99,106 @@ namespace Unity.Cloud.Documentation.Assets
             GUILayout.EndVertical();
         }
 
-        void DisplayDatasetSelection()
+        void DisplayDatasetSelection(IReadOnlyCollection<IDataset> datasets)
         {
             if (GUILayout.Button("Refresh", GUILayout.Width(60)))
             {
-                m_Behaviour.CurrentDataset = null;
-                m_Behaviour.CurrentFile = null;
-                _ = m_Behaviour.GetDataSetsAsync();
+                _ = m_Behaviour.GetDatasetsAsync();
                 return;
             }
 
             GUILayout.Space(5);
 
-            m_DatasetsScrollPosition = GUILayout.BeginScrollView(m_DatasetsScrollPosition, GUILayout.ExpandHeight(true), GUILayout.Width(Screen.width * 0.15f));
-
-            DisplayDatasets(m_Behaviour.Datasets.ToArray());
-
-            GUILayout.EndScrollView();
-        }
-
-        void DisplayDatasets(IReadOnlyCollection<IDataset> datasets)
-        {
             if (datasets.Count == 0)
             {
                 GUILayout.Label("No datasets.");
                 return;
             }
 
-            // Get a local copy of the list of asset files to avoid concurrent modification exceptions.
+            m_DatasetsScrollPosition = GUILayout.BeginScrollView(m_DatasetsScrollPosition, GUILayout.ExpandHeight(true), GUILayout.Width(Screen.width * 0.15f));
+
             foreach (var dataset in datasets)
             {
                 GUILayout.BeginHorizontal();
 
-                GUILayout.Label($"{dataset.Name}");
+                GUILayout.Label(m_Behaviour.GetDatasetName(dataset.Descriptor.DatasetId));
+
+                GUI.enabled = dataset.Descriptor.DatasetId != m_Behaviour.CurrentDatasetId;
 
                 if (GUILayout.Button("Select", GUILayout.Width(60)))
                 {
-                    m_Behaviour.CurrentDataset = dataset;
-                    _ = ListFiles();
+                    m_FileUpdate = null;
+                    m_Behaviour.CancelTagGeneration();
+                    _ = m_Behaviour.SetSelectedDatasetAsync(dataset.Descriptor.DatasetId);
                 }
+
+                GUI.enabled = true;
 
                 GUILayout.EndHorizontal();
             }
+
+            GUILayout.EndScrollView();
         }
 
-        void DisplayFileSelection()
+        void DisplayFileSelection(IReadOnlyCollection<string> filePaths)
         {
-            if (m_Behaviour.CurrentDataset == null)
-            {
-                GUILayout.Label("! No dataset selected !");
-                return;
-            }
-
-            if (m_Behaviour.Files == null)
-            {
-                GUILayout.Label("Loading files...");
-                return;
-            }
-
             if (GUILayout.Button("Refresh", GUILayout.Width(60)))
             {
-                m_Behaviour.CurrentFile = null;
-                _ = ListFiles();
+                m_FileUpdate = null;
+                m_Behaviour.CancelTagGeneration();
+                _ = m_Behaviour.GetFilesAsync();
                 return;
             }
 
             GUILayout.Space(5);
 
-            m_FilesScrollPosition = GUILayout.BeginScrollView(m_FilesScrollPosition, GUILayout.MaxHeight(Screen.height * 0.8f), GUILayout.Width(Screen.width * 0.2f));
-
-            DisplayFiles(m_Behaviour.Files.ToArray());
-
-            GUILayout.EndScrollView();
-        }
-
-        void DisplayFiles(IReadOnlyCollection<IFile> files)
-        {
-            if (files.Count == 0)
+            if (filePaths.Count == 0)
             {
                 GUILayout.Label("No files.");
                 return;
             }
 
+            m_FilesScrollPosition = GUILayout.BeginScrollView(m_FilesScrollPosition, GUILayout.MaxHeight(Screen.height * 0.8f), GUILayout.Width(Screen.width * 0.2f));
+
+            DisplayFiles(filePaths);
+
+            GUILayout.EndScrollView();
+        }
+
+        void DisplayFiles(IReadOnlyCollection<string> filePaths)
+        {
             // Get a local copy of the list of asset files to avoid concurrent modification exceptions.
-            foreach (var assetFile in files)
+            foreach (var filePath in filePaths)
             {
+                if (!m_Behaviour.FileProperties.TryGetValue(filePath, out var fileProperties))
+                {
+                    GUILayout.Label(filePath);
+                    continue;
+                }
+
                 GUILayout.BeginHorizontal();
 
-                GUILayout.Label($"{assetFile.Descriptor.Path}");
+                GUILayout.Label($"{filePath}");
+
+                GUI.enabled = filePath != m_Behaviour.CurrentFilePath;
 
                 if (GUILayout.Button("Select", GUILayout.Width(70)))
                 {
-                    m_Behaviour.CurrentFile = assetFile;
-                    m_FileUpdate = new FileUpdate(assetFile);
+                    m_Behaviour.CurrentFilePath = filePath;
+                    m_FileUpdate = new FileUpdate
+                    {
+                        Description = fileProperties.Description,
+                        Tags = fileProperties.Tags?.ToArray() ?? Array.Empty<string>()
+                    };
+                    m_TagsString = string.Join(',', m_FileUpdate.Tags);
                     m_Behaviour.CancelTagGeneration();
                 }
 
+                GUI.enabled = true;
+
                 if (GUILayout.Button("Download", GUILayout.Width(70)))
                 {
-                    _ = m_Behaviour.DownloadFileAsync(assetFile);
+                    _ = m_Behaviour.DownloadFileAsync(filePath);
                 }
 
                 GUILayout.EndHorizontal();
@@ -201,29 +207,25 @@ namespace Unity.Cloud.Documentation.Assets
 
         void DisplaySelectedFile()
         {
-            if (m_Behaviour.Files == null || !m_Behaviour.Files.Any()) return;
-
-            if (m_Behaviour.CurrentFile == null)
+            if (!m_Behaviour.FileProperties.TryGetValue(m_Behaviour.CurrentFilePath, out var properties))
             {
-                GUILayout.Label("! No file selected !");
+                GUILayout.Label("! File properties not loaded !");
                 return;
             }
 
-            var file = m_Behaviour.CurrentFile;
-
             GUILayout.BeginVertical(GUI.skin.box);
 
-            GUILayout.Label($"{file.Descriptor.Path}");
+            GUILayout.Label($"{m_Behaviour.CurrentFilePath}");
 
-            GUILayout.Label($"Status: {file.Status}");
+            GUILayout.Label($"Status: {properties.StatusName}");
 
-            var createdDate = file.AuthoringInfo?.Created.ToString("d") ?? "unknown";
+            var createdDate = properties.AuthoringInfo?.Created.ToString("d") ?? "unknown";
             GUILayout.Label($"Created on: {createdDate}");
 
-            var modifiedDate = file.AuthoringInfo?.Updated.ToString("d") ?? "unknown";
+            var modifiedDate = properties.AuthoringInfo?.Updated.ToString("d") ?? "unknown";
             GUILayout.Label($"Last modified on: {modifiedDate}");
 
-            GUILayout.Label($"Size: {file.SizeBytes} bytes");
+            GUILayout.Label($"Size: {properties.SizeBytes} bytes");
 
             GUILayout.EndVertical();
 
@@ -233,8 +235,8 @@ namespace Unity.Cloud.Documentation.Assets
             m_FileUpdate.Description = GUILayout.TextField(m_FileUpdate.Description);
 
             GUILayout.Label("Tags:");
-            var tags = string.Join(", ", m_FileUpdate.Tags ?? Array.Empty<string>());
-            m_FileUpdate.Tags = GUILayout.TextField(tags).Split(',')
+            m_TagsString = GUILayout.TextField(m_TagsString, GUILayout.ExpandWidth(true));
+            m_FileUpdate.Tags = m_TagsString.Split(',')
                 .Select(x => x.Trim())
                 .Where(x => !string.IsNullOrWhiteSpace(x))
                 .ToArray();
@@ -254,14 +256,6 @@ namespace Unity.Cloud.Documentation.Assets
             }
         }
 
-        async Task ListFiles()
-        {
-            m_Behaviour.CurrentFile = null;
-            m_FileUpdate = null;
-            m_Behaviour.CancelTagGeneration();
-            await m_Behaviour.GetFilesAsync();
-        }
-
         void DisplayGeneratedTags()
         {
             if (m_Behaviour.GeneratedTags != null)
@@ -274,8 +268,14 @@ namespace Unity.Cloud.Documentation.Assets
 
                     if (GUILayout.Button("Add", GUILayout.Width(40)))
                     {
-                        m_FileUpdate.Tags ??= Array.Empty<string>();
-                        m_FileUpdate.Tags = m_FileUpdate.Tags.Append(tag.Value).ToArray();
+                        if (string.IsNullOrWhiteSpace(m_TagsString))
+                        {
+                            m_TagsString = tag.Value;
+                        }
+                        else
+                        {
+                            m_TagsString += $", {tag.Value}";
+                        }
                     }
 
                     GUILayout.Label($"{tag.Value}, Confidence: {tag.Confidence:F3}");
@@ -307,62 +307,86 @@ namespace Unity.Cloud.Documentation.Assets
         CancellationTokenSource m_DatasetCancellationSource;
         CancellationTokenSource m_FileCancellationSource;
 
-        public IEnumerable<IDataset> Datasets { get; private set; }
+        public List<IDataset> Datasets { get; } = new();
+        public DatasetId? CurrentDatasetId { get; private set; }
+        Dictionary<DatasetId, string> DatasetNames { get; } = new();
 
-        public IDataset CurrentDataset { get; set; }
+        public Dictionary<string, FileProperties> FileProperties { get; } = new();
+        public string CurrentFilePath { get; set; }
 
-        public IEnumerable<IFile> Files { get; private set; }
-
-        public IFile CurrentFile { get; set; }
-
-        public async Task GetDataSetsAsync()
+        public async Task GetDatasetsAsync()
         {
+            var datasetId = CurrentDatasetId;
+            CurrentDatasetId = null;
+
             CleanFileCancellation();
-            Files = null;
+            FileProperties.Clear();
 
             CleanDatasetCancellation();
-            Datasets = null;
+            Datasets.Clear();
+            DatasetNames.Clear();
 
             if (CurrentAsset == null) return;
 
             m_DatasetCancellationSource = new CancellationTokenSource();
             var token = m_DatasetCancellationSource.Token;
 
-            var datasets = new List<IDataset>();
             var datasetList = CurrentAsset.ListDatasetsAsync(Range.All, token);
             await foreach (var dataset in datasetList)
             {
+                Datasets.Add(dataset);
+
+                if (datasetId == dataset.Descriptor.DatasetId)
+                {
+                    CurrentDatasetId = dataset.Descriptor.DatasetId;
+                }
+
+                var properties = await dataset.GetPropertiesAsync(token);
+
                 if (token.IsCancellationRequested) break;
 
-                datasets.Add(dataset);
+                DatasetNames[dataset.Descriptor.DatasetId] = properties.Name;
             }
+        }
 
-            if (token.IsCancellationRequested) return;
+        public string GetDatasetName(DatasetId datasetId)
+        {
+            return DatasetNames.TryGetValue(datasetId, out var datasetName) ? datasetName : datasetId.ToString();
+        }
 
-            Datasets = datasets;
-            CleanDatasetCancellation();
+        public async Task SetSelectedDatasetAsync(DatasetId? datasetId)
+        {
+            CurrentDatasetId = datasetId;
+            await GetFilesAsync();
         }
 
         public async Task GetFilesAsync()
         {
+            var filePath = CurrentFilePath;
+            CurrentFilePath = null;
+
             CleanFileCancellation();
+            FileProperties.Clear();
 
-            Files = null;
+            if (CurrentDatasetId == null) return;
 
-            if (CurrentDataset == null) return;
+            var dataset = Datasets.FirstOrDefault(d => d.Descriptor.DatasetId == CurrentDatasetId);
+            if (dataset == null) return;
 
             m_FileCancellationSource = new CancellationTokenSource();
             var token = m_FileCancellationSource.Token;
 
-            var files = new List<IFile>();
-            var fileList = CurrentDataset.ListFilesAsync(Range.All, token);
+            var fileList = dataset.ListFilesAsync(Range.All, token);
             await foreach (var file in fileList)
             {
-                files.Add(file);
-            }
+                if (filePath == file.Descriptor.Path)
+                {
+                    CurrentFilePath = file.Descriptor.Path;
+                }
 
-            Files = files;
-            CleanFileCancellation();
+                var properties = await file.GetPropertiesAsync(token);
+                FileProperties[file.Descriptor.Path] = properties;
+            }
         }
 
         void CleanDatasetCancellation()
@@ -387,15 +411,40 @@ namespace Unity.Cloud.Documentation.Assets
             m_FileCancellationSource = null;
         }
 
+        async Task<IFile> GetFileAsync(string filePath)
+        {
+            if (CurrentDatasetId == null || string.IsNullOrEmpty(filePath)) return null;
+
+            var dataset = Datasets.FirstOrDefault(d => d.Descriptor.DatasetId == CurrentDatasetId)
+                ?? await CurrentAsset.GetDatasetAsync(CurrentDatasetId.Value, CancellationToken.None);
+
+            return await dataset.GetFileAsync(CurrentFilePath, CancellationToken.None);
+        }
+
         #endregion
 
         #region Example_Behaviour_UpdateAssetFile
 
         public async Task UpdateFileAsync(IFileUpdate fileUpdate)
         {
-            await CurrentFile.UpdateAsync(fileUpdate, CancellationToken.None);
-            Debug.Log("File updated.");
-            await CurrentFile.RefreshAsync(CancellationToken.None);
+            var file = await GetFileAsync(CurrentFilePath);
+            if (file == null) return;
+
+            try
+            {
+                await file.UpdateAsync(fileUpdate, CancellationToken.None);
+                await file.RefreshAsync(CancellationToken.None);
+
+                var properties = await file.GetPropertiesAsync(CancellationToken.None);
+                FileProperties[CurrentFilePath] = properties;
+
+                Debug.Log("File updated.");
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"Failed to update file. {e}");
+                throw;
+            }
         }
 
         #endregion
@@ -412,7 +461,7 @@ namespace Unity.Cloud.Documentation.Assets
             }
         }
 
-        public async Task DownloadFileAsync(IFile assetFile)
+        public async Task DownloadFileAsync(string filePath)
         {
             const string dialogHeader = "Download file to location:";
 
@@ -421,31 +470,33 @@ namespace Unity.Cloud.Documentation.Assets
 
             if (string.IsNullOrEmpty(folder)) return;
 
-            var filePath = Path.Combine(folder, assetFile.Descriptor.Path);
+            var downloadPath = Path.Combine(folder, filePath);
 
             try
             {
                 // Create the necessary directories
-                var directory = Path.GetDirectoryName(filePath);
+                var directory = Path.GetDirectoryName(downloadPath);
                 if (!string.IsNullOrEmpty(directory))
                 {
                     Directory.CreateDirectory(directory);
                 }
 
-                await using var destination = File.OpenWrite(filePath);
+                var file = await GetFileAsync(filePath);
+
+                await using var destination = File.OpenWrite(downloadPath);
 
                 var progress = new LogProgress();
-                await assetFile.DownloadAsync(destination, progress, default);
+                await file.DownloadAsync(destination, progress, default);
 
-                Debug.Log($"Asset file downloaded: {assetFile.Descriptor.Path}.");
+                Debug.Log($"Asset file downloaded: {filePath}.");
             }
             catch (Exception e)
             {
-                Debug.LogError($"Failed to download asset file: {assetFile.Descriptor.Path}. {e}");
+                Debug.LogError($"Failed to download asset file: {filePath}. {e}");
 
-                if (File.Exists(filePath))
+                if (File.Exists(downloadPath))
                 {
-                    File.Delete(filePath);
+                    File.Delete(downloadPath);
                 }
             }
         }
@@ -466,11 +517,12 @@ namespace Unity.Cloud.Documentation.Assets
 
             try
             {
-                GeneratedTags = await CurrentFile.GenerateSuggestedTagsAsync(TagGenerationCancellationSource.Token);
+                var file = await GetFileAsync(CurrentFilePath);
+                GeneratedTags = await file.GenerateSuggestedTagsAsync(TagGenerationCancellationSource.Token);
             }
             catch (OperationCanceledException)
             {
-                Debug.Log($"Cancelled tag generation for {CurrentFile.Descriptor.Path}.");
+                Debug.Log($"Cancelled tag generation for {CurrentFilePath}.");
             }
             catch (Exception e)
             {

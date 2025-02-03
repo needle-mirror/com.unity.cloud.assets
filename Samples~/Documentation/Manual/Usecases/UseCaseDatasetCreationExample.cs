@@ -79,14 +79,14 @@ namespace Unity.Cloud.Documentation.Assets
             }
 
             GUILayout.Label("Asset datasets:");
-            DisplayDatasets(m_Behaviour.Datasets?.ToArray() ?? Array.Empty<IDataset>());
+            DisplayDatasets(m_Behaviour.Datasets?.ToArray() ?? Array.Empty<DatasetProperties>());
 
             GUILayout.FlexibleSpace();
 
             GUILayout.EndVertical();
         }
 
-        void DisplayDatasets(IReadOnlyList<IDataset> datasets)
+        void DisplayDatasets(IReadOnlyList<DatasetProperties> datasets)
         {
             if (datasets.Count == 0)
             {
@@ -99,7 +99,7 @@ namespace Unity.Cloud.Documentation.Assets
                 for (var i = 0; i < datasets.Count; ++i)
                 {
                     var dataset = datasets[i];
-                    GUILayout.Label($"{dataset.Name} ({dataset.Status})");
+                    GUILayout.Label($"{dataset.Name} ({dataset.StatusName})");
                 }
 
                 GUILayout.EndScrollView();
@@ -123,16 +123,18 @@ namespace Unity.Cloud.Documentation.Assets
 
         #region Example_Behaviour_RefreshDatasets
 
-        public List<IDataset> Datasets { get; set; }
+        public List<DatasetProperties> Datasets { get; set; }
 
         public async Task GetDatasets()
         {
-            Datasets = new List<IDataset>();
+            Datasets = new List<DatasetProperties>();
 
             var asyncList = CurrentAsset.ListDatasetsAsync(Range.All, CancellationToken.None);
             await foreach (var dataset in asyncList)
             {
-                Datasets.Add(dataset);
+                var properties = await dataset.GetPropertiesAsync(CancellationToken.None);
+
+                Datasets.Add(properties);
             }
         }
 
@@ -151,9 +153,10 @@ namespace Unity.Cloud.Documentation.Assets
             try
             {
                 var dataset = await CurrentAsset.CreateDatasetAsync(datasetCreation, default);
-                Datasets.Add(dataset);
+                var properties = await dataset.GetPropertiesAsync(default);
+                Datasets.Add(properties);
 
-                Debug.Log($"Asset dataset creation: {dataset.Name} added.");
+                Debug.Log($"Asset dataset creation: {properties.Name} added.");
             }
             catch (Exception e)
             {

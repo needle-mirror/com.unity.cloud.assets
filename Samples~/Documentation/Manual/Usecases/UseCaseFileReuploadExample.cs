@@ -94,19 +94,21 @@ namespace Unity.Cloud.Documentation.Assets
 
             foreach (var dataset in datasets)
             {
+                var datasetId = dataset.Descriptor.DatasetId;
+
                 GUILayout.BeginHorizontal();
 
-                GUILayout.Label($"{dataset.Name}");
+                GUILayout.Label(m_Behaviour.GetDatasetName(datasetId));
 
-                var expanded = m_Expanded.GetValueOrDefault(dataset.Descriptor.DatasetId);
+                var expanded = m_Expanded.GetValueOrDefault(datasetId);
                 if (GUILayout.Button(expanded ? "-" : "+", GUILayout.Width(20f)))
                 {
                     expanded = !expanded;
-                    m_Expanded[dataset.Descriptor.DatasetId] = expanded;
+                    m_Expanded[datasetId] = expanded;
 
                     if (!expanded)
                     {
-                        m_Behaviour.DatasetFiles.Remove(dataset.Descriptor.DatasetId);
+                        m_Behaviour.DatasetFiles.Remove(datasetId);
                     }
                 }
 
@@ -118,7 +120,7 @@ namespace Unity.Cloud.Documentation.Assets
 
                     GUILayout.Space(25);
 
-                    DisplayFiles(dataset.Descriptor.DatasetId);
+                    DisplayFiles(datasetId);
 
                     GUILayout.EndHorizontal();
                 }
@@ -190,31 +192,37 @@ namespace Unity.Cloud.Documentation.Assets
 
         #region Example_Behaviour_RefreshFiles
 
-        public IEnumerable<IDataset> Datasets { get; private set; }
+        public List<IDataset> Datasets { get; } = new();
+        Dictionary<DatasetId, string> DatasetNames { get; } = new();
         public Dictionary<DatasetId, IEnumerable<IFile>> DatasetFiles { get; } = new();
 
         public async Task GetDataSetsAsync()
         {
-            Datasets = null;
-
             if (CurrentAsset == null) return;
 
-            var datasets = new List<IDataset>();
+            Datasets.Clear();
+            DatasetNames.Clear();
+
             var datasetList = CurrentAsset.ListDatasetsAsync(Range.All, CancellationToken.None);
             await foreach (var dataset in datasetList)
             {
-                datasets.Add(dataset);
-            }
+                Datasets.Add(dataset);
 
-            Datasets = datasets;
+                var datasetProperties = await dataset.GetPropertiesAsync(CancellationToken.None);
+                DatasetNames[dataset.Descriptor.DatasetId] = datasetProperties.Name;
+            }
+        }
+
+        public string GetDatasetName(DatasetId datasetId)
+        {
+            return DatasetNames.TryGetValue(datasetId, out var datasetName) ? datasetName : datasetId.ToString();
         }
 
         public async Task GetFilesAsync(DatasetId datasetId)
         {
             DatasetFiles.Remove(datasetId);
 
-            var dataset = Datasets?.FirstOrDefault(d => d.Descriptor.DatasetId == datasetId);
-            if (dataset == null) return;
+            var dataset = await CurrentAsset.GetDatasetAsync(datasetId, CancellationToken.None);
 
             DatasetFiles[datasetId] = null;
 

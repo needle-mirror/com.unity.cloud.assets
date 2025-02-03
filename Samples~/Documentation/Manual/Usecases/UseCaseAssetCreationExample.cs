@@ -120,7 +120,7 @@ namespace Unity.Cloud.Documentation.Assets
             m_Behaviour = behaviour;
         }
 
-        async Task GetAssetsAsync(IAsset selectedAsset)
+        async Task GetAssetsAsync(AssetDescriptor selectedAsset)
         {
             await Task.Delay(1000);
             await m_Behaviour.GetAssetsAsync(selectedAsset);
@@ -161,11 +161,8 @@ namespace Unity.Cloud.Documentation.Assets
 
             try
             {
-                var asset = await CurrentProject.CreateAssetAsync(assetCreation, CancellationToken.None);
-                if (asset != null)
-                {
-                    await GetAssetsAsync(asset);
-                }
+                var assetDescriptor = await CurrentProject.CreateAssetLiteAsync(assetCreation, CancellationToken.None);
+                await GetAssetsAsync(assetDescriptor);
             }
             catch (Exception e)
             {

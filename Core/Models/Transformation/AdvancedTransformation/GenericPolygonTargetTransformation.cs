@@ -1,8 +1,9 @@
+using System;
 using System.Collections.Generic;
-using System.Drawing;
 
 namespace Unity.Cloud.Assets
 {
+    [Obsolete("Use OptimizeAndConvertFreeTransformation or OptimizeAndConvertProTransformation instead.")]
     public sealed class GenericPolygonTargetTransformation : ITransformationCreation
     {
         /// <summary>

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Runtime.Serialization;
 
 namespace Unity.Cloud.Assets
@@ -9,6 +10,6 @@ namespace Unity.Cloud.Assets
         public string Name { get; set; }
 
         /// <inheritdoc/>
-        public IDeserializable Metadata { get; set; }
+        public Dictionary<string, string> Metadata { get; set; }
     }
 }

@@ -1,3 +1,5 @@
+using System.Threading;
+using System.Threading.Tasks;
 using UnityEngine.UIElements;
 
 namespace Unity.Cloud.Assets.Samples
@@ -6,17 +8,21 @@ namespace Unity.Cloud.Assets.Samples
     {
         protected override void OnBindItem(VisualElement element, int i)
         {
-            string label;
             if (m_List[i] is IAssetProject project)
             {
-                label = project.Name;
+                _ = PopulateItemAsync(element, project);
             }
             else
             {
-                label = m_List[i].ToString();
+                element.Q<Label>().text = m_List[i].ToString();
             }
+        }
 
-            element.Q<Label>().text = label;
+        static async Task PopulateItemAsync(VisualElement element, IAssetProject project)
+        {
+            var properties = await project.GetPropertiesAsync(CancellationToken.None);
+
+            element.Q<Label>().text = properties.Name;
         }
     }
 }

@@ -26,8 +26,6 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
         VisualTreeAsset m_DatasetCreationTemplate;
         [SerializeField]
         VisualTreeAsset m_TagsTemplate;
-        [SerializeField]
-        VisualTreeAsset m_PopupTemplate;
 
         VisualElement m_ContentPanel;
         VisualElement m_AssetPanel;
@@ -38,14 +36,15 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             var rootVisualElement = m_AssetController.RootVisualElement;
 
             m_ContentPanel = rootVisualElement.Q<VisualElement>("ContentPanel");
+            m_ContentPanel.style.flexDirection = FlexDirection.Column;
 
-            var popups = m_PopupTemplate.Instantiate().Children().ToList();
-            foreach (var child in popups)
-            {
-                rootVisualElement.Add(child);
-            }
+            // Instantiate the asset panel
+            m_AssetPanel = m_AssetCreationPanelTemplate.Instantiate();
 
-            m_AddMetadataPopupController = new AddMetadataPopupController(rootVisualElement);
+            // Extract the embedded popup
+            var popup = m_AssetPanel.Q("AddMetadataPopup");
+            m_ContentPanel.Add(popup);
+            m_AddMetadataPopupController = new AddMetadataPopupController(popup);
 
             InstantiateDatasetCreationPanel();
             InstantiateAssetCreationPanel();
@@ -83,12 +82,11 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
         void InstantiateAssetCreationPanel()
         {
-            m_AssetPanel = m_AssetCreationPanelTemplate.Instantiate();
-            m_AssetPanel.style.height = Length.Percent(100);
-            m_AssetPanel.style.width = Length.Percent(100);
+            m_AssetPanel.style.flexGrow = 1;
             m_AssetPanel.Hide();
 
             m_ContentPanel.Add(m_AssetPanel);
+            m_AssetPanel.SendToBack();
 
             m_AssetPanelController.Init
             (
@@ -105,11 +103,11 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
         void InstantiateDatasetCreationPanel()
         {
             m_DatasetPanel = m_DatasetCreationTemplate.Instantiate();
-            m_DatasetPanel.style.height = Length.Percent(100);
-            m_DatasetPanel.style.width = Length.Percent(100);
+            m_DatasetPanel.style.flexGrow = 1;
             m_DatasetPanel.Hide();
 
             m_ContentPanel.Add(m_DatasetPanel);
+            m_DatasetPanel.SendToBack();
 
             m_DatasetPanelController.Init
             (
@@ -135,7 +133,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
         void HideContent()
         {
-            m_ContentPanel.style.display = DisplayStyle.None;
+            m_ContentPanel?.Hide();
             m_AssetController.AssetListPanel?.Hide();
             m_AssetPanel?.Hide();
             m_DatasetPanel?.Hide();
@@ -148,7 +146,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             m_AssetController.ClearSelection();
 
             m_AssetController.AssetListPanel?.Show();
-            m_ContentPanel.style.display = DisplayStyle.Flex;
+            m_ContentPanel?.Show();
         }
 
         void OnOrganizationSelected(OrganizationId orgId)

@@ -1,6 +1,6 @@
 # Sample: Manage assets
 
-Use the Asset Management sample, which is available as part of Unity Cloud Assets, to update and publish assets.
+The Asset Management sample is available with the Unity Cloud Assets package. Use this sample to update and publish assets.
 This guide provides step-by-step instructions for developers looking to integrate asset management features in their app.
 
 >[!NOTE]
@@ -28,14 +28,15 @@ Before you use the Asset Management sample, make sure you have the following:
 
 To install the sample, follow these steps:
 
-1. In your Unity Editor project, go to **Window** > **Package Manager**.
+1. Open your application project in the Unity Editor.
+2. Go to **Window** > **Package Manager**.
 3. In the **Packages** list of the **Package Manager**, select **Unity Cloud Assets**.
 4. Select the **Samples** tab.
 5. Select **Import** next to **Asset Management**.
 
    ![Screenshot of the samples import section of the package manager window](images/import-manager-sample.png)
 
-4. When the import is complete, the imported sample appears in the `Assets/Samples/Unity Cloud Assets/<package-version>/Asset Management` folder.
+6. When the import is complete, the imported sample appears in the `Assets/Samples/Unity Cloud Assets/<package-version>/Asset Management` folder.
 
 ## Run the sample
 
@@ -65,8 +66,10 @@ To run the sample, follow these steps:
 To search for specific assets by tag or name in the sample, follow these steps:
 
 1. Select a project.
-2. In the search bar, enter the keywords that you want to search for in asset tags and asset names.
-3. Select **Search**.
+2. In the search bar, do the following:
+   1.  Select the search criteria: Name, Type, Status, Tags, System Tags, PreviewFile, or FileName.
+   2.  Enter the keywords that you want to search for in asset tags and asset names.
+   3.  Select **Search**.
 
    ![Screenshot of the created topic](images/search-in-manager.png)
 
@@ -120,7 +123,7 @@ To update an asset in the sample, follow these steps:
     >[!NOTE]
     >To generate a preview image, the dataset must have at least one file.
 
-12. To remove a file from the dataset, select the delete icon.
+12. To remove a file from the dataset, select the remove button.
   
     ![Screenshot of the remove button](images/trash-icon-button.png)
     
@@ -155,7 +158,7 @@ When an asset is frozen, you can do the following actions:
 By default, the details panel displays the list of datasets for the default version of the asset. To browse the asset's version history in this sample, follow these steps:
 
 1. Select the asset.
-2. To browse the asset's version history, select the **History** tab.
+2. To browse the asset's version history, expand the **History** section.
    </br>
    ![Screenshot of the history button](images/asset-details-tabs.png)
 2. Select a version in the asset's version history to view its details.

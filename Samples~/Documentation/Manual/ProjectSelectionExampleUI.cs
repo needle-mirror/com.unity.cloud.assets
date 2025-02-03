@@ -60,11 +60,16 @@ namespace Unity.Cloud.Documentation.Assets
 
                 for (var i = 0; i < projects.Length; ++i)
                 {
-                    if (GUILayout.Button(projects[i].Name))
+                    var projectId = projects[i].Descriptor.ProjectId;
+
+                    GUI.enabled = projectId != m_Behaviour.CurrentProject?.Descriptor.ProjectId;
+
+                    if (GUILayout.Button(m_Behaviour.GetProjectName(projectId)))
                     {
                         m_Behaviour.SetSelectedProject(projects[i]);
-                        Debug.Log($"Selected project: {projects[i].Descriptor.ProjectId}");
                     }
+
+                    GUI.enabled = true;
                 }
 
                 GUILayout.EndScrollView();

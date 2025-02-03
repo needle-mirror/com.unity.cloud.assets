@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -39,16 +41,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
             protected override void OnBindItem(VisualElement element, int i)
             {
-                var asset = m_List[i];
-
-                element.Q<Label>("TitleLabel").text = asset.Name;
-                element.Q<Label>("IngestedDateLabel").text = asset.AuthoringInfo?.Updated.ToString("MMM dd, yyyy") ?? "unknown";
-                element.Q<Label>("IngestedTimeLabel").text = asset.AuthoringInfo?.Updated.ToString("h:mm tt GMT") ?? "unknown";
-                element.Q<Label>("DescriptionLabel").text = asset.Description;
-                element.Q<Label>("TagsLabel").text = asset.Tags.FirstOrDefault();
-                element.Q<Label>("TypeLabel").text = asset.Type.ToString();
-                element.Q<Label>("Label").text = asset.GetVersionText();
-                element.Q<Label>("StatusLabel").text = asset.StatusName;
+                _ = PopulateItemAsync(element, m_List[i]);
 
                 var expandButton = element.Q<Button>("ExpandButton");
                 m_ExpandButtons.Add(expandButton, i);
@@ -127,12 +120,26 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
                         ClearMenuPopupOwner();
                     }, () => { });
             }
+
+            static async Task PopulateItemAsync(VisualElement element, IAsset asset)
+            {
+                var properties = await asset.GetPropertiesAsync(CancellationToken.None);
+
+                element.Q<Label>("TitleLabel").text = properties.Name;
+                element.Q<Label>("IngestedDateLabel").text = properties.AuthoringInfo?.Updated.ToString("MMM dd, yyyy") ?? "unknown";
+                element.Q<Label>("IngestedTimeLabel").text = properties.AuthoringInfo?.Updated.ToString("h:mm tt GMT") ?? "unknown";
+                element.Q<Label>("DescriptionLabel").text = properties.Description;
+                element.Q<Label>("TagsLabel").text = properties.Tags.FirstOrDefault();
+                element.Q<Label>("TypeLabel").text = properties.Type.ToString();
+                element.Q<Label>("Label").text = asset.Descriptor.AssetVersion.GetVersionText(properties);
+                element.Q<Label>("StatusLabel").text = properties.StatusName;
+            }
         }
 
         public event Action<IAsset> AssetSelected;
 
-        protected override string VisualElementName => "AssetListBox";
-        protected override string EmptyListMessage => string.Empty;
+        protected override string VisualElementName => "AssetListContainer";
+        protected override string EmptyListMessage => "Empty";
 
         public event Action<IAsset> RemoveAsset
         {

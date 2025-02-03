@@ -27,7 +27,7 @@ namespace Unity.Cloud.Assets.Samples
         {
             m_Container = uiDocumentRoot.Q<VisualElement>(VisualElementName);
             m_DisplayMessageContainer = m_Container.Q<VisualElement>("DisplayMessageContainer");
-            m_DisplayMessage = m_Container.Q<Label>("DisplayMessage");
+            m_DisplayMessage = m_DisplayMessageContainer.Q<Label>();
             var listView = m_Container.Q<ListView>();
 
             m_ListController.Initialize(listView, makeItem, OnSelectionChange);
@@ -80,6 +80,10 @@ namespace Unity.Cloud.Assets.Samples
                         UpdateList(entries);
                     }
                 }
+            }
+            catch (OperationCanceledException oe)
+            {
+                oe.LogException();
             }
             catch (Exception e)
             {

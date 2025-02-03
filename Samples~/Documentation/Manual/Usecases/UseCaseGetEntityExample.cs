@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Unity.Cloud.Assets;
@@ -22,7 +23,12 @@ namespace Unity.Cloud.Documentation.Assets
 
         public static async Task<IAsset> GetAssetAsync(IAssetProject assetProject, string assetId)
         {
-            return await assetProject.GetAssetAsync(new AssetId(assetId), CancellationToken.None);
+            var query = assetProject.QueryAssetVersions(new AssetId(assetId))
+                .LimitTo(new Range(0,1))
+                .ExecuteAsync(CancellationToken.None);
+            var enumerator = query.GetAsyncEnumerator();
+            await enumerator.MoveNextAsync();
+            return enumerator.Current;
         }
 
         #endregion

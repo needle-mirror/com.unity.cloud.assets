@@ -14,5 +14,8 @@ namespace Unity.Cloud.Assets
 
         [DataMember(Name = "tags")]
         IEnumerable<string> Tags { get; }
+
+        [DataMember(Name = "isVisible")]
+        bool? IsVisible { get; }
     }
 }

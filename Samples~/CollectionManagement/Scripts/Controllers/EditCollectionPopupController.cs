@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using UnityEngine.UIElements;
 
 namespace Unity.Cloud.Assets.Samples.CollectionManagement
@@ -30,7 +31,19 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
         {
             m_AssetCollection = assetCollection;
             m_NameInput.value = m_AssetCollection.Name;
-            m_DescriptionInput.value = m_AssetCollection.Description;
+
+            m_ActionButton.SetEnabled(false);
+            m_DescriptionInput.value = string.Empty;
+            m_DescriptionInput.SetEnabled(false);
+            _ = PopulateAsync(assetCollection);
+        }
+
+        async Task PopulateAsync(IAssetCollection assetCollection)
+        {
+            var properties = await assetCollection.GetPropertiesAsync(default);
+            m_DescriptionInput.value = properties.Description;
+            m_DescriptionInput.SetEnabled(true);
+            m_ActionButton.SetEnabled(true);
         }
 
         void OnInputChanged(InputEvent _)

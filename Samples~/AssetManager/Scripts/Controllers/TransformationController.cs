@@ -12,7 +12,9 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
         class TransformationUI : VisualElement
         {
             readonly ITransformation m_Transformation;
+
             CancellationTokenSource m_CancellationTokenSource;
+            TransformationProperties m_Properties;
 
             public TransformationUI(ITransformation transformation)
             {
@@ -24,18 +26,10 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
                 var progressBar = new ProgressBar
                 {
-                    title = GetProgressLabel(),
-                    value = transformation.Status == TransformationStatus.Succeeded ? 100 : 0,
+                    title = m_Transformation.Descriptor.TransformationId.ToString(),
+                    value = 0,
                     style = {flexGrow = 1}
                 };
-                progressBar.RegisterCallback<ClickEvent>(e =>
-                {
-                    e.StopPropagation();
-                    if (transformation.Status is TransformationStatus.Failed or TransformationStatus.Error)
-                    {
-                        DialogService.ShowMessage("Error", transformation.ErrorMessage);
-                    }
-                });
                 Add(progressBar);
 
                 var cancelButton = new Button();
@@ -43,7 +37,26 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
                 cancelButton.RegisterCallback<ClickEvent>(OnCancel);
                 Add(cancelButton);
 
-                if (transformation.Status is TransformationStatus.Pending or TransformationStatus.Running)
+                _ = PopulateAsync();
+            }
+
+            async Task PopulateAsync()
+            {
+                m_Properties = await m_Transformation.GetPropertiesAsync(m_CancellationTokenSource.Token);
+
+                var progressBar = this.Q<ProgressBar>();
+                progressBar.title = GetProgressLabel(m_Properties);
+                progressBar.value = m_Properties.Status == TransformationStatus.Succeeded ? 100 : 0;
+                progressBar.RegisterCallback<ClickEvent>(e =>
+                {
+                    e.StopPropagation();
+                    if (m_Properties.Status is TransformationStatus.Failed or TransformationStatus.Error)
+                    {
+                        DialogService.ShowMessage("Error", m_Properties.ErrorMessage);
+                    }
+                });
+
+                if (m_Properties.Status is TransformationStatus.Pending or TransformationStatus.Running)
                     _ = UpdateProgressBarAsync(progressBar, m_CancellationTokenSource.Token);
             }
 
@@ -59,7 +72,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
             void OnCancel(ClickEvent _)
             {
-                if (m_Transformation.Status is TransformationStatus.Pending or TransformationStatus.Running)
+                if (m_Properties.Status is TransformationStatus.Pending or TransformationStatus.Running)
                 {
                     m_Transformation.TerminateAsync(CancellationToken.None);
                     return;
@@ -70,21 +83,9 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
                 RemoveFromHierarchy();
             }
 
-            string GetProgressLabel()
+            static string GetProgressLabel(TransformationProperties properties)
             {
-                var workflowType = m_Transformation.WorkflowType switch
-                {
-                    WorkflowType.Data_Streaming => "Streamable",
-                    WorkflowType.Thumbnail_Generation => "Thumbnail",
-                    WorkflowType.Transcode_Video => "Video",
-                    WorkflowType.GLB_Preview => "GLB",
-                    WorkflowType.Metadata_Extraction => "Metadata",
-                    WorkflowType.Generic_Polygon_Target => "Polygon",
-                    WorkflowType.Custom => "Custom",
-                    _ => "Unknown"
-                };
-
-                var status = m_Transformation.Status switch
+                var status = properties.Status switch
                 {
                     TransformationStatus.Pending => "Pending...",
                     TransformationStatus.Running => "Running",
@@ -95,24 +96,27 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
                     _ => "Unknown"
                 };
 
-                return $"{workflowType} - {status}";
+                return $"{properties.WorkflowName} - {status}";
             }
 
             async Task UpdateProgressBarAsync(AbstractProgressBar progressBar, CancellationToken cancellationToken)
             {
-                var status = m_Transformation.Status;
+                m_Properties = await m_Transformation.GetPropertiesAsync(cancellationToken);
+
+                var status = m_Properties.Status;
 
                 while (!cancellationToken.IsCancellationRequested)
                 {
                     await m_Transformation.RefreshAsync(cancellationToken);
+                    m_Properties = await m_Transformation.GetPropertiesAsync(cancellationToken);
 
-                    progressBar.value = m_Transformation.Progress;
+                    progressBar.value = m_Properties.Progress;
 
-                    if (m_Transformation.Status != status)
+                    if (m_Properties.Status != status)
                     {
-                        status = m_Transformation.Status;
+                        status = m_Properties.Status;
 
-                        progressBar.title = GetProgressLabel();
+                        progressBar.title = GetProgressLabel(m_Properties);
 
                         switch (status)
                         {
@@ -124,20 +128,20 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
                             case TransformationStatus.Succeeded:
                                 progressBar.value = 100;
-                                DialogService.ShowMessage("Sucess", $"Transformation of type {m_Transformation.WorkflowType} succeeded.");
+                                DialogService.ShowMessage("Sucess", $"Transformation of type {m_Properties.WorkflowName} succeeded.");
                                 Cancel();
                                 break;
                             case TransformationStatus.Failed:
                             case TransformationStatus.Error:
-                                DialogService.ShowMessage("Error", $"Transformation of type {m_Transformation.WorkflowType} failed with message: {m_Transformation.ErrorMessage}");
+                                DialogService.ShowMessage("Error", $"Transformation of type {m_Properties.WorkflowName} failed with message: {m_Properties.ErrorMessage}");
                                 Cancel();
                                 break;
                             case TransformationStatus.Terminated:
-                                DialogService.ShowMessage("Cancelled", $"Transformation of type {m_Transformation.WorkflowType} was cancelled.");
+                                DialogService.ShowMessage("Cancelled", $"Transformation of type {m_Properties.WorkflowName} was cancelled.");
                                 Cancel();
                                 break;
                             case TransformationStatus.TimedOut:
-                                DialogService.ShowMessage("Timeout", $"Transformation of type {m_Transformation.WorkflowType} timed out.");
+                                DialogService.ShowMessage("Timeout", $"Transformation of type {m_Properties.WorkflowName} timed out.");
                                 Cancel();
                                 break;
                             default:

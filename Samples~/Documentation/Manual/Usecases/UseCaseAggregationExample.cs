@@ -44,6 +44,8 @@ namespace Unity.Cloud.Documentation.Assets
         readonly string[] m_AggregationFields = Enum.GetNames(typeof(GroupableField));
         int m_SelectedIndex = -1;
 
+        Vector2 m_ScrollPosition;
+
         public void OnGUI()
         {
             if (!m_Behaviour.IsProjectSelected)
@@ -65,25 +67,25 @@ namespace Unity.Cloud.Documentation.Assets
                 _ = m_Behaviour.AggregateByField(aggregationField);
             }
 
-            if (GUILayout.Button("Collections"))
-            {
-                _ = m_Behaviour.AggregateByCollection();
-            }
-
             GUILayout.Label("Aggregation Results:");
-            if (m_Behaviour.GroupCounters != null)
+            if (m_Behaviour.Total > 0)
             {
                 GUILayout.Label($"Total: {m_Behaviour.Total}");
                 GUILayout.Label($"Unique: {m_Behaviour.GroupCounters.Keys.Count()}");
                 GUILayout.Label($"Values:");
+                
+                m_ScrollPosition = GUILayout.BeginScrollView(m_ScrollPosition, GUILayout.ExpandHeight(true));
+
                 foreach (var value in m_Behaviour.GroupCounters)
                 {
                     GUILayout.Label($"- {value.Key}: {value.Value}");
                 }
+
+                GUILayout.EndScrollView();
             }
-            else
+            else if (m_Behaviour.Total == 0)
             {
-                GUILayout.Label("Empty.");
+                GUILayout.Label("No results.");
             }
 
             GUILayout.EndVertical();
@@ -106,22 +108,41 @@ namespace Unity.Cloud.Documentation.Assets
 
         #region Example_Behaviour
 
-        public IReadOnlyDictionary<string, int> GroupCounters { get; private set; }
+        readonly Dictionary<string, int> m_GroupCounters = new();
+
+        public IReadOnlyDictionary<string, int> GroupCounters => m_GroupCounters;
         public int Total { get; private set; }
 
-        public async Task AggregateByField(GroupableField groupableField)
+        public async Task AggregateByField(Groupable groupable)
         {
-            GroupCounters = null;
-            GroupCounters = await CurrentProject.GroupAndCountAssets().ExecuteAsync(groupableField, CancellationToken.None);
-            Total = GroupCounters.Values.Sum();
-        }
+            m_GroupCounters.Clear();
+            Total = -1;
 
-        public async Task AggregateByCollection()
-        {
-            GroupCounters = null;
-            var collections = await CurrentProject.GroupAndCountAssets().GroupByCollectionAndExecuteAsync(CancellationToken.None);
-            GroupCounters = collections.ToDictionary(x => x.Key.Path.ToString(), x => x.Value);
-            Total = GroupCounters.Values.Sum();
+            var asyncEnumerable = CurrentProject.GroupAndCountAssets().ExecuteAsync(groupable, CancellationToken.None);
+            await foreach (var group in asyncEnumerable)
+            {
+                switch (group.Key.Type)
+                {
+                    case GroupableFieldValueType.CollectionDescriptor:
+                        m_GroupCounters.Add(group.Key.AsCollectionDescriptor().Path, group.Value);
+                        break;
+                    default:
+                        m_GroupCounters.Add(group.Key.AsString(), group.Value);
+                        break;
+                }
+
+                if (Total == -1)
+                {
+                    Total = 0;
+                }
+
+                Total += group.Value;
+            }
+
+            if (Total == -1)
+            {
+                Total = 0;
+            }
         }
 
         #endregion

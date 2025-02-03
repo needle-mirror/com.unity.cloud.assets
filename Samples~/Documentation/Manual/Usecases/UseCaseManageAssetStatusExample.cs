@@ -6,8 +6,10 @@ namespace Unity.Cloud.Documentation.Assets
     #region Example_UIClass
 
     using System;
+    using System.Collections.Generic;
     using System.Threading.Tasks;
     using Unity.Cloud.Assets;
+    using Unity.Cloud.Common;
     using UnityEngine;
 
     public class UseCaseManageAssetStatusExampleUI : IAssetManagementUI
@@ -56,9 +58,15 @@ namespace Unity.Cloud.Documentation.Assets
                 _ = m_Behaviour.GetReachableStatuses();
             }
 
+            if (!m_Behaviour.AssetProperties.TryGetValue(m_CurrentAsset.Descriptor.AssetId, out var properties))
+            {
+                GUILayout.Label(" ! Asset properties not loaded !");
+                return;
+            }
+
             GUILayout.BeginVertical();
 
-            GUILayout.Label($"Current Status: {m_CurrentAsset.StatusName}");
+            GUILayout.Label($"Current Status: {properties.StatusName}");
 
             GUILayout.Space(5f);
 
@@ -90,6 +98,7 @@ namespace Unity.Cloud.Documentation.Assets
 
         public bool IsProjectSelected => m_Behaviour.IsProjectSelected;
         public IAsset CurrentAsset => m_Behaviour.CurrentAsset;
+        public Dictionary<AssetId, AssetProperties> AssetProperties => m_Behaviour.AssetProperties;
 
         public UseCaseManageAssetStatusExampleBehaviour(AssetManagementBehaviour behaviour)
         {

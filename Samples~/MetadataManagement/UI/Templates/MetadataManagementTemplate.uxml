@@ -23,19 +23,17 @@
         </ui:VisualElement>
     </ui:VisualElement>
     <ui:VisualElement name="CreateFieldPopup" class="Popup">
-                <ui:VisualElement style="flex-direction: row; align-items: center; justify-content: space-between; flex-shrink: 0;">
-                    <ui:Label text="New Field Definition" style="font-size: 18px; -unity-font-style: bold; margin-bottom: 9px; color: rgb(210, 210, 210); margin-top: 7px; margin-left: 7px; margin-right: 2px; padding-left: 0; padding-right: 0; padding-top: 0; padding-bottom: 0;" />
-                    <ui:Button display-tooltip-when-elided="true" name="Close" class="close-icon" />
-                </ui:VisualElement>
+        <ui:VisualElement style="flex-direction: row; align-items: center; justify-content: space-between; flex-shrink: 0;">
+            <ui:Label text="New Field Definition" style="font-size: 18px; -unity-font-style: bold; margin-bottom: 9px; color: rgb(210, 210, 210); margin-top: 7px; margin-left: 7px; margin-right: 2px; padding-left: 0; padding-right: 0; padding-top: 0; padding-bottom: 0;" />
+            <ui:Button display-tooltip-when-elided="true" name="Close" class="close-icon" />
+        </ui:VisualElement>
         <ui:TextField password="false" name="Name" label="Unique Id *" class="popup-field" />
         <ui:TextField password="false" name="DisplayName" label="Display Name *" class="popup-field" />
         <ui:EnumField label="Type *" type="Unity.Cloud.Assets.FieldDefinitionType, Unity.Cloud.Assets" name="Type" class="popup-field" />
         <ui:Toggle label="Multiselect" name="Multiselection" class="popup-field" />
-        <ui:VisualElement name="VisualElement" class="popup-field" style="flex-direction: row;">
-            <ui:ListView focusable="true" name="AcceptedValues" header-title="Accepted Values" show-add-remove-footer="true" show-foldout-header="true" selection-type="None" reorderable="true" virtualization-method="DynamicHeight" show-bound-collection-size="false" style="flex-grow: 1;" />
-                    </ui:VisualElement>
+        <ui:ListView focusable="true" name="AcceptedValues" header-title="Accepted Values" show-add-remove-footer="true" show-foldout-header="true" selection-type="None" reorderable="true" virtualization-method="DynamicHeight" show-bound-collection-size="false" style="flex-grow: 1;" />
         <ui:Label display-tooltip-when-elided="true" name="ErrorLabel" text="Error:" class="error-label" />
-                <ui:VisualElement style="align-items: center; margin-top: 7px; margin-bottom: 7px; flex-shrink: 0;">
+        <ui:VisualElement style="align-items: center; margin-top: 7px; margin-bottom: 7px; flex-shrink: 0;">
             <ui:Button text="Create" name="Action" class="sample-button button-blue" style="min-width: 160px;" />
         </ui:VisualElement>
     </ui:VisualElement>

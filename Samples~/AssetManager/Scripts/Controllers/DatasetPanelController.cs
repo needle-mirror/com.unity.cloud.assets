@@ -27,6 +27,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
         Button m_BackButton;
 
         IDataset m_CurrentDataset;
+        DatasetProperties m_CurrentDatasetProperties;
         DatasetUpdate m_DatasetUpdate;
         FileController m_FileController;
         TransformationController m_TransformationController;
@@ -109,28 +110,20 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             if (m_LeftPanel != null) m_LeftPanel.style.flexGrow = 0;
 
             m_CurrentDataset = dataset;
-            m_DatasetUpdate = new DatasetUpdate(m_CurrentDataset);
+            m_DatasetUpdate = new DatasetUpdate();
 
             m_SaveDatasetButton.SetEnabled(canUpdate);
             m_GeneratePreviewButton.SetEnabled(canUpdate);
             m_DatasetTagsField.style.display = canUpdate ? DisplayStyle.Flex : DisplayStyle.None;
 
-            m_DatasetNameField.SetValueWithoutNotify(dataset.Name);
             m_DatasetNameField.SetEnabled(canUpdate);
-            m_DatasetDescriptionField.SetValueWithoutNotify(dataset.Description);
             m_DatasetDescriptionField.SetEnabled(canUpdate);
-            m_DatasetVisibleToggle.SetValueWithoutNotify(dataset.IsVisible);
             m_DatasetVisibleToggle.SetEnabled(canUpdate);
 
-            Action<string> addTagAction = tag => AddTag(tag, canUpdate);
-            addTagAction.AddTags(GetUpdateTags());
+            _ = PopulateAsync(dataset, canUpdate, default);
 
             _ = m_FileController.ListExistingFiles(dataset, canUpdate);
-
-            UpdateStatus();
-
             _ = m_MetadataController.PopulateMetadataAsync(dataset, canUpdate);
-
             _ = m_TransformationController.PopulateTransformationProgress(dataset);
         }
 
@@ -203,6 +196,22 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             m_GeneratePreviewButton.SetEnabled(state);
         }
 
+        async Task PopulateAsync(IDataset dataset, bool canUpdate, CancellationToken token)
+        {
+            m_CurrentDatasetProperties = await dataset.GetPropertiesAsync(token);
+
+            if (token.IsCancellationRequested) return;
+
+            m_DatasetNameField.SetValueWithoutNotify(m_CurrentDatasetProperties.Name);
+            m_DatasetDescriptionField.SetValueWithoutNotify(m_CurrentDatasetProperties.Description);
+            m_DatasetVisibleToggle.SetValueWithoutNotify(m_CurrentDatasetProperties.IsVisible);
+
+            UpdateStatus();
+
+            Action<string> addTagAction = tag => AddTag(tag, canUpdate);
+            addTagAction.AddTags(GetUpdateTags());
+        }
+
         void ClearInformation()
         {
             m_CurrentDataset = null;
@@ -234,11 +243,8 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
         void UpdateStatus()
         {
-            if (m_CurrentDataset == null)
-                return;
-
-            m_StatusController.Update(m_CurrentDataset.Status, m_CurrentDataset.AuthoringInfo?.Updated);
-            m_StatusController.SetStatusColor(m_CurrentDataset.Status switch
+            m_StatusController.Update(m_CurrentDatasetProperties.StatusName, m_CurrentDatasetProperties.AuthoringInfo?.Updated);
+            m_StatusController.SetStatusColor(m_CurrentDatasetProperties.StatusName switch
             {
                 "Committed" => new Color(0.07f, 0.65f, 0.58f, 1f),
                 "Uncommitted" => new Color(0.86f, 0.60f, 0.27f, 1f),
@@ -258,17 +264,17 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
         List<string> GetUpdateTags()
         {
-            return m_DatasetUpdate.Tags ?? (m_DatasetUpdate.Tags = m_CurrentDataset.Tags?.ToList() ?? new List<string>());
+            return m_DatasetUpdate.Tags ?? (m_DatasetUpdate.Tags = m_CurrentDatasetProperties.Tags?.ToList() ?? new List<string>());
         }
 
         void GenerateThumbnailPreview(ClickEvent evt)
         {
             ChangeButtonEnabledState(false);
 
-            _ = StartTransformationOnDataset(WorkflowType.Thumbnail_Generation);
+            _ = StartTransformationOnDataset(new ThumbnailGeneratorTransformation());
         }
 
-        async Task StartTransformationOnDataset(WorkflowType workflowType)
+        async Task StartTransformationOnDataset(ITransformationCreation transformationCreation)
         {
             if (m_CurrentDataset == null)
             {
@@ -276,24 +282,22 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
                 return;
             }
 
+            var transformationName = transformationCreation.WorkflowType == WorkflowType.Custom ? transformationCreation.CustomWorkflowName : transformationCreation.WorkflowType.ToString();
+
             try
             {
-                var creation = new TransformationCreation
-                {
-                    WorkflowType = workflowType
-                };
-                var transformation = await m_CurrentDataset.StartTransformationAsync(creation, default);
+                var transformation = await m_CurrentDataset.StartTransformationAsync(transformationCreation, default);
                 m_TransformationController.AddTransformationProgress(transformation);
             }
             catch (OperationCanceledException oe)
             {
                 oe.LogException();
-                DialogService.ShowMessage("Cancelled", $"Failed to start transformation {workflowType}. Request cancelled.");
+                DialogService.ShowMessage("Cancelled", $"Failed to start transformation {transformationName}. Request cancelled.");
             }
             catch (Exception e)
             {
                 e.LogException();
-                DialogService.ShowMessage(e, "Start transformation failed", $"Failed to start transformation of type {workflowType} with reason: {e.Message}");
+                DialogService.ShowMessage(e, "Start transformation failed", $"Failed to start transformation of type {transformationName} with reason: {e.Message}");
             }
             finally
             {

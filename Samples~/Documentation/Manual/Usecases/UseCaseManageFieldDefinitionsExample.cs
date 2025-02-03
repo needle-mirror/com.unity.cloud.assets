@@ -67,8 +67,7 @@ namespace Unity.Cloud.Documentation.Assets
             if (m_CurrentOrganization != m_Behaviour.CurrentOrganization)
             {
                 m_CurrentOrganization = m_Behaviour.CurrentOrganization;
-                m_Behaviour.SetCurrentFieldDefinition(null);
-                m_Behaviour.FieldDefinitions = null;
+                _ = m_Behaviour.GetFieldDefinitionsAsync();
             }
 
             GUILayout.BeginVertical();
@@ -80,9 +79,9 @@ namespace Unity.Cloud.Documentation.Assets
                 return;
             }
 
-            if (GUILayout.Button("Refresh", GUILayout.Width(60)) || m_Behaviour.FieldDefinitions == null)
+            if (GUILayout.Button("Refresh", GUILayout.Width(60)))
             {
-                _ = m_Behaviour.GetFieldDefinitions();
+                _ = m_Behaviour.GetFieldDefinitionsAsync();
             }
 
             GUILayout.EndVertical();
@@ -96,13 +95,13 @@ namespace Unity.Cloud.Documentation.Assets
             }
 
             GUILayout.Label("Fields:");
-            ListFieldDefinitions(m_Behaviour.FieldDefinitions?.ToArray() ?? Array.Empty<IFieldDefinition>());
+            ListFieldDefinitions();
 
             GUILayout.EndVertical();
 
             GUILayout.BeginVertical();
 
-            if (m_Behaviour.CurrentFieldDefinition == null)
+            if (m_Behaviour.CurrentFieldDefinitionKey == null)
             {
                 CreateFieldDefinition();
             }
@@ -114,48 +113,51 @@ namespace Unity.Cloud.Documentation.Assets
             GUILayout.EndVertical();
         }
 
-        void ListFieldDefinitions(IReadOnlyList<IFieldDefinition> fields)
+        void ListFieldDefinitions()
         {
-            if (fields.Count == 0)
+            if (m_Behaviour.FieldDefinitionProperties.Count == 0)
             {
                 GUILayout.Label(" ! No fields !");
+                return;
             }
-            else
+
+            m_FieldsScrollPosition = GUILayout.BeginScrollView(m_FieldsScrollPosition, GUILayout.MinWidth(Screen.width * 0.2f), GUILayout.Height(Screen.height * 0.8f));
+
+            foreach (var kvp in m_Behaviour.FieldDefinitionProperties)
             {
-                m_FieldsScrollPosition = GUILayout.BeginScrollView(m_FieldsScrollPosition, GUILayout.MinWidth(Screen.width * 0.2f), GUILayout.Height(Screen.height * 0.8f));
+                GUILayout.BeginHorizontal();
 
-                for (var i = 0; i < fields.Count; ++i)
+                GUILayout.Label(kvp.Key);
+
+                GUI.enabled = kvp.Key != m_Behaviour.CurrentFieldDefinitionKey;
+
+                if (GUILayout.Button("Select", GUILayout.Width(60)))
                 {
-                    GUILayout.BeginHorizontal();
-
-                    GUILayout.Label(fields[i].Descriptor.FieldKey);
-
-                    if (GUILayout.Button("Select", GUILayout.Width(60)))
+                    m_Behaviour.SetCurrentFieldDefinition(kvp.Key);
+                    if (kvp.Value.Type == FieldDefinitionType.Selection)
                     {
-                        m_Behaviour.SetCurrentFieldDefinition(fields[i]);
-                        if (m_Behaviour.CurrentFieldDefinition.Type == FieldDefinitionType.Selection)
-                        {
-                            m_SelectionAcceptedValues = fields[i].AsSelectionFieldDefinition().AcceptedValues?.ToList() ?? new List<string>();
-                        }
+                        m_SelectionAcceptedValues = kvp.Value.AsSelectionFieldDefinitionProperties().AcceptedValues?.ToList() ?? new List<string>();
                     }
-
-                    if (fields[i].IsDeleted)
-                    {
-                        GUILayout.Space(64);
-                    }
-                    else
-                    {
-                        if (GUILayout.Button("Delete", GUILayout.Width(60)))
-                        {
-                            _ = m_Behaviour.DeleteFieldDefinition(fields[i]);
-                        }
-                    }
-
-                    GUILayout.EndHorizontal();
                 }
 
-                GUILayout.EndScrollView();
+                GUI.enabled = true;
+
+                if (kvp.Value.IsDeleted)
+                {
+                    GUILayout.Space(64);
+                }
+                else
+                {
+                    if (GUILayout.Button("Delete", GUILayout.Width(60)))
+                    {
+                        _ = m_Behaviour.DeleteFieldDefinitionAsync(kvp.Key);
+                    }
+                }
+
+                GUILayout.EndHorizontal();
             }
+
+            GUILayout.EndScrollView();
         }
 
         void CreateFieldDefinition()
@@ -174,13 +176,13 @@ namespace Unity.Cloud.Documentation.Assets
             m_FieldDefinitionCreation.Type = Enum.Parse<FieldDefinitionType>(m_FieldTypeList[type], true);
 
             var isEmpty = string.IsNullOrEmpty(m_FieldDefinitionCreation.Key) || string.IsNullOrEmpty(m_FieldDefinitionCreation.DisplayName);
-            var isUnique = m_Behaviour.FieldDefinitions != null && m_Behaviour.FieldDefinitions.All(x => x.Descriptor.FieldKey != m_FieldDefinitionCreation.Key);
+            var isUnique = !m_Behaviour.FieldDefinitionProperties.ContainsKey(m_FieldDefinitionCreation.Key);
 
             GUI.enabled = !isEmpty && isUnique;
 
             if (GUILayout.Button("Create"))
             {
-                _ = m_Behaviour.CreateFieldDefinitionAsync(m_FieldDefinitionCreation, CancellationToken.None);
+                _ = m_Behaviour.CreateFieldDefinitionAsync(m_FieldDefinitionCreation);
                 m_FieldDefinitionCreation = new FieldDefinitionCreation();
             }
 
@@ -194,29 +196,33 @@ namespace Unity.Cloud.Documentation.Assets
 
         void DisplayFieldDefinition()
         {
-            var field = m_Behaviour.CurrentFieldDefinition;
+            if (!m_Behaviour.FieldDefinitionProperties.TryGetValue(m_Behaviour.CurrentFieldDefinitionKey, out var properties))
+            {
+                GUILayout.Label(" ! Field definition properties not loaded !");
+                return;
+            }
 
-            GUILayout.Label($"Field Definition: {field.Descriptor.FieldKey}");
-            GUILayout.Label(field.IsDeleted ? "Deleted" : "Active");
-            GUILayout.Label($"Created on: {field.AuthoringInfo?.Created:yyyy-M-d dddd}");
-            GUILayout.Label($"Updated on: {field.AuthoringInfo?.Updated:yyyy-M-d dddd}");
+            GUILayout.Label($"Field Definition: {m_Behaviour.CurrentFieldDefinitionKey}");
+            GUILayout.Label(properties.IsDeleted ? "Deleted" : "Active");
+            GUILayout.Label($"Created on: {properties.AuthoringInfo?.Created:yyyy-M-d dddd}");
+            GUILayout.Label($"Updated on: {properties.AuthoringInfo?.Updated:yyyy-M-d dddd}");
 
             var multiSelectionStatus = string.Empty;
             var acceptedValues = string.Empty;
 
-            if (field.Type == FieldDefinitionType.Selection)
+            if (properties.Type == FieldDefinitionType.Selection)
             {
-                var selectionFieldDefinition = field.AsSelectionFieldDefinition();
+                var selectionProperties = properties.AsSelectionFieldDefinitionProperties();
 
-                multiSelectionStatus = selectionFieldDefinition.Multiselection ? ", Multi" : ", Single";
-                acceptedValues = string.Join(',', selectionFieldDefinition.AcceptedValues ?? new List<string>());
+                multiSelectionStatus = selectionProperties.Multiselection ? ", Multi" : ", Single";
+                acceptedValues = string.Join(',', selectionProperties.AcceptedValues ?? new List<string>());
             }
 
-            GUILayout.Label($"Type: {field.Type}{multiSelectionStatus}");
+            GUILayout.Label($"Type: {properties.Type}{multiSelectionStatus}");
 
-            if (field.IsDeleted)
+            if (properties.IsDeleted)
             {
-                GUILayout.Label($"Display name: {field.DisplayName}");
+                GUILayout.Label($"Display name: {properties.DisplayName}");
                 if (!string.IsNullOrEmpty(acceptedValues))
                 {
                     GUILayout.Label($"Accepted values: {acceptedValues}");
@@ -229,7 +235,7 @@ namespace Unity.Cloud.Documentation.Assets
 
             DisplayUpdateValues(m_Behaviour.FieldDefinitionUpdate);
 
-            if (m_Behaviour.CurrentFieldDefinition.Type == FieldDefinitionType.Selection)
+            if (properties.Type == FieldDefinitionType.Selection)
             {
                 DisplaySelectionValues();
             }
@@ -237,7 +243,7 @@ namespace Unity.Cloud.Documentation.Assets
             GUILayout.Space(5f);
             if (GUILayout.Button("Update"))
             {
-                _ = m_Behaviour.UpdateFieldDefinition(m_SelectionAcceptedValues);
+                _ = m_Behaviour.UpdateFieldDefinitionAsync(m_SelectionAcceptedValues);
             }
         }
 
@@ -279,70 +285,97 @@ namespace Unity.Cloud.Documentation.Assets
 
         #region Example_Behaviour_RefreshMetadata
 
-        public List<IFieldDefinition> FieldDefinitions { get; set; }
-        public IFieldDefinition CurrentFieldDefinition { get; private set; }
+        public Dictionary<string, FieldDefinitionProperties> FieldDefinitionProperties { get; } = new();
+        public string CurrentFieldDefinitionKey { get; private set; }
         public FieldDefinitionUpdate FieldDefinitionUpdate { get; private set; }
 
-        public async Task GetFieldDefinitions()
+        public async Task GetFieldDefinitionsAsync()
         {
-            FieldDefinitions = new List<IFieldDefinition>();
-            CurrentFieldDefinition = null;
+            var fieldKey = CurrentFieldDefinitionKey;
+            CurrentFieldDefinitionKey = null;
+            FieldDefinitionProperties.Clear();
 
-            var asyncList = PlatformServices.AssetRepository.QueryFieldDefinitions(CurrentOrganization.Id)
-                .ExecuteAsync(CancellationToken.None);
+            var asyncList = PlatformServices.AssetRepository.ListFieldDefinitionsAsync(CurrentOrganization.Id, Range.All, CancellationToken.None);
             await foreach (var fieldDefinition in asyncList)
             {
-                FieldDefinitions.Add(fieldDefinition);
+                var properties = await fieldDefinition.GetPropertiesAsync(CancellationToken.None);
+
+                FieldDefinitionProperties.Add(fieldDefinition.Descriptor.FieldKey, properties);
+
+                if (fieldDefinition.Descriptor.FieldKey == fieldKey)
+                {
+                    SetCurrentFieldDefinition(fieldKey);
+                }
             }
         }
 
-        public void SetCurrentFieldDefinition(IFieldDefinition fieldDefinition)
+        public void SetCurrentFieldDefinition(string fieldDefinitionKey)
         {
-            CurrentFieldDefinition = fieldDefinition;
-            FieldDefinitionUpdate = CurrentFieldDefinition != null ? new FieldDefinitionUpdate(CurrentFieldDefinition) : null;
+            CurrentFieldDefinitionKey = fieldDefinitionKey;
+
+            if (!string.IsNullOrEmpty(CurrentFieldDefinitionKey) && FieldDefinitionProperties.TryGetValue(CurrentFieldDefinitionKey, out var properties))
+            {
+                FieldDefinitionUpdate = new FieldDefinitionUpdate {DisplayName = properties.DisplayName};
+            }
+            else
+            {
+                FieldDefinitionUpdate = null;
+            }
         }
 
         #endregion
 
         #region Example_Behaviour_CreateMetadata
 
-        public async Task CreateFieldDefinitionAsync(IFieldDefinitionCreation fieldDefinitionCreation, CancellationToken cancellationToken)
+        public async Task CreateFieldDefinitionAsync(IFieldDefinitionCreation fieldDefinitionCreation)
         {
-            await PlatformServices.AssetRepository.CreateFieldDefinitionAsync(CurrentOrganization.Id, fieldDefinitionCreation, cancellationToken);
-            FieldDefinitions = null;
+            var fieldDefinitionDescriptor = await PlatformServices.AssetRepository.CreateFieldDefinitionLiteAsync(CurrentOrganization.Id, fieldDefinitionCreation, CancellationToken.None);
+            CurrentFieldDefinitionKey = fieldDefinitionDescriptor.FieldKey;
+
             Debug.Log($"Field definition {fieldDefinitionCreation.Key} created.");
+
+            await GetFieldDefinitionsAsync();
         }
 
         #endregion
 
         #region Example_Behaviour_DeleteMetadata
 
-        public async Task DeleteFieldDefinition(IFieldDefinition fieldDefinition)
+        public async Task DeleteFieldDefinitionAsync(string fieldDefinitionKey)
         {
-            await PlatformServices.AssetRepository.DeleteFieldDefinitionAsync(fieldDefinition.Descriptor, CancellationToken.None);
-            FieldDefinitions = null;
-            if (fieldDefinition == CurrentFieldDefinition)
-            {
-                SetCurrentFieldDefinition(null);
-            }
+            await PlatformServices.AssetRepository.DeleteFieldDefinitionAsync(new FieldDefinitionDescriptor(CurrentOrganization.Id, fieldDefinitionKey), CancellationToken.None);
 
-            Debug.Log($"Field definition {fieldDefinition.Descriptor.FieldKey} deleted.");
+            Debug.Log($"Field definition {fieldDefinitionKey} deleted.");
+
+            await GetFieldDefinitionsAsync();
         }
 
         #endregion
 
         #region Example_Behaviour_UpdateMetadata
 
-        public async Task UpdateFieldDefinition(IEnumerable<string> selectionAcceptedValues)
+        public async Task UpdateFieldDefinitionAsync(IEnumerable<string> selectionAcceptedValues)
         {
-            await CurrentFieldDefinition.UpdateAsync(FieldDefinitionUpdate, CancellationToken.None);
+            if (string.IsNullOrEmpty(CurrentFieldDefinitionKey)) return;
 
-            if (CurrentFieldDefinition.Type == FieldDefinitionType.Selection)
+            var fieldDefinition = await PlatformServices.AssetRepository.GetFieldDefinitionAsync(new FieldDefinitionDescriptor(CurrentOrganization.Id, CurrentFieldDefinitionKey), CancellationToken.None);
+
+            await fieldDefinition.UpdateAsync(FieldDefinitionUpdate, CancellationToken.None);
+
+            try
             {
-                await CurrentFieldDefinition.AsSelectionFieldDefinition().SetSelectionValuesAsync(selectionAcceptedValues, CancellationToken.None);
+                await fieldDefinition.AsSelectionFieldDefinition().SetSelectionValuesAsync(selectionAcceptedValues, CancellationToken.None);
+            }
+            catch (Exception)
+            {
+                // Fail silently
             }
 
-            Debug.Log($"Field definition {CurrentFieldDefinition.Descriptor.FieldKey} updated.");
+            await fieldDefinition.RefreshAsync(CancellationToken.None);
+            var properties = await fieldDefinition.GetPropertiesAsync(CancellationToken.None);
+            FieldDefinitionProperties[CurrentFieldDefinitionKey] = properties;
+
+            Debug.Log($"Field definition {CurrentFieldDefinitionKey} updated.");
         }
 
         #endregion

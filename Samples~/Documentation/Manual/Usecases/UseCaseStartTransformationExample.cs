@@ -19,8 +19,8 @@ namespace Unity.Cloud.Documentation.Assets
                     WorkflowType = workflowType
                 };
 
-                var transformation = await dataset.StartTransformationAsync(creation, CancellationToken.None);
-                Debug.Log($"Transformation started: {transformation.Descriptor.TransformationId}");
+                var transformationDescriptor = await dataset.StartTransformationLiteAsync(creation, CancellationToken.None);
+                Debug.Log($"Transformation started: {transformationDescriptor.TransformationId}");
             }
             catch (Exception e)
             {
@@ -29,6 +29,25 @@ namespace Unity.Cloud.Documentation.Assets
             }
         }
 
+        public async Task StartCustomTransformationOnDataset(IDataset dataset, string workflowName)
+        {
+            try
+            {
+                var creation = new TransformationCreation
+                {
+                    WorkflowType = WorkflowType.Custom,
+                    CustomWorkflowName = workflowName
+                };
+
+                var transformationDescriptor = await dataset.StartTransformationLiteAsync(creation, CancellationToken.None);
+                Debug.Log($"Transformation started: {transformationDescriptor.TransformationId}");
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"Failed to start transformation. {e}");
+                throw;
+            }
+        }
 
         #endregion
 
@@ -39,7 +58,8 @@ namespace Unity.Cloud.Documentation.Assets
             try
             {
                 var transformation = await dataset.GetTransformationAsync(transformationId, CancellationToken.None);
-                Debug.Log($"Transformation {transformation.Descriptor.TransformationId} current status is {transformation.Status}");
+                var transformationProperties = await transformation.GetPropertiesAsync(CancellationToken.None);
+                Debug.Log($"Transformation {transformation.Descriptor.TransformationId} current status is {transformationProperties.Status}");
             }
             catch (Exception e)
             {

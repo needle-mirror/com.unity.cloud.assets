@@ -1,21 +1,14 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using Unity.Cloud.Common;
 using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace Unity.Cloud.Assets.Samples.AssetDiscovery
 {
-    public interface IAssetsGridController
-    {
-        void Init(VisualElement root, VisualTreeAsset assetsGridItemTemplate, Dictionary<AssetType, Texture2D> defaultThumbnails);
-        event Action<IAsset> AssetSelected;
-        void PopulateAssetsGrid(List<IAsset> assetsInfo);
-        void DisplayAssetGrid();
-        void ClearAssetGrid();
-        void HideAssetGrid();
-    }
-
-    class AssetsGridController : IAssetsGridController
+    public class AssetsGridController
     {
         VisualElement m_AssetGridList;
         VisualTreeAsset m_AssetGridItemTemplate;
@@ -28,6 +21,8 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
 
         public event Action<IAsset> AssetSelected;
         Dictionary<AssetType, Texture2D> m_DefaultThumbnails;
+
+        CancellationTokenSource m_CancellationTokenSource;
 
         public void Init(VisualElement root, VisualTreeAsset assetsGridItemTemplate, Dictionary<AssetType, Texture2D> defaultThumbnails)
         {
@@ -43,18 +38,23 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
 
         public void PopulateAssetsGrid(List<IAsset> assetsInfo)
         {
+            if (m_CancellationTokenSource != null)
+            {
+                m_CancellationTokenSource.Cancel();
+                m_CancellationTokenSource.Dispose();
+            }
+
+            m_CancellationTokenSource = new CancellationTokenSource();
+
             foreach (var asset in assetsInfo)
             {
                 var item = m_AssetGridItemTemplate.Instantiate();
+                m_AssetGridList.Add(item);
 
                 var button = item.Q<Button>("AssetGridItem");
-
                 var label = item.Q<Label>();
-                label.text = asset.Name;
 
-                SetThumbnail(asset, button);
-
-                m_AssetGridList.Add(item);
+                _ = PopulateGridItem(asset, label, button, m_CancellationTokenSource.Token);
 
                 item.RegisterCallback<ClickEvent>(_ =>
                 {
@@ -80,26 +80,40 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
             }
         }
 
-        void SetThumbnail(IAsset asset, VisualElement container)
+        async Task PopulateGridItem(IAsset asset, Label label, VisualElement container, CancellationToken cancellationToken)
+        {
+            var assetProperties = await asset.GetPropertiesAsync(cancellationToken);
+
+            if (cancellationToken.IsCancellationRequested) return;
+
+            label.text = assetProperties.Name;
+
+            SetThumbnail(asset.Descriptor.AssetId, assetProperties, container);
+        }
+
+        void SetThumbnail(AssetId assetId, AssetProperties properties, VisualElement container)
         {
             var icon = container.Q("Icon");
 
             // Set the default thumbnail
-            var defaultThumbnail = GetDefaultThumbnail(asset.Type);
+            var defaultThumbnail = GetDefaultThumbnail(properties.Type);
             if (defaultThumbnail != null)
             {
                 icon.style.backgroundImage = new StyleBackground(defaultThumbnail);
             }
 
-            // When a thumbnail is successfully retrieved, set it as the background image and the default is cleared.`
-            ThumbnailController.GetThumbnail(asset, texture2D =>
+            if (properties.PreviewFileDescriptor.HasValue)
             {
-                if (texture2D != null)
+                // When a thumbnail is successfully retrieved, set it as the background image and the default is cleared.`
+                ThumbnailController.GetThumbnail(assetId, properties.PreviewFileDescriptor.Value, texture2D =>
                 {
-                    icon.style.backgroundImage = null;
-                    container.style.backgroundImage = new StyleBackground(texture2D);
-                }
-            });
+                    if (texture2D != null)
+                    {
+                        icon.style.backgroundImage = null;
+                        container.style.backgroundImage = new StyleBackground(texture2D);
+                    }
+                });
+            }
         }
 
         Texture2D GetDefaultThumbnail(AssetType type)

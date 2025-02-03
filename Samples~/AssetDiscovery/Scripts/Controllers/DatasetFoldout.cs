@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using UnityEngine.UIElements;
 
 namespace Unity.Cloud.Assets.Samples.AssetDiscovery
@@ -9,18 +11,17 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
     {
         public delegate IEnumerable<VisualElement> CreatePropertyInformation(string propertyName, object propertyValue);
 
-        static readonly Type k_DatasetType = typeof(IDataset);
+        static readonly Type k_DatasetType = typeof(DatasetProperties);
         static readonly HashSet<string> k_DatasetPropertiesToHide = new()
         {
-            nameof(IDataset.Name),
-            nameof(IDataset.FileOrder),
-            nameof(IDataset.Metadata),
-            nameof(IDataset.SystemMetadata),
+            nameof(DatasetProperties.Name),
+            nameof(DatasetProperties.FileOrder),
         };
 
         static List<string> k_DatasetPropertyNames;
 
         public ScrollView ScrollView { get; }
+        public Task<bool> CheckIfHasFilesTask { get; }
 
         VisualElement m_DownloadSuccessLabel;
         Button m_DownloadButton;
@@ -29,29 +30,18 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
         {
             FindPropertyNames();
 
-            text = dataset.Name;
+            text = dataset.Descriptor.DatasetId.ToString();
             value = false;
 
             ScrollView = new ScrollView();
             Add(ScrollView);
 
-            foreach (var propertyName in k_DatasetPropertyNames)
+            foreach (var property in createPropertyInformation(string.Empty, dataset.Descriptor))
             {
-                var propertyValue = k_DatasetType.GetProperty(propertyName)?.GetValue(dataset);
-
-                if (string.IsNullOrEmpty(propertyValue?.ToString())) continue;
-
-                var propertyInformation = createPropertyInformation
-                (
-                    propertyName,
-                    propertyValue
-                );
-
-                foreach (var property in propertyInformation)
-                {
-                    ScrollView.Add(property);
-                }
+                ScrollView.Add(property);
             }
+
+            _ = PopulatePropertiesAsync(dataset, createPropertyInformation);
 
             m_DownloadSuccessLabel = GetDownloadSuccessLabel();
             Add(m_DownloadSuccessLabel);
@@ -68,6 +58,22 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
             m_DownloadButton.AddToClassList("sample-button");
             m_DownloadButton.AddToClassList("button-blue");
             Add(m_DownloadButton);
+            m_DownloadButton.SetEnabled(false);
+
+            CheckIfHasFilesTask = CheckIfHasFiles(dataset);
+        }
+
+        async Task<bool> CheckIfHasFiles(IDataset dataset)
+        {
+            var asyncEnumerator = dataset.ListFilesAsync(new Range(0,1), CancellationToken.None).GetAsyncEnumerator();
+            if (await asyncEnumerator.MoveNextAsync())
+            {
+                m_DownloadButton.SetEnabled(true);
+                m_DownloadButton.tooltip = "No files to download.";
+                return true;
+            }
+
+            return false;
         }
 
         public void RegisterDownloadButtonCallback(Action callback)
@@ -86,6 +92,31 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
                 .Select(property => property.Name)
                 .Where(name => !k_DatasetPropertiesToHide.Contains(name))
                 .ToList();
+        }
+
+        async Task PopulatePropertiesAsync(IDataset dataset, CreatePropertyInformation createPropertyInformation)
+        {
+            var properties = await dataset.GetPropertiesAsync(CancellationToken.None);
+
+            text = properties.Name;
+
+            foreach (var propertyName in k_DatasetPropertyNames)
+            {
+                var propertyValue = k_DatasetType.GetProperty(propertyName)?.GetValue(properties);
+
+                if (string.IsNullOrEmpty(propertyValue?.ToString())) continue;
+
+                var propertyInformation = createPropertyInformation
+                (
+                    propertyName,
+                    propertyValue
+                );
+
+                foreach (var property in propertyInformation)
+                {
+                    ScrollView.Add(property);
+                }
+            }
         }
 
         static VisualElement GetDownloadSuccessLabel()
