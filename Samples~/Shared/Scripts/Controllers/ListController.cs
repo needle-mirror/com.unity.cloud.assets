@@ -77,11 +77,6 @@ namespace Unity.Cloud.Assets.Samples
             m_ListView.ClearSelection();
         }
 
-        public void SetSelectionWithoutNotify(IEnumerable<int> indices)
-        {
-            m_ListView.SetSelectionWithoutNotify(indices);
-        }
-
         protected abstract void OnBindItem(VisualElement element, int i);
 
         protected virtual void OnUnbindItem(VisualElement element, int i)

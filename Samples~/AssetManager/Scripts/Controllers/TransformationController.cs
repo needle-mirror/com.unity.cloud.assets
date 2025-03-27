@@ -56,7 +56,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
                     }
                 });
 
-                if (m_Properties.Status is TransformationStatus.Pending or TransformationStatus.Running)
+                if (m_Properties.Status is TransformationStatus.Queued or TransformationStatus.Pending or TransformationStatus.Running)
                     _ = UpdateProgressBarAsync(progressBar, m_CancellationTokenSource.Token);
             }
 
@@ -72,7 +72,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
             void OnCancel(ClickEvent _)
             {
-                if (m_Properties.Status is TransformationStatus.Pending or TransformationStatus.Running)
+                if (m_Properties.Status is TransformationStatus.Queued or TransformationStatus.Pending or TransformationStatus.Running)
                 {
                     m_Transformation.TerminateAsync(CancellationToken.None);
                     return;
@@ -93,6 +93,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
                     TransformationStatus.Terminated => "Cancelled",
                     TransformationStatus.Succeeded => "Succeeded",
                     TransformationStatus.Failed => "Failed",
+                    TransformationStatus.Queued => "Queued",
                     _ => "Unknown"
                 };
 
@@ -120,6 +121,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
                         switch (status)
                         {
+                            case TransformationStatus.Queued:
                             case TransformationStatus.Pending:
                             case TransformationStatus.Running:
                             case TransformationStatus.Terminating:
@@ -128,7 +130,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
                             case TransformationStatus.Succeeded:
                                 progressBar.value = 100;
-                                DialogService.ShowMessage("Sucess", $"Transformation of type {m_Properties.WorkflowName} succeeded.");
+                                DialogService.ShowMessage("Success", $"Transformation of type {m_Properties.WorkflowName} succeeded.");
                                 Cancel();
                                 break;
                             case TransformationStatus.Failed:

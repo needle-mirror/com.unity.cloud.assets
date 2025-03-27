@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -92,8 +91,10 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             ProjectSelected -= OnProjectSelected;
         }
 
-        public void ClearSelection()
+        public void OnBackButtonClicked(ClickEvent evt)
         {
+            AssetListPanel?.Show();
+
             m_AssetListUi.ClearSelection();
         }
 
@@ -111,6 +112,8 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
         async void OnProjectSelected()
         {
+            m_AssetListUi.ClearSelection();
+
             await OnProjectSelectedAsync();
         }
 

@@ -126,7 +126,7 @@ namespace Unity.Cloud.Documentation.Assets
 
             if (GUILayout.Button("Select", GUILayout.Width(60)))
             {
-                m_Behaviour.CurrentVersion = version;
+                _ = m_Behaviour.SetCurrentAsset(version);
             }
 
             GUI.enabled = true;
@@ -188,7 +188,12 @@ namespace Unity.Cloud.Documentation.Assets
         readonly AssetManagementBehaviour m_Behaviour;
 
         public IAssetProject CurrentProject => m_Behaviour.CurrentProject;
-        public IAsset CurrentAsset => m_Behaviour.CurrentAsset;
+
+        public IAsset CurrentAsset
+        {
+            get => m_Behaviour.CurrentAsset;
+            set => m_Behaviour.CurrentAsset = value;
+        }
 
         public UseCaseVersionSearchExampleBehaviour(AssetManagementBehaviour behaviour)
         {
@@ -199,9 +204,17 @@ namespace Unity.Cloud.Documentation.Assets
 
         public Dictionary<AssetVersion, AssetProperties> VersionProperties { get; } = new();
 
-        public AssetVersion? CurrentVersion { get; set; }
+        public AssetVersion? CurrentVersion => CurrentAsset?.Descriptor.AssetVersion;
 
         VersionQueryBuilder m_CurrentQuery;
+        
+        public async Task SetCurrentAsset(AssetVersion assetVersion)
+        {
+            if (CurrentAsset != null)
+            {
+                CurrentAsset = await CurrentAsset.WithVersionAsync(assetVersion, CancellationToken.None);
+            }
+        }
 
         public async Task SearchVersions(string sortingField, SortingOrder sortingOrder)
         {
@@ -218,7 +231,6 @@ namespace Unity.Cloud.Documentation.Assets
             var results = query.ExecuteAsync(CancellationToken.None);
 
             var currentVersion = CurrentVersion;
-            CurrentVersion = null;
 
             VersionProperties.Clear();
             await foreach (var asset in results)
@@ -228,7 +240,7 @@ namespace Unity.Cloud.Documentation.Assets
 
                 if (currentVersion.HasValue && asset.Descriptor.AssetVersion == currentVersion.Value)
                 {
-                    CurrentVersion = asset.Descriptor.AssetVersion;
+                    CurrentAsset = asset;
                 }
             }
         }

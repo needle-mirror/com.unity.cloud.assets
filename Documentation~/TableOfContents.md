@@ -34,6 +34,8 @@
       * [Manage field definitions in an organization](use-case-manage-fields.md)
       * [Modify the accepted values of field definitions in an organization](use-case-modify-fields-values.md)
       * [Manage an asset's metadata](use-case-manage-asset-metadata.md)
+    * Performance
+      * [Selective caching of data](use-case-cache-configuration.md)
 
 * [Troubleshooting](troubleshooting.md)
 * [Apple privacy manifest](apple-privacy-manifest.md)

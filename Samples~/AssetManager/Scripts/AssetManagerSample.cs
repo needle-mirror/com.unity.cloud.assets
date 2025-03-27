@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Unity.Cloud.Common;
@@ -43,11 +42,13 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
             // Extract the embedded popup
             var popup = m_AssetPanel.Q("AddMetadataPopup");
-            m_ContentPanel.Add(popup);
             m_AddMetadataPopupController = new AddMetadataPopupController(popup);
 
             InstantiateDatasetCreationPanel();
             InstantiateAssetCreationPanel();
+
+            // Add the popup after the other panels
+            m_ContentPanel.Add(popup);
 
             m_AssetController.HideContent += HideContent;
             m_AssetController.OrganizationSelected += OnOrganizationSelected;
@@ -77,7 +78,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
             m_FileController.Cleanup();
 
-            m_AssetPanel.Q<Button>("BackBtn").UnregisterCallback<ClickEvent>(OnBackButtonClicked);
+            m_AssetPanel.Q<Button>("BackBtn").UnregisterCallback<ClickEvent>(m_AssetController.OnBackButtonClicked);
         }
 
         void InstantiateAssetCreationPanel()
@@ -86,7 +87,6 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             m_AssetPanel.Hide();
 
             m_ContentPanel.Add(m_AssetPanel);
-            m_AssetPanel.SendToBack();
 
             m_AssetPanelController.Init
             (
@@ -97,7 +97,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             m_AssetPanelController.OnAssetUpdated += OnAssetUpdated;
             m_AssetPanelController.OnDatasetOpen += OnDatasetPanelOpen;
 
-            m_AssetPanel.Q<Button>("BackBtn").RegisterCallback<ClickEvent>(OnBackButtonClicked);
+            m_AssetPanel.Q<Button>("BackBtn").RegisterCallback<ClickEvent>(m_AssetController.OnBackButtonClicked);
         }
 
         void InstantiateDatasetCreationPanel()
@@ -107,7 +107,6 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             m_DatasetPanel.Hide();
 
             m_ContentPanel.Add(m_DatasetPanel);
-            m_DatasetPanel.SendToBack();
 
             m_DatasetPanelController.Init
             (
@@ -143,8 +142,6 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
         void OnProjectSelected()
         {
-            m_AssetController.ClearSelection();
-
             m_AssetController.AssetListPanel?.Show();
             m_ContentPanel?.Show();
         }
@@ -173,13 +170,6 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
                 m_AssetPanelController.OpenAsset(asset);
                 m_AssetPanel?.Show();
             }
-        }
-
-        void OnBackButtonClicked(ClickEvent evt)
-        {
-            m_AssetController.ClearSelection();
-
-            m_AssetController.AssetListPanel?.Show();
         }
 
         void CreateAsset()

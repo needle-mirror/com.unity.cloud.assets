@@ -17,10 +17,12 @@ namespace Unity.Cloud.Documentation.Assets
     public class UseCaseDatasetUpdateExampleUI : IAssetManagementUI
     {
         readonly AssetManagementBehaviour m_Behaviour;
+        readonly string[] m_AssetTypeList;
 
         public UseCaseDatasetUpdateExampleUI(AssetManagementBehaviour behaviour)
         {
             m_Behaviour = behaviour;
+            m_AssetTypeList = AssetTypeExtensions.AssetTypeList().ToArray();
         }
 
         public void OnGUI() { }
@@ -34,13 +36,17 @@ namespace Unity.Cloud.Documentation.Assets
     public class UseCaseDatasetUpdateExample : IAssetManagementUI
     {
         readonly UseCaseDatasetUpdateExampleBehaviour m_Behaviour;
+        readonly string[] m_AssetTypeList;
 
         public UseCaseDatasetUpdateExample(AssetManagementBehaviour behaviour)
         {
             m_Behaviour = new UseCaseDatasetUpdateExampleBehaviour(behaviour);
+            m_AssetTypeList = AssetTypeExtensions.AssetTypeList().ToArray();
         }
 
         #region Example_UIContent
+        
+        static GUILayoutOption s_LabelWidth = GUILayout.Width(60);
 
         IAsset m_CurrentAsset;
         Vector2 m_DatasetListScrollPosition;
@@ -51,7 +57,7 @@ namespace Unity.Cloud.Documentation.Assets
         {
             if (!m_Behaviour.IsProjectSelected) return;
 
-            if (m_CurrentAsset == null)
+            if (m_Behaviour.CurrentAsset == null)
             {
                 GUILayout.Label(" ! No asset selected !");
                 return;
@@ -118,6 +124,7 @@ namespace Unity.Cloud.Documentation.Assets
                     m_DatasetUpdate = new DatasetUpdate
                     {
                         Name = properties.Name,
+                        Type = properties.Type,
                         Description = properties.Description,
                         IsVisible = properties.IsVisible,
                         Tags = properties.Tags?.ToList() ?? new List<string>()
@@ -135,15 +142,23 @@ namespace Unity.Cloud.Documentation.Assets
 
         void DisplayDataset(DatasetProperties datasetProperties)
         {
-            GUILayout.Label("Name:");
+            GUILayout.Label("Name:", s_LabelWidth);
             m_DatasetUpdate.Name = GUILayout.TextField(m_DatasetUpdate.Name);
+            
+            GUILayout.Label("Type:", s_LabelWidth);
+            var typeIndex = m_DatasetUpdate.Type.HasValue ? (int) m_DatasetUpdate.Type.Value : (int) datasetProperties.Type;
+            typeIndex = GUILayout.SelectionGrid(typeIndex, m_AssetTypeList, 4);
+            if (typeIndex != -1 && datasetProperties.Type != (AssetType) typeIndex)
+            {
+                m_DatasetUpdate.Type = (AssetType) typeIndex;
+            }
 
-            GUILayout.Label("Description:");
+            GUILayout.Label("Description:", s_LabelWidth);
             m_DatasetUpdate.Description = GUILayout.TextArea(m_DatasetUpdate.Description);
 
             m_DatasetUpdate.IsVisible = GUILayout.Toggle(m_DatasetUpdate.IsVisible ?? false, "Is visible");
 
-            GUILayout.Label("Tags:");
+            GUILayout.Label("Tags:", s_LabelWidth);
             m_TagsString = GUILayout.TextField(m_TagsString, GUILayout.ExpandWidth(true));
             m_DatasetUpdate.Tags = m_TagsString.Split(',')
                 .Select(tag => tag.Trim())
@@ -156,6 +171,7 @@ namespace Unity.Cloud.Documentation.Assets
             }
 
             GUILayout.Label($"System tags: {string.Join(", ", datasetProperties.SystemTags)}");
+            GUILayout.Label($"Workflow: {string.Join(", ", datasetProperties.WorkflowName)}");
         }
 
         #endregion

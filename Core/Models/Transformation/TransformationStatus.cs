@@ -2,6 +2,8 @@
 
 namespace Unity.Cloud.Assets
 {
+    // Dev note: [DataContract] and [EnumMember] are artifacts of the old serialization strategy.
+    // The attributes are maintained for compatibility reasons and to avoid a breaking change.
     [DataContract]
     public enum TransformationStatus
     {
@@ -23,5 +25,6 @@ namespace Unity.Cloud.Assets
         TimedOut,
         [EnumMember(Value = "terminating")]
         Terminating,
+        Queued
     }
 }

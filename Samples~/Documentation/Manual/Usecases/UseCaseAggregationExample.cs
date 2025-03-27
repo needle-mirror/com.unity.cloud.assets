@@ -124,10 +124,10 @@ namespace Unity.Cloud.Documentation.Assets
                 switch (group.Key.Type)
                 {
                     case GroupableFieldValueType.CollectionDescriptor:
-                        m_GroupCounters.Add(group.Key.AsCollectionDescriptor().Path, group.Value);
+                        m_GroupCounters.Add("[Collection] " + group.Key.AsCollectionDescriptor().Path, group.Value);
                         break;
                     default:
-                        m_GroupCounters.Add(group.Key.AsString(), group.Value);
+                        m_GroupCounters.Add($"[{group.Key.Type}] " + group.Key.AsString(), group.Value);
                         break;
                 }
 

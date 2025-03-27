@@ -20,7 +20,7 @@ namespace Unity.Cloud.Assets
         public IEnumerable<string> Tags { get; set; }
 
         /// <inheritdoc />
-        public AssetType? Type { get; set; }
+        public string Type { get; set; }
 
         /// <inheritdoc />
         public Dictionary<string, object> Metadata { get; set; }

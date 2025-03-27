@@ -11,8 +11,6 @@ namespace Unity.Cloud.Assets.Samples
     {
         public event Action ListUpdated;
 
-        protected delegate Task OnEntryRetrieved(U entry);
-
         VisualElement m_Container;
         VisualElement m_DisplayMessageContainer;
         Label m_DisplayMessage;
