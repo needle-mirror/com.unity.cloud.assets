@@ -140,10 +140,12 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
             {
                 if (k_AssetPropertiesToHide.Contains(propertyInfo.Name)) continue;
 
+                var propertyInfoObjectValue = propertyInfo.GetValue(assetProperties);
+                var propertyInfoValue = propertyInfoObjectValue ?? string.Empty;
                 var propertyInformation = CreatePropertyInformation
                 (
                     propertyInfo.Name,
-                    propertyInfo.GetValue(assetProperties)
+                    propertyInfoValue
                 );
 
                 foreach (var property in propertyInformation)

@@ -72,6 +72,7 @@ namespace Unity.Cloud.Documentation.Assets
 
             if (!m_Behaviour.CurrentAsset.Equals(m_CurrentAsset))
             {
+                m_CurrentAsset = m_Behaviour.CurrentAsset;
                 m_AssetUpdate = new AssetUpdate
                 {
                     Name = properties.Name,
@@ -184,7 +185,11 @@ namespace Unity.Cloud.Documentation.Assets
             try
             {
                 await CurrentAsset.UpdateAsync(assetUpdate, CancellationToken.None);
+                
+                // Update properties:
                 await CurrentAsset.RefreshAsync(CancellationToken.None);
+                var properties = await CurrentAsset.GetPropertiesAsync(CancellationToken.None);
+                m_Behaviour.AssetProperties[CurrentAsset.Descriptor.AssetId] = properties;
             }
             catch (OperationCanceledException oe)
             {

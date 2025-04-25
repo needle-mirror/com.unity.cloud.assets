@@ -452,6 +452,9 @@ namespace Unity.Cloud.Assets
 
         IServiceHttpClient RateLimitedServiceClient(ApiRequest request, string httpMethod)
         {
+#if UNITY_WEBGL && !UNITY_EDITOR
+            return m_ServiceHttpClient;
+#else
             var requestKey = request.GetType() + httpMethod;
             IServiceHttpClient client;
 
@@ -469,10 +472,14 @@ namespace Unity.Cloud.Assets
             }
 
             return client;
+#endif
         }
 
         IServiceHttpClient RateLimitedServiceClient(string requestType, HttpMethod httpMethod)
         {
+#if UNITY_WEBGL && !UNITY_EDITOR
+            return m_ServiceHttpClient;
+#else
             var requestKey = requestType + httpMethod;
             IServiceHttpClient client;
 
@@ -487,6 +494,7 @@ namespace Unity.Cloud.Assets
             }
 
             return client;
+#endif
         }
 
         static bool IsSlowRequest(ApiRequest request)

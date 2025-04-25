@@ -162,10 +162,19 @@ namespace Unity.Cloud.Documentation.Assets
 
             if (properties.State == AssetState.Unfrozen)
             {
+                GUILayout.BeginHorizontal();
+                
+                if (GUILayout.Button("Delete version"))
+                {
+                    _ = m_Behaviour.DeleteVersion(version);
+                }
+                
                 if (GUILayout.Button("Freeze version"))
                 {
                     _ = m_Behaviour.FreezeVersion(version);
                 }
+                
+                GUILayout.EndHorizontal();
             }
             else
             {
@@ -213,6 +222,7 @@ namespace Unity.Cloud.Documentation.Assets
             if (CurrentAsset != null)
             {
                 CurrentAsset = await CurrentAsset.WithVersionAsync(assetVersion, CancellationToken.None);
+                Debug.Log($"Current asset set to version: {CurrentAsset.Descriptor.AssetVersion}");
             }
         }
 
@@ -277,6 +287,18 @@ namespace Unity.Cloud.Documentation.Assets
             await PopulateVersions(m_CurrentQuery);
 
             Debug.Log($"New version created with version: {asset.Descriptor.AssetVersion}");
+        }
+
+        #endregion
+
+        #region Example_DeleteVersion
+
+        public async Task DeleteVersion(AssetVersion assetVersion)
+        {
+            await CurrentProject.DeleteUnfrozenAssetVersionAsync(CurrentAsset.Descriptor.AssetId, assetVersion, CancellationToken.None);
+            await PopulateVersions(m_CurrentQuery);
+
+            Debug.Log($"Asset version {assetVersion} has been deleted.");
         }
 
         #endregion

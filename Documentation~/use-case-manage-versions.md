@@ -69,6 +69,22 @@ To create a new version of an asset, follow these steps:
 The code snippet does the following:
 
 * Creates a new version of the asset from the specific frozen version.
+* Refreshes the current list of versions for the asset.
+* Displays a success message in the console.
+
+### Delete an unfrozen version
+
+To delete an unfrozen version of an asset, follow these steps:
+
+1. Open the `AssetManagementBehaviour` script that you created as described in [Get started with Asset SDK](get-started-management.md#Create-the-behavior-for-managing-assets).
+2. Add the following code to the end of the class:
+
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseVersionSearchExample.cs#Example_DeleteVersion)]
+
+The code snippet does the following:
+
+* Deletes the specific unfrozen version of the asset.
+* Refreshes the current list of versions for the asset.
 * Displays a success message in the console.
 
 ### Add a UI for managing versions
@@ -96,7 +112,7 @@ The code snippet does the following:
 * Provides fields to specify the sorting field and order for the list of versions.
 * Provides a UI button to refresh the list of versions.
 * Displays the list of versions with a **Select** button next to each version.
-* When you select a version, the UI displays information on this version and provides buttons to freeze or create a new version based on the frozen state of the selected version.
+* When you select a version, the UI displays information on this version and provides buttons to freeze, delete, or create a new version based on the frozen state of the selected version.
 
 ## Going further
 

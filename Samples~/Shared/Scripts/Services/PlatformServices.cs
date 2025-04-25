@@ -10,7 +10,7 @@ namespace Unity.Cloud.Assets.Samples
 {
     public static class PlatformServices
     {
-        static CompositeAuthenticator s_CompositeAuthenticator;
+        static ICompositeAuthenticator s_CompositeAuthenticator;
 
         /// <summary>
         /// Returns a <see cref="ICompositeAuthenticator"/>.
@@ -28,30 +28,24 @@ namespace Unity.Cloud.Assets.Samples
         public static IOrganizationRepository OrganizationRepository => s_CompositeAuthenticator;
 
         /// <summary>
-        /// Returns a <see cref="UnityHttpClient"/>
-        /// </summary>
-        public static IHttpClient HttpClient { get; private set; }
-
-        /// <summary>
         /// Returns an <see cref="IAssetRepository"/>.
         /// </summary>
         public static IAssetRepository AssetRepository { get; private set; }
 
         public static void Create()
         {
-            HttpClient = new UnityHttpClient();
-            var serviceHostResolver = UnityRuntimeServiceHostResolverFactory.Create();
-            var playerSettings = UnityCloudPlayerSettings.Instance;
             var platformSupport = PlatformSupportFactory.GetAuthenticationPlatformSupport();
+            var httpClient = new UnityHttpClient();
+            var playerSettings = UnityCloudPlayerSettings.Instance;
 
-            var compositeAuthenticatorSettings = new CompositeAuthenticatorSettingsBuilder(HttpClient, platformSupport, serviceHostResolver, playerSettings)
+            var serviceHostResolver = UnityRuntimeServiceHostResolverFactory.Create();
+            var compositeAuthenticatorSettings = new CompositeAuthenticatorSettingsBuilder(httpClient, platformSupport, serviceHostResolver, playerSettings)
                 .AddDefaultPkceAuthenticator(playerSettings)
                 .Build();
 
             s_CompositeAuthenticator = new CompositeAuthenticator(compositeAuthenticatorSettings);
 
-            var serviceHttpClient = new ServiceHttpClient(HttpClient, s_CompositeAuthenticator, playerSettings);
-
+            var serviceHttpClient = new ServiceHttpClient(httpClient, s_CompositeAuthenticator, playerSettings);
             AssetRepository = AssetRepositoryFactory.Create(serviceHttpClient, serviceHostResolver);
         }
 
