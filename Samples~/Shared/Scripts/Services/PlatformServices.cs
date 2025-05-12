@@ -38,15 +38,11 @@ namespace Unity.Cloud.Assets.Samples
             var httpClient = new UnityHttpClient();
             var playerSettings = UnityCloudPlayerSettings.Instance;
 
-            var serviceHostResolver = UnityRuntimeServiceHostResolverFactory.Create();
-            var compositeAuthenticatorSettings = new CompositeAuthenticatorSettingsBuilder(httpClient, platformSupport, serviceHostResolver, playerSettings)
-                .AddDefaultPkceAuthenticator(playerSettings)
-                .Build();
+            var serviceConnector = ServiceConnectorFactory.Create(platformSupport, httpClient, playerSettings, playerSettings);
 
-            s_CompositeAuthenticator = new CompositeAuthenticator(compositeAuthenticatorSettings);
+            s_CompositeAuthenticator = serviceConnector.CompositeAuthenticator;
 
-            var serviceHttpClient = new ServiceHttpClient(httpClient, s_CompositeAuthenticator, playerSettings);
-            AssetRepository = AssetRepositoryFactory.Create(serviceHttpClient, serviceHostResolver);
+            AssetRepository = AssetRepositoryFactory.Create(serviceConnector.ServiceHttpClient, serviceConnector.ServiceHostResolver);
         }
 
         /// <summary>

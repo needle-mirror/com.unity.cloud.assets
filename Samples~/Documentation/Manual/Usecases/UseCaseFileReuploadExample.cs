@@ -1,3 +1,4 @@
+#if UNITY_EDITOR && !UNITY_WEBGL
 namespace Unity.Cloud.Documentation.Assets
 {
 #pragma warning disable S4487 // Unread "private" fields should be removed
@@ -281,3 +282,4 @@ namespace Unity.Cloud.Documentation.Assets
         #endregion
     }
 }
+#endif

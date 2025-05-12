@@ -104,7 +104,9 @@ namespace Unity.Cloud.Documentation.Assets
             m_UI.Add(new OrganizationSelectionExampleUI(m_Behaviour));
             m_UI.Add(new ProjectSelectionExampleUI(m_Behaviour));
             m_UI.Add(new AssetSelectionExampleUI(m_Behaviour));
+#if UNITY_EDITOR && !UNITY_WEBGL
             m_UI.Add(new UseCaseFileReuploadExampleUI(m_Behaviour));
+#endif
 
             #endregion
 
@@ -113,7 +115,9 @@ namespace Unity.Cloud.Documentation.Assets
             m_UI.Add(new OrganizationSelectionExampleUI(m_Behaviour));
             m_UI.Add(new ProjectSelectionExampleUI(m_Behaviour));
             m_UI.Add(new AssetSelectionExampleUI(m_Behaviour));
+#if UNITY_EDITOR && !UNITY_WEBGL
             m_UI.Add(new UseCaseFileManagementExampleUI(m_Behaviour));
+#endif
 
             #endregion
 
