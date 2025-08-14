@@ -183,12 +183,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             m_AssetCreationController.Show(m_AssetController.SelectedProject);
         }
 
-        void OnAssetUpdated(IAsset asset)
-        {
-            _ = OnAssetUpdatedAsync(asset);
-        }
-
-        async Task OnAssetUpdatedAsync(IAsset asset)
+        async void OnAssetUpdated(IAsset asset)
         {
             await asset.RefreshAsync(CancellationToken.None);
 

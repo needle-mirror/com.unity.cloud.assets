@@ -24,7 +24,7 @@ namespace Unity.Cloud.Assets.Samples
             element.style.display = DisplayStyle.None;
         }
 
-        public static void ParseTags(this TextField textField, ICollection<string> tags, Action<string> addTag)
+        public static void ParseTags(this TextField textField, Action<string> addTag)
         {
             // If focused on tags text field and press enter, call "add new tag" (if not empty)
             if (Input.GetKey(KeyCode.Return) && !string.IsNullOrEmpty(textField.value))
@@ -32,9 +32,7 @@ namespace Unity.Cloud.Assets.Samples
                 var splitList = textField.value.Split(',');
                 foreach (var tag in splitList)
                 {
-                    var trimmedTag = tag.Trim();
-                    tags.Add(trimmedTag);
-                    addTag(trimmedTag);
+                    addTag?.Invoke(tag.Trim());
                 }
 
                 // clear the text field
@@ -54,19 +52,19 @@ namespace Unity.Cloud.Assets.Samples
             }
         }
 
-        public static void AddTag(this VisualElement container, string tag, ICollection<string> tags, VisualTreeAsset template, bool canRemove)
+        public static void AddTag(this VisualElement container, string tag, VisualTreeAsset template, Action<string> removeTag = null)
         {
             var chip = template.Instantiate();
             chip.Q<Label>().text = tag;
             container.Add(chip);
 
             var removeButton = chip.Q<Button>();
-            removeButton.Show(canRemove);
-            if (canRemove)
+            removeButton.Show(removeTag != null);
+            if (removeTag != null)
             {
                 removeButton.clicked += () =>
                 {
-                    tags?.Remove(tag);
+                    removeTag.Invoke(tag);
                     chip.RemoveFromHierarchy();
                 };
             }

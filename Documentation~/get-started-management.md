@@ -33,7 +33,9 @@ To integrate the Unity Cloud Assets package in a Unity project, do the following
 * [Set up a Unity scene](#set-up-a-unity-scene)
 * [Create an `AssetManager`](#create-an-assetmanager)
 * [Create the `PlatformServices`](#create-the-platformservices)
+* [Create the base behavior for managing assets](#create-the-base-behavior-for-managing-assets)
 * [Create the behavior for managing assets](#create-the-behavior-for-managing-assets)
+* [Create the base MonoBehaviour for the UI](#create-the-base-monobehaviour-for-the-ui)
 * [Create an interface for all UI scripts](#create-an-interface-for-all-ui-scripts)
 
 ### Set up a Unity scene
@@ -112,23 +114,51 @@ This script cleans up of the services when the scene is closed.
 > [!NOTE]
 > Read more about the [platform services pattern implementation](https://docs.unity3d.com/Packages/com.unity.cloud.identity@latest?subfolder=/manual/best-practices-dependency-injection.html) in the [Identity package documentation](https://docs.unity3d.com/Packages/com.unity.cloud.identity@latest).
 
-### Create the behavior for managing assets
+### Create the base behavior for managing assets
 
-To create the behavior for asset management, follow these steps:
+To create the base behavior for asset management, follow these steps:
 
 1. In the **Project** window of the Unity Editor, go to **Assets** > **Scripts**.
 2. Select and hold the `Assets/Scripts` folder.
 3. Go to **Create** > **C# Script**.
-4. <a name="a5"></a>Name your script `AssetManagementBehaviour`.
+4. <a name="a5"></a>Name your script `BaseAssetBehaviour`.
 5. Open the file and replace its contents with the following code sample:
 
-[!code-cs [behaviour-script](../Samples/Documentation/Manual/GetStartedManagementExample.cs#Example)]
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/GetStartedBehaviour.cs#Example)]
 
 This script does the following:
 
+* Performs a search to list the assets based on the provided query.
+
+### Create the behavior for managing assets
+
+To create the behavior for managing assets, follow these steps:
+
+1. In the **Project** window of the Unity Editor, go to **Assets** > **Scripts**.
+2. Select and hold the `Assets/Scripts` folder.
+3. Go to **Create** > **C# Script**.
+4. <a name="a6"></a>Name your script `AssetManagementBehaviour`.
+5. Open the file and replace its contents with the following code sample:
+
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/GetStartedWithAssetProjectsBehaviour.cs#Example)]
+
+This script does the following:
+
+* Inherits from the `BaseAssetBehaviour` class that you created [here](#a5).
 * Provides the functions to list and select organizations.
 * Provides the functions to list and select projects.
-* Performs a basic search to list the assets of the selected project.
+
+### Create the base MonoBehaviour for the UI
+
+To create the `MonoBehaviour` for the UI, follow these steps:
+
+1. In the **Project** window of the Unity Editor, go to **Assets** > **Scripts**.
+2. Select and hold the `Assets/Scripts` folder.
+3. Go to **Create** > **C# Script**.
+4. <a name="a7"></a>Name your script `BaseAssetUI`.
+5. Open the file and replace its contents with the following code sample:
+
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/GetStartedUI.cs#Example)]
 
 ### Create an interface for all UI scripts
 
@@ -184,16 +214,30 @@ To create a UI for selecting an asset, do the following:
 
 [!code-cs [behaviour-script](../Samples/Documentation/Manual/AssetSelectionExampleUI.cs#Example)]
 
+This script generates a UI to view the selected asset's details.
+
+### View an asset
+
+To create a UI for viewing an asset's details, do the following:
+
+1. In the **Project** window of the Unity Editor, go to **Assets** > **Scripts**.
+2. Select and hold the `Assets/Scripts` folder.
+3. Go to **Create** > **C# Script**.
+4. Name your script `UseCaseViewAssetExampleUI`.
+5. Open the file and replace its contents with the following code sample:
+
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseViewAssetExample.cs#Example)]
+
 This script generates a UI to list and select assets.
 
 ### Create an asset
 
 To create an asset, follow these steps:
 
-1. Open the `AssetManagementBehaviour` script that you created [here](#a5).
+1. Open the `AssetManagementBehaviour` script that you created [here](#a6).
 2. Add the following code to the end of the class:
 
-[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseAssetCreationExample.cs#Example_Behaviour_CreateAsset)]
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseCreateAssetExample.cs#Example_Behaviour_CreateAsset)]
 
 This code snippet does the following:
 
@@ -205,23 +249,24 @@ To create a UI for asset creation, follow these steps:
 1. In the **Project** window of the Unity Editor, go to **Assets** > **Scripts**.
 2. Select and hold the `Assets/Scripts` folder.
 3. Go to **Create** > **C# Script**.
-4. Name your script `UseCaseAssetCreationExampleUI`.
+4. Name your script `UseCaseCreateAssetExampleUI`.
 5. Open the file and replace its contents with the following code sample:
 
-[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseAssetCreationExample.cs#Example_UIClass)]
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseCreateAssetExample.cs#Example_UIClass)]
 
 6. In the same script, replace the `OnGUI` function with the following code:
 
-[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseAssetCreationExample.cs#Example_UIContent)]
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseCreateAssetExample.cs#Example_UIContent)]
 
 ### Integrate the UI scripts
 
 To bring all your UI scripts into a single `MonoBehaviour`, open the `AssetManagementUI` script that you created [here](#a2) and replace the contents of the file with the following code sample:
 
-[!code-cs [behaviour-script](../Samples/Documentation/Manual/GetStartedManagementExampleUI.cs#Example)]
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/GetStartedWithAssetProjectsUI.cs#Example)]
 
 This script does the following:
 
+* Inherits from the `BaseAssetUI` class that you created [here](#a7).
 * Registers to the `ICompositeAuthenticator` interface to track sign-in changes.
 * Creates an instance of the `AssetManagementBehaviour` script.
 * Creates instances of the UI scripts for selecting an organization, project, and asset.

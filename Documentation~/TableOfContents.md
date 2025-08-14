@@ -3,6 +3,7 @@
     * [Installation](installation.md)
     * [Basic concepts](basic-concepts.md)
 * [Get started with Asset SDK](get-started-management.md)
+* [Get started with Public Asset Libraries](get-started-libraries.md)
 * Samples
     * [Discover assets](asset-discovery-sample.md)
     * [Manage assets](asset-management-sample.md)
@@ -36,6 +37,8 @@
       * [Manage an asset's metadata](use-case-manage-asset-metadata.md)
     * Performance
       * [Selective caching of data](use-case-cache-configuration.md)
+    * Public Asset Libraries
+      * [Asset Library operations](use-case-asset-libraries.md)
 
 * [Troubleshooting](troubleshooting.md)
 * [Apple privacy manifest](apple-privacy-manifest.md)

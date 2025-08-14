@@ -63,5 +63,8 @@ namespace Unity.Cloud.Assets
         /// <param name="cancellationToken">A token that can be used to cancel the request.</param>
         /// <returns>A <see cref="IMetadataInfo"/>. </returns>
         protected abstract Task<IMetadataInfo> GetMetadataInfoAsync(FieldsFilter filter, CancellationToken cancellationToken);
+
+        /// <inheritdoc />
+        public abstract void ThrowIfPathToLibrary();
     }
 }

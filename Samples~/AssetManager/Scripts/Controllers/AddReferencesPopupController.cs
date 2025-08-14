@@ -17,6 +17,8 @@ namespace Unity.Cloud.Assets.Samples
         readonly List<string> m_Labels = new();
 
         Func<AssetId, AssetVersion?, string, Task> m_AddReference;
+        
+        IAssetProject m_AssetProject;
 
         CancellationTokenSource m_FetchTokenSource;
 
@@ -49,13 +51,7 @@ namespace Unity.Cloud.Assets.Samples
 
         async Task ListAssetsAsync(ProjectDescriptor projectDescriptor)
         {
-            if (m_FetchTokenSource != null)
-            {
-                m_FetchTokenSource.Cancel();
-                m_FetchTokenSource.Dispose();
-            }
-
-            m_FetchTokenSource = new CancellationTokenSource();
+            var cancellationToken = RefreshToken();
 
             m_Assets.Clear();
             m_Versions.Clear();
@@ -64,15 +60,14 @@ namespace Unity.Cloud.Assets.Samples
             m_AssetSelection.SetValueWithoutNotify(string.Empty);
             m_VersionSelection.SetValueWithoutNotify(string.Empty);
 
-            var enumerable = PlatformServices.AssetRepository.QueryAssets(new[] {projectDescriptor})
-                .ExecuteAsync(m_FetchTokenSource.Token);
+            m_AssetProject = await PlatformServices.AssetRepository.GetAssetProjectAsync(projectDescriptor, cancellationToken);
 
             var choices = new List<string>();
-            await foreach (var asset in enumerable)
+            await foreach (var asset in m_AssetProject.QueryAssets().ExecuteAsync(cancellationToken))
             {
                 m_Assets.Add(asset);
 
-                var properties = await asset.GetPropertiesAsync(m_FetchTokenSource.Token);
+                var properties = await asset.GetPropertiesAsync(cancellationToken);
                 choices.Add($"{properties.Name} ({asset.Descriptor.AssetId})");
             }
 
@@ -82,6 +77,8 @@ namespace Unity.Cloud.Assets.Samples
 
         async Task ListAssetVersionsAndLabelsAsync(IAsset asset)
         {
+            if (m_AssetProject == null) return;
+            
             var cancellationToken = m_FetchTokenSource.Token;
 
             m_ActionButton.SetEnabled(false);
@@ -92,7 +89,7 @@ namespace Unity.Cloud.Assets.Samples
 
             m_VersionSelection.SetValueWithoutNotify(string.Empty);
 
-            var labelQuery = asset.QueryLabels().ExecuteAsync(cancellationToken);
+            var labelQuery = m_AssetProject.QueryAssetLabels(asset.Descriptor.AssetId).ExecuteAsync(cancellationToken);
             await foreach (var tuple in labelQuery)
             {
                 foreach (var label in tuple.Item2)
@@ -169,6 +166,18 @@ namespace Unity.Cloud.Assets.Samples
                 m_AddReference?.Invoke(asset.Descriptor.AssetId, version, label);
                 m_AddReference = null;
             }
+        }
+
+        CancellationToken RefreshToken()
+        {
+            if (m_FetchTokenSource != null)
+            {
+                m_FetchTokenSource.Cancel();
+                m_FetchTokenSource.Dispose();
+            }
+
+            m_FetchTokenSource = new CancellationTokenSource();
+            return m_FetchTokenSource.Token;
         }
     }
 }

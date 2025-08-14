@@ -5,6 +5,31 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [1.9.0] - 2025-08-14
+
+### Added
+- Added `IAssetLibrary.StartCopyAssetsJobAsync` to start a job to copy assets from an asset library to a project.
+- Added `GetAssetLibraryJobAsync`, `ListAssetLibraryJobsAsync`, and `QueryAssetLibraryJobs` to `IAssetRepository` to access asset library jobs.
+- Asset `IAssetLibraryJob` to represent a job copying assets from an asset library to a project.
+- Added `CountNestedCollectionsAsync` to `IAssetCollection` to return the total number of nested collections in the collection and optionally to do so recursively.
+- Added `CountAssetsAsync` to `IAssetCollection` to return the total number of assets in the collection and optionally in the collection's sub-collections.
+- Added `GetAssetLibraryAsync`, `ListAssetLibrariesAsync`, and `QueryAssetLibraries` to `IAssetRepository` to access public asset libraries.
+- Added `IAssetLibrary` for using public asset libraries.
+- Added `QueryAssetLabels(AssetId)` to `IAssetProject` to query the labels of an asset.
+
+### Changed
+- Documentation to reference WebGL support
+
+### Fixed
+- Fixed incorrect search results when searching by `AssetType` in `AssetSearchCriteria`.
+- Addressed unhandled exceptions in Asset Discovery, Asset Management, and Collection Management samples.
+- Fixed potential null reference exception in `UrlMetadata` when the Uri is null.
+- Fixed potential `NotFoundException` when uploading new content to an existing file.
+- Dispose of HttpResponseMessage.
+
+### Deprecated
+- Deprecated `IAsset.QueryLabels`; use `IAssetProject.QueryAssetLabels(AssetId)` instead.
+
 ## [1.8.1] - 2025-05-12
 
 ### Changed

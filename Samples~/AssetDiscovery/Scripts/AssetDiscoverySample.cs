@@ -267,7 +267,7 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
                 }
                 catch (Exception e)
                 {
-                    e.LogException();
+                    e.LogException("OnProjectSelected");
                 }
             }
 
@@ -325,7 +325,7 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
             }
             catch (Exception e)
             {
-                e.LogException();
+                e.LogException("OnSearchQueryChanged");
             }
 
             // Attempt final refresh

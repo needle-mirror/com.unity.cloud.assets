@@ -65,7 +65,7 @@ namespace Unity.Cloud.Assets.Samples
             }
             catch (Exception e)
             {
-                e.LogException();
+                e.LogException("Login");
                 throw;
             }
         }
@@ -78,7 +78,7 @@ namespace Unity.Cloud.Assets.Samples
             }
             catch (Exception e)
             {
-                e.LogException();
+                e.LogException("Logout");
                 throw;
             }
         }

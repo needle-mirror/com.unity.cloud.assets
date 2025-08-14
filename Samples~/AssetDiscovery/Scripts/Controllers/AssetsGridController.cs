@@ -38,13 +38,7 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
 
         public void PopulateAssetsGrid(List<IAsset> assetsInfo)
         {
-            if (m_CancellationTokenSource != null)
-            {
-                m_CancellationTokenSource.Cancel();
-                m_CancellationTokenSource.Dispose();
-            }
-
-            m_CancellationTokenSource = new CancellationTokenSource();
+            var cancellationToken = GetCancellationToken();
 
             foreach (var asset in assetsInfo)
             {
@@ -54,7 +48,7 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
                 var button = item.Q<Button>("AssetGridItem");
                 var label = item.Q<Label>();
 
-                _ = PopulateGridItem(asset, label, button, m_CancellationTokenSource.Token);
+                _ = PopulateGridItem(asset, label, button, cancellationToken);
 
                 item.RegisterCallback<ClickEvent>(_ =>
                 {
@@ -139,6 +133,14 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
             ThumbnailController.RefreshCancellationToken();
 
             m_CurrentSelectedButton = null;
+        }
+
+        CancellationToken GetCancellationToken()
+        {
+            m_CancellationTokenSource?.Cancel();
+            m_CancellationTokenSource?.Dispose();
+            m_CancellationTokenSource = new CancellationTokenSource();
+            return m_CancellationTokenSource.Token;
         }
     }
 }

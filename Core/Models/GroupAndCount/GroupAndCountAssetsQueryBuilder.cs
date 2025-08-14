@@ -14,8 +14,9 @@ namespace Unity.Cloud.Assets
     public class GroupAndCountAssetsQueryBuilder
     {
         readonly IAssetDataSource m_AssetDataSource;
-        readonly OrganizationId m_OrganizationId;
+        readonly OrganizationId m_OrganizationId = OrganizationId.None;
         readonly List<ProjectId> m_ProjectIds = new();
+        readonly AssetLibraryId m_AssetLibraryId = AssetLibraryId.None;
 
         IAssetSearchFilter m_AssetSearchFilter;
         int? m_Limit;
@@ -23,6 +24,12 @@ namespace Unity.Cloud.Assets
         GroupAndCountAssetsQueryBuilder(IAssetDataSource assetDataSource)
         {
             m_AssetDataSource = assetDataSource;
+        }
+
+        internal GroupAndCountAssetsQueryBuilder(IAssetDataSource assetDataSource, OrganizationId organizationId)
+            : this(assetDataSource)
+        {
+            m_OrganizationId = organizationId;
         }
 
         internal GroupAndCountAssetsQueryBuilder(IAssetDataSource assetDataSource, ProjectDescriptor projectDescriptor)
@@ -53,10 +60,10 @@ namespace Unity.Cloud.Assets
             m_ProjectIds.AddRange(projects.Select(descriptor => descriptor.ProjectId));
         }
 
-        internal GroupAndCountAssetsQueryBuilder(IAssetDataSource assetDataSource, OrganizationId organizationId)
+        internal GroupAndCountAssetsQueryBuilder(IAssetDataSource assetDataSource, AssetLibraryId assetLibraryId)
             : this(assetDataSource)
         {
-            m_OrganizationId = organizationId;
+            m_AssetLibraryId = assetLibraryId;
         }
 
         /// <summary>
@@ -200,6 +207,16 @@ namespace Unity.Cloud.Assets
 
             var projectIds = m_ProjectIds.ToArray();
 
+            if (m_AssetLibraryId.IsPathToAssetLibraryValid())
+            {
+                var parameters = new SearchAndAggregateRequestParameters(aggregateBy)
+                {
+                    Filter = m_AssetSearchFilter?.From(),
+                    MaximumNumberOfItems = m_Limit,
+                };
+                return await m_AssetDataSource.GetAssetAggregateAsync(m_AssetLibraryId, parameters, cancellationToken);
+            }
+
             switch (projectIds.Length)
             {
                 case 1:
@@ -241,7 +258,11 @@ namespace Unity.Cloud.Assets
             {
                 if (!metadataFieldTypes.TryGetValue(metadataFieldKey, out var metadataValueType))
                 {
-                    metadataValueType = await m_AssetDataSource.GetMetadataValueTypeAsync(new FieldDefinitionDescriptor(m_OrganizationId, metadataFieldKey), cancellationToken);
+                    var fieldDefinitionDescriptor = m_AssetLibraryId.IsPathToAssetLibraryValid()
+                        ? new FieldDefinitionDescriptor(m_AssetLibraryId, metadataFieldKey)
+                        : new FieldDefinitionDescriptor(m_OrganizationId, metadataFieldKey);
+                    
+                    metadataValueType = await m_AssetDataSource.GetMetadataValueTypeAsync(fieldDefinitionDescriptor, cancellationToken);
                     metadataFieldTypes.Add(metadataFieldKey, metadataValueType);
                 }
 

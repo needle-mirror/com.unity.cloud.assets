@@ -17,10 +17,28 @@ namespace Unity.Cloud.Documentation.Assets
     public class UseCaseManageTransformationsExampleUI : IAssetManagementUI
     {
         readonly AssetManagementBehaviour m_Behaviour;
+        readonly string[] m_WorkflowTypeList;
+        readonly string[] m_WorkflowStatusList;
 
         public UseCaseManageTransformationsExampleUI(AssetManagementBehaviour behaviour)
         {
             m_Behaviour = behaviour;
+
+            var types = new List<string> {"All"};
+            foreach (var value in Enum.GetNames(typeof(WorkflowType)))
+            {
+                types.Add(value);
+            }
+
+            m_WorkflowTypeList = types.ToArray();
+
+            var statuses = new List<string> {"All"};
+            foreach (var value in Enum.GetNames(typeof(TransformationStatus)))
+            {
+                statuses.Add(value);
+            }
+
+            m_WorkflowStatusList = statuses.ToArray();
         }
 
         public void OnGUI() { }
@@ -34,17 +52,38 @@ namespace Unity.Cloud.Documentation.Assets
     public class UseCaseManageTransformationsExample : IAssetManagementUI
     {
         readonly UseCaseManageTransformationsExampleBehaviour m_Behaviour;
+        readonly string[] m_WorkflowTypeList;
+        readonly string[] m_TransformationStatusList;
 
         public UseCaseManageTransformationsExample(AssetManagementBehaviour behaviour)
         {
             m_Behaviour = new UseCaseManageTransformationsExampleBehaviour(behaviour);
+
+            var types = new List<string> {"All"};
+            foreach (var value in Enum.GetNames(typeof(WorkflowType)))
+            {
+                types.Add(value);
+            }
+
+            m_WorkflowTypeList = types.ToArray();
+
+            var statuses = new List<string> {"All"};
+            foreach (var value in Enum.GetNames(typeof(TransformationStatus)))
+            {
+                statuses.Add(value);
+            }
+
+            m_TransformationStatusList = statuses.ToArray();
         }
 
         #region Example_UIContent
 
         IAssetProject m_SelectedProject;
         Vector2 m_ScrollPosition;
-
+        WorkflowType? m_SelectedType;
+        int m_SelectedStatus;
+        int m_FilteredTransformationCount;
+        
         public void OnGUI()
         {
             if (!m_Behaviour.IsProjectSelected)
@@ -65,14 +104,34 @@ namespace Unity.Cloud.Documentation.Assets
             {
                 _ = m_Behaviour.ListTransformationsAsync();
             }
+            
+            var type = m_SelectedType == null ? 0 : Array.IndexOf(m_WorkflowTypeList, m_SelectedType.ToString());
+            type = GUILayout.SelectionGrid(type, m_WorkflowTypeList, 3, GUILayout.Width(300));
+            if (type > -1)
+                m_SelectedType = Enum.TryParse<WorkflowType>(m_WorkflowTypeList[type], out var result) ? result : null;
+
+            var selectedStatus = GUILayout.SelectionGrid(m_SelectedStatus, m_TransformationStatusList, 3, GUILayout.Width(300));
+            if (selectedStatus > -1 && selectedStatus != m_SelectedStatus)
+            {
+                m_SelectedStatus = selectedStatus;
+                m_Behaviour.StatusFilter = m_SelectedStatus == 0 ? null : Enum.TryParse<TransformationStatus>(m_TransformationStatusList[m_SelectedStatus], out var result) ? result : null;
+                _ = m_Behaviour.ListTransformationsAsync();
+            }
 
             GUILayout.Space(15);
 
-            GUILayout.Label($"{m_Behaviour.Transformations.Count}:");
+            GUILayout.Label($"{m_FilteredTransformationCount}/{m_Behaviour.Transformations.Count}:");
             m_ScrollPosition = GUILayout.BeginScrollView(m_ScrollPosition);
+            
+            m_FilteredTransformationCount = 0;
 
             foreach (var transformation in m_Behaviour.Transformations)
             {
+                if (m_SelectedType != null && transformation.WorkflowType != m_SelectedType)
+                    continue;
+                
+                ++m_FilteredTransformationCount;
+                
                 if (!m_Behaviour.TransformationNames.TryGetValue(transformation.Descriptor.TransformationId, out var name))
                 {
                     name = transformation.Descriptor.TransformationId.ToString();
@@ -159,6 +218,7 @@ namespace Unity.Cloud.Documentation.Assets
         public ITransformation CurrentTransformation { get; private set; }
         public TransformationProperties? CurrentTransformationProperties { get; private set; }
         public string TransformationOwner { get; private set; }
+        public TransformationStatus? StatusFilter { get; set; }
 
         public async Task ListTransformationsAsync()
         {
@@ -171,7 +231,8 @@ namespace Unity.Cloud.Documentation.Assets
             try
             {
                 var filter = new TransformationSearchFilter();
-                // filter.Status.WhereEquals(TransformationStatus.Queued);
+                if (StatusFilter != null)
+                    filter.Status.WhereEquals(StatusFilter.Value);
 
                 var query = CurrentProject.QueryTransformations()
                     .SelectWhereMatchesFilter(filter)

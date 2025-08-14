@@ -13,6 +13,8 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
     {
         class TabsController
         {
+            public event Action OnSelection;
+
             readonly List<(VisualElement tab, VisualElement container)> m_Tabs = new();
 
             public TabsController(VisualElement root, params (string, VisualElement)[] tabContents)
@@ -40,6 +42,8 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
                     container.Show(isSelected);
                 }
+
+                OnSelection?.Invoke();
             }
         }
 
@@ -105,11 +109,15 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             m_ReferencesScrollView = m_ReferencesContainer.Q<ScrollView>();
             m_AddReferencePopup = new AddReferencesPopupController(assetCreationPanel);
 
-            _ = new TabsController(assetCreationPanel,
+            var tabsController = new TabsController(assetCreationPanel,
                 ("Datasets", m_DatasetContainer),
                 ("History", m_VersionContainer),
                 ("References", m_ReferencesContainer)
             );
+            tabsController.OnSelection += () =>
+            {
+                m_AddReferencePopup.Hide();
+            };
 
             m_RightPanel = assetCreationPanel.Q("RightPanel");
 
@@ -180,12 +188,12 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             m_FreezeButton.RegisterCallback<ClickEvent>(_ => AsyncAction(FreezeAsset));
             m_UnfreezeButton.RegisterCallback<ClickEvent>(_ => AsyncAction(UnfreezeAsset));
             m_CreateDatasetButton.RegisterCallback<ClickEvent>(_ => AsyncAction(CreateNewDatasetAsync));
-            m_AssetTagsField.RegisterCallback<FocusInEvent>(AddTags);
+            m_AssetTagsField.RegisterCallback<FocusInEvent>(AddEditableTags);
         }
 
         public void OpenAsset(IAsset asset)
         {
-            ClearAssetInformation();
+            Clear();
 
             m_CurrentAssetCancellationTokenSource = new CancellationTokenSource();
             var token = m_CurrentAssetCancellationTokenSource.Token;
@@ -201,6 +209,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
         public void Clear()
         {
+            m_AddReferencePopup.Hide();
             m_RightPanel?.Hide();
 
             ClearAssetInformation();
@@ -227,14 +236,14 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             m_AssetDescriptionField.SetValueWithoutNotify(m_CurrentAssetProperties.Description);
             m_AssetDescriptionField.SetEnabled(m_IsEditable);
 
-            m_AssetTagsField.SetEnabled(m_IsEditable);
+            m_AssetTagsField.Show(m_IsEditable);
 
-            Action<string> addTagAction = tag => AddTag(tag, m_IsEditable);
-            addTagAction.AddTags(GetUpdateTags());
+            Action<string> addTagAction = tag => m_AssetTagsContainer.AddTag(tag, m_AssetTagsTemplate, m_IsEditable ? OnTagRemoved : null);
+            addTagAction.AddTags(m_CurrentAssetProperties.Tags?.ToList() ?? new List<string>());
 
             foreach (var label in m_CurrentAssetProperties.Labels)
             {
-                m_VersionLabelsContainer.AddTag(label.LabelName, null, m_AssetTagsTemplate, false);
+                m_VersionLabelsContainer.AddTag(label.LabelName, m_AssetTagsTemplate);
             }
 
             m_SequenceNumber.tooltip = asset.Descriptor.AssetVersion.ToString();
@@ -287,25 +296,25 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
         void ChangeButtonEnabledState(bool state)
         {
             m_CreateDatasetButton.SetEnabled(state);
-            m_SaveButton.SetEnabled(state);
+            m_SaveButton.SetEnabled(m_IsEditable && state);
             m_FreezeButton.SetEnabled(state);
             m_UnfreezeButton.SetEnabled(state);
             m_BackButton.SetEnabled(state);
         }
 
-        void AddTags(FocusInEvent evt)
+        void AddEditableTags(FocusInEvent _) => m_AssetTagsField.ParseTags(AddEditableTag);
+        
+        void AddEditableTag(string tag)
         {
-            m_AssetTagsField.ParseTags(GetUpdateTags(), tag => AddTag(tag, true));
+            m_AssetUpdate.Tags ??= m_CurrentAssetProperties.Tags?.ToList() ?? new List<string>();
+            m_AssetUpdate.Tags.Add(tag);
+            m_AssetTagsContainer.AddTag(tag, m_AssetTagsTemplate, OnTagRemoved);
         }
-
-        void AddTag(string tag, bool canRemove)
+        
+        void OnTagRemoved(string tag)
         {
-            m_AssetTagsContainer.AddTag(tag, GetUpdateTags(), m_AssetTagsTemplate, canRemove);
-        }
-
-        List<string> GetUpdateTags()
-        {
-            return m_AssetUpdate.Tags ?? (m_AssetUpdate.Tags = m_CurrentAssetProperties.Tags?.ToList() ?? new List<string>());
+            m_AssetUpdate.Tags ??= m_CurrentAssetProperties.Tags?.ToList() ?? new List<string>();
+            m_AssetUpdate.Tags.Remove(tag);
         }
 
         async Task ListDatasets(IAsset asset, bool canUpdate, CancellationToken cancellationToken)
@@ -358,7 +367,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             var rowItem = new RowItem();
             rowItem.RegisterCallback<ClickEvent>(_ =>
             {
-                OpenAsset(asset);
+                OnAssetUpdated?.Invoke(asset);
             });
             m_VersionScrollView.Add(rowItem);
 
@@ -555,7 +564,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             try
             {
                 await m_CurrentAsset.FreezeAsync(new AssetFreeze("Asset Manager sample submission."), CancellationToken.None);
-                await Task.Delay(1000); // There is a delay between the AM service and the search database
+                await UnityTask.Delay(1000); // There is a delay between the AM service and the search database
 
                 OnAssetUpdated?.Invoke(m_CurrentAsset);
             }
@@ -578,7 +587,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             try
             {
                 var asset = await m_CurrentAsset.CreateUnfrozenVersionAsync(CancellationToken.None);
-                await Task.Delay(1000); // There is a delay between the AM service and the search database
+                await UnityTask.Delay(1000); // There is a delay between the AM service and the search database
                 if (asset != null)
                 {
                     OnAssetUpdated?.Invoke(asset);

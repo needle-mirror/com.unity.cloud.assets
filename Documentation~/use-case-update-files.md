@@ -25,17 +25,11 @@ You should also have uploaded files to an asset; see the [Create files use case]
 
 ## How do I...?
 
-### List the files of an asset
+### List the files of a dataset
 
-By default, when you get an asset, the files associated with are not included in the response.
-To get files associated to an asset:
+If you have not already done so, you must update the behaviour to get the list of files for an asset's dataset.
 
-1. Open the `AssetManagementBehaviour` script you created.
-2. Add the following code to the end of the class:
-
-[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseFileManagementExample.cs#Example_Behaviour_RefreshFiles)]
-
-The code snippet populates the `Files` property of the selected asset.
+See the [Use case: Create datasets](use-case-create-files.md#list-a-datasets-files) documentation for more information.
 
 ### Download a file
 
@@ -44,7 +38,7 @@ To download the file of an asset, follow these steps:
 1. Open the `AssetManagementBehaviour` script you created.
 2. Add the following code to the end of the class:
 
-[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseFileManagementExample.cs#Example_Behaviour_DownloadAssetFile)]
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseManageFileExample.cs#Example_Behaviour_DownloadAssetFile)]
 
 The code snippet does the following:
 
@@ -64,7 +58,7 @@ To update a file, follow these steps:
 1. Open the `AssetManagementBehaviour` script you created.
 2. Add the following code to the end of the class:
 
-[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseFileManagementExample.cs#Example_Behaviour_UpdateAssetFile)]
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseManageFileExample.cs#Example_Behaviour_UpdateAssetFile)]
 
 The code snippet does the following:
 
@@ -93,7 +87,7 @@ To generate tags for a file, follow these steps:
 1. Open the `AssetManagementBehaviour` script you created.
 2. Add the following code to the end of the class:
 
-[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseFileManagementExample.cs#Example_Behaviour_GenerateFileTags)]
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseManageFileExample.cs#Example_Behaviour_GenerateFileTags)]
 
 The code snippet does the following:
 
@@ -106,14 +100,14 @@ To create UI for interacting with files, follow these steps:
 
 1. In your Unity Project window, go to **Assets** > **Scripts**.
 2. Select and hold the `Assets/Scripts` folder.
-3. Go to **Create** > **C# Script**. Name your script `UseCaseFileManagementExampleUI`.
-4. Open the `UseCaseFileManagementExampleUI` script you created and replace the contents of the file with the following code sample:
+3. Go to **Create** > **C# Script**. Name your script `UseCaseManageFileExampleUI`.
+4. Open the `UseCaseManageFileExampleUI` script you created and replace the contents of the file with the following code sample:
 
-[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseFileManagementExample.cs#Example_UIClass)]
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseManageFileExample.cs#Example_UIClass)]
 
 5. In the same script, replace the `OnGUI` function with the following code:
 
-[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseFileManagementExample.cs#Example_UIContent)]
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseManageFileExample.cs#Example_UIContent)]
 
 6. Open the `AssetManagementUI` script you created and replace the contents of the `Awake` function with the following code:
 

@@ -44,12 +44,12 @@ namespace Unity.Cloud.Assets.Samples
             }
             catch (OperationCanceledException oe)
             {
-                oe.LogException();
+                oe.LogException("GetAssetsAcrossAllProjectsAsync");
                 return null;
             }
             catch (Exception e)
             {
-                e.LogException();
+                e.LogException("GetAssetsAcrossAllProjectsAsync");
                 throw;
             }
         }
@@ -62,12 +62,12 @@ namespace Unity.Cloud.Assets.Samples
             }
             catch (OperationCanceledException oe)
             {
-                oe.LogException();
+                oe.LogException("GetAssetsAsync");
                 return null;
             }
             catch (Exception e)
             {
-                e.LogException();
+                e.LogException("GetAssetsAsync");
                 throw;
             }
         }

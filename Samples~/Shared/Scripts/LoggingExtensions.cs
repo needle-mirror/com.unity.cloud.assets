@@ -5,14 +5,21 @@ namespace Unity.Cloud.Assets.Samples
 {
     public static class LoggingExtensions
     {
-        public static void LogException(this OperationCanceledException e)
+        public static void LogException(this OperationCanceledException e, string title = "")
         {
-            Debug.Log(e.Message ?? e.ToString());
+            if (string.IsNullOrEmpty(title))
+            {
+                Debug.Log(e.Message ?? e.ToString());
+            }
+            else
+            {
+                Debug.Log($"{title}: {e.Message ?? e.ToString()}");
+            }
         }
 
-        public static void LogException(this Exception e)
+        public static void LogException(this Exception e, string title = "")
         {
-            while (true)
+            while (e != null)
             {
                 switch (e)
                 {
@@ -20,10 +27,18 @@ namespace Unity.Cloud.Assets.Samples
                         e = ae.InnerException;
                         continue;
                     case OperationCanceledException oce:
-                        oce.LogException();
+                        oce.LogException(title);
                         break;
                     default:
-                        Debug.LogException(e);
+                        if (string.IsNullOrEmpty(title))
+                        {
+                            Debug.LogException(e);
+                        }
+                        else
+                        {
+                            Debug.LogError($"Exception raised by {title}\n" + e.Message);
+                        }
+
                         break;
                 }
 

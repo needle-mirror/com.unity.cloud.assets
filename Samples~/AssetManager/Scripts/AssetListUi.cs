@@ -64,9 +64,10 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
             public void UpdateItem(IAsset asset)
             {
-                var index = m_List.FindIndex(a => a.Descriptor.Equals(asset.Descriptor));
+                var index = m_List.FindIndex(a => a.Descriptor.AssetId.Equals(asset.Descriptor.AssetId));
                 if (index < 0) return;
 
+                m_List[index] = asset;
                 m_ListView.RefreshItem(index);
             }
 

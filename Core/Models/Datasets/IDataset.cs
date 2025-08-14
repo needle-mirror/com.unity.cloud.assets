@@ -87,7 +87,7 @@ namespace Unity.Cloud.Assets
             => throw new NotImplementedException();
 
         /// <summary>
-        /// Refreshes the dataset with the specified fields.
+        /// Retrieves and caches the dataset properties.
         /// </summary>
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task with no result. </returns>

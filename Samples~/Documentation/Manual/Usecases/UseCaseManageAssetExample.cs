@@ -16,10 +16,10 @@ namespace Unity.Cloud.Documentation.Assets
 
     public class UseCaseManageAssetExampleUI : IAssetManagementUI
     {
-        readonly AssetManagementBehaviour m_Behaviour;
+        readonly BaseAssetBehaviour m_Behaviour;
         readonly string[] m_AssetTypeList;
 
-        public UseCaseManageAssetExampleUI(AssetManagementBehaviour behaviour)
+        public UseCaseManageAssetExampleUI(BaseAssetBehaviour behaviour)
         {
             m_Behaviour = behaviour;
             m_AssetTypeList = AssetTypeExtensions.AssetTypeList().ToArray();
@@ -38,7 +38,7 @@ namespace Unity.Cloud.Documentation.Assets
         readonly UseCaseManageAssetExampleBehaviour m_Behaviour;
         readonly string[] m_AssetTypeList;
 
-        public UseCaseManageAssetExample(AssetManagementBehaviour behaviour)
+        public UseCaseManageAssetExample(BaseAssetBehaviour behaviour)
         {
             m_Behaviour = new UseCaseManageAssetExampleBehaviour(behaviour);
             m_AssetTypeList = AssetTypeExtensions.AssetTypeList().ToArray();
@@ -54,17 +54,9 @@ namespace Unity.Cloud.Documentation.Assets
 
         public void OnGUI()
         {
-            if (!m_Behaviour.IsProjectSelected) return;
+            if (m_Behaviour.CurrentAsset == null) return;
 
-            GUILayout.Space(15f);
-
-            if (m_Behaviour.CurrentAsset == null)
-            {
-                GUILayout.Label(" ! No asset selected !");
-                return;
-            }
-
-            if (!m_Behaviour.AssetProperties.TryGetValue(m_Behaviour.CurrentAsset.Descriptor.AssetId, out var properties))
+            if (!m_Behaviour.TryGetAssetProperties(m_Behaviour.CurrentAsset.Descriptor.AssetVersion, out var properties))
             {
                 GUILayout.Label(" ! Asset properties not loaded !");
                 return;
@@ -84,9 +76,6 @@ namespace Unity.Cloud.Documentation.Assets
             }
 
             GUILayout.BeginVertical();
-
-            GUILayout.Label("Asset selected:");
-            GUILayout.Space(5f);
 
             if (m_AssetUpdate == null)
             {
@@ -108,7 +97,7 @@ namespace Unity.Cloud.Documentation.Assets
 
             GUILayout.Label("Name:", s_LabelWidth);
 
-            m_AssetUpdate.Name = GUILayout.TextField(m_AssetUpdate.Name, GUILayout.ExpandWidth(true));
+            m_AssetUpdate.Name = GUILayout.TextField(m_AssetUpdate.Name);
 
             GUILayout.EndHorizontal();
 
@@ -117,7 +106,7 @@ namespace Unity.Cloud.Documentation.Assets
             GUILayout.Label("Type:", s_LabelWidth);
 
             var typeIndex = m_AssetUpdate.Type.HasValue ? (int) m_AssetUpdate.Type.Value : (int) assetProperties.Type;
-            typeIndex = GUILayout.SelectionGrid(typeIndex, m_AssetTypeList, 4);
+            typeIndex = GUILayout.SelectionGrid(typeIndex, m_AssetTypeList, 3, GUILayout.ExpandWidth(true));
             if (typeIndex != -1 && assetProperties.Type != (AssetType) typeIndex)
             {
                 m_AssetUpdate.Type = (AssetType) typeIndex;
@@ -128,7 +117,7 @@ namespace Unity.Cloud.Documentation.Assets
             GUILayout.BeginHorizontal();
 
             GUILayout.Label("Tags:", s_LabelWidth);
-            m_TagsString = GUILayout.TextField(m_TagsString, GUILayout.ExpandWidth(true));
+            m_TagsString = GUILayout.TextField(m_TagsString);
             m_AssetUpdate.Tags = m_TagsString.Split(',')
                 .Select(tag => tag.Trim())
                 .Where(tag => !string.IsNullOrEmpty(tag))
@@ -149,12 +138,12 @@ namespace Unity.Cloud.Documentation.Assets
 
             GUILayout.Label("Preview:", s_LabelWidth);
 
-            m_AssetUpdate.PreviewFile = GUILayout.TextField(m_AssetUpdate.PreviewFile, GUILayout.ExpandWidth(true));
+            m_AssetUpdate.PreviewFile = GUILayout.TextField(m_AssetUpdate.PreviewFile);
 
             GUILayout.EndHorizontal();
 
             GUILayout.Label("Description:");
-            m_AssetUpdate.Description = GUILayout.TextArea(m_AssetUpdate.Description, GUILayout.ExpandWidth(true));
+            m_AssetUpdate.Description = GUILayout.TextArea(m_AssetUpdate.Description);
 
             if (GUILayout.Button("Update"))
             {
@@ -167,13 +156,12 @@ namespace Unity.Cloud.Documentation.Assets
 
     class UseCaseManageAssetExampleBehaviour
     {
-        readonly AssetManagementBehaviour m_Behaviour;
+        readonly BaseAssetBehaviour m_Behaviour;
 
-        public bool IsProjectSelected => m_Behaviour.IsProjectSelected;
         public IAsset CurrentAsset => m_Behaviour.CurrentAsset;
-        public Dictionary<AssetId, AssetProperties> AssetProperties => m_Behaviour.AssetProperties;
+        public bool TryGetAssetProperties(AssetVersion assetVersion, out AssetProperties properties) => m_Behaviour.TryGetAssetProperties(assetVersion, out properties);
 
-        public UseCaseManageAssetExampleBehaviour(AssetManagementBehaviour behaviour)
+        public UseCaseManageAssetExampleBehaviour(BaseAssetBehaviour behaviour)
         {
             m_Behaviour = behaviour;
         }
@@ -189,7 +177,7 @@ namespace Unity.Cloud.Documentation.Assets
                 // Update properties:
                 await CurrentAsset.RefreshAsync(CancellationToken.None);
                 var properties = await CurrentAsset.GetPropertiesAsync(CancellationToken.None);
-                m_Behaviour.AssetProperties[CurrentAsset.Descriptor.AssetId] = properties;
+                m_Behaviour.IncludeProperties(CurrentAsset.Descriptor, properties);
             }
             catch (OperationCanceledException oe)
             {

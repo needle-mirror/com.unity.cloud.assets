@@ -4,7 +4,7 @@ using Unity.Cloud.Common;
 
 namespace Unity.Cloud.Assets
 {
-    class AssetReferenceRequest : ProjectRequest
+    class AssetReferenceRequest : ProjectOrLibraryRequest
     {
         readonly IAssetReferenceRequestBody m_Data;
 

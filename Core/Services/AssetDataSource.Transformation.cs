@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Unity.Cloud.Common;
@@ -16,10 +16,10 @@ namespace Unity.Cloud.Assets
             cancellationToken.ThrowIfCancellationRequested();
 
             var request = new StartTransformationRequest(workflowType, inputFiles, parameters, datasetDescriptor.ProjectId, datasetDescriptor.AssetId, datasetDescriptor.AssetVersion, datasetDescriptor.DatasetId);
-            var response = await RateLimitedServiceClient(request, HttpMethod.Post).PostAsync(GetPublicRequestUri(request), request.ConstructBody(),
+            using var response = await RateLimitedServiceClient(request, HttpMethod.Post).PostAsync(GetPublicRequestUri(request), request.ConstructBody(),
                 ServiceHttpClientOptions.Default(), cancellationToken);
 
-            var jsonContent = await response.GetContentAsString();
+            var jsonContent = await response.GetContentAsStringAsync();
             cancellationToken.ThrowIfCancellationRequested();
 
             var startedTransformationResponse = IsolatedSerialization.DeserializeWithConverters<StartedTransformationDto>(jsonContent, IsolatedSerialization.TransformationIdConverter);
@@ -36,27 +36,36 @@ namespace Unity.Cloud.Assets
                 transformationDescriptor.ProjectId, transformationDescriptor.AssetId,
                 transformationDescriptor.AssetVersion, transformationDescriptor.DatasetId);
 
-            var response = await RateLimitedServiceClient(request, HttpMethod.Get).GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(), cancellationToken);
+            using var response = await RateLimitedServiceClient(request, HttpMethod.Get).GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(), cancellationToken);
 
-            var jsonContent = await response.GetContentAsString();
+            var jsonContent = await response.GetContentAsStringAsync();
             cancellationToken.ThrowIfCancellationRequested();
 
             return IsolatedSerialization.DeserializeWithDefaultConverters<TransformationData>(jsonContent);
         }
 
         /// <inheritdoc/>
-        public async Task<ITransformationData[]> GetTransformationsAsync(ProjectDescriptor projectDescriptor, TransformationSearchData searchData, CancellationToken cancellationToken)
+        public async IAsyncEnumerable<ITransformationData> GetTransformationsAsync(ProjectDescriptor projectDescriptor, Range range, TransformationSearchData searchData, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var request = new SearchTransformationRequest(projectDescriptor.ProjectId, searchData);
-            var response = await RateLimitedServiceClient(request, HttpMethod.Get).GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(), cancellationToken);
+            var (start, length) = range.GetValidatedOffsetAndLength(int.MaxValue);
 
-            var jsonContent = await response.GetContentAsString();
+            if (length == 0) yield break;
+
+            var request = new SearchTransformationRequest(projectDescriptor.ProjectId, searchData);
+            using var response = await RateLimitedServiceClient(request, HttpMethod.Get).GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(), cancellationToken);
+
+            var jsonContent = await response.GetContentAsStringAsync();
             cancellationToken.ThrowIfCancellationRequested();
 
             var transformations = IsolatedSerialization.DeserializeWithDefaultConverters<TransformationData[]>(jsonContent);
-            return transformations.Select(x => (ITransformationData)x).ToArray();
+            for (var i = start; i < transformations.Length && i < start + length; ++i)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                yield return transformations[i];
+            }
         }
 
         /// <inheritdoc/>
@@ -65,7 +74,7 @@ namespace Unity.Cloud.Assets
             cancellationToken.ThrowIfCancellationRequested();
 
             var request = new TerminateTransformationRequest(projectDescriptor.ProjectId, transformationId);
-            await RateLimitedServiceClient(request, HttpMethod.Post).PostAsync(GetPublicRequestUri(request), request.ConstructBody(), ServiceHttpClientOptions.Default(), cancellationToken);
+            using var _ = await RateLimitedServiceClient(request, HttpMethod.Post).PostAsync(GetPublicRequestUri(request), request.ConstructBody(), ServiceHttpClientOptions.Default(), cancellationToken);
         }
     }
 }

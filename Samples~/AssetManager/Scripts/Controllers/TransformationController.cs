@@ -154,7 +154,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
                         if (cancellationToken.IsCancellationRequested) break;
                     }
 
-                    await Task.Delay(500, cancellationToken);
+                    await UnityTask.Delay(500, cancellationToken);
                 }
             }
         }

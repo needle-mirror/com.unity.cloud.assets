@@ -2,7 +2,7 @@ using Unity.Cloud.Common;
 
 namespace Unity.Cloud.Assets
 {
-    class TerminateTransformationRequest : ProjectRequest
+    class TerminateTransformationRequest : ProjectOrLibraryRequest
     {
         public TerminateTransformationRequest(ProjectId projectId, TransformationId transformationId)
             : base(projectId)

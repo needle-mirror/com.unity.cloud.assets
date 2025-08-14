@@ -12,7 +12,7 @@ namespace Unity.Cloud.Assets.Samples
     {
         const string k_AllProjectId = "All";
 
-        CancellationTokenSource m_ListProjectsCancellationTokenSource = new();
+        CancellationTokenSource m_ListProjectsCancellationTokenSource;
 
         public event Action ProjectSelected;
 
@@ -27,8 +27,8 @@ namespace Unity.Cloud.Assets.Samples
         {
             Show();
 
-            m_ListProjectsCancellationTokenSource.Cancel();
-            m_ListProjectsCancellationTokenSource.Dispose();
+            m_ListProjectsCancellationTokenSource?.Cancel();
+            m_ListProjectsCancellationTokenSource?.Dispose();
             m_ListProjectsCancellationTokenSource = new CancellationTokenSource();
 
             var token = m_ListProjectsCancellationTokenSource.Token;
@@ -45,12 +45,12 @@ namespace Unity.Cloud.Assets.Samples
             }
             catch (OperationCanceledException oe)
             {
-                oe.LogException();
+                oe.LogException("GetProjectsAsync");
                 return null;
             }
             catch (Exception e)
             {
-                e.LogException();
+                e.LogException("GetProjectsAsync");
                 throw;
             }
         }
@@ -63,11 +63,6 @@ namespace Unity.Cloud.Assets.Samples
 
             Debug.Log($"Project Selected: {(IsAllProjectSelected ? "All" : SelectedProject?.Descriptor.ProjectId.ToString() ?? "None")}.");
             ProjectSelected?.Invoke();
-        }
-
-        public IEnumerable<IAssetProject> GetProjects()
-        {
-            return m_ListController.AllItems.OfType<IAssetProject>();
         }
     }
 }

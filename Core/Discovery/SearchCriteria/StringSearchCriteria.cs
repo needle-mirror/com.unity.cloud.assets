@@ -18,7 +18,7 @@ namespace Unity.Cloud.Assets
             Prefix = 2
         }
 
-        internal static readonly char[] k_WildcardChars = new[] {'*', '?'};
+        internal static readonly char[] k_WildcardChars = {'*', '?'};
 
         ISearchValue m_IncludedPartial;
 
@@ -42,7 +42,7 @@ namespace Unity.Cloud.Assets
         {
             base.Clear();
 
-            m_IncludedPartial = default;
+            m_IncludedPartial = null;
         }
 
         /// <inheritdoc />
@@ -52,12 +52,12 @@ namespace Unity.Cloud.Assets
             if (k_WildcardChars.Any(value.Contains))
             {
                 m_IncludedPartial = SearchStringValue.BuildWildcardQuery(value);
-                m_Included = default;
+                m_Included = null;
                 return;
             }
 
             base.WithValue(value);
-            m_IncludedPartial = default;
+            m_IncludedPartial = null;
         }
 
         /// <summary>

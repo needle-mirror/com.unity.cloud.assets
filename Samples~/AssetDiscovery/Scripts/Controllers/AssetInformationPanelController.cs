@@ -95,13 +95,7 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
 
         public void PopulateAssetPanel(IAsset asset)
         {
-            if (m_CancelPopulateAsset != null)
-            {
-                m_CancelPopulateAsset.Cancel();
-                m_CancelPopulateAsset.Dispose();
-            }
-
-            m_CancelPopulateAsset = new CancellationTokenSource();
+            var token = GetCancellationToken();
 
             m_AssetInformationScrollView.Clear();
 
@@ -112,9 +106,9 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
                 m_AssetInformationScrollView.Add(property);
             }
 
-            _ = PopulateAssetProperties(asset, m_CancelPopulateAsset.Token);
-            _ = PopulateMetadata(asset.SystemMetadata, m_AssetInformationScrollView, "SystemMetadata", m_CancelPopulateAsset.Token);
-            _ = PopulateMetadata(asset.Metadata as IReadOnlyMetadataContainer, m_AssetInformationScrollView, "Metadata", m_CancelPopulateAsset.Token);
+            _ = PopulateAssetProperties(asset, token);
+            _ = PopulateMetadata(asset.SystemMetadata, m_AssetInformationScrollView, "SystemMetadata", token);
+            _ = PopulateMetadata(asset.Metadata as IReadOnlyMetadataContainer, m_AssetInformationScrollView, "Metadata", token);
 
             m_AssetDownloadButton.tooltip = "";
 
@@ -140,8 +134,7 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
             {
                 if (k_AssetPropertiesToHide.Contains(propertyInfo.Name)) continue;
 
-                var propertyInfoObjectValue = propertyInfo.GetValue(assetProperties);
-                var propertyInfoValue = propertyInfoObjectValue ?? string.Empty;
+                var propertyInfoValue = propertyInfo.GetValue(assetProperties) ?? string.Empty;
                 var propertyInformation = CreatePropertyInformation
                 (
                     propertyInfo.Name,
@@ -158,17 +151,19 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
         public async Task PopulateDatasetsPanel(IAsyncEnumerable<IDataset> datasets)
         {
             m_DatasetScrollView.Clear();
+            
+            var token = m_CancelPopulateAsset.Token;
 
             var tasks = new List<Task<bool>>();
 
-            await foreach (var dataset in datasets)
+            await foreach (var dataset in datasets.WithCancellation(token))
             {
                 var foldout = new DatasetFoldout(dataset, CreatePropertyInformation);
 
                 foldout.RegisterDownloadButtonCallback(() => OnDatasetDownloadButtonClicked(dataset, foldout));
 
-                _ = PopulateMetadata(dataset.SystemMetadata, foldout.ScrollView, "System Metadata", m_CancelPopulateAsset.Token);
-                _ = PopulateMetadata(dataset.Metadata as IReadOnlyMetadataContainer, foldout.ScrollView, "Metadata", m_CancelPopulateAsset.Token);
+                _ = PopulateMetadata(dataset.SystemMetadata, foldout.ScrollView, "System Metadata", token);
+                _ = PopulateMetadata(dataset.Metadata as IReadOnlyMetadataContainer, foldout.ScrollView, "Metadata", token);
 
                 m_DatasetScrollView.Add(foldout);
 
@@ -197,7 +192,7 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
                     AddItem(items, "Id", datasetDescriptor.DatasetId.ToString());
                     break;
                 case StatusFlowDescriptor statusFlowDescriptor:
-                    AddItem(items, "Status Flow", statusFlowDescriptor.StatusFlowId, valueSetter: (l, s) => _ = SetDisplayNameAsync(m_GetStatusFlowName, l, s));
+                    AddItem(items, "Status Flow", statusFlowDescriptor.StatusFlowId, valueSetter: (l, s) => SetDisplayNameAsync(m_GetStatusFlowName, l, s));
                     break;
                 case AuthoringInfo authoringInfo:
                     AddItem(items, "Created On", authoringInfo.Created.ToString("MM/dd/yyyy"));
@@ -210,7 +205,7 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
                     break;
                 case IEnumerable<CollectionPath>:
                     var collectionEntry = AddItem(items, propertyName, string.Empty);
-                    _ = ListAssetCollections(collectionEntry);
+                    _ = ListAssetCollectionsAsync(collectionEntry);
                     break;
                 case IEnumerable<LabelDescriptor> labelDescriptors:
                     AddItemList(items, propertyName, labelDescriptors.Select(label => label.LabelName));
@@ -238,7 +233,7 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
         {
             var properties = new List<VisualElement>();
 
-            Action<Label, string> getFieldName = (l, s) => _ = SetDisplayNameAsync(m_GetFieldName, l, s);
+            Action<Label, string> getFieldName = (l, s) => SetDisplayNameAsync(m_GetFieldName, l, s);
 
             await foreach (var kvp in metadata)
             {
@@ -333,7 +328,7 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
             }
         }
 
-        static async Task SetDisplayNameAsync(GetDisplayName getDisplayName, TextElement label, string key)
+        static async void SetDisplayNameAsync(GetDisplayName getDisplayName, TextElement label, string key)
         {
             var displayName = await getDisplayName(key);
             label.text = displayName;
@@ -357,10 +352,10 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
         {
             UpdateDownloadButton(m_AssetDownloadButton, false);
 
-            GetDownloadFolder(() => _ = DownloadAsset());
+            GetDownloadFolder(DownloadAsset);
         }
 
-        async Task DownloadAsset()
+        async void DownloadAsset()
         {
             if (string.IsNullOrEmpty(m_DownloadFolder))
             {
@@ -386,7 +381,7 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
             }
             catch (Exception e)
             {
-                e.LogException();
+                e.LogException("DownloadAsset");
             }
             finally
             {
@@ -402,10 +397,10 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
         {
             UpdateDownloadButton(foldout.Q<Button>(), false);
 
-            GetDownloadFolder(() => _ = DownloadDataset(dataset, foldout));
+            GetDownloadFolder(() => DownloadDataset(dataset, foldout));
         }
 
-        async Task DownloadDataset(IDataset dataset, DatasetFoldout foldout)
+        async void DownloadDataset(IDataset dataset, DatasetFoldout foldout)
         {
             var button = foldout.Q<Button>();
 
@@ -431,7 +426,7 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
             }
             catch (Exception e)
             {
-                e.LogException();
+                e.LogException("DownloadDataset");
             }
             finally
             {
@@ -449,11 +444,11 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
         async Task ShowSuccessfulDownload()
         {
             m_AssetInformationDownloadSuccessful.style.display = DisplayStyle.Flex;
-            await Task.Delay(3000);
+            await UnityTask.Delay(3000);
             m_AssetInformationDownloadSuccessful.style.display = DisplayStyle.None;
         }
 
-        async Task ListAssetCollections(VisualElement item)
+        async Task ListAssetCollectionsAsync(VisualElement item)
         {
             var label = item.Q<Label>();
             label.style.display = DisplayStyle.None;
@@ -474,7 +469,7 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
             }
             catch (Exception e)
             {
-                e.LogException();
+                e.LogException("ListAssetCollections");
             }
             finally
             {
@@ -517,6 +512,14 @@ namespace Unity.Cloud.Assets.Samples.AssetDiscovery
                 download?.Invoke();
             }
 #endif
+        }
+
+        CancellationToken GetCancellationToken()
+        {
+            m_CancelPopulateAsset?.Cancel();
+            m_CancelPopulateAsset?.Dispose();
+            m_CancelPopulateAsset = new CancellationTokenSource();
+            return m_CancelPopulateAsset.Token;
         }
 
         static FileStream OpenWrite(string filePath)

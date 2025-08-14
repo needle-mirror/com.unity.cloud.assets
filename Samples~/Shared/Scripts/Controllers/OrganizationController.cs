@@ -82,14 +82,13 @@ namespace Unity.Cloud.Assets.Samples
         void OnOrganizationSelected()
         {
             OrganizationSelected?.Invoke(m_OrganizationListUi.SelectedOrganization.Id);
-            _ = GetOrganizationMembersInfo(m_OrganizationListUi.SelectedOrganization.Id);
+            _ = GetOrganizationMembersInfo(m_OrganizationListUi.SelectedOrganization);
         }
 
-        async Task GetOrganizationMembersInfo(OrganizationId organizationId)
+        async Task GetOrganizationMembersInfo(IOrganization organization)
         {
             OrganizationMembersInfo.Clear();
-            var datasetOrganization = await OrganizationRepository.GetOrganizationAsync(organizationId);
-            var organizationMembersInfo = datasetOrganization.ListMembersAsync(Range.All);
+            var organizationMembersInfo = organization.ListMembersAsync(Range.All);
             await foreach (var memberInfo in organizationMembersInfo)
             {
                 OrganizationMembersInfo.Add(memberInfo.UserId, memberInfo);

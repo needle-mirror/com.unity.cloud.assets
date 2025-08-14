@@ -105,12 +105,16 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc />
         public async Task UpdateAsync(IDatasetUpdate datasetUpdate, CancellationToken cancellationToken)
         {
+            ThrowIfPathToLibrary();
+
             await m_DataSource.UpdateDatasetAsync(Descriptor, datasetUpdate.From(), cancellationToken);
         }
 
         /// <inheritdoc />
         public async Task<IFile> AddExistingFileAsync(string filePath, DatasetId sourceDatasetId, CancellationToken cancellationToken)
         {
+            ThrowIfPathToLibrary();
+
             await AddExistingFileLiteAsync(filePath, sourceDatasetId, cancellationToken);
             return await GetFileAsync(filePath, cancellationToken);
         }
@@ -118,12 +122,16 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc />
         public Task AddExistingFileLiteAsync(string filePath, DatasetId sourceDatasetId, CancellationToken cancellationToken)
         {
+            ThrowIfPathToLibrary();
+
             return m_DataSource.ReferenceFileFromDatasetAsync(Descriptor, sourceDatasetId, filePath, cancellationToken);
         }
 
         /// <inheritdoc />
         public Task RemoveFileAsync(string filePath, CancellationToken cancellationToken)
         {
+            ThrowIfPathToLibrary();
+
             return m_DataSource.RemoveFileFromDatasetAsync(Descriptor, filePath, cancellationToken);
         }
 
@@ -146,10 +154,10 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc />
         public async Task<IReadOnlyDictionary<string, Uri>> GetDownloadUrlsAsync(CancellationToken cancellationToken)
         {
-            var fileUrls = await m_DataSource.GetAssetDownloadUrlsAsync(Descriptor.AssetDescriptor, new[] {Descriptor.DatasetId}, cancellationToken);
+            var enumerable = m_DataSource.GetAssetDownloadUrlsAsync(Descriptor.AssetDescriptor, new[] {Descriptor.DatasetId}, Range.All, cancellationToken);
 
             var urls = new Dictionary<string, Uri>();
-            foreach (var url in fileUrls)
+            await foreach (var url in enumerable)
             {
                 urls.Add(url.FilePath, url.DownloadUrl);
             }
@@ -201,6 +209,8 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc />
         public async Task<IFile> UploadFileAsync(IFileCreation fileCreation, Stream sourceStream, IProgress<HttpProgress> progress, CancellationToken cancellationToken)
         {
+            ThrowIfPathToLibrary();
+
             var fileDescriptor = await UploadFileLiteAsync(fileCreation, sourceStream, progress, cancellationToken);
             return await GetFileAsync(fileDescriptor.Path, cancellationToken);
         }
@@ -208,6 +218,8 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc />
         public async Task<FileDescriptor> UploadFileLiteAsync(IFileCreation fileCreation, Stream sourceStream, IProgress<HttpProgress> progress, CancellationToken cancellationToken)
         {
+            ThrowIfPathToLibrary();
+
             var filePath = fileCreation.Path.Replace('\\', '/');
 
             var creationData = fileCreation.From();
@@ -253,6 +265,8 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc />
         public async Task<ITransformation> StartTransformationAsync(ITransformationCreation transformationCreation, CancellationToken cancellationToken)
         {
+            ThrowIfPathToLibrary();
+
             var transformationDescriptor = await StartTransformationLiteAsync(transformationCreation, cancellationToken);
             return await GetTransformationAsync(transformationDescriptor.TransformationId, cancellationToken);
         }
@@ -260,6 +274,8 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc />
         public async Task<TransformationDescriptor> StartTransformationLiteAsync(ITransformationCreation transformationCreation, CancellationToken cancellationToken)
         {
+            ThrowIfPathToLibrary("Cannot access transformations for library datasets.");
+
             string workflowName;
             switch (transformationCreation.WorkflowType)
             {
@@ -283,6 +299,8 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc />
         public IAsyncEnumerable<ITransformation> ListTransformationsAsync(Range range, CancellationToken cancellationToken)
         {
+            ThrowIfPathToLibrary("Cannot access transformations for library datasets.");
+
             var searchFilter = new TransformationSearchFilter();
             searchFilter.AssetId.WhereEquals(Descriptor.AssetId);
             searchFilter.AssetVersion.WhereEquals(Descriptor.AssetVersion);
@@ -297,6 +315,8 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc />
         public Task<ITransformation> GetTransformationAsync(TransformationId transformationId, CancellationToken cancellationToken)
         {
+            ThrowIfPathToLibrary("Cannot access transformations for library datasets.");
+
             var descriptor = new TransformationDescriptor(Descriptor, transformationId);
             return TransformationEntity.GetConfiguredAsync(m_DataSource, DefaultCacheConfiguration, descriptor, null, cancellationToken);
         }
@@ -314,7 +334,7 @@ namespace Unity.Cloud.Assets
                 using (var md5 = MD5.Create())
 #pragma warning restore S4790
                 {
-#if UNITY_WEBGL
+#if UNITY_WEBGL && !UNITY_EDITOR
                     await CalculateMD5ChecksumInternalAsync(md5, stream, cancellationToken);
 #else
                     var result = new TaskCompletionSource<bool>();
@@ -379,6 +399,14 @@ namespace Unity.Cloud.Assets
             }
 
             return dataset;
+        }
+
+        void ThrowIfPathToLibrary(string message = "Cannot modify library datasets.")
+        {
+            if (Descriptor.IsPathToAssetLibrary())
+            {
+                throw new InvalidOperationException(message);
+            }
         }
     }
 }

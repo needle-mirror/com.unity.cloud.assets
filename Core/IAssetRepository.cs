@@ -153,7 +153,7 @@ namespace Unity.Cloud.Assets
         /// <summary>
         /// Retrieves an <see cref="IFieldDefinition"/>.
         /// </summary>
-        /// <param name="fieldDefinitionDescriptor">The descriptor containing the indentifiers for the field definition. </param>
+        /// <param name="fieldDefinitionDescriptor">The descriptor containing the identifiers for the field definition. </param>
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task whose result is an <see cref="IFieldDefinition"/>. </returns>
         Task<IFieldDefinition> GetFieldDefinitionAsync(FieldDefinitionDescriptor fieldDefinitionDescriptor, CancellationToken cancellationToken);
@@ -161,7 +161,7 @@ namespace Unity.Cloud.Assets
         /// <summary>
         /// Creates a new field definition within an organization.
         /// </summary>
-        /// <param name="organizationId">The id of the organization in which to add the field definitino. </param>
+        /// <param name="organizationId">The id of the organization in which to add the field definition. </param>
         /// <param name="fieldDefinitionCreation">The object containing the necessary information to create a field definition.</param>
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task whose result is the newly created <see cref="IFieldDefinition"/>. </returns>
@@ -170,7 +170,7 @@ namespace Unity.Cloud.Assets
         /// <summary>
         /// Creates a new field definition within an organization.
         /// </summary>
-        /// <param name="organizationId">The id of the organization in which to add the field definitino. </param>
+        /// <param name="organizationId">The id of the organization in which to add the field definition. </param>
         /// <param name="fieldDefinitionCreation">The object containing the necessary information to create a field definition.</param>
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task whose result is the newly created field definition's <see cref="FieldDefinitionDescriptor"/>. </returns>
@@ -179,7 +179,7 @@ namespace Unity.Cloud.Assets
         /// <summary>
         /// Deletes an <see cref="IFieldDefinition"/>.
         /// </summary>
-        /// <param name="fieldDefinitionDescriptor">The descriptor containing the indentifiers for the field definition. </param>
+        /// <param name="fieldDefinitionDescriptor">The descriptor containing the identifiers for the field definition. </param>
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task with no result. </returns>
         Task DeleteFieldDefinitionAsync(FieldDefinitionDescriptor fieldDefinitionDescriptor, CancellationToken cancellationToken);
@@ -212,7 +212,7 @@ namespace Unity.Cloud.Assets
         /// <summary>
         /// Retrieves a label by name.
         /// </summary>
-        /// <param name="labelDescriptor">The descriptor containing the indentifiers for the label. </param>
+        /// <param name="labelDescriptor">The descriptor containing the identifiers for the label. </param>
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task whose result is an <see cref="ILabel"/>. </returns>
         Task<ILabel> GetLabelAsync(LabelDescriptor labelDescriptor, CancellationToken cancellationToken) => throw new NotImplementedException();
@@ -224,6 +224,34 @@ namespace Unity.Cloud.Assets
         /// <returns>A <see cref="StatusFlowQueryBuilder"/>. </returns>
         StatusFlowQueryBuilder QueryStatusFlows(OrganizationId organizationId) => throw new NotImplementedException();
 
+        /// <summary>
+        /// Returns a builder to create a query to search <see cref="IAssetLibrary"/>.
+        /// </summary>
+        /// <returns>An <see cref="AssetLibraryQueryBuilder"/>. </returns>
+        AssetLibraryQueryBuilder QueryAssetLibraries() => throw new NotImplementedException();
+
+        /// <summary>
+        /// Gets an <see cref="IAssetLibrary"/>.
+        /// </summary>
+        /// <param name="assetLibraryId">The identifier of the library. </param>
+        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
+        /// <returns>A task whose result is an <see cref="IAssetLibrary"/>. </returns>
+        Task<IAssetLibrary> GetAssetLibraryAsync(AssetLibraryId assetLibraryId, CancellationToken cancellationToken) => throw new NotImplementedException();
+
+        /// <summary>
+        /// Returns a builder to create a query to search <see cref="IAssetLibraryJob"/>.
+        /// </summary>
+        /// <returns>An <see cref="AssetLibraryJobQueryBuilder"/>. </returns>
+        AssetLibraryJobQueryBuilder QueryAssetLibraryJobs() => throw new NotImplementedException();
+        
+        /// <summary>
+        /// Gets an <see cref="IAssetLibraryJob"/>.
+        /// </summary>
+        /// <param name="assetLibraryJobId">The identifier of the library job. </param>
+        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
+        /// <returns>A task whose result is an <see cref="IAssetLibraryJob"/>. </returns>
+        Task<IAssetLibraryJob> GetAssetLibraryJobAsync(AssetLibraryJobId assetLibraryJobId, CancellationToken cancellationToken) => throw new NotImplementedException();
+        
         /// <summary>
         /// Implement this method to get an <see cref="AssetDescriptor"/> given a serialized json of asset identifiers.
         /// </summary>

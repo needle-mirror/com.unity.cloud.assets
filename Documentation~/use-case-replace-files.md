@@ -33,15 +33,9 @@ You should also have uploaded files to an asset, see the [Create files use case]
 
 ### List the files of an asset
 
-By default, when you get an asset, the files associated with are not included in the response.
-To get files associated to an asset, follow these steps:
+If you have not already done so, you must update the behaviour to get the list of files for an asset.
 
-1. Open the `AssetManagementBehaviour` script you created.
-2. Add the following code to the end of the class:
-
-[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseFileManagementExample.cs#Example_Behaviour_RefreshFiles)]
-
-The code snippet populates the `Files` property of the selected asset.
+See the [Use case: Update an asset's files](use-case-update-files.md#list-the-files-of-an-asset) documentation for more information.
 
 ### Replace a file
 

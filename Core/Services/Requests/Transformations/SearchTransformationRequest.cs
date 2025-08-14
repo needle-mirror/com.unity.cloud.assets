@@ -2,7 +2,7 @@ using Unity.Cloud.Common;
 
 namespace Unity.Cloud.Assets
 {
-    class SearchTransformationRequest : ProjectRequest
+    class SearchTransformationRequest : ProjectOrLibraryRequest
     {
         public SearchTransformationRequest(ProjectId projectId, TransformationSearchData searchData)
             : base(projectId)

@@ -158,6 +158,13 @@ namespace Unity.Cloud.Assets
         }
 
         internal static AssetEntity From(this IAssetData data, IAssetDataSource assetDataSource, AssetRepositoryCacheConfiguration defaultCacheConfiguration,
+            AssetLibraryId assetLibraryId, FieldsFilter includeFields, AssetCacheConfiguration? assetCacheConfiguration = null)
+        {
+            var descriptor = new AssetDescriptor(assetLibraryId, data.Id, data.Version);
+            return data.From(assetDataSource, defaultCacheConfiguration, descriptor, includeFields, assetCacheConfiguration);
+        }
+
+        internal static AssetEntity From(this IAssetData data, IAssetDataSource assetDataSource, AssetRepositoryCacheConfiguration defaultCacheConfiguration,
             AssetDescriptor assetDescriptor, FieldsFilter includeFields, AssetCacheConfiguration? assetCacheConfiguration = null)
         {
             var asset = new AssetEntity(assetDataSource, defaultCacheConfiguration, assetDescriptor, assetCacheConfiguration);

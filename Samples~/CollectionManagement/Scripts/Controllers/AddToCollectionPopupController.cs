@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine.UIElements;
 
 namespace Unity.Cloud.Assets.Samples.CollectionManagement
@@ -14,6 +15,9 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
             : base(root, "AddToCollectionPopup")
         {
             m_AssetListUi.Initialize(m_PopupWindow, makeItem);
+            m_AssetListUi.OnSelectionChanged += OnSelectionChanged;
+
+            m_ActionButton.SetEnabled(false);
         }
 
         public void ApplyFilter(IEnumerable<IAsset> itemToFilter)
@@ -32,6 +36,11 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
 
             AssetsAddedToCollection?.Invoke(m_AssetListUi.SelectedAssets);
             m_AssetListUi.ClearSelection();
+        }
+
+        void OnSelectionChanged()
+        {
+            m_ActionButton.SetEnabled(m_AssetListUi.SelectedAssets.Any());
         }
     }
 }

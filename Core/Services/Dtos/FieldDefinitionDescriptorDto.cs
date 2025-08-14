@@ -10,5 +10,8 @@ namespace Unity.Cloud.Assets
 
         [DataMember(Name = "fieldKey")]
         public string FieldKey { get; set; }
+        
+        [DataMember(Name = "libraryId")]
+        public string AssetLibraryId { get; set; }
     }
 }

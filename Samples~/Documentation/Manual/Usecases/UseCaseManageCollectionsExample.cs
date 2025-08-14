@@ -185,7 +185,8 @@ namespace Unity.Cloud.Documentation.Assets
             GUILayout.BeginVertical();
 
             var currentAssetId = m_Behaviour.CurrentAsset?.Descriptor.AssetId ?? AssetId.None;
-            AssetProperties? currentAssetProperties = m_Behaviour.AssetProperties.TryGetValue(currentAssetId, out var properties) ? properties : null;
+            var currentAssetVersion = m_Behaviour.CurrentAsset?.Descriptor.AssetVersion ?? AssetVersion.None;
+            AssetProperties? currentAssetProperties = m_Behaviour.TryGetAssetProperties(currentAssetVersion, out var properties) ? properties : null;
 
             GUILayout.Label($"Selected Asset: {currentAssetProperties?.Name ?? "! No asset selected !"}");
 
@@ -216,12 +217,12 @@ namespace Unity.Cloud.Documentation.Assets
 
         void DrawAsset(AssetId assetId)
         {
-            AssetProperties? properties = m_Behaviour.AssetProperties.TryGetValue(assetId, out var p) ? p : null;
+            AssetProperties? properties = m_Behaviour.TryGetAssetProperties(assetId, out var p) ? p : null;
 
             GUILayout.BeginHorizontal();
 
             GUILayout.Label($"{properties?.Name ?? assetId.ToString()}");
-            if (GUILayout.Button($"Remove from collection"))
+            if (GUILayout.Button("Remove from collection"))
             {
                 _ = m_Behaviour.UnlinkAssetFromCollectionAsync(assetId);
             }
@@ -239,7 +240,8 @@ namespace Unity.Cloud.Documentation.Assets
         public bool IsProjectSelected => m_Behaviour.IsProjectSelected;
         public IAssetProject CurrentProject => m_Behaviour.CurrentProject;
         public IAsset CurrentAsset => m_Behaviour.CurrentAsset;
-        public Dictionary<AssetId, AssetProperties> AssetProperties => m_Behaviour.AssetProperties;
+        public bool TryGetAssetProperties(AssetVersion assetVersion, out AssetProperties properties) => m_Behaviour.TryGetAssetProperties(assetVersion, out properties);
+        public bool TryGetAssetProperties(AssetId assetId, out AssetProperties properties) => m_Behaviour.TryGetAssetProperties(assetId, out properties);
 
         public UseCaseManageCollectionsExampleBehaviour(AssetManagementBehaviour behaviour)
         {
@@ -296,10 +298,10 @@ namespace Unity.Cloud.Documentation.Assets
             var assetList = CurrentProject.QueryAssets().SelectWhereMatchesFilter(searchFilter).ExecuteAsync(CancellationToken.None);
             await foreach (var asset in assetList)
             {
-                if (!m_Behaviour.AssetProperties.ContainsKey(asset.Descriptor.AssetId))
+                if (!m_Behaviour.TryGetAssetProperties(asset.Descriptor.AssetVersion, out var properties))
                 {
-                    var properties = await asset.GetPropertiesAsync(CancellationToken.None);
-                    m_Behaviour.AssetProperties.Add(asset.Descriptor.AssetId, properties);
+                    properties = await asset.GetPropertiesAsync(CancellationToken.None);
+                    m_Behaviour.IncludeProperties(asset.Descriptor, properties);
                 }
 
                 CurrentCollectionAssetIds.Add(asset.Descriptor.AssetId);

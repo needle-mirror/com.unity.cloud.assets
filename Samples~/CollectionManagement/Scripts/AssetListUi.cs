@@ -29,6 +29,7 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
 
         public IEnumerable<IAsset> Assets => m_ListController.AllItems;
         public IEnumerable<IAsset> SelectedAssets => m_ListController.SelectedItems.Cast<IAsset>();
+        public event Action OnSelectionChanged;
 
         protected override string VisualElementName => "AssetsListContainer";
         protected override string EmptyListMessage => "No assets available.";
@@ -67,7 +68,7 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
 
         protected override void OnSelectionChange(IEnumerable<object> selectedItems)
         {
-            // DO NOTHING
+            OnSelectionChanged?.Invoke();
         }
 
         CancellationToken GetCancellationToken()

@@ -1,4 +1,5 @@
-#if UNITY_EDITOR && !UNITY_WEBGL
+using LogProgress = Unity.Cloud.Documentation.Assets.BaseAssetBehaviour.LogProgress;
+
 namespace Unity.Cloud.Documentation.Assets
 {
 #pragma warning disable S4487 // Unread "private" fields should be removed
@@ -14,14 +15,13 @@ namespace Unity.Cloud.Documentation.Assets
     using System.Threading.Tasks;
     using Unity.Cloud.Assets;
     using Unity.Cloud.Common;
-    using UnityEditor;
     using UnityEngine;
 
     public class UseCaseFileReuploadExampleUI : IAssetManagementUI
     {
-        readonly AssetManagementBehaviour m_Behaviour;
+        readonly BaseAssetBehaviour m_Behaviour;
 
-        public UseCaseFileReuploadExampleUI(AssetManagementBehaviour behaviour)
+        public UseCaseFileReuploadExampleUI(BaseAssetBehaviour behaviour)
         {
             m_Behaviour = behaviour;
         }
@@ -38,7 +38,7 @@ namespace Unity.Cloud.Documentation.Assets
     {
         readonly UseCaseFileReuploadExampleBehaviour m_Behaviour;
 
-        public UseCaseFileReuploadExample(AssetManagementBehaviour behaviour)
+        public UseCaseFileReuploadExample(BaseAssetBehaviour behaviour)
         {
             m_Behaviour = new UseCaseFileReuploadExampleBehaviour(behaviour);
         }
@@ -51,19 +51,13 @@ namespace Unity.Cloud.Documentation.Assets
 
         public void OnGUI()
         {
-            if (!m_Behaviour.IsProjectSelected) return;
-
-            if (m_Behaviour.CurrentAsset == null)
-            {
-                GUILayout.Label(" ! No asset selected !");
-                return;
-            }
+            if (m_Behaviour.CurrentAsset == null) return;
 
             if (m_CurrentAsset != m_Behaviour.CurrentAsset)
             {
                 m_CurrentAsset = m_Behaviour.CurrentAsset;
                 m_Behaviour.DatasetFiles.Clear();
-                _ = m_Behaviour.GetDataSetsAsync();
+                _ = m_Behaviour.GetDatasets();
             }
 
             if (m_Behaviour.Datasets == null)
@@ -76,7 +70,7 @@ namespace Unity.Cloud.Documentation.Assets
 
             if (GUILayout.Button("Refresh", GUILayout.Width(60)))
             {
-                _ = m_Behaviour.GetDataSetsAsync();
+                _ = m_Behaviour.GetDatasets();
             }
 
             GUILayout.Space(5f);
@@ -162,13 +156,19 @@ namespace Unity.Cloud.Documentation.Assets
 
                 if (GUILayout.Button("Upload new content", GUILayout.Width(150)))
                 {
-                    var path = EditorUtility.OpenFilePanel("Choose a file to upload.", Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "");
+#if UNITY_EDITOR
+                    var path = UnityEditor.EditorUtility.OpenFilePanel("Choose a file to upload.", Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "");
                     if (!string.IsNullOrEmpty(path))
                     {
                         var memoryStream = new MemoryStream(File.ReadAllBytes(path));
                         _ = m_Behaviour.ReplaceFileAsync(file, memoryStream);
                     }
+#else
+                    Debug.Log("Feature only supported in Editor.");
+#endif
                 }
+
+                GUI.enabled = true;
 
                 GUILayout.EndHorizontal();
             }
@@ -179,107 +179,32 @@ namespace Unity.Cloud.Documentation.Assets
         #endregion
     }
 
-    class UseCaseFileReuploadExampleBehaviour
+    class UseCaseFileReuploadExampleBehaviour : UseCaseCreateFileExampleBehaviour
     {
-        readonly AssetManagementBehaviour m_Behaviour;
-
-        public bool IsProjectSelected => m_Behaviour.IsProjectSelected;
-        public IAsset CurrentAsset => m_Behaviour.CurrentAsset;
-
-        public UseCaseFileReuploadExampleBehaviour(AssetManagementBehaviour behaviour)
-        {
-            m_Behaviour = behaviour;
-        }
-
-        #region Example_Behaviour_RefreshFiles
-
-        public List<IDataset> Datasets { get; } = new();
-        Dictionary<DatasetId, string> DatasetNames { get; } = new();
-        public Dictionary<DatasetId, IEnumerable<IFile>> DatasetFiles { get; } = new();
-
-        public async Task GetDataSetsAsync()
-        {
-            if (CurrentAsset == null) return;
-
-            Datasets.Clear();
-            DatasetNames.Clear();
-
-            var datasetList = CurrentAsset.ListDatasetsAsync(Range.All, CancellationToken.None);
-            await foreach (var dataset in datasetList)
-            {
-                Datasets.Add(dataset);
-
-                var datasetProperties = await dataset.GetPropertiesAsync(CancellationToken.None);
-                DatasetNames[dataset.Descriptor.DatasetId] = datasetProperties.Name;
-            }
-        }
-
-        public string GetDatasetName(DatasetId datasetId)
-        {
-            return DatasetNames.TryGetValue(datasetId, out var datasetName) ? datasetName : datasetId.ToString();
-        }
-
-        public async Task GetFilesAsync(DatasetId datasetId)
-        {
-            DatasetFiles.Remove(datasetId);
-
-            var dataset = await CurrentAsset.GetDatasetAsync(datasetId, CancellationToken.None);
-
-            DatasetFiles[datasetId] = null;
-
-            var files = new List<IFile>();
-            var fileList = dataset.ListFilesAsync(Range.All, CancellationToken.None);
-            await foreach (var file in fileList)
-            {
-                files.Add(file);
-            }
-
-            DatasetFiles[datasetId] = files;
-        }
-
-        #endregion
+        public UseCaseFileReuploadExampleBehaviour(BaseAssetBehaviour behaviour)
+            : base(behaviour) { }
 
         #region Example_Behaviour_UploadFile
 
-        CancellationTokenSource m_CancellationTokenSource;
-
-        public bool CanCancel => m_CancellationTokenSource is {IsCancellationRequested: false};
-
-        class LogProgress : IProgress<HttpProgress>
-        {
-            public void Report(HttpProgress value)
-            {
-                if (!value.UploadProgress.HasValue) return;
-
-                Debug.Log($"Upload progress: {value.UploadProgress * 100} %");
-            }
-        }
+        CancellationTokenSource m_FileUploadCancellationSource;
 
         public async Task ReplaceFileAsync(IFile file, MemoryStream memoryStream)
         {
-            await file.UploadAsync(memoryStream, new LogProgress(), GetCancellationToken());
-        }
-
-        public void Cancel()
-        {
-            if (m_CancellationTokenSource != null)
-            {
-                m_CancellationTokenSource.Cancel();
-                m_CancellationTokenSource.Dispose();
-            }
-
-            m_CancellationTokenSource = null;
+            await file.UploadAsync(memoryStream, new LogProgress(file.Descriptor.Path), GetCancellationToken());
         }
 
         CancellationToken GetCancellationToken()
         {
-            Cancel();
+            if (m_FileUploadCancellationSource != null)
+            {
+                m_FileUploadCancellationSource.Cancel();
+                m_FileUploadCancellationSource.Dispose();
+            }
 
-            m_CancellationTokenSource = new CancellationTokenSource();
-            return m_CancellationTokenSource.Token;
+            m_FileUploadCancellationSource = new CancellationTokenSource();
+            return m_FileUploadCancellationSource.Token;
         }
 
         #endregion
     }
 }
-#endif

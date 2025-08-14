@@ -21,6 +21,8 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc />
         public override Task AddOrUpdateAsync(Dictionary<string, object> properties, CancellationToken cancellationToken)
         {
+            ThrowIfPathToLibrary();
+
             var data = new DatasetUpdateData
             {
                 Metadata = properties
@@ -31,7 +33,18 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc />
         public override Task RemoveAsync(IEnumerable<string> keys, CancellationToken cancellationToken)
         {
+            ThrowIfPathToLibrary();
+
             return m_DataSource.RemoveDatasetMetadataAsync(m_Descriptor, m_MetadataSpecification.ToString(), keys, cancellationToken);
+        }
+
+        /// <inheritdoc />
+        public override void ThrowIfPathToLibrary()
+        {
+            if (m_Descriptor.IsPathToAssetLibrary())
+            {
+                throw new InvalidOperationException("Cannot modify the metadata of library datasets.");
+            }
         }
 
         /// <inheritdoc />

@@ -7,7 +7,7 @@ using Unity.Cloud.Common;
 namespace Unity.Cloud.Assets
 {
     /// <summary>
-    /// Interface to transform user facing data like <see cref="IProjectData"/> into service DTOs.
+    /// Entry point for accessing and managing assets within the Unity Cloud Assets system.
     /// </summary>
     class AssetRepository : IAssetRepository
     {
@@ -189,6 +189,30 @@ namespace Unity.Cloud.Assets
         public StatusFlowQueryBuilder QueryStatusFlows(OrganizationId organizationId)
         {
             return new StatusFlowQueryBuilder(m_DataSource, organizationId);
+        }
+
+        /// <inheritdoc />
+        public AssetLibraryQueryBuilder QueryAssetLibraries()
+        {
+            return new AssetLibraryQueryBuilder(m_DataSource, CacheConfiguration);
+        }
+
+        /// <inheritdoc />
+        public Task<IAssetLibrary> GetAssetLibraryAsync(AssetLibraryId assetLibraryId, CancellationToken cancellationToken)
+        {
+            return AssetLibraryEntity.GetConfiguredAsync(m_DataSource, CacheConfiguration, assetLibraryId, null, cancellationToken);
+        }
+
+        /// <inheritdoc />
+        public AssetLibraryJobQueryBuilder QueryAssetLibraryJobs()
+        {
+            return new  AssetLibraryJobQueryBuilder(m_DataSource, CacheConfiguration);
+        }
+        
+        /// <inheritdoc />
+        public Task<IAssetLibraryJob> GetAssetLibraryJobAsync(AssetLibraryJobId assetLibraryJobId, CancellationToken cancellationToken)
+        {
+            return AssetLibraryJobEntity.GetConfiguredAsync(m_DataSource, CacheConfiguration, assetLibraryJobId, null, cancellationToken);
         }
 
         /// <inheritdoc />

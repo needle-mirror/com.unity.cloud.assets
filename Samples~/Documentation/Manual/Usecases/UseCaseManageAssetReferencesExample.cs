@@ -141,7 +141,7 @@ namespace Unity.Cloud.Documentation.Assets
                 return;
             }
 
-            if (!m_Behaviour.AssetProperties.TryGetValue(asset.Descriptor.AssetId, out var properties))
+            if (!m_Behaviour.TryGetAssetProperties(asset.Descriptor.AssetVersion, out var properties))
             {
                 GUILayout.Label("Asset properties not loaded");
                 return;
@@ -301,7 +301,7 @@ namespace Unity.Cloud.Documentation.Assets
             set => m_Behaviour.CurrentAsset = value;
         }
 
-        public Dictionary<AssetId, AssetProperties> AssetProperties => m_Behaviour.AssetProperties;
+        public bool TryGetAssetProperties(AssetVersion assetVersion, out AssetProperties properties) => m_Behaviour.TryGetAssetProperties(assetVersion, out properties);
 
         public UseCaseManageAssetReferencesExampleBehaviour(AssetManagementBehaviour behaviour)
         {

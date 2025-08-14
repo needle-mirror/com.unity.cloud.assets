@@ -136,7 +136,6 @@ namespace Unity.Cloud.Assets
             var linkedDataset = properties.LinkedDatasets.ToArray();
 
             var (start, length) = range.GetValidatedOffsetAndLength(linkedDataset.Length);
-
             for (var i = start; i < start + length; i++)
             {
                 cancellationToken.ThrowIfCancellationRequested();
@@ -192,12 +191,16 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc />
         public async Task UpdateAsync(IFileUpdate fileUpdate, CancellationToken cancellationToken)
         {
+            ThrowIfPathToLibrary();
+            
             await m_DataSource.UpdateFileAsync(Descriptor, fileUpdate.From(), cancellationToken);
         }
 
         /// <inheritdoc />
         public async Task UploadAsync(Stream sourceStream, IProgress<HttpProgress> progress, CancellationToken cancellationToken)
         {
+            ThrowIfPathToLibrary();
+            
             var result = Metadata.Query().ExecuteAsync(cancellationToken);
             var metadata = new Dictionary<string, MetadataValue>();
             await foreach (var item in result)
@@ -214,7 +217,15 @@ namespace Unity.Cloud.Assets
             await foreach (var dataset in datasetList)
             {
                 datasets.Add(dataset);
-                await dataset.RemoveFileAsync(Descriptor.Path, cancellationToken);
+                try
+                {
+                    await dataset.RemoveFileAsync(Descriptor.Path, cancellationToken);
+                }
+                catch (NotFoundException)
+                {
+                    // Ignore errors when removing file from datasets, e.g. if the file is not present in the dataset.
+                    // This can happen if the file was already removed from its 'source' dataset.
+                }
 
                 cancellationToken.ThrowIfCancellationRequested();
             }
@@ -260,6 +271,8 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc />
         public async Task<IEnumerable<GeneratedTag>> GenerateSuggestedTagsAsync(CancellationToken cancellationToken)
         {
+            ThrowIfPathToLibrary("Cannot generate tags for library files.");
+            
             var tags = await m_DataSource.GenerateFileTagsAsync(Descriptor, cancellationToken);
             return tags.Select(x => new GeneratedTag(x.Tag, x.Confidence));
         }
@@ -277,6 +290,14 @@ namespace Unity.Cloud.Assets
             }
 
             return file;
+        }
+
+        void ThrowIfPathToLibrary(string message = "Cannot modify a library file.")
+        {
+            if (Descriptor.IsPathToAssetLibrary())
+            {
+                throw new InvalidOperationException(message);
+            }
         }
     }
 }

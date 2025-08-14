@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Unity.Cloud.Common;
@@ -127,6 +126,30 @@ namespace Unity.Cloud.Assets
             }
 
             throw new NotFoundException("No default status flow found.");
+        }
+        
+        /// <summary>
+        /// Lists available <see cref="IAssetLibrary"/>.
+        /// </summary>
+        /// <param name="assetRepository">The <see cref="IAssetRepository"/>. </param>
+        /// <param name="range">The range of results to return. </param>
+        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
+        /// <returns>An async enumeration of <see cref="IAssetLibrary"/>. </returns>
+        public static IAsyncEnumerable<IAssetLibrary> ListAssetLibrariesAsync(this IAssetRepository assetRepository, Range range, CancellationToken cancellationToken)
+        {
+            return assetRepository.QueryAssetLibraries().LimitTo(range).ExecuteAsync(cancellationToken);
+        }
+        
+        /// <summary>
+        /// Lists available <see cref="IAssetLibraryJob"/>.
+        /// </summary>
+        /// <param name="assetRepository">The <see cref="IAssetRepository"/>. </param>
+        /// <param name="range">The range of results to return. </param>
+        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
+        /// <returns>An async enumeration of <see cref="IAssetLibraryJob"/>. </returns>
+        public static IAsyncEnumerable<IAssetLibraryJob> ListAssetLibraryJobsAsync(this IAssetRepository assetRepository, Range range, CancellationToken cancellationToken)
+        {
+            return assetRepository.QueryAssetLibraryJobs().LimitTo(range).ExecuteAsync(cancellationToken);
         }
     }
 }

@@ -167,7 +167,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             var timeoutCancellationSource = new CancellationTokenSource(3000);
             while (value.ValueType == MetadataValueType.Unknown)
             {
-                await Task.Delay(100, timeoutCancellationSource.Token);
+                await UnityTask.Delay(100, timeoutCancellationSource.Token);
 
                 if (cancellationToken.IsCancellationRequested || timeoutCancellationSource.IsCancellationRequested) return;
             }

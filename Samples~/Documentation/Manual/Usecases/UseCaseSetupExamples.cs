@@ -45,7 +45,7 @@ namespace Unity.Cloud.Documentation.Assets
             m_UI.Add(new OrganizationSelectionExampleUI(m_Behaviour));
             m_UI.Add(new ProjectSelectionExampleUI(m_Behaviour));
             m_UI.Add(new AssetSelectionExampleUI(m_Behaviour));
-            m_UI.Add(new UseCaseDatasetCreationExampleUI(m_Behaviour));
+            m_UI.Add(new UseCaseCreateDatasetExampleUI(m_Behaviour));
 
             #endregion
 
@@ -54,7 +54,7 @@ namespace Unity.Cloud.Documentation.Assets
             m_UI.Add(new OrganizationSelectionExampleUI(m_Behaviour));
             m_UI.Add(new ProjectSelectionExampleUI(m_Behaviour));
             m_UI.Add(new AssetSelectionExampleUI(m_Behaviour));
-            m_UI.Add(new UseCaseFileCreationExampleUI(m_Behaviour));
+            m_UI.Add(new UseCaseCreateFileExampleUI(m_Behaviour));
 
             #endregion
 
@@ -104,9 +104,7 @@ namespace Unity.Cloud.Documentation.Assets
             m_UI.Add(new OrganizationSelectionExampleUI(m_Behaviour));
             m_UI.Add(new ProjectSelectionExampleUI(m_Behaviour));
             m_UI.Add(new AssetSelectionExampleUI(m_Behaviour));
-#if UNITY_EDITOR && !UNITY_WEBGL
             m_UI.Add(new UseCaseFileReuploadExampleUI(m_Behaviour));
-#endif
 
             #endregion
 
@@ -115,9 +113,7 @@ namespace Unity.Cloud.Documentation.Assets
             m_UI.Add(new OrganizationSelectionExampleUI(m_Behaviour));
             m_UI.Add(new ProjectSelectionExampleUI(m_Behaviour));
             m_UI.Add(new AssetSelectionExampleUI(m_Behaviour));
-#if UNITY_EDITOR && !UNITY_WEBGL
-            m_UI.Add(new UseCaseFileManagementExampleUI(m_Behaviour));
-#endif
+            m_UI.Add(new UseCaseManageFileExampleUI(m_Behaviour));
 
             #endregion
 
@@ -126,7 +122,7 @@ namespace Unity.Cloud.Documentation.Assets
             m_UI.Add(new OrganizationSelectionExampleUI(m_Behaviour));
             m_UI.Add(new ProjectSelectionExampleUI(m_Behaviour));
             m_UI.Add(new AssetSelectionExampleUI(m_Behaviour));
-            m_UI.Add(new UseCaseDatasetUpdateExampleUI(m_Behaviour));
+            m_UI.Add(new UseCaseManageDatasetExampleUI(m_Behaviour));
 
             #endregion
 
@@ -145,6 +141,52 @@ namespace Unity.Cloud.Documentation.Assets
             m_UI.Add(new ProjectSelectionExampleUI(m_Behaviour));
             m_UI.Add(new AssetSelectionExampleUI(m_Behaviour));
             m_UI.Add(new UseCaseManageAssetReferencesExampleUI(m_Behaviour));
+
+            #endregion
+        }
+    }
+
+    class LibraryUseCaseSetupExamples
+    {
+        readonly AssetLibrariesBehaviour m_Behaviour = new();
+        readonly List<IAssetManagementUI> m_UI = new();
+
+        LibraryUseCaseSetupExamples()
+        {
+            #region UseCaseListLibraryCollections
+
+            m_UI.Add(new AssetLibrarySelectionExampleUI(m_Behaviour));
+            m_UI.Add(new UseCaseListAssetLibraryCollectionsExampleUI(m_Behaviour));
+
+            #endregion
+
+            #region UseCaseListLibraryLabels
+
+            m_UI.Add(new AssetLibrarySelectionExampleUI(m_Behaviour));
+            m_UI.Add(new UseCaseListAssetLibraryLabelsExampleUI(m_Behaviour));
+
+            #endregion
+
+            #region UseCaseListLibraryFieldDefinitions
+
+            m_UI.Add(new AssetLibrarySelectionExampleUI(m_Behaviour));
+            m_UI.Add(new AssetSelectionExampleUI(m_Behaviour));
+            m_UI.Add(new UseCaseListAssetLibraryFieldDefinitionsExampleUI(m_Behaviour));
+
+            #endregion
+
+            #region UseCaseListLibraryJobs
+
+            m_UI.Add(new AssetLibraryJobSelectionExampleUI(m_Behaviour));
+            m_UI.Add(new UseCaseViewAssetLibraryJobExampleUI(m_Behaviour));
+
+            #endregion
+
+            #region UseCaseStartLibraryJobs
+
+            m_UI.Add(new AssetLibraryJobSelectionExampleUI(m_Behaviour));
+            m_UI.Add(new AssetSelectionExampleUI(m_Behaviour));
+            m_UI.Add(new UseCaseStartAssetLibraryJobExampleUI(m_Behaviour));
 
             #endregion
         }

@@ -7,60 +7,59 @@ namespace Unity.Cloud.Documentation.Assets
 
     public class AssetSelectionExampleUI : IAssetManagementUI
     {
-        readonly AssetManagementBehaviour m_Behaviour;
+        readonly BaseAssetBehaviour m_Behaviour;
 
-        Vector2 m_AssetListScrollPosition;
+        Vector2 m_ListScrollPosition;
 
-        public AssetSelectionExampleUI(AssetManagementBehaviour behaviour)
+        public AssetSelectionExampleUI(BaseAssetBehaviour behaviour)
         {
             m_Behaviour = behaviour;
         }
 
         public void OnGUI()
         {
-            if (!m_Behaviour.IsProjectSelected) return;
+            if (!m_Behaviour.CanSelectAsset) return;
 
-            // Go back to select a different scene.
+            GUILayout.BeginVertical();
+
             if (GUILayout.Button("Back"))
             {
-                m_Behaviour.SetSelectedProject(null);
+                m_Behaviour.ClearParentSelection();
                 return;
             }
 
             GUILayout.Space(15f);
 
-            GUILayout.BeginVertical();
-
-            GUILayout.Label($"{m_Behaviour.CurrentOrganization.Name} >> {m_Behaviour.GetProjectName(m_Behaviour.CurrentProject.Descriptor.ProjectId)}");
-            GUILayout.Space(15f);
-
-            SelectAnAsset();
+            ListAssets();
 
             GUILayout.EndVertical();
         }
 
-        void SelectAnAsset()
+        void ListAssets()
         {
-            GUILayout.Label($"Available Assets ({m_Behaviour.AvailableAssets.Count}):");
+            GUILayout.Label($"Available Assets ({m_Behaviour.AssetCount}):");
             GUILayout.Space(5f);
 
             var assets = m_Behaviour.AvailableAssets.ToArray();
             if (assets.Length > 0)
             {
-                m_AssetListScrollPosition = GUILayout.BeginScrollView(m_AssetListScrollPosition, GUILayout.ExpandHeight(true), GUILayout.Width(250));
+                m_ListScrollPosition = GUILayout.BeginScrollView(m_ListScrollPosition, GUILayout.ExpandHeight(true), GUILayout.Width(250));
 
                 for (var i = 0; i < assets.Length; ++i)
                 {
-                    var assetId = assets[i].Descriptor.AssetId;
-
-                    GUI.enabled = assetId != m_Behaviour.CurrentAsset?.Descriptor.AssetId;
-
-                    var name = m_Behaviour.AssetProperties.TryGetValue(assetId, out var properties) ? properties.Name : assetId.ToString();
-
-                    if (GUILayout.Button(name))
+                    GUILayout.BeginHorizontal();
+                    
+                    var name = m_Behaviour.TryGetAssetProperties(assets[i].Descriptor.AssetVersion, out var properties) ? properties.Name : assets[i].Descriptor.AssetId.ToString();
+                    GUILayout.Label(name, GUILayout.Width(150));
+                    
+                    GUI.enabled = assets[i].Descriptor.AssetId != m_Behaviour.CurrentAsset?.Descriptor.AssetId;
+                    
+                    if (GUILayout.Button("Select", GUILayout.Width(60)))
                     {
                         _ = m_Behaviour.CurrentAsset = assets[i];
                     }
+                    
+                    GUILayout.EndHorizontal();
 
                     GUI.enabled = true;
                 }

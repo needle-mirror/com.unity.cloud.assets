@@ -419,6 +419,7 @@ namespace Unity.Cloud.Documentation.Assets
                             new FieldDefinitionDescriptor(m_Behaviour.CurrentOrganization.Id, key)),
                         MetadataValueType.MultiSelection => new MultiSelectionMetadataValueDisplayer(metadataValue.AsMultiSelection(),
                             new FieldDefinitionDescriptor(m_Behaviour.CurrentOrganization.Id, key)),
+                        MetadataValueType.Timestamp => new TextMetadataValueDisplayer(metadataValue.AsTimestamp().AsText()),
                         _ => new TextMetadataValueDisplayer(metadataValue.AsText())
                     };
                 }

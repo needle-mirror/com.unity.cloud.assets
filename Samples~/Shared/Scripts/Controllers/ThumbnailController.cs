@@ -5,6 +5,7 @@ using System.Threading;
 using Unity.Cloud.Common;
 using UnityEngine;
 using UnityEngine.Networking;
+using InvalidArgumentException = Unity.Cloud.Common.InvalidArgumentException;
 
 namespace Unity.Cloud.Assets.Samples
 {
@@ -26,7 +27,6 @@ namespace Unity.Cloud.Assets.Samples
             {
                 m_AssetId = assetId;
                 m_OnLifetimeComplete = onLifetimeComplete;
-
 
                 _ = GetDownloadUrl(previewFileDescriptor, token);
             }
@@ -52,9 +52,17 @@ namespace Unity.Cloud.Assets.Samples
                 {
                     // Ignore
                 }
+                catch (TimeoutException)
+                {
+                    Debug.LogWarning($"Cannot load thumbnail for file {fileDescriptor.Path}.");
+                }
+                catch (InvalidArgumentException)
+                {
+                    Debug.LogWarning($"Cannot load thumbnail for file {fileDescriptor.Path}.");
+                }
                 catch (Exception e)
                 {
-                    Debug.LogException(e);
+                    e.LogException("GetDownloadUrl");
                 }
 
                 if (previewFileUrl == null)
@@ -95,7 +103,7 @@ namespace Unity.Cloud.Assets.Samples
 #else
                 await Task.CompletedTask;
 #endif
-                await Task.Delay(k_Lifetime);
+                await UnityTask.Delay(k_Lifetime);
 
                 m_OnLifetimeComplete?.Invoke(m_AssetId);
             }

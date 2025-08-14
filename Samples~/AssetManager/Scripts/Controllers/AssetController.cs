@@ -122,12 +122,10 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             // Handle 'All' selection
             if (IsAllProjectSelected) return;
 
-            CancelNewList();
-            m_NewListCancellationTokenSource = new CancellationTokenSource();
-
-            var newListToken = m_NewListCancellationTokenSource.Token;
+            var newListToken = GetNewListToken();
 
             m_ProjectAssetsList.Clear();
+            
             m_SearchBarUi.DisplaySearchBar(SelectedProject);
 
             if (SelectedProject == null) return;
@@ -214,16 +212,19 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             _ = SelectedProject?.UnlinkAssetsAsync(new[] { asset }, CancellationToken.None);
         }
 
-        void CancelNewList()
+        CancellationToken GetNewListToken()
         {
             m_NewListCancellationTokenSource?.Cancel();
             m_NewListCancellationTokenSource?.Dispose();
             m_NewListCancellationTokenSource = null;
+            
+            m_NewListCancellationTokenSource = new CancellationTokenSource();
+            return m_NewListCancellationTokenSource.Token;
         }
 
         void OnLowMemory()
         {
-            CancelNewList();
+            _ = GetNewListToken();
             _ = m_SearchBarUi.GetSearchCancellationToken();
 
             Resources.UnloadUnusedAssets();

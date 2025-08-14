@@ -199,7 +199,7 @@ namespace Unity.Cloud.Assets
         Task<IAsset> WithVersionAsync(string label, CancellationToken cancellationToken) => throw new NotImplementedException();
 
         /// <summary>
-        /// Fetches the latest changes.
+        /// Retrieves and caches the asset properties.
         /// </summary>
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task with no result. </returns>
@@ -421,6 +421,7 @@ namespace Unity.Cloud.Assets
         /// Returns an object that can be used to query asset labels across versions.
         /// </summary>
         /// <returns>A <see cref="AssetLabelQueryBuilder"/>. </returns>
+        [Obsolete("Use IAssetProject.QueryAssetLabels instead.")]
         AssetLabelQueryBuilder QueryLabels() => throw new NotImplementedException();
 
         /// <summary>

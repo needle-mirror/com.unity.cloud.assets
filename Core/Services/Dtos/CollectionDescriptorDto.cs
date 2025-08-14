@@ -1,6 +1,6 @@
 using System.Runtime.Serialization;
 
-namespace Unity.Cloud.Common
+namespace Unity.Cloud.Assets
 {
     [DataContract]
     struct CollectionDescriptorDto
@@ -10,5 +10,8 @@ namespace Unity.Cloud.Common
 
         [DataMember(Name = "collectionPath")]
         public string CollectionPath { get; set; }
+        
+        [DataMember(Name = "libraryId")]
+        public string AssetLibraryId { get; set; }
     }
 }

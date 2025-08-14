@@ -111,7 +111,7 @@ namespace Unity.Cloud.Assets
         Task<ITransformation> WithCacheConfigurationAsync(TransformationCacheConfiguration transformationCacheConfiguration, CancellationToken cancellationToken) => throw new NotImplementedException();
 
         /// <summary>
-        /// Refreshes the transformation properties.
+        /// Retrieves and caches the transformation properties.
         /// </summary>
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task with no result. </returns>

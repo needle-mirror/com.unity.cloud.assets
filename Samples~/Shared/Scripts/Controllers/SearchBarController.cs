@@ -152,9 +152,9 @@ namespace Unity.Cloud.Assets.Samples
             });
         }
 
-        void AddChip()
+        async void AddChip()
         {
-            _ = AddChipAsync(m_SearchBarField.value);
+            await AddChipAsync(m_SearchBarField.value);
         }
 
         async Task AddChipAsync(string searchString)
@@ -288,7 +288,7 @@ namespace Unity.Cloud.Assets.Samples
             }
             catch (Exception e)
             {
-                e.LogException();
+                e.LogException("UpdateSearchBarValuesAsync");
             }
         }
 
@@ -396,7 +396,7 @@ namespace Unity.Cloud.Assets.Samples
             }
             catch (Exception e)
             {
-                e.LogException();
+                e.LogException("UpdateAssetsListAsync");
                 throw;
             }
 
@@ -572,7 +572,7 @@ namespace Unity.Cloud.Assets.Samples
             }
             catch (Exception e)
             {
-                e.LogException();
+                e.LogException("CountAssetsAsync");
                 throw;
             }
         }

@@ -25,17 +25,15 @@ Before you start, you must:
 
 ### List datasets
 
-To list the datasets of an asset, open the `AssetManagementBehaviour` script you created and add the following code to the end of the class:
+If you have not already done so, you must update the behaviour to get the list of datasets for an asset.
 
-[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseDatasetUpdateExample.cs#Example_Behaviour_RefreshDatasets)]
-
-The code snippet populates a list of datasets for the selected asset.
+See the [Use case: Create datasets](use-case-create-datasets.md#list-datasets) documentation for more information.
 
 ### Update a dataset
 
 To update an existing dataset, open the `AssetManagementBehaviour` script you created and add the following code to the end of the class:
 
-[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseDatasetUpdateExample.cs#Example_Behaviour_UpdateDataset)]
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseManageDatasetExample.cs#Example_Behaviour_UpdateDataset)]
 
 The code snippet updates an existing dataset and refreshes the display.
 
@@ -45,14 +43,14 @@ To create UI for listing datasets, follow these steps:
 
 1. In your Unity Project window, go to **Assets** > **Scripts**.
 2. Select and hold the `Assets/Scripts` folder.
-3. Go to **Create** > **C# Script**. Name your script `UseCaseDatasetCreationExampleUI`.
-4. Open the `UseCaseDatasetCreationExampleUI` script you created and replace the contents of the file with the following code sample:
+3. Go to **Create** > **C# Script**. Name your script `UseCaseCreateDatasetExampleUI`.
+4. Open the `UseCaseCreateDatasetExampleUI` script you created and replace the contents of the file with the following code sample:
 
-[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseDatasetUpdateExample.cs#Example_UIClass)]
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseManageDatasetExample.cs#Example_UIClass)]
 
 5. In the same script, replace the `OnGUI` function with the following code:
 
-[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseDatasetUpdateExample.cs#Example_UIContent)]
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseManageDatasetExample.cs#Example_UIContent)]
 
 6. Open the `AssetManagementUI` script you created and replace the contents of the `Awake` function with the following code:
 

@@ -26,21 +26,18 @@ Before you start, do the following:
 
 ## How do I...?
 
-### List an asset's datasets and files
+### List a dataset's files
 
-List datasets as follows:
+If you have not already done so, you must update the behaviour to get the list of datasets for an asset.
 
-1. Open the `AssetManagementBehaviour` script that you created as described in [Get started with Asset SDK](get-started-management.md#Create-the-behavior-for-managing-assets).
-2. Add the following code to the end of the class:
+See the [Use case: Create datasets](use-case-create-datasets.md#list-datasets) documentation for more information.
 
-[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseFileCreationExample.cs#Example_Behaviour_RefreshDatasets)]
-
-List files as follows:
+To list files, do the following:
 
 1. Open the `AssetManagementBehaviour` script that you created as described in [Get started with Asset SDK](get-started-management.md#Create-the-behavior-for-managing-assets).
 2. Add the following code to the end of the class:
 
-[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseFileCreationExample.cs#Example_Behaviour_RefreshFiles)]
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseCreateFileExample.cs#Example_Behaviour_RefreshFiles)]
 
 ### Upload a file
 
@@ -49,7 +46,7 @@ Upload a file to an asset's dataset as follows:
 1. Open the `AssetManagementBehaviour` script that you created as described in [Get started with Asset SDK](get-started-management.md#Create-the-behavior-for-managing-assets).
 2. Add the following code to the end of the class:
 
-[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseFileCreationExample.cs#Example_Behaviour_UploadAssetFile)]
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseCreateFileExample.cs#Example_Behaviour_UploadAssetFile)]
 
 The code snippet does the following:
 
@@ -64,7 +61,7 @@ Upload a folder to an asset's dataset as follows:
 1. Open the `AssetManagementBehaviour` script that you created as described in [Get started with Asset SDK](get-started-management.md#Create-the-behavior-for-managing-assets).
 2. Add the following code to the end of the class:
 
-[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseFileCreationExample.cs#Example_Behaviour_UploadFolder)]
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseCreateFileExample.cs#Example_Behaviour_UploadFolder)]
 
 The code snippet provides a method to upload the entire content of a folder to a dataset.
 
@@ -78,7 +75,7 @@ Reference a file in a different dataset as follows:
 1. Open the `AssetManagementBehaviour` script that you created as described in [Get started with Asset SDK](get-started-management.md#Create-the-behavior-for-managing-assets).
 2. Add the following code to the end of the class:
 
-[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseFileCreationExample.cs#Example_Behaviour_AddFileReference)]
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseCreateFileExample.cs#Example_Behaviour_AddFileReference)]
 
 The code snippet does the following:
 
@@ -92,7 +89,7 @@ Remove a file reference from a dataset as follows:
 1. Open the `AssetManagementBehaviour` script that you created as described in [Get started with Asset SDK](get-started-management.md#Create-the-behavior-for-managing-assets).
 2. Add the following code to the end of the class:
 
-[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseFileCreationExample.cs#Example_Behaviour_RemoveFileReference)]
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseCreateFileExample.cs#Example_Behaviour_RemoveFileReference)]
 
 The code snippet does the following:
 
@@ -106,14 +103,14 @@ Add a UI to create files as follows:
 1. In the **Project** window of the Unity Editor, go to **Assets** > **Scripts**.
 2. Select and hold the `Assets/Scripts` folder.
 3. Go to **Create** > **C# Script**.
-4. Name your script `UseCaseFileCreationExampleUI`.
+4. Name your script `UseCaseCreateFileExampleUI`.
 5. Open the file and replace its contents with the following code sample:
 
-[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseFileCreationExample.cs#Example_UIClass)]
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseCreateFileExample.cs#Example_UIClass)]
 
 6. In the same script, replace the `OnGUI` function with the following code:
 
-[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseFileCreationExample.cs#Example_UIContent)]
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/Usecases/UseCaseCreateFileExample.cs#Example_UIContent)]
 
 7. Open the `AssetManagementUI` script that you created as described in [Get started with Asset SDK](get-started-management.md#Create-an-AssetManager) and replace the contents of the `Awake` function with the following code:
 

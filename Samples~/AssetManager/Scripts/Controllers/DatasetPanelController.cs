@@ -90,7 +90,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
                     m_DatasetUpdate.IsVisible = evt.newValue;
             });
 
-            m_DatasetTagsField.RegisterCallback<FocusInEvent>(AddTags);
+            m_DatasetTagsField.RegisterCallback<FocusInEvent>(AddEditableTags);
 
             m_BackButton = datasetPanel.Q<Button>("BackBtn");
             m_BackButton.RegisterCallback<ClickEvent>(_ => ClosePanel(null));
@@ -99,7 +99,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
         public void Cleanup()
         {
             m_SaveDatasetButton.UnregisterCallback<ClickEvent>(UpdateDataset);
-            m_DatasetTagsField.UnregisterCallback<FocusInEvent>(AddTags);
+            m_DatasetTagsField.UnregisterCallback<FocusInEvent>(AddEditableTags);
         }
 
         public void OpenDataset(IDataset dataset, bool canUpdate)
@@ -114,7 +114,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
             m_SaveDatasetButton.SetEnabled(canUpdate);
             m_GeneratePreviewButton.SetEnabled(canUpdate);
-            m_DatasetTagsField.style.display = canUpdate ? DisplayStyle.Flex : DisplayStyle.None;
+            m_DatasetTagsField.Show(canUpdate);
 
             m_DatasetNameField.SetEnabled(canUpdate);
             m_DatasetDescriptionField.SetEnabled(canUpdate);
@@ -208,8 +208,8 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
             UpdateStatus();
 
-            Action<string> addTagAction = tag => AddTag(tag, canUpdate);
-            addTagAction.AddTags(GetUpdateTags());
+            Action<string> addTagAction = tag => m_DatasetTagsContainer.AddTag(tag, m_DatasetTagsTemplate, canUpdate ? OnTagRemoved : null);
+            addTagAction.AddTags(m_CurrentDatasetProperties.Tags?.ToList() ?? new List<string>());
         }
 
         void ClearInformation()
@@ -251,20 +251,20 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
                 _ => Color.grey
             });
         }
+        
+        void AddEditableTags(FocusInEvent _) => m_DatasetTagsField.ParseTags(AddEditableTag);
 
-        void AddTags(FocusInEvent evt)
+        void AddEditableTag(string tag)
         {
-            m_DatasetTagsField.ParseTags(GetUpdateTags(), tag => AddTag(tag, true));
+            m_DatasetUpdate.Tags ??= m_CurrentDatasetProperties.Tags?.ToList() ?? new List<string>();
+            m_DatasetUpdate.Tags.Add(tag);
+            m_DatasetTagsContainer.AddTag(tag, m_DatasetTagsTemplate, OnTagRemoved);
         }
 
-        void AddTag(string tag, bool canRemove)
+        void OnTagRemoved(string tag)
         {
-            m_DatasetTagsContainer.AddTag(tag, GetUpdateTags(), m_DatasetTagsTemplate, canRemove);
-        }
-
-        List<string> GetUpdateTags()
-        {
-            return m_DatasetUpdate.Tags ?? (m_DatasetUpdate.Tags = m_CurrentDatasetProperties.Tags?.ToList() ?? new List<string>());
+            m_DatasetUpdate.Tags ??= m_CurrentDatasetProperties.Tags?.ToList() ?? new List<string>();
+            m_DatasetUpdate.Tags.Remove(tag);
         }
 
         void GenerateThumbnailPreview(ClickEvent evt)

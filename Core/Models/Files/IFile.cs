@@ -89,7 +89,7 @@ namespace Unity.Cloud.Assets
         Task<IFile> WithCacheConfigurationAsync(FileCacheConfiguration fileConfiguration, CancellationToken cancellationToken) => throw new NotImplementedException();
 
         /// <summary>
-        /// Refreshes the file with the specified fields.
+        /// Retrieves and caches the file properties.
         /// </summary>
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task with no result. </returns>

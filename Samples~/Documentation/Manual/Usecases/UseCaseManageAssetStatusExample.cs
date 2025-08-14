@@ -58,7 +58,7 @@ namespace Unity.Cloud.Documentation.Assets
                 _ = m_Behaviour.GetReachableStatuses();
             }
 
-            if (!m_Behaviour.AssetProperties.TryGetValue(m_CurrentAsset.Descriptor.AssetId, out var properties))
+            if (!m_Behaviour.TryGetAssetProperties(m_CurrentAsset.Descriptor.AssetVersion, out var properties))
             {
                 GUILayout.Label(" ! Asset properties not loaded !");
                 return;
@@ -98,7 +98,7 @@ namespace Unity.Cloud.Documentation.Assets
 
         public bool IsProjectSelected => m_Behaviour.IsProjectSelected;
         public IAsset CurrentAsset => m_Behaviour.CurrentAsset;
-        public Dictionary<AssetId, AssetProperties> AssetProperties => m_Behaviour.AssetProperties;
+        public bool TryGetAssetProperties(AssetVersion assetVersion, out AssetProperties properties) => m_Behaviour.TryGetAssetProperties(assetVersion, out properties);
 
         public UseCaseManageAssetStatusExampleBehaviour(AssetManagementBehaviour behaviour)
         {

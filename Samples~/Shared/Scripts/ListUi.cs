@@ -81,11 +81,11 @@ namespace Unity.Cloud.Assets.Samples
             }
             catch (OperationCanceledException oe)
             {
-                oe.LogException();
+                oe.LogException("UpdateList");
             }
             catch (Exception e)
             {
-                e.LogException();
+                e.LogException("UpdateList");
             }
 
             if (!cancellationToken.IsCancellationRequested)

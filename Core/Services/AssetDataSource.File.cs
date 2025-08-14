@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Unity.Cloud.Common;
@@ -16,10 +15,10 @@ namespace Unity.Cloud.Assets
             cancellationToken.ThrowIfCancellationRequested();
 
             var request = new CreateFileRequest(datasetDescriptor.ProjectId, datasetDescriptor.AssetId, datasetDescriptor.AssetVersion, datasetDescriptor.DatasetId, fileCreation);
-            var response = await RateLimitedServiceClient(request, HttpMethod.Post).PostAsync(GetPublicRequestUri(request), request.ConstructBody(),
+            using var response = await RateLimitedServiceClient(request, HttpMethod.Post).PostAsync(GetPublicRequestUri(request), request.ConstructBody(),
                 ServiceHttpClientOptions.Default(), cancellationToken);
 
-            var jsonContent = await response.GetContentAsString();
+            var jsonContent = await response.GetContentAsStringAsync();
             cancellationToken.ThrowIfCancellationRequested();
 
             var dto = JsonSerialization.Deserialize<UploadUrlDto>(jsonContent);
@@ -29,38 +28,62 @@ namespace Unity.Cloud.Assets
         }
 
         /// <inheritdoc />
-        public async IAsyncEnumerable<IFileData> ListFilesAsync(DatasetDescriptor datasetDescriptor, Range range, FieldsFilter includedFieldsFilter, [EnumeratorCancellation] CancellationToken cancellationToken)
+        public IAsyncEnumerable<IFileData> ListFilesAsync(DatasetDescriptor datasetDescriptor, Range range, FieldsFilter includedFieldsFilter, CancellationToken cancellationToken)
         {
-            var countRequest = new FileRequest(datasetDescriptor.ProjectId, datasetDescriptor.AssetId, datasetDescriptor.AssetVersion, datasetDescriptor.DatasetId, FileFields.none, limit: 1);
-
+            var isPathToLibrary = datasetDescriptor.IsPathToAssetLibrary();
+            
+            var countRequest = isPathToLibrary
+                ? new FileRequest(datasetDescriptor.AssetLibraryId, datasetDescriptor.AssetId, datasetDescriptor.AssetVersion, datasetDescriptor.DatasetId, FileFields.none, limit: 1)
+                : new FileRequest(datasetDescriptor.ProjectId, datasetDescriptor.AssetId, datasetDescriptor.AssetVersion, datasetDescriptor.DatasetId, FileFields.none, limit: 1);
             var fileFields = includedFieldsFilter?.FileFields ?? FileFields.none;
+            return ListEntitiesAsync<FileData>(countRequest, GetListRequest, range, cancellationToken);
 
-            Func<string, int, ApiRequest> getListRequest = (next, pageSize) => new FileRequest(datasetDescriptor.ProjectId, datasetDescriptor.AssetId, datasetDescriptor.AssetVersion, datasetDescriptor.DatasetId, fileFields, next, pageSize);
-
-            await foreach (var data in ListEntitiesAsync<FileData>(countRequest, getListRequest, range, cancellationToken))
+            ApiRequest GetListRequest(string next, int pageSize)
             {
-                yield return data;
+                return isPathToLibrary
+                ? new FileRequest(datasetDescriptor.AssetLibraryId, datasetDescriptor.AssetId, datasetDescriptor.AssetVersion, datasetDescriptor.DatasetId, fileFields, next, pageSize)
+                : new FileRequest(datasetDescriptor.ProjectId, datasetDescriptor.AssetId, datasetDescriptor.AssetVersion, datasetDescriptor.DatasetId, fileFields, next, pageSize);
             }
         }
 
         /// <inheritdoc />
-        public async Task<IFileData> GetFileAsync(FileDescriptor fileDescriptor, FieldsFilter includedFieldsFilter, CancellationToken cancellationToken)
+        public Task<IFileData> GetFileAsync(FileDescriptor fileDescriptor, FieldsFilter includedFieldsFilter, CancellationToken cancellationToken)
+        {
+            return fileDescriptor.IsPathToAssetLibrary()
+                ? GetFileAsync_FromLibrary(fileDescriptor, includedFieldsFilter, cancellationToken)
+                : GetFileAsync_FromProject(fileDescriptor, includedFieldsFilter, cancellationToken);
+        }
+
+        async Task<IFileData> GetFileAsync_FromLibrary(FileDescriptor fileDescriptor, FieldsFilter includedFieldsFilter, CancellationToken cancellationToken)
+        {
+            await foreach(var file in ListFilesAsync(fileDescriptor.DatasetDescriptor, Range.All, includedFieldsFilter, cancellationToken))
+            {
+                if (file.Path == fileDescriptor.Path)
+                {
+                    return file;
+                }
+            }
+            
+            throw new NotFoundException("File does not exist.");
+        }
+
+        async Task<IFileData> GetFileAsync_FromProject(FileDescriptor fileDescriptor, FieldsFilter includedFieldsFilter, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
             var request = new FileRequest(fileDescriptor.ProjectId, fileDescriptor.AssetId, fileDescriptor.AssetVersion, fileDescriptor.DatasetId, fileDescriptor.Path,
                 includedFieldsFilter?.FileFields ?? FileFields.none);
-            var response = await RateLimitedServiceClient(request, HttpMethod.Get).GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(),
+            using var response = await RateLimitedServiceClient(request, HttpMethod.Get).GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(),
                 cancellationToken);
 
-            var jsonContent = await response.GetContentAsString();
+            var jsonContent = await response.GetContentAsStringAsync();
             cancellationToken.ThrowIfCancellationRequested();
 
             return IsolatedSerialization.DeserializeWithDefaultConverters<FileData>(jsonContent);
         }
 
         /// <inheritdoc />
-        public Task UpdateFileAsync(FileDescriptor fileDescriptor, IFileBaseData fileUpdate, CancellationToken cancellationToken)
+        public async Task UpdateFileAsync(FileDescriptor fileDescriptor, IFileBaseData fileUpdate, CancellationToken cancellationToken)
         {
             var request = new FileRequest(fileDescriptor.ProjectId,
                 fileDescriptor.AssetId,
@@ -69,7 +92,7 @@ namespace Unity.Cloud.Assets
                 fileDescriptor.Path,
                 fileUpdate);
 
-            return RateLimitedServiceClient(request, HttpClientExtensions.HttpMethodPatch).PatchAsync(GetPublicRequestUri(request), request.ConstructBody(),
+            using var _ = await RateLimitedServiceClient(request, HttpClientExtensions.HttpMethodPatch).PatchAsync(GetPublicRequestUri(request), request.ConstructBody(),
                 ServiceHttpClientOptions.Default(), cancellationToken);
         }
 
@@ -85,7 +108,14 @@ namespace Unity.Cloud.Assets
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            var request = new GetFileDownloadUrlRequest(fileDescriptor.ProjectId,
+            var request = fileDescriptor.IsPathToAssetLibrary()
+                ? new GetFileDownloadUrlRequest(fileDescriptor.AssetLibraryId,
+                    fileDescriptor.AssetId,
+                    fileDescriptor.AssetVersion,
+                    fileDescriptor.DatasetId,
+                    fileDescriptor.Path,
+                    maxDimension)
+                : new GetFileDownloadUrlRequest(fileDescriptor.ProjectId,
                 fileDescriptor.AssetId,
                 fileDescriptor.AssetVersion,
                 fileDescriptor.DatasetId,
@@ -112,9 +142,9 @@ namespace Unity.Cloud.Assets
 
         async Task<Uri> GetFileUrlAsync(ApiRequest request, CancellationToken cancellationToken)
         {
-            var response = await RateLimitedServiceClient(request, HttpMethod.Get).GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(), cancellationToken);
+            using var response = await RateLimitedServiceClient(request, HttpMethod.Get).GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(), cancellationToken);
 
-            var jsonContent = await response.GetContentAsString();
+            var jsonContent = await response.GetContentAsStringAsync();
             cancellationToken.ThrowIfCancellationRequested();
 
             var dto = JsonSerialization.Deserialize<FileUrl>(jsonContent);
@@ -123,7 +153,7 @@ namespace Unity.Cloud.Assets
         }
 
         /// <inheritdoc />
-        public Task FinalizeFileUploadAsync(FileDescriptor fileDescriptor, bool disableAutomaticTransformations, CancellationToken cancellationToken)
+        public async Task FinalizeFileUploadAsync(FileDescriptor fileDescriptor, bool disableAutomaticTransformations, CancellationToken cancellationToken)
         {
             var request = new FinalizeFileUploadRequest(fileDescriptor.ProjectId,
                 fileDescriptor.AssetId,
@@ -132,7 +162,7 @@ namespace Unity.Cloud.Assets
                 fileDescriptor.Path,
                 disableAutomaticTransformations);
 
-            return RateLimitedServiceClient(request, HttpMethod.Post).PostAsync(GetPublicRequestUri(request), request.ConstructBody(),
+            using var _ = await RateLimitedServiceClient(request, HttpMethod.Post).PostAsync(GetPublicRequestUri(request), request.ConstructBody(),
                 ServiceHttpClientOptions.Default(), cancellationToken);
         }
 
@@ -146,10 +176,10 @@ namespace Unity.Cloud.Assets
                 fileDescriptor.AssetVersion,
                 fileDescriptor.DatasetId,
                 fileDescriptor.Path);
-            var response = await RateLimitedServiceClient(request, HttpMethod.Get).GetAsync(GetPublicRequestUri(request),
+            using var response = await RateLimitedServiceClient(request, HttpMethod.Get).GetAsync(GetPublicRequestUri(request),
                 ServiceHttpClientOptions.Default(), cancellationToken);
 
-            var jsonContent = await response.GetContentAsString();
+            var jsonContent = await response.GetContentAsStringAsync();
             cancellationToken.ThrowIfCancellationRequested();
 
             var dto = JsonSerialization.Deserialize<FileTags>(jsonContent);
@@ -158,7 +188,7 @@ namespace Unity.Cloud.Assets
         }
 
         /// <inheritdoc />
-        public Task RemoveFileMetadataAsync(FileDescriptor fileDescriptor, string metadataType, IEnumerable<string> keys, CancellationToken cancellationToken)
+        public async Task RemoveFileMetadataAsync(FileDescriptor fileDescriptor, string metadataType, IEnumerable<string> keys, CancellationToken cancellationToken)
         {
             var request = new RemoveMetadataRequest(fileDescriptor.ProjectId,
                 fileDescriptor.AssetId,
@@ -167,7 +197,7 @@ namespace Unity.Cloud.Assets
                 fileDescriptor.Path,
                 metadataType,
                 keys);
-            return RateLimitedServiceClient(request, HttpMethod.Delete).DeleteAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(), cancellationToken);
+            using var _ = await RateLimitedServiceClient(request, HttpMethod.Delete).DeleteAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(), cancellationToken);
         }
     }
 }

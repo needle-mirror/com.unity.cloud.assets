@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Unity.Cloud.Common;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -142,11 +143,13 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
 
         async void RemoveAssetFromCollection(IAsset asset)
         {
-            await SelectedCollection.UnlinkAssetsAsync(new[] {asset},
-                CancellationToken.None);
+            await SelectedCollection.UnlinkAssetsAsync(new[] {asset}, CancellationToken.None);
+
+            // Collections take a moment to update
+            await UnityTask.Delay(1000);
 
             // Refresh the asset
-            _ = asset.RefreshAsync(default);
+            await asset.RefreshAsync(default);
 
             // Refresh the list of assets in the collection
             OnCollectionSelected();
@@ -157,10 +160,16 @@ namespace Unity.Cloud.Assets.Samples.CollectionManagement
             var enumerable = assets as IAsset[] ?? assets.ToArray();
             await SelectedCollection.LinkAssetsAsync(enumerable, CancellationToken.None);
 
+            // Collections take a moment to update
+            await UnityTask.Delay(1000);
+
+            var refreshTasks = new List<Task>();
             foreach (var asset in enumerable)
             {
-                _ = asset.RefreshAsync(default);
+                refreshTasks.Add(asset.RefreshAsync(default));
             }
+
+            await Task.WhenAll(refreshTasks);
 
             // Refresh the list of assets in the collection
             OnCollectionSelected();
