@@ -50,43 +50,29 @@ namespace Unity.Cloud.Documentation.Assets
 
         IAsset m_CurrentAsset;
         AssetUpdate m_AssetUpdate;
-        string m_TagsString = string.Empty;
+        string m_TagsString = null;
 
         public void OnGUI()
         {
             if (m_Behaviour.CurrentAsset == null) return;
 
-            if (!m_Behaviour.TryGetAssetProperties(m_Behaviour.CurrentAsset.Descriptor.AssetVersion, out var properties))
-            {
-                GUILayout.Label(" ! Asset properties not loaded !");
-                return;
-            }
-
             if (!m_Behaviour.CurrentAsset.Equals(m_CurrentAsset))
             {
                 m_CurrentAsset = m_Behaviour.CurrentAsset;
-                m_AssetUpdate = new AssetUpdate
-                {
-                    Name = properties.Name,
-                    Tags = properties.Tags?.ToList() ?? new List<string>(),
-                    PreviewFile = properties.PreviewFileDescriptor?.Path ?? "",
-                    Description = properties.Description,
-                };
-                m_TagsString = string.Join(',', m_AssetUpdate.Tags);
+                m_AssetUpdate = null;
+                m_TagsString = null;
             }
 
             GUILayout.BeginVertical();
 
-            if (m_AssetUpdate == null)
+            if (!m_Behaviour.TryGetAssetProperties(m_Behaviour.CurrentAsset.Descriptor.AssetVersion, out var properties))
             {
-                GUILayout.Label("Loading...");
+                GUILayout.Label("Loading... ");
+                GUILayout.EndVertical();
+                return;
             }
-            else
-            {
-                GUI.enabled = properties.State == AssetState.Unfrozen;
-                DisplayAsset(properties);
-                GUI.enabled = true;
-            }
+
+            DisplayAsset(properties);
 
             GUILayout.EndVertical();
         }
@@ -97,7 +83,12 @@ namespace Unity.Cloud.Documentation.Assets
 
             GUILayout.Label("Name:", s_LabelWidth);
 
-            m_AssetUpdate.Name = GUILayout.TextField(m_AssetUpdate.Name);
+            var name = GUILayout.TextField(m_AssetUpdate?.Name ?? assetProperties.Name);
+            if (name != assetProperties.Name)
+            {
+                m_AssetUpdate ??= new AssetUpdate();
+                m_AssetUpdate.Name = name;
+            }
 
             GUILayout.EndHorizontal();
 
@@ -105,10 +96,11 @@ namespace Unity.Cloud.Documentation.Assets
 
             GUILayout.Label("Type:", s_LabelWidth);
 
-            var typeIndex = m_AssetUpdate.Type.HasValue ? (int) m_AssetUpdate.Type.Value : (int) assetProperties.Type;
+            var typeIndex = m_AssetUpdate?.Type != null ? (int) m_AssetUpdate.Type.Value : (int) assetProperties.Type;
             typeIndex = GUILayout.SelectionGrid(typeIndex, m_AssetTypeList, 3, GUILayout.ExpandWidth(true));
             if (typeIndex != -1 && assetProperties.Type != (AssetType) typeIndex)
             {
+                m_AssetUpdate ??= new AssetUpdate();
                 m_AssetUpdate.Type = (AssetType) typeIndex;
             }
 
@@ -117,11 +109,23 @@ namespace Unity.Cloud.Documentation.Assets
             GUILayout.BeginHorizontal();
 
             GUILayout.Label("Tags:", s_LabelWidth);
-            m_TagsString = GUILayout.TextField(m_TagsString);
-            m_AssetUpdate.Tags = m_TagsString.Split(',')
-                .Select(tag => tag.Trim())
-                .Where(tag => !string.IsNullOrEmpty(tag))
-                .ToList();
+
+            if (m_TagsString == null)
+            {
+                m_TagsString = string.Join(',', m_AssetUpdate?.Tags ?? assetProperties.Tags ?? new List<string>());
+            }
+            
+            var tagsString = GUILayout.TextField(m_TagsString);
+            if (tagsString != m_TagsString)
+            {
+                m_TagsString = tagsString;
+
+                m_AssetUpdate ??= new AssetUpdate();
+                m_AssetUpdate.Tags = m_TagsString.Split(',')
+                    .Select(tag => tag.Trim())
+                    .Where(tag => !string.IsNullOrEmpty(tag))
+                    .ToList();
+            }
 
             GUILayout.EndHorizontal();
 
@@ -138,17 +142,32 @@ namespace Unity.Cloud.Documentation.Assets
 
             GUILayout.Label("Preview:", s_LabelWidth);
 
-            m_AssetUpdate.PreviewFile = GUILayout.TextField(m_AssetUpdate.PreviewFile);
+            var originalPreviewFile = m_AssetUpdate?.PreviewFile ?? assetProperties.PreviewFileDescriptor?.Path ?? string.Empty;
+            var previewFile = GUILayout.TextField(originalPreviewFile);
+            if (previewFile != originalPreviewFile)
+            {
+                m_AssetUpdate ??= new AssetUpdate();
+                m_AssetUpdate.PreviewFile = previewFile;
+            }
 
             GUILayout.EndHorizontal();
 
             GUILayout.Label("Description:");
-            m_AssetUpdate.Description = GUILayout.TextArea(m_AssetUpdate.Description);
+            var description = GUILayout.TextArea(m_AssetUpdate?.Description ?? assetProperties.Description);
+            if (description != assetProperties.Description)
+            {
+                m_AssetUpdate ??= new AssetUpdate();
+                m_AssetUpdate.Description = description;
+            }
+
+            GUI.enabled = m_AssetUpdate != null;
 
             if (GUILayout.Button("Update"))
             {
                 _ = m_Behaviour.UpdateAssetAsync(m_AssetUpdate);
             }
+
+            GUI.enabled = true;
         }
 
         #endregion

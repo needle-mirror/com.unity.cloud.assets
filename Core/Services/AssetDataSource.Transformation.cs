@@ -16,7 +16,7 @@ namespace Unity.Cloud.Assets
             cancellationToken.ThrowIfCancellationRequested();
 
             var request = new StartTransformationRequest(workflowType, inputFiles, parameters, datasetDescriptor.ProjectId, datasetDescriptor.AssetId, datasetDescriptor.AssetVersion, datasetDescriptor.DatasetId);
-            using var response = await RateLimitedServiceClient(request, HttpMethod.Post).PostAsync(GetPublicRequestUri(request), request.ConstructBody(),
+            using var response = await m_ServiceHttpClient.PostAsync(GetPublicRequestUri(request), request.ConstructBody(),
                 ServiceHttpClientOptions.Default(), cancellationToken);
 
             var jsonContent = await response.GetContentAsStringAsync();
@@ -36,7 +36,7 @@ namespace Unity.Cloud.Assets
                 transformationDescriptor.ProjectId, transformationDescriptor.AssetId,
                 transformationDescriptor.AssetVersion, transformationDescriptor.DatasetId);
 
-            using var response = await RateLimitedServiceClient(request, HttpMethod.Get).GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(), cancellationToken);
+            using var response = await m_ServiceHttpClient.GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(), cancellationToken);
 
             var jsonContent = await response.GetContentAsStringAsync();
             cancellationToken.ThrowIfCancellationRequested();
@@ -45,26 +45,13 @@ namespace Unity.Cloud.Assets
         }
 
         /// <inheritdoc/>
-        public async IAsyncEnumerable<ITransformationData> GetTransformationsAsync(ProjectDescriptor projectDescriptor, Range range, TransformationSearchData searchData, [EnumeratorCancellation] CancellationToken cancellationToken)
+        public IAsyncEnumerable<ITransformationData> GetTransformationsAsync(ProjectDescriptor projectDescriptor, Range range, TransformationSearchData searchData, CancellationToken cancellationToken)
         {
-            cancellationToken.ThrowIfCancellationRequested();
+            return ListEntitiesAsync<TransformationData>(GetListRequest, range, cancellationToken, 100);
 
-            var (start, length) = range.GetValidatedOffsetAndLength(int.MaxValue);
-
-            if (length == 0) yield break;
-
-            var request = new SearchTransformationRequest(projectDescriptor.ProjectId, searchData);
-            using var response = await RateLimitedServiceClient(request, HttpMethod.Get).GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(), cancellationToken);
-
-            var jsonContent = await response.GetContentAsStringAsync();
-            cancellationToken.ThrowIfCancellationRequested();
-
-            var transformations = IsolatedSerialization.DeserializeWithDefaultConverters<TransformationData[]>(jsonContent);
-            for (var i = start; i < transformations.Length && i < start + length; ++i)
+            ApiRequest GetListRequest(int offset, int pageSize)
             {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                yield return transformations[i];
+                return new SearchTransformationRequest(projectDescriptor.ProjectId, searchData, offset, pageSize);
             }
         }
 
@@ -74,7 +61,7 @@ namespace Unity.Cloud.Assets
             cancellationToken.ThrowIfCancellationRequested();
 
             var request = new TerminateTransformationRequest(projectDescriptor.ProjectId, transformationId);
-            using var _ = await RateLimitedServiceClient(request, HttpMethod.Post).PostAsync(GetPublicRequestUri(request), request.ConstructBody(), ServiceHttpClientOptions.Default(), cancellationToken);
+            using var _ = await m_ServiceHttpClient.PostAsync(GetPublicRequestUri(request), request.ConstructBody(), ServiceHttpClientOptions.Default(), cancellationToken);
         }
     }
 }

@@ -40,13 +40,24 @@ namespace Unity.Cloud.Assets
         /// <param name="projectId">ID of the project.</param>
         /// <param name="assetId">ID of the asset the file is linked to.</param>
         /// <param name="assetVersion">The version of the asset the file is linked to.</param>
-        /// <param name="data">The data of the asset.</param>
-        public AssetRequest(ProjectId projectId, AssetId assetId, AssetVersion assetVersion, IAssetBaseData data = null)
+        public AssetRequest(ProjectId projectId, AssetId assetId, AssetVersion assetVersion)
             : this(projectId, assetId)
         {
             m_RequestUrl += $"/versions/{assetVersion}";
+        }
 
+        /// <summary>
+        /// Creates an instance of a <see cref="AssetRequest"/> for an asset version in project.
+        /// </summary>
+        /// <param name="projectId">ID of the project.</param>
+        /// <param name="assetId">ID of the asset the file is linked to.</param>
+        /// <param name="assetVersion">The version of the asset the file is linked to.</param>
+        /// <param name="data">The data of the asset.</param>
+        public AssetRequest(ProjectId projectId, AssetId assetId, AssetVersion assetVersion, IAssetBaseData data)
+            : this(projectId, assetId, assetVersion)
+        {
             m_Data = data;
+            AddParamToQuery("updateEvenIfFrozen", true.ToString().ToLowerInvariant());
         }
 
         /// <summary>
@@ -55,13 +66,10 @@ namespace Unity.Cloud.Assets
         /// <param name="assetLibraryId">ID of the library</param>
         /// <param name="assetId">ID of the asset</param>
         /// <param name="assetVersion">Version of the asset</param>
-        /// <param name="data">The data of the asset.</param>
-        protected AssetRequest(AssetLibraryId assetLibraryId, AssetId assetId, AssetVersion assetVersion, IAssetBaseData data = null)
+        protected AssetRequest(AssetLibraryId assetLibraryId, AssetId assetId, AssetVersion assetVersion)
             : this(assetLibraryId, assetId)
         {
             m_RequestUrl += $"/versions/{assetVersion}";
-
-            m_Data = data;
         }
 
         /// <summary>

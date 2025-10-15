@@ -102,7 +102,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             m_DatasetTagsField.UnregisterCallback<FocusInEvent>(AddEditableTags);
         }
 
-        public void OpenDataset(IDataset dataset, bool canUpdate)
+        public void OpenDataset(IDataset dataset, bool isUnfrozenVersion)
         {
             ClearInformation();
 
@@ -112,18 +112,18 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             m_CurrentDataset = dataset;
             m_DatasetUpdate = new DatasetUpdate();
 
-            m_SaveDatasetButton.SetEnabled(canUpdate);
-            m_GeneratePreviewButton.SetEnabled(canUpdate);
-            m_DatasetTagsField.Show(canUpdate);
+            m_SaveDatasetButton.SetEnabled(true);
+            m_GeneratePreviewButton.SetEnabled(isUnfrozenVersion);
+            m_DatasetTagsField.Show(true);
 
-            m_DatasetNameField.SetEnabled(canUpdate);
-            m_DatasetDescriptionField.SetEnabled(canUpdate);
-            m_DatasetVisibleToggle.SetEnabled(canUpdate);
+            m_DatasetNameField.SetEnabled(true);
+            m_DatasetDescriptionField.SetEnabled(true);
+            m_DatasetVisibleToggle.SetEnabled(true);
 
-            _ = PopulateAsync(dataset, canUpdate, default);
+            _ = PopulateAsync(dataset, isUnfrozenVersion, default);
 
-            _ = m_FileController.ListExistingFiles(dataset, canUpdate);
-            _ = m_MetadataController.PopulateMetadataAsync(dataset, canUpdate);
+            _ = m_FileController.ListExistingFiles(dataset, isUnfrozenVersion);
+            _ = m_MetadataController.PopulateMetadataAsync(dataset);
             _ = m_TransformationController.PopulateTransformationProgress(dataset);
         }
 

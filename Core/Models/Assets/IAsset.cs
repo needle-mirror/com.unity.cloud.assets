@@ -213,14 +213,34 @@ namespace Unity.Cloud.Assets
         Task<AssetProperties> GetPropertiesAsync(CancellationToken cancellationToken) => throw new NotImplementedException();
 
         /// <summary>
+        /// Returns an object that can be used to query the asset's update history.
+        /// </summary>
+        /// <returns>A <see cref="AssetUpdateHistoryQueryBuilder"/>. </returns>
+        AssetUpdateHistoryQueryBuilder QueryUpdateHistory() => throw new NotImplementedException();
+
+        /// <summary>
+        /// Returns the update history for the specified sequence number.
+        /// </summary>
+        /// <param name="sequenceNumber">The sequence number of the history entry. </param>
+        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
+        /// <returns>A task whose result is an <see cref="AssetUpdateHistory"/>. </returns>
+        Task<AssetUpdateHistory> GetUpdateHistoryAsync(int sequenceNumber, CancellationToken cancellationToken) => throw new NotImplementedException();
+
+        /// <summary>
         /// Updates the asset.
         /// </summary>
         /// <param name="assetUpdate">The object containing information to update this version of the asset. </param>
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task with no result. </returns>
-        /// <exception cref="InvalidArgumentException">If the asset is frozen, because it cannot be modified. </exception>
-        /// <remarks>Can only be called on a version that is unfrozen. </remarks>
         Task UpdateAsync(IAssetUpdate assetUpdate, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Updates the asset to the state it had at the specified update history sequence number.
+        /// </summary>
+        /// <param name="updateHistorySequenceNumber">The sequence number of the update history entry to revert to. </param>
+        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
+        /// <returns>A task with no result. </returns>
+        Task UpdateAsync(int updateHistorySequenceNumber, CancellationToken cancellationToken) => throw new NotImplementedException();
 
         /// <summary>
         /// Updates the asset's status.
@@ -268,7 +288,7 @@ namespace Unity.Cloud.Assets
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task whose result is a frozen sequence number. </returns>
         /// <exception cref="InvalidArgumentException">If the asset is frozen, because it cannot be re-submitted. </exception>
-        /// <exception cref="InvalidArgumentException">If there are on-going transformations. </exception>
+        /// <exception cref="InvalidArgumentException">If there are ongoing transformations. </exception>
         /// <remarks>Can only be called on a version that is unfrozen. </remarks>
         [Obsolete("Use FreezeAsync(IAssetFreeze, CancellationToken) instead.")]
         Task<int> FreezeAsync(string changeLog, CancellationToken cancellationToken) => throw new NotImplementedException();

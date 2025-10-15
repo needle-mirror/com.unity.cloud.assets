@@ -188,6 +188,42 @@ namespace Unity.Cloud.Assets
         }
 
         /// <inheritdoc />
+        public AssetUpdateHistoryQueryBuilder QueryUpdateHistory()
+        {
+            ThrowIfPathToLibrary();
+
+            return new AssetUpdateHistoryQueryBuilder(m_DataSource, Descriptor);
+        }
+
+        /// <inheritdoc />
+        public async Task<AssetUpdateHistory> GetUpdateHistoryAsync(int sequenceNumber, CancellationToken cancellationToken)
+        {
+            ThrowIfPathToLibrary();
+
+            var count = await m_DataSource.GetMetadataHistoryCountAsync(Descriptor, cancellationToken);
+
+            if (sequenceNumber < 0 || sequenceNumber >= count)
+            {
+                throw new InvalidArgumentException($"The sequence number must be between 0 and {count}.");
+            }
+
+            var range = new Range(count - 1 - sequenceNumber, count - sequenceNumber);
+            var query = m_DataSource
+                .ListMetadataHistoryAsync(Descriptor, new PaginationData {Range = range}, true, cancellationToken)
+                .GetAsyncEnumerator(cancellationToken);
+
+            if (await query.MoveNextAsync())
+            {
+                if (query.Current.MetadataSequenceNumber == sequenceNumber)
+                {
+                    return query.Current.From(m_DataSource, Descriptor);
+                }
+            }
+
+            throw new NotFoundException($"History with sequence number {sequenceNumber} not found for asset.");
+        }
+
+        /// <inheritdoc />
         public async Task UpdateAsync(IAssetUpdate assetUpdate, CancellationToken cancellationToken)
         {
             ThrowIfPathToLibrary();
@@ -202,6 +238,14 @@ namespace Unity.Cloud.Assets
             {
                 await m_DataSource.UpdateAssetStatusFlowAsync(Descriptor, assetUpdate.StatusFlowDescriptor.Value, cancellationToken);
             }
+        }
+
+        /// <inheritdoc />
+        public Task UpdateAsync(int updateHistorySequenceNumber, CancellationToken cancellationToken)
+        {
+            ThrowIfPathToLibrary();
+
+            return m_DataSource.RollbackMetadataHistoryAsync(Descriptor, updateHistorySequenceNumber, cancellationToken);
         }
 
         /// <inheritdoc />
@@ -333,7 +377,7 @@ namespace Unity.Cloud.Assets
         public async Task<IDictionary<string, Uri>> GetAssetDownloadUrlsAsync(CancellationToken cancellationToken)
         {
             var enumerable = m_DataSource.GetAssetDownloadUrlsAsync(Descriptor, null, Range.All, cancellationToken);
-            
+
             var urls = new Dictionary<string, Uri>();
             await foreach (var url in enumerable)
             {

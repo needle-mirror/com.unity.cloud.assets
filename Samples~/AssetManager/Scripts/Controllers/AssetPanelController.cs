@@ -83,7 +83,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
         IAsset m_CurrentAsset;
         AssetProperties m_CurrentAssetProperties;
-        bool m_IsEditable;
+
         AssetUpdate m_AssetUpdate;
         MetadataController m_MetadataController;
         string m_SelectedStatus;
@@ -181,7 +181,8 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
                 {
                     m_SelectedStatus = null;
                 }
-                m_SaveButton.SetEnabled(m_IsEditable || m_SelectedStatus != null);
+
+                m_SaveButton.SetEnabled(m_SelectedStatus != null);
             });
 
             m_SaveButton.RegisterCallback<ClickEvent>(_ => AsyncAction(UpdateAssetAsync));
@@ -204,7 +205,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
             _ = PopulateAsync(asset, token);
 
-            _ = m_MetadataController.PopulateMetadataAsync(asset, m_IsEditable);
+            _ = m_MetadataController.PopulateMetadataAsync(asset);
         }
 
         public void Clear()
@@ -221,24 +222,23 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
             if (token.IsCancellationRequested) return;
 
-            m_IsEditable = m_CurrentAssetProperties is {State: AssetState.Unfrozen};
             m_AssetUpdate = new AssetUpdate();
 
-            m_SaveButton.SetEnabled(m_IsEditable);
-            m_FreezeButton.Show(m_IsEditable);
-            m_UnfreezeButton.Show(!m_IsEditable);
-            m_CreateDatasetButton.Show(m_IsEditable);
+            m_SaveButton.SetEnabled(true);
+            m_FreezeButton.Show(m_CurrentAssetProperties is {State: AssetState.Unfrozen});
+            m_UnfreezeButton.Show(m_CurrentAssetProperties is {State: AssetState.Frozen});
+            m_CreateDatasetButton.Show(true);
 
             m_AssetNameField.SetValueWithoutNotify(m_CurrentAssetProperties.Name);
-            m_AssetNameField.SetEnabled(m_IsEditable);
+            m_AssetNameField.SetEnabled(true);
             m_AssetTypeDropdown.SetValueWithoutNotify(m_CurrentAssetProperties.Type);
-            m_AssetTypeDropdown.SetEnabled(m_IsEditable);
+            m_AssetTypeDropdown.SetEnabled(true);
             m_AssetDescriptionField.SetValueWithoutNotify(m_CurrentAssetProperties.Description);
-            m_AssetDescriptionField.SetEnabled(m_IsEditable);
+            m_AssetDescriptionField.SetEnabled(true);
 
-            m_AssetTagsField.Show(m_IsEditable);
+            m_AssetTagsField.Show(true);
 
-            Action<string> addTagAction = tag => m_AssetTagsContainer.AddTag(tag, m_AssetTagsTemplate, m_IsEditable ? OnTagRemoved : null);
+            Action<string> addTagAction = tag => m_AssetTagsContainer.AddTag(tag, m_AssetTagsTemplate, OnTagRemoved);
             addTagAction.AddTags(m_CurrentAssetProperties.Tags?.ToList() ?? new List<string>());
 
             foreach (var label in m_CurrentAssetProperties.Labels)
@@ -257,7 +257,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
             await Task.WhenAll(
                 ListReachableStatusesAsync(token),
-                ListDatasets(asset, m_IsEditable, token),
+                ListDatasets(asset, m_CurrentAssetProperties is {State: AssetState.Unfrozen}, token),
                 ListVersions(asset, token),
                 ListReferences(asset, token)
             );
@@ -296,21 +296,21 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
         void ChangeButtonEnabledState(bool state)
         {
             m_CreateDatasetButton.SetEnabled(state);
-            m_SaveButton.SetEnabled(m_IsEditable && state);
+            m_SaveButton.SetEnabled(state);
             m_FreezeButton.SetEnabled(state);
             m_UnfreezeButton.SetEnabled(state);
             m_BackButton.SetEnabled(state);
         }
 
         void AddEditableTags(FocusInEvent _) => m_AssetTagsField.ParseTags(AddEditableTag);
-        
+
         void AddEditableTag(string tag)
         {
             m_AssetUpdate.Tags ??= m_CurrentAssetProperties.Tags?.ToList() ?? new List<string>();
             m_AssetUpdate.Tags.Add(tag);
             m_AssetTagsContainer.AddTag(tag, m_AssetTagsTemplate, OnTagRemoved);
         }
-        
+
         void OnTagRemoved(string tag)
         {
             m_AssetUpdate.Tags ??= m_CurrentAssetProperties.Tags?.ToList() ?? new List<string>();
@@ -440,6 +440,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
                     {
                         reference = await m_CurrentAsset.AddReferenceAsync(assetId, label, default);
                     }
+
                     _ = AddReferenceRow(targetFoldout, reference.ProjectDescriptor, reference.ReferenceId, reference.TargetAssetId, reference.TargetAssetVersion, reference.TargetLabel);
                 });
             };
@@ -521,13 +522,10 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
             var updateTasks = new List<Task>();
 
-            if (m_IsEditable)
-            {
-                if (PrepareAssetUpdateAsync != null) await PrepareAssetUpdateAsync.Invoke();
+            if (PrepareAssetUpdateAsync != null) await PrepareAssetUpdateAsync.Invoke();
 
-                updateTasks.Add(m_CurrentAsset.UpdateAsync(m_AssetUpdate, default));
-                updateTasks.Add(m_MetadataController.UpdateMetadataAsync(default));
-            }
+            updateTasks.Add(m_CurrentAsset.UpdateAsync(m_AssetUpdate, default));
+            updateTasks.Add(m_MetadataController.UpdateMetadataAsync(default));
 
             if (m_SelectedStatus != null)
             {

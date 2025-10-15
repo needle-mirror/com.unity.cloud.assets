@@ -20,13 +20,26 @@ namespace Unity.Cloud.Assets
         /// <param name="assetVersion">The version of the asset the file will link to.</param>
         /// <param name="datasetId">ID the dataset. </param>
         /// <param name="filePath">The path to the file in the dataset.</param>
-        /// <param name="data">The object containing the data of the file.</param>
-        public FileRequest(ProjectId projectId, AssetId assetId, AssetVersion assetVersion, DatasetId datasetId, string filePath, IFileBaseData data = null)
+        public FileRequest(ProjectId projectId, AssetId assetId, AssetVersion assetVersion, DatasetId datasetId, string filePath)
             : base(projectId, assetId, assetVersion, datasetId)
         {
             m_RequestUrl += $"/files/{Uri.EscapeDataString(filePath)}";
+        }
 
+        /// <summary>
+        /// Creates an instance of a <see cref="FileRequest"/> for a file in a project.
+        /// </summary>
+        /// <param name="projectId">ID of the project.</param>
+        /// <param name="assetId">ID the asset the file will link to.</param>
+        /// <param name="assetVersion">The version of the asset the file will link to.</param>
+        /// <param name="datasetId">ID the dataset. </param>
+        /// <param name="filePath">The path to the file in the dataset.</param>
+        /// <param name="data">The object containing the data of the file.</param>
+        public FileRequest(ProjectId projectId, AssetId assetId, AssetVersion assetVersion, DatasetId datasetId, string filePath, IFileBaseData data)
+            : this(projectId, assetId, assetVersion, datasetId, filePath)
+        {
             m_Data = data;
+            AddParamToQuery("updateEvenIfFrozen", true.ToString().ToLowerInvariant());
         }
 
         /// <summary>
@@ -37,13 +50,10 @@ namespace Unity.Cloud.Assets
         /// <param name="assetVersion">The version of the asset the file will link to.</param>
         /// <param name="datasetId">ID the dataset. </param>
         /// <param name="filePath">The path to the file in the dataset.</param>
-        /// <param name="data">The object containing the data of the file.</param>
-        public FileRequest(AssetLibraryId assetLibraryId, AssetId assetId, AssetVersion assetVersion, DatasetId datasetId, string filePath, IFileBaseData data = null)
+        protected FileRequest(AssetLibraryId assetLibraryId, AssetId assetId, AssetVersion assetVersion, DatasetId datasetId, string filePath)
             : base(assetLibraryId, assetId, assetVersion, datasetId)
         {
             m_RequestUrl += $"/files/{Uri.EscapeDataString(filePath)}";
-
-            m_Data = data;
         }
 
         /// <summary>
@@ -101,6 +111,13 @@ namespace Unity.Cloud.Assets
 
             AddParamToQuery("Limit", limit?.ToString());
             AddParamToQuery("Token", token);
+        }
+
+        public static FileRequest GetContentUpdateRequest(ProjectId projectId, AssetId assetId, AssetVersion assetVersion, DatasetId datasetId, string filePath, IFileBaseData data = null)
+        {
+            var request = new FileRequest(projectId, assetId, assetVersion, datasetId, filePath, data);
+            request.m_RequestUrl += "/content";
+            return request;
         }
 
         /// <inheritdoc />

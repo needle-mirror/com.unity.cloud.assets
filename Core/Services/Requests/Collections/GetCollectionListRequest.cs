@@ -11,23 +11,27 @@ namespace Unity.Cloud.Assets
         /// Creates an instance of a <see cref="GetCollectionListRequest"/> for a project.
         /// </summary>
         /// <param name="projectId">ID of the project</param>
-        public GetCollectionListRequest(ProjectId projectId)
+        /// <param name="offset">The pagination offset.</param>
+        /// <param name="limit">The limit of returning records for pagination.</param>
+        public GetCollectionListRequest(ProjectId projectId, int offset, int limit)
             : base(projectId)
         {
             m_RequestUrl += "/collections";
+            AddParamToQuery("offset", offset.ToString());
+            AddParamToQuery("limit", limit.ToString());
         }
 
         /// <summary>
         /// Creates an instance of a <see cref="GetCollectionListRequest"/> for a library.
         /// </summary>
         /// <param name="assetLibraryId">ID of the library</param>
-        /// <param name="offest">The pagination offset.</param>
+        /// <param name="offset">The pagination offset.</param>
         /// <param name="limit">The limit of returning records for pagination.</param>
-        public GetCollectionListRequest(AssetLibraryId assetLibraryId, int? offest, int? limit)
+        public GetCollectionListRequest(AssetLibraryId assetLibraryId, int offset, int limit)
             : base(assetLibraryId)
         {
             m_RequestUrl += "/collections";
-            AddParamToQuery("offset", offest.ToString());
+            AddParamToQuery("offset", offset.ToString());
             AddParamToQuery("limit", limit.ToString());
         }
     }

@@ -7,6 +7,9 @@ using Unity.Cloud.Common;
 
 namespace Unity.Cloud.Assets
 {
+    /// <summary>
+    /// The interface representing an asset version's file.
+    /// </summary>
     public interface IFile
     {
         /// <summary>
@@ -103,6 +106,20 @@ namespace Unity.Cloud.Assets
         Task<FileProperties> GetPropertiesAsync(CancellationToken cancellationToken) => throw new NotImplementedException();
 
         /// <summary>
+        /// Returns an object that can be used to query the file's update history.
+        /// </summary>
+        /// <returns>A <see cref="FileUpdateHistoryQueryBuilder"/>. </returns>
+        FileUpdateHistoryQueryBuilder QueryUpdateHistory() => throw new NotImplementedException();
+
+        /// <summary>
+        /// Returns the update history for the specified sequence number.
+        /// </summary>
+        /// <param name="sequenceNumber">The sequence number of the history entry. </param>
+        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
+        /// <returns>A task whose result is an <see cref="FileUpdateHistory"/>. </returns>
+        Task<FileUpdateHistory> GetUpdateHistoryAsync(int sequenceNumber, CancellationToken cancellationToken) => throw new NotImplementedException();
+
+        /// <summary>
         /// Returns a file in the context of the specified dataset.
         /// </summary>
         /// <param name="datasetDescriptor">The descriptor of the dataset. </param>
@@ -175,9 +192,15 @@ namespace Unity.Cloud.Assets
         /// <param name="fileUpdate">The object containing the necessary information to update the file. </param>
         /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
         /// <returns>A task with no result. </returns>
-        /// <exception cref="InvalidArgumentException">If this version of the asset is frozen, because it cannot be modified. </exception>
-        /// <remarks>Can only be called if the version of the asset is unfrozen. </remarks>
         Task UpdateAsync(IFileUpdate fileUpdate, CancellationToken cancellationToken);
+        
+        /// <summary>
+        /// Updates the file to the state it had at the specified update history sequence number.
+        /// </summary>
+        /// <param name="updateHistorySequenceNumber">The sequence number of the update history entry to revert to. </param>
+        /// <param name="cancellationToken">A token that can be used to cancel the request. </param>
+        /// <returns>A task with no result. </returns>
+        Task UpdateAsync(int updateHistorySequenceNumber, CancellationToken cancellationToken) => throw new NotImplementedException();
 
         /// <summary>
         /// Generates tag suggestions for the image file.

@@ -36,30 +36,30 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             m_AddButton = addButton;
         }
 
-        public async Task PopulateMetadataAsync(IAsset asset, bool canUpdate)
+        public async Task PopulateMetadataAsync(IAsset asset)
         {
             var cancellationToken = RefreshCancellationToken();
 
-            await PopulateMetadataAsync(asset.SystemMetadata, cancellationToken, false);
+            await PopulateMetadataAsync(asset.SystemMetadata, cancellationToken);
 
             m_MetadataContainer = asset.Metadata;
 
-            m_AddButton.style.display = canUpdate ? DisplayStyle.Flex : DisplayStyle.None;
+            m_AddButton.style.display = DisplayStyle.Flex;
 
-            await PopulateMetadataAsync(m_MetadataContainer as IReadOnlyMetadataContainer, cancellationToken, canUpdate);
+            await PopulateMetadataAsync(m_MetadataContainer as IReadOnlyMetadataContainer, cancellationToken);
         }
 
-        public async Task PopulateMetadataAsync(IDataset dataset, bool canUpdate)
+        public async Task PopulateMetadataAsync(IDataset dataset)
         {
             var cancellationToken = RefreshCancellationToken();
 
-            await PopulateMetadataAsync(dataset.SystemMetadata, cancellationToken, false);
+            await PopulateMetadataAsync(dataset.SystemMetadata, cancellationToken);
 
             m_MetadataContainer = dataset.Metadata;
 
-            m_AddButton.style.display = canUpdate ? DisplayStyle.Flex : DisplayStyle.None;
+            m_AddButton.style.display = DisplayStyle.Flex;
 
-            await PopulateMetadataAsync(m_MetadataContainer as IReadOnlyMetadataContainer, cancellationToken, canUpdate);
+            await PopulateMetadataAsync(m_MetadataContainer as IReadOnlyMetadataContainer, cancellationToken);
         }
 
         public void Hide()
@@ -107,7 +107,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             }
         }
 
-        async Task PopulateMetadataAsync(IReadOnlyMetadataContainer metadataContainer, CancellationToken cancellationToken, bool canUpdate)
+        async Task PopulateMetadataAsync(IReadOnlyMetadataContainer metadataContainer, CancellationToken cancellationToken)
         {
             var metadata = metadataContainer.Query().ExecuteAsync(cancellationToken);
 
@@ -115,53 +115,53 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             {
                 m_MetadataKeys.Add(kvp.Key);
 
-                var visualElement = CreateMetadataElement(kvp.Key, canUpdate);
+                var visualElement = CreateMetadataElement(kvp.Key);
 
-                _ = ParseValueAsync(kvp.Key, kvp.Value, visualElement, canUpdate, cancellationToken);
+                _ = ParseValueAsync(kvp.Key, kvp.Value, visualElement, cancellationToken);
             }
         }
 
-        async Task ParseValueAsync(string key, MetadataValue value, VisualElement visualElement, bool canUpdate, CancellationToken cancellationToken)
+        async Task ParseValueAsync(string key, MetadataValue value, VisualElement visualElement, CancellationToken cancellationToken)
         {
             if (cancellationToken.IsCancellationRequested) return;
 
             switch (value.ValueType)
             {
                 case MetadataValueType.Unknown:
-                    await WaitOnUnknownAsync(key, value, visualElement, canUpdate, cancellationToken);
+                    await WaitOnUnknownAsync(key, value, visualElement, cancellationToken);
                     break;
 
                 case MetadataValueType.Boolean:
-                    PopulateBoolean(key, value.AsBoolean(), visualElement, canUpdate);
+                    PopulateBoolean(key, value.AsBoolean(), visualElement);
                     break;
 
                 case MetadataValueType.Number:
-                    PopulateNumber(key, value.AsNumber(), visualElement, canUpdate);
+                    PopulateNumber(key, value.AsNumber(), visualElement);
                     break;
 
                 case MetadataValueType.SingleSelection:
-                    await PopulateSingleSelectionAsync(key, null, value.AsSingleSelection(), visualElement, canUpdate);
+                    await PopulateSingleSelectionAsync(key, null, value.AsSingleSelection(), visualElement);
                     break;
 
                 case MetadataValueType.MultiSelection:
-                    await PoplateMultiSelectionAsync(key, null, value.AsMultiSelection(), visualElement, canUpdate);
+                    await PoplateMultiSelectionAsync(key, null, value.AsMultiSelection(), visualElement);
                     break;
 
                 case MetadataValueType.Url:
-                    PopulateUrl(key, value.AsUrl(), visualElement, canUpdate);
+                    PopulateUrl(key, value.AsUrl(), visualElement);
                     break;
 
                 case MetadataValueType.Timestamp:
-                    PopulateTimestamp(key, value.AsTimestamp(), visualElement, canUpdate);
+                    PopulateTimestamp(key, value.AsTimestamp(), visualElement);
                     break;
 
                 default:
-                    PopulateText(key, value.AsText(), visualElement, canUpdate);
+                    PopulateText(key, value.AsText(), visualElement);
                     break;
             }
         }
 
-        async Task WaitOnUnknownAsync(string key, MetadataValue value, VisualElement visualElement, bool canUpdate, CancellationToken cancellationToken)
+        async Task WaitOnUnknownAsync(string key, MetadataValue value, VisualElement visualElement, CancellationToken cancellationToken)
         {
             // Apply a timeout to prevent waiting forever
             var timeoutCancellationSource = new CancellationTokenSource(3000);
@@ -174,7 +174,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
             if (cancellationToken.IsCancellationRequested) return;
 
-            await ParseValueAsync(key, value, visualElement, canUpdate, cancellationToken);
+            await ParseValueAsync(key, value, visualElement, cancellationToken);
         }
 
         static void PopulateLabel(string value, VisualElement visualElement)
@@ -184,14 +184,8 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             label.text = value;
         }
 
-        void PopulateBoolean(string key, BooleanMetadata metadata, VisualElement visualElement, bool canUpdate = true)
+        void PopulateBoolean(string key, BooleanMetadata metadata, VisualElement visualElement)
         {
-            if (!canUpdate)
-            {
-                PopulateLabel(metadata.Value.ToString(), visualElement);
-                return;
-            }
-
             var boolField = visualElement.Q<Toggle>("Boolean");
             boolField.style.display = DisplayStyle.Flex;
 
@@ -203,14 +197,8 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             });
         }
 
-        void PopulateNumber(string key, NumberMetadata metadata, VisualElement visualElement, bool canUpdate = true)
+        void PopulateNumber(string key, NumberMetadata metadata, VisualElement visualElement)
         {
-            if (!canUpdate)
-            {
-                PopulateLabel(metadata.Value.ToString(), visualElement);
-                return;
-            }
-
             var numberField = visualElement.Q<DoubleField>("Number");
             numberField.style.display = DisplayStyle.Flex;
 
@@ -222,14 +210,8 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             });
         }
 
-        void PopulateTimestamp(string key, DateTimeMetadata metadata, VisualElement visualElement, bool canUpdate = true)
+        void PopulateTimestamp(string key, DateTimeMetadata metadata, VisualElement visualElement)
         {
-            if (!canUpdate)
-            {
-                PopulateLabel(metadata.Value.ToString(), visualElement);
-                return;
-            }
-
             var timestampField = visualElement.Q<TextField>("Text");
             timestampField.style.display = DisplayStyle.Flex;
 
@@ -244,14 +226,8 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             });
         }
 
-        void PopulateText(string key, StringMetadata metadata, VisualElement visualElement, bool canUpdate = true)
+        void PopulateText(string key, StringMetadata metadata, VisualElement visualElement)
         {
-            if (!canUpdate)
-            {
-                PopulateLabel(metadata.Value, visualElement);
-                return;
-            }
-
             var textField = visualElement.Q<TextField>("Text");
             textField.style.display = DisplayStyle.Flex;
 
@@ -263,14 +239,8 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             });
         }
 
-        async Task PopulateSingleSelectionAsync(string key, ISelectionFieldDefinition selectionFieldDefinition, SingleSelectionMetadata metadata, VisualElement visualElement, bool canUpdate = true)
+        async Task PopulateSingleSelectionAsync(string key, ISelectionFieldDefinition selectionFieldDefinition, SingleSelectionMetadata metadata, VisualElement visualElement)
         {
-            if (!canUpdate)
-            {
-                PopulateLabel(metadata.SelectedValue, visualElement);
-                return;
-            }
-
             var dropdownField = visualElement.Q<DropdownField>("SingleSelection");
             dropdownField.style.display = DisplayStyle.Flex;
 
@@ -293,14 +263,8 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             });
         }
 
-        async Task PoplateMultiSelectionAsync(string key, ISelectionFieldDefinition selectionFieldDefinition, MultiSelectionMetadata metadata, VisualElement visualElement, bool canUpdate = true)
+        async Task PoplateMultiSelectionAsync(string key, ISelectionFieldDefinition selectionFieldDefinition, MultiSelectionMetadata metadata, VisualElement visualElement)
         {
-            if (!canUpdate)
-            {
-                PopulateLabel(string.Join(", ", metadata.SelectedValues), visualElement);
-                return;
-            }
-
             var parent = visualElement.Q("MultiSelection");
 
             if (selectionFieldDefinition == null)
@@ -344,15 +308,8 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             }
         }
 
-        void PopulateUrl(string key, UrlMetadata metadata, VisualElement visualElement, bool canUpdate = true)
+        void PopulateUrl(string key, UrlMetadata metadata, VisualElement visualElement)
         {
-            if (!canUpdate)
-            {
-                var urlLabel = string.IsNullOrEmpty(metadata.Label) ? metadata.Uri.ToString() : metadata.Label;
-                PopulateLabel($"<a href=\"{metadata.Uri}\">{urlLabel}</a>", visualElement);
-                return;
-            }
-
             var urlField = visualElement.Q("Url");
             urlField.style.display = DisplayStyle.Flex;
 
@@ -443,7 +400,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             }
         }
 
-        VisualElement CreateMetadataElement(string key, bool canUpdate = true)
+        VisualElement CreateMetadataElement(string key)
         {
             var visualElement = m_Template.Instantiate();
             _ = GetDisplayNameAsync(visualElement.Q<Label>("MetadataKey"), key);
@@ -451,17 +408,13 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             m_ContentContainer.Add(visualElement);
 
             var contextMenu = new ContextMenuController(visualElement);
-            contextMenu.SetEnabled(canUpdate);
-            if (canUpdate)
+            contextMenu.RegisterButtonAction("Remove", () =>
             {
-                contextMenu.RegisterButtonAction("Remove", () =>
-                {
-                    m_MetadataKeysToRemove.Add(key);
-                    m_MetadataKeys.Remove(key);
-                    m_MetadataValues.Remove(key);
-                    m_ContentContainer.Remove(visualElement);
-                });
-            }
+                m_MetadataKeysToRemove.Add(key);
+                m_MetadataKeys.Remove(key);
+                m_MetadataValues.Remove(key);
+                m_ContentContainer.Remove(visualElement);
+            });
 
             return visualElement;
         }

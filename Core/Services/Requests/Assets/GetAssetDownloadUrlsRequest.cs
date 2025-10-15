@@ -39,7 +39,7 @@ namespace Unity.Cloud.Assets
         /// <param name="offset">The pagination offset.</param>
         /// <param name="limit">The limit of returning records for pagination.</param>
         /// <param name="maxDimension">The desired length to resize the larger image dimension to, while maintaining the same aspect ratio. </param>
-        public GetAssetDownloadUrlsRequest(AssetLibraryId assetLibraryId, AssetId assetId, AssetVersion assetVersion, DatasetId[] datasetIds, int? offset, int? limit, int? maxDimension)
+        public GetAssetDownloadUrlsRequest(AssetLibraryId assetLibraryId, AssetId assetId, AssetVersion assetVersion, DatasetId[] datasetIds, int offset, int limit, int? maxDimension)
             : base(assetLibraryId, assetId, assetVersion)
         {
             m_RequestUrl += "/download-urls";

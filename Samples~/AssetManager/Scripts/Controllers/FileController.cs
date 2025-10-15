@@ -92,9 +92,9 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             m_FileDeleteIcons.ForEach(button => button.SetEnabled(state));
         }
 
-        public async Task ListExistingFiles(IDataset dataset, bool canUpdate)
+        public async Task ListExistingFiles(IDataset dataset, bool isVersionUnfrozen)
         {
-            m_FileUpload.style.display = canUpdate ? DisplayStyle.Flex : DisplayStyle.None;
+            m_FileUpload.style.display = isVersionUnfrozen ? DisplayStyle.Flex : DisplayStyle.None;
 
             if (m_GetFilesCancellationTokenSource != null)
             {
@@ -104,7 +104,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
             m_GetFilesCancellationTokenSource = new CancellationTokenSource();
 
-            if (canUpdate)
+            if (isVersionUnfrozen)
             {
                 Show();
             }
@@ -115,7 +115,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
 
             await foreach (var file in dataset.ListFilesAsync(Range.All, m_GetFilesCancellationTokenSource.Token))
             {
-                AddFileRow(file, canUpdate);
+                AddFileRow(file, isVersionUnfrozen);
             }
         }
 
@@ -204,13 +204,13 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             await dataset.RemoveFileAsync(filePath, default);
         }
 
-        void AddFileRow(IFile file, bool canUpdate)
+        void AddFileRow(IFile file, bool isVersionUnfrozen)
         {
             var fileItem = new RowItem();
             fileItem.AddLabel(file.Descriptor.Path);
             fileItem.AddLabel("..", 80, "size");
 
-            if (canUpdate)
+            if (isVersionUnfrozen)
             {
                 var deleteButton = new VisualElement();
                 deleteButton.AddToClassList("delete-icon");

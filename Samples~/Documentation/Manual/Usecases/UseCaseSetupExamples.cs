@@ -99,15 +99,6 @@ namespace Unity.Cloud.Documentation.Assets
 
             #endregion
 
-            #region UseCaseReplaceFiles
-
-            m_UI.Add(new OrganizationSelectionExampleUI(m_Behaviour));
-            m_UI.Add(new ProjectSelectionExampleUI(m_Behaviour));
-            m_UI.Add(new AssetSelectionExampleUI(m_Behaviour));
-            m_UI.Add(new UseCaseFileReuploadExampleUI(m_Behaviour));
-
-            #endregion
-
             #region UseCaseFileManagement
 
             m_UI.Add(new OrganizationSelectionExampleUI(m_Behaviour));
@@ -141,6 +132,15 @@ namespace Unity.Cloud.Documentation.Assets
             m_UI.Add(new ProjectSelectionExampleUI(m_Behaviour));
             m_UI.Add(new AssetSelectionExampleUI(m_Behaviour));
             m_UI.Add(new UseCaseManageAssetReferencesExampleUI(m_Behaviour));
+
+            #endregion
+
+            #region UseCaseUpdateHistory
+
+            m_UI.Add(new OrganizationSelectionExampleUI(m_Behaviour));
+            m_UI.Add(new ProjectSelectionExampleUI(m_Behaviour));
+            m_UI.Add(new AssetSelectionExampleUI(m_Behaviour));
+            m_UI.Add(new UseCaseManageAssetUpdateHistoryExampleUI(m_Behaviour));
 
             #endregion
         }

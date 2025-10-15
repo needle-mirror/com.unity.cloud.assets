@@ -28,7 +28,7 @@ To list the existing field definitions in an Organization, follow these steps:
 
 The code snippet does the following:
 
-* Fills a list of field definitions of the selected organization.
+* Fills a list with field definitions of the selected organization.
 * Holds a reference to the selected field.
 * Holds a reference to the object that is used to update the field.
 

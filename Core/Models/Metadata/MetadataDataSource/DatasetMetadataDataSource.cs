@@ -10,7 +10,7 @@ namespace Unity.Cloud.Assets
     {
         readonly DatasetDescriptor m_Descriptor;
 
-        protected override OrganizationId OrganizationId => m_Descriptor.OrganizationId;
+        protected override AssetDescriptor AssetDescriptor => m_Descriptor.AssetDescriptor;
 
         internal DatasetMetadataDataSource(DatasetDescriptor datasetDescriptor, IAssetDataSource dataSource, MetadataDataSourceSpecification specification)
             : base(dataSource, specification)

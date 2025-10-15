@@ -17,6 +17,7 @@
       * [Group and count assets](use-case-aggregate-assets.md)
     * Assets
       * [Update an asset's properties](use-case-update-assets.md)
+      * [Manage an asset's update history](use-case-manage-asset-history.md)
       * [Manage the versions of an asset](use-case-manage-versions.md)
       * [Update the status of assets](use-case-manage-status.md)
       * [Manage references between assets](use-case-asset-references.md)
@@ -26,8 +27,7 @@
       * [Start a transformation on a dataset](use-case-start-transformation-on-dataset.md)
     * Files
       * [Create and upload files to a dataset](use-case-create-files.md)
-      * [Update an asset's files](use-case-update-files.md)
-      * [Replace uploaded file content](use-case-replace-files.md)
+      * [Download, update and generate tags for an asset's files](use-case-update-files.md)
     * Collections
       * [Manage asset collections in a project](use-case-manage-collections.md)
       * [Manage an asset's association to collections](use-case-asset-collections.md)

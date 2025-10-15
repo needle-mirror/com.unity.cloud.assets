@@ -1,6 +1,6 @@
-# Use case: Update an asset's files
+# Use case: Download, update and generate tags for an asset's files
 
-You can use the Unity Cloud Assets package to edit file metadata and download file content.
+You can use the Unity Cloud Assets package to download file content, edit file metadata and generate AI tags.
 
 The SDK supports different workflows for users with different roles.
 

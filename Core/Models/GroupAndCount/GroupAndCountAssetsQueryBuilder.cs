@@ -182,6 +182,13 @@ namespace Unity.Cloud.Assets
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
+                if(aggregations[i].Value is string) //meaning there was only one group by field
+                {
+                    var groupValue = await ParseGroupValueAsync(groupBy[0], aggregations[i].Value, metadataFieldTypes, cancellationToken);
+                    yield return new KeyValuePair<IEnumerable<GroupableFieldValue>, int>(new[] { groupValue }, aggregations[i].Count);
+                    continue;
+                }
+
                 var groupValues = new List<GroupableFieldValue>();
 
                 var value = IsolatedSerialization.ToObjectDictionary(aggregations[i].Value) ?? new Dictionary<string, object>();
@@ -261,13 +268,13 @@ namespace Unity.Cloud.Assets
                     var fieldDefinitionDescriptor = m_AssetLibraryId.IsPathToAssetLibraryValid()
                         ? new FieldDefinitionDescriptor(m_AssetLibraryId, metadataFieldKey)
                         : new FieldDefinitionDescriptor(m_OrganizationId, metadataFieldKey);
-                    
+
                     metadataValueType = await m_AssetDataSource.GetMetadataValueTypeAsync(fieldDefinitionDescriptor, cancellationToken);
                     metadataFieldTypes.Add(metadataFieldKey, metadataValueType);
                 }
 
                 var metadataValue = new MetadataObject(metadataValueType, value.ToString());
-                return new GroupableFieldValue(GroupableFieldValueType.MetadataValue, metadataValue);
+                return new GroupableFieldValue(GroupableFieldValueType.MetadataValue, metadataValue, key);
             }
 
             // Else
@@ -278,22 +285,22 @@ namespace Unity.Cloud.Assets
         {
             if (key.EndsWith("createdBy") || key.EndsWith("updatedBy"))
             {
-                return new GroupableFieldValue(GroupableFieldValueType.UserId, new UserId(AsString(value)));
+                return new GroupableFieldValue(GroupableFieldValueType.UserId, new UserId(AsString(value)), key);
             }
 
             return key switch
             {
-                "assetId" => new GroupableFieldValue(GroupableFieldValueType.AssetId, new AssetId(AsString(value))),
-                "assetVersion" => new GroupableFieldValue(GroupableFieldValueType.AssetVersion, new AssetVersion(AsString(value))),
-                "datasetId" => new GroupableFieldValue(GroupableFieldValueType.DatasetId, new DatasetId(AsString(value))),
-                "collections" => new GroupableFieldValue(GroupableFieldValueType.CollectionDescriptor, AsCollectionDescriptor(value)),
+                "assetId" => new GroupableFieldValue(GroupableFieldValueType.AssetId, new AssetId(AsString(value)), key),
+                "assetVersion" => new GroupableFieldValue(GroupableFieldValueType.AssetVersion, new AssetVersion(AsString(value)), key),
+                "datasetId" => new GroupableFieldValue(GroupableFieldValueType.DatasetId, new DatasetId(AsString(value)), key),
+                "collections" => new GroupableFieldValue(GroupableFieldValueType.CollectionDescriptor, AsCollectionDescriptor(value), key),
                 "primaryType" => value.ToString().TryGetAssetTypeFromString(out var assetType)
-                    ? new GroupableFieldValue(GroupableFieldValueType.AssetType, assetType)
-                    : new GroupableFieldValue(GroupableFieldValueType.String, AsString(value)),
+                    ? new GroupableFieldValue(GroupableFieldValueType.AssetType, assetType, key)
+                    : new GroupableFieldValue(GroupableFieldValueType.String, AsString(value), key),
                 "datasets.primaryType" => value.ToString().TryGetAssetTypeFromString(out var assetType)
-                    ? new GroupableFieldValue(GroupableFieldValueType.AssetType, assetType)
-                    : new GroupableFieldValue(GroupableFieldValueType.String, AsString(value)),
-                _ => new GroupableFieldValue(GroupableFieldValueType.String, AsString(value))
+                    ? new GroupableFieldValue(GroupableFieldValueType.AssetType, assetType, key)
+                    : new GroupableFieldValue(GroupableFieldValueType.String, AsString(value), key),
+                _ => new GroupableFieldValue(GroupableFieldValueType.String, AsString(value), key)
             };
         }
 

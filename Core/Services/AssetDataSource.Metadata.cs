@@ -68,7 +68,7 @@ namespace Unity.Cloud.Assets
             cancellationToken.ThrowIfCancellationRequested();
 
             var request = new FieldDefinitionRequest(organizationId, fieldKey);
-            using var response = await RateLimitedServiceClient(request, HttpMethod.Get).GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(), cancellationToken);
+            using var response = await m_ServiceHttpClient.GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(), cancellationToken);
 
             var jsonContent = await response.GetContentAsStringAsync();
             cancellationToken.ThrowIfCancellationRequested();
@@ -82,7 +82,7 @@ namespace Unity.Cloud.Assets
             cancellationToken.ThrowIfCancellationRequested();
 
             var request = new CreateFieldDefinitionRequest(organizationId, fieldCreation);
-            using var _ = await RateLimitedServiceClient(request, HttpMethod.Post).PostAsync(GetPublicRequestUri(request), request.ConstructBody(),
+            using var _ = await m_ServiceHttpClient.PostAsync(GetPublicRequestUri(request), request.ConstructBody(),
                 ServiceHttpClientOptions.Default(), cancellationToken);
 
             return new FieldDefinitionDescriptor(organizationId, fieldCreation.Name);
@@ -92,28 +92,28 @@ namespace Unity.Cloud.Assets
         public async Task DeleteFieldDefinitionAsync(FieldDefinitionDescriptor fieldDefinitionDescriptor, CancellationToken cancellationToken)
         {
             var request = new FieldDefinitionRequest(fieldDefinitionDescriptor.OrganizationId, fieldDefinitionDescriptor.FieldKey);
-            using var _ = await RateLimitedServiceClient(request, HttpMethod.Delete).DeleteAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(), cancellationToken);
+            using var _ = await m_ServiceHttpClient.DeleteAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(), cancellationToken);
         }
 
         /// <inheritdoc/>
         public async Task UpdateFieldDefinitionAsync(FieldDefinitionDescriptor fieldDefinitionDescriptor, IFieldDefinitionBaseData fieldUpdate, CancellationToken cancellationToken)
         {
             var request = new FieldDefinitionRequest(fieldDefinitionDescriptor.OrganizationId, fieldDefinitionDescriptor.FieldKey, fieldUpdate);
-            using var _ = await RateLimitedServiceClient(request, HttpClientExtensions.HttpMethodPatch).PatchAsync(GetPublicRequestUri(request), request.ConstructBody(),
+            using var _ = await m_ServiceHttpClient.PatchAsync(GetPublicRequestUri(request), request.ConstructBody(),
                 ServiceHttpClientOptions.Default(), cancellationToken);
         }
 
         public async Task AddAcceptedValuesToFieldDefinitionAsync(FieldDefinitionDescriptor fieldDefinitionDescriptor, IEnumerable<string> acceptedValues, CancellationToken cancellationToken)
         {
             var request = new ModifyFieldDefinitionSelectionRequest(fieldDefinitionDescriptor.OrganizationId, fieldDefinitionDescriptor.FieldKey, acceptedValues);
-            using var _ = await RateLimitedServiceClient(request, HttpMethod.Post).PostAsync(GetPublicRequestUri(request), request.ConstructBody(),
+            using var _ = await m_ServiceHttpClient.PostAsync(GetPublicRequestUri(request), request.ConstructBody(),
                 ServiceHttpClientOptions.Default(), cancellationToken);
         }
 
         public async Task RemoveAcceptedValuesFromFieldDefinitionAsync(FieldDefinitionDescriptor fieldDefinitionDescriptor, IEnumerable<string> acceptedValues, CancellationToken cancellationToken)
         {
             var request = new ModifyFieldDefinitionSelectionRequest(fieldDefinitionDescriptor.OrganizationId, fieldDefinitionDescriptor.FieldKey, acceptedValues);
-            using var _ = await RateLimitedServiceClient(request, HttpMethod.Delete).DeleteAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(), cancellationToken);
+            using var _ = await m_ServiceHttpClient.DeleteAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(), cancellationToken);
         }
     }
 }

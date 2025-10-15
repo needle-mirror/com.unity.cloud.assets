@@ -59,7 +59,24 @@ namespace Unity.Cloud.Documentation.Assets
                 _ = m_Behaviour.ListProjectAssetCollectionsAsync();
             }
 
+            GUILayout.BeginVertical();
+
+            // Go back to select a different scene.
+            if (GUILayout.Button("Back"))
+            {
+                m_Behaviour.ClearParentSelection();
+                return;
+            }
+
+            GUILayout.Space(15f);
+            
+            CreateNewCollection();
+
+            GUILayout.Space(15f);
+
             ListCollections();
+            
+            GUILayout.EndVertical();
 
             DrawCurrentCollection();
 
@@ -70,15 +87,9 @@ namespace Unity.Cloud.Documentation.Assets
 
         void ListCollections()
         {
-            GUILayout.BeginVertical();
-
-            CreateNewCollection();
-
-            GUILayout.Space(15f);
-
             GUILayout.Label("Available Collections:");
 
-            if (GUILayout.Button("Refresh collection list"))
+            if (GUILayout.Button("Refresh"))
             {
                 _ = m_Behaviour.ListProjectAssetCollectionsAsync();
             }
@@ -102,15 +113,11 @@ namespace Unity.Cloud.Documentation.Assets
             }
 
             GUILayout.FlexibleSpace();
-
-            GUILayout.EndVertical();
         }
 
         void CreateNewCollection()
         {
-            GUILayout.Label("Create New Collection");
-
-            GUILayout.Label("Collection Path:");
+            GUILayout.Label("New Collection Path:");
             m_NewCollectionName = GUILayout.TextField(m_NewCollectionName);
 
             if (GUILayout.Button("Create"))
@@ -240,6 +247,7 @@ namespace Unity.Cloud.Documentation.Assets
         public bool IsProjectSelected => m_Behaviour.IsProjectSelected;
         public IAssetProject CurrentProject => m_Behaviour.CurrentProject;
         public IAsset CurrentAsset => m_Behaviour.CurrentAsset;
+        public void ClearParentSelection() => m_Behaviour.ClearParentSelection();
         public bool TryGetAssetProperties(AssetVersion assetVersion, out AssetProperties properties) => m_Behaviour.TryGetAssetProperties(assetVersion, out properties);
         public bool TryGetAssetProperties(AssetId assetId, out AssetProperties properties) => m_Behaviour.TryGetAssetProperties(assetId, out properties);
 

@@ -37,6 +37,17 @@ namespace Unity.Cloud.Assets
         }
 
         /// <summary>
+        /// Creates an instance of a <see cref="ProjectOrLibraryRequest"/> for a library.
+        /// </summary>
+        /// <param name="assetLibraryId">ID of the library.</param>
+        public static ProjectOrLibraryRequest GetLibraryRequest(AssetLibraryId assetLibraryId)
+        {
+            var request = new ProjectOrLibraryRequest(assetLibraryId);
+            request.AddParamToQuery("IncludeFields", "hasCollection");
+            return request;
+        }
+
+        /// <summary>
         /// Creates an instance of a <see cref="ProjectOrLibraryRequest"/> for a project.
         /// </summary>
         /// <param name="projectId">ID of the project</param>
@@ -54,6 +65,18 @@ namespace Unity.Cloud.Assets
         public static ProjectOrLibraryRequest GetAssetCountRequest(ProjectId projectId)
         {
             var projectRequest = new ProjectOrLibraryRequest(projectId);
+            projectRequest.m_RequestUrl += "/assets/count";
+            return projectRequest;
+        }
+        
+        /// <summary>
+        /// Creates an instance of a <see cref="ProjectOrLibraryRequest"/> for a library.
+        /// </summary>
+        /// <param name="assetLibraryId"></param>
+        /// <returns></returns>
+        public static ProjectOrLibraryRequest GetAssetCountRequest(AssetLibraryId assetLibraryId)
+        {
+            var projectRequest = new ProjectOrLibraryRequest(assetLibraryId);
             projectRequest.m_RequestUrl += "/assets/count";
             return projectRequest;
         }

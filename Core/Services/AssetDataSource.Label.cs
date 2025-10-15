@@ -12,19 +12,19 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc/>
         public IAsyncEnumerable<ILabelData> ListLabelsAsync(AssetLibraryId assetLibraryId, PaginationData pagination, bool? archived, bool? systemLabels, CancellationToken cancellationToken)
         {
-            var countRequest = new GetLabelListRequest(assetLibraryId, 0, 1, archived, systemLabels);
+            var countRequest = new ListLabelsRequest(assetLibraryId, 0, 1, archived, systemLabels);
             return ListEntitiesAsync<LabelData>(countRequest, GetListRequest, pagination.Range, cancellationToken);
 
-            ApiRequest GetListRequest(int offset, int pageSize) => new GetLabelListRequest(assetLibraryId, offset, pageSize, archived, systemLabels);
+            ApiRequest GetListRequest(int offset, int pageSize) => new ListLabelsRequest(assetLibraryId, offset, pageSize, archived, systemLabels);
         }
 
         /// <inheritdoc/>
         public IAsyncEnumerable<ILabelData> ListLabelsAsync(OrganizationId organizationId, PaginationData pagination, bool? archived, bool? systemLabels, CancellationToken cancellationToken)
         {
-            var countRequest = new GetLabelListRequest(organizationId, 0, 1, archived, systemLabels);
+            var countRequest = new ListLabelsRequest(organizationId, 0, 1, archived, systemLabels);
             return ListEntitiesAsync<LabelData>(countRequest, GetListRequest, pagination.Range, cancellationToken);
 
-            ApiRequest GetListRequest(int offset, int pageSize) => new GetLabelListRequest(organizationId, offset, pageSize, archived, systemLabels);
+            ApiRequest GetListRequest(int offset, int pageSize) => new ListLabelsRequest(organizationId, offset, pageSize, archived, systemLabels);
         }
 
         /// <inheritdoc/>
@@ -35,7 +35,7 @@ namespace Unity.Cloud.Assets
             cancellationToken.ThrowIfCancellationRequested();
 
             var request = new LabelRequest(labelDescriptor.OrganizationId, labelDescriptor.LabelName);
-            using var response = await RateLimitedServiceClient(request, HttpMethod.Get).GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(), cancellationToken);
+            using var response = await m_ServiceHttpClient.GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(), cancellationToken);
 
             var jsonContent = await response.GetContentAsStringAsync();
             cancellationToken.ThrowIfCancellationRequested();
@@ -63,7 +63,7 @@ namespace Unity.Cloud.Assets
             cancellationToken.ThrowIfCancellationRequested();
 
             var request = new CreateLabelRequest(organizationId, labelCreation);
-            using var response = await RateLimitedServiceClient(request, HttpMethod.Post).PostAsync(GetPublicRequestUri(request), request.ConstructBody(),
+            using var response = await m_ServiceHttpClient.PostAsync(GetPublicRequestUri(request), request.ConstructBody(),
                 ServiceHttpClientOptions.Default(), cancellationToken);
 
             var jsonContent = await response.GetContentAsStringAsync();
@@ -82,7 +82,7 @@ namespace Unity.Cloud.Assets
         public async Task UpdateLabelAsync(LabelDescriptor labelDescriptor, ILabelBaseData labelUpdate, CancellationToken cancellationToken)
         {
             var request = new LabelRequest(labelDescriptor.OrganizationId, labelDescriptor.LabelName, labelUpdate);
-            using var _ = await RateLimitedServiceClient(request, "PATCH").PatchAsync(GetPublicRequestUri(request), request.ConstructBody(),
+            using var _ = await m_ServiceHttpClient.PatchAsync(GetPublicRequestUri(request), request.ConstructBody(),
                 ServiceHttpClientOptions.Default(), cancellationToken);
         }
 
@@ -90,7 +90,7 @@ namespace Unity.Cloud.Assets
         public async Task UpdateLabelStatusAsync(LabelDescriptor labelDescriptor, bool archive, CancellationToken cancellationToken)
         {
             var request = new UpdateLabelStatusRequest(labelDescriptor.OrganizationId, labelDescriptor.LabelName, archive);
-            using var _ = await RateLimitedServiceClient(request, HttpMethod.Post).PostAsync(GetPublicRequestUri(request), request.ConstructBody(), ServiceHttpClientOptions.Default(), cancellationToken);
+            using var _ = await m_ServiceHttpClient.PostAsync(GetPublicRequestUri(request), request.ConstructBody(), ServiceHttpClientOptions.Default(), cancellationToken);
         }
 
         /// <inheritdoc/>
@@ -115,19 +115,19 @@ namespace Unity.Cloud.Assets
         public async Task AssignLabelsAsync(AssetDescriptor assetDescriptor, IEnumerable<string> labels, CancellationToken cancellationToken)
         {
             var request = new AssignLabelRequest(assetDescriptor.ProjectId, assetDescriptor.AssetId, assetDescriptor.AssetVersion, true, labels);
-            using var _ = await RateLimitedServiceClient(request, HttpMethod.Post).PostAsync(GetPublicRequestUri(request), request.ConstructBody(), ServiceHttpClientOptions.Default(), cancellationToken);
+            using var _ = await m_ServiceHttpClient.PostAsync(GetPublicRequestUri(request), request.ConstructBody(), ServiceHttpClientOptions.Default(), cancellationToken);
         }
 
         /// <inheritdoc/>
         public async Task UnassignLabelsAsync(AssetDescriptor assetDescriptor, IEnumerable<string> labels, CancellationToken cancellationToken)
         {
             var request = new AssignLabelRequest(assetDescriptor.ProjectId, assetDescriptor.AssetId, assetDescriptor.AssetVersion, false, labels);
-            using var _ = await RateLimitedServiceClient(request, HttpMethod.Post).PostAsync(GetPublicRequestUri(request), request.ConstructBody(), ServiceHttpClientOptions.Default(), cancellationToken);
+            using var _ = await m_ServiceHttpClient.PostAsync(GetPublicRequestUri(request), request.ConstructBody(), ServiceHttpClientOptions.Default(), cancellationToken);
         }
 
         async Task<int> GetTotalCount(ApiRequest apiRequest, CancellationToken cancellationToken)
         {
-            using var response = await RateLimitedServiceClient(apiRequest, HttpMethod.Get).GetAsync(GetPublicRequestUri(apiRequest), ServiceHttpClientOptions.Default(), cancellationToken);
+            using var response = await m_ServiceHttpClient.GetAsync(GetPublicRequestUri(apiRequest), ServiceHttpClientOptions.Default(), cancellationToken);
             var jsonContent = await response.GetContentAsStringAsync();
             var pageDto = IsolatedSerialization.Deserialize<PaginationDto>(jsonContent, IsolatedSerialization.defaultSettings);
             return pageDto.Total;

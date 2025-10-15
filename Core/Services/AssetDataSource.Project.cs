@@ -34,7 +34,7 @@ namespace Unity.Cloud.Assets
                 cancellationToken.ThrowIfCancellationRequested();
 
                 var request = new ListProjectsRequest(organizationId, pageNumber, pageSize);
-                using var response = await RateLimitedServiceClient(request, HttpMethod.Get).GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(),
+                using var response = await m_ServiceHttpClient.GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(),
                     cancellationToken);
 
                 var jsonContent = await response.GetContentAsStringAsync();
@@ -65,7 +65,7 @@ namespace Unity.Cloud.Assets
             cancellationToken.ThrowIfCancellationRequested();
 
             var request = ProjectOrLibraryRequest.GetProjectRequest(projectDescriptor.ProjectId);
-            using var response = await RateLimitedServiceClient(request, HttpMethod.Get).GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(),
+            using var response = await m_ServiceHttpClient.GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(),
                 cancellationToken);
 
             var jsonContent = await response.GetContentAsStringAsync();
@@ -80,7 +80,7 @@ namespace Unity.Cloud.Assets
             cancellationToken.ThrowIfCancellationRequested();
 
             var request = ProjectOrLibraryRequest.GetEnableProjectRequest(projectDescriptor.ProjectId);
-            using var _ = await RateLimitedServiceClient(request, HttpMethod.Post).PostAsync(GetPublicRequestUri(request), request.ConstructBody(),
+            using var _ = await m_ServiceHttpClient.PostAsync(GetPublicRequestUri(request), request.ConstructBody(),
                 ServiceHttpClientOptions.Default(), cancellationToken);
         }
 
@@ -90,7 +90,7 @@ namespace Unity.Cloud.Assets
             cancellationToken.ThrowIfCancellationRequested();
 
             var request = new CreateProjectRequest(organizationId, projectCreation);
-            using var response = await RateLimitedServiceClient(request, HttpMethod.Post).PostAsync(GetPublicRequestUri(request), request.ConstructBody(),
+            using var response = await m_ServiceHttpClient.PostAsync(GetPublicRequestUri(request), request.ConstructBody(),
                 ServiceHttpClientOptions.Default(), cancellationToken);
 
             var jsonContent = await response.GetContentAsStringAsync();
@@ -107,7 +107,7 @@ namespace Unity.Cloud.Assets
             cancellationToken.ThrowIfCancellationRequested();
 
             var request = ProjectOrLibraryRequest.GetCollectionCountRequest(projectDescriptor.ProjectId);
-            using var response = await RateLimitedServiceClient(request, HttpMethod.Get).GetAsync(GetPublicRequestUri(request),
+            using var response = await m_ServiceHttpClient.GetAsync(GetPublicRequestUri(request),
                 ServiceHttpClientOptions.Default(), cancellationToken);
 
             var jsonContent = await response.GetContentAsStringAsync();
@@ -127,7 +127,7 @@ namespace Unity.Cloud.Assets
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            using var response = await RateLimitedServiceClient(request, HttpMethod.Get).GetAsync(GetPublicRequestUri(request),
+            using var response = await m_ServiceHttpClient.GetAsync(GetPublicRequestUri(request),
                 ServiceHttpClientOptions.Default(), cancellationToken);
 
             var jsonContent = await response.GetContentAsStringAsync();
@@ -158,7 +158,7 @@ namespace Unity.Cloud.Assets
             for (var i = 0; i * maxPageSize < assetIdArray.Length; ++i)
             {
                 var request = buildRequest(assetIdArray.Skip(i * maxPageSize).Take(maxPageSize));
-                var task = RateLimitedServiceClient(request, HttpMethod.Post).PostAsync(GetPublicRequestUri(request), request.ConstructBody(), ServiceHttpClientOptions.Default(), cancellationToken);
+                var task = m_ServiceHttpClient.PostAsync(GetPublicRequestUri(request), request.ConstructBody(), ServiceHttpClientOptions.Default(), cancellationToken);
                 tasks.Add(task);
             }
 

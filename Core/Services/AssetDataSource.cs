@@ -13,21 +13,12 @@ namespace Unity.Cloud.Assets
 {
     partial class AssetDataSource : IAssetDataSource
     {
-        const int k_QueueLimit = 100000;
-        const int k_DefaultTokensPerPeriod = 30;
-        const int k_DefaultTokenLimit = 30;
-        const int k_SlowTokensPerPeriod = 5;
-        const int k_SlowTokenLimit = 5;
-        const double k_ReplenishmentPeriod = 0.45; // we add 0.05s to each period to have a safety margin
-        const double k_SlowReplenishmentPeriod = 1;
         const string k_PublicApiPath = "/assets/v1";
 
         static readonly UCLogger k_Logger = LoggerProvider.GetLogger<AssetDataSource>();
 
         readonly IServiceHttpClient m_ServiceHttpClient;
         readonly IServiceHostResolver m_PublicServiceHostResolver;
-        readonly Dictionary<string, IServiceHttpClient> m_HttpClients = new();
-        readonly object m_Lock = new();
 
         internal AssetDataSource(IServiceHttpClient serviceHttpClient, IServiceHostResolver serviceHostResolver)
         {
@@ -58,7 +49,7 @@ namespace Unity.Cloud.Assets
             var request = assetDescriptor.IsPathToAssetLibrary()
                 ? new AssetRequest(assetDescriptor.AssetLibraryId, assetDescriptor.AssetId, assetDescriptor.AssetVersion, includedFieldsFilter)
                 : new AssetRequest(assetDescriptor.ProjectId, assetDescriptor.AssetId, assetDescriptor.AssetVersion, includedFieldsFilter);
-            using var response = await RateLimitedServiceClient(request, HttpMethod.Get).GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(),
+            using var response = await m_ServiceHttpClient.GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(),
                 cancellationToken);
 
             var jsonContent = await response.GetContentAsStringAsync();
@@ -73,7 +64,7 @@ namespace Unity.Cloud.Assets
             cancellationToken.ThrowIfCancellationRequested();
 
             var request = new AssetRequest(projectDescriptor.ProjectId, assetId, label, includedFieldsFilter);
-            using var response = await RateLimitedServiceClient(request, HttpMethod.Get).GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(),
+            using var response = await m_ServiceHttpClient.GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(),
                 cancellationToken);
 
             var jsonContent = await response.GetContentAsStringAsync();
@@ -148,7 +139,7 @@ namespace Unity.Cloud.Assets
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            using var response = await RateLimitedServiceClient(request, HttpMethod.Post).PostAsync(GetPublicRequestUri(request), request.ConstructBody(),
+            using var response = await m_ServiceHttpClient.PostAsync(GetPublicRequestUri(request), request.ConstructBody(),
                 ServiceHttpClientOptions.Default(), cancellationToken);
 
             var jsonContent = await response.GetContentAsStringAsync();
@@ -163,7 +154,7 @@ namespace Unity.Cloud.Assets
             cancellationToken.ThrowIfCancellationRequested();
 
             var request = new AcrossProjectsSearchAndAggregateRequest(organizationId, parameters);
-            using var response = await RateLimitedServiceClient(request, HttpMethod.Post).PostAsync(GetPublicRequestUri(request), request.ConstructBody(),
+            using var response = await m_ServiceHttpClient.PostAsync(GetPublicRequestUri(request), request.ConstructBody(),
                 ServiceHttpClientOptions.Default(), cancellationToken);
 
             var jsonContent = await response.GetContentAsStringAsync();
@@ -178,7 +169,7 @@ namespace Unity.Cloud.Assets
             cancellationToken.ThrowIfCancellationRequested();
 
             var request = new CreateAssetRequest(projectDescriptor.ProjectId, assetCreation);
-            using var response = await RateLimitedServiceClient(request, HttpMethod.Post).PostAsync(GetPublicRequestUri(request), request.ConstructBody(),
+            using var response = await m_ServiceHttpClient.PostAsync(GetPublicRequestUri(request), request.ConstructBody(),
                 ServiceHttpClientOptions.Default(), cancellationToken);
 
             var jsonContent = await response.GetContentAsStringAsync();
@@ -195,7 +186,7 @@ namespace Unity.Cloud.Assets
             cancellationToken.ThrowIfCancellationRequested();
 
             var request = new AssetRequest(assetDescriptor.ProjectId, assetDescriptor.AssetId, assetDescriptor.AssetVersion, data);
-            using var _ = await RateLimitedServiceClient(request, HttpClientExtensions.HttpMethodPatch).PatchAsync(GetPublicRequestUri(request), request.ConstructBody(),
+            using var _ = await m_ServiceHttpClient.PatchAsync(GetPublicRequestUri(request), request.ConstructBody(),
                 ServiceHttpClientOptions.Default(), cancellationToken);
         }
 
@@ -222,7 +213,7 @@ namespace Unity.Cloud.Assets
             cancellationToken.ThrowIfCancellationRequested();
 
             var request = new GetAssetDownloadUrlsRequest(projectDescriptor.ProjectId, assetId, assetVersion, datasetIds, null);
-            using var response = await RateLimitedServiceClient(request, HttpMethod.Get).GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(), cancellationToken);
+            using var response = await m_ServiceHttpClient.GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(), cancellationToken);
 
             var jsonContent = await response.GetContentAsStringAsync();
             cancellationToken.ThrowIfCancellationRequested();
@@ -248,7 +239,7 @@ namespace Unity.Cloud.Assets
         public async Task LinkAssetToProjectAsync(AssetDescriptor assetDescriptor, ProjectDescriptor destinationProject, CancellationToken cancellationToken)
         {
             var request = new LinkAssetToProjectRequest(assetDescriptor.ProjectId, destinationProject.ProjectId, assetDescriptor.AssetId);
-            using var _ = await RateLimitedServiceClient(request, HttpMethod.Post).PostAsync(GetPublicRequestUri(request), request.ConstructBody(),
+            using var _ = await m_ServiceHttpClient.PostAsync(GetPublicRequestUri(request), request.ConstructBody(),
                 ServiceHttpClientOptions.Default(), cancellationToken);
         }
 
@@ -256,7 +247,7 @@ namespace Unity.Cloud.Assets
         public async Task UnlinkAssetFromProjectAsync(AssetDescriptor assetDescriptor, CancellationToken cancellationToken)
         {
             var request = new UnlinkAssetFromProjectRequest(assetDescriptor.ProjectId, assetDescriptor.AssetId);
-            using var _ = await RateLimitedServiceClient(request, HttpMethod.Post).PostAsync(GetPublicRequestUri(request), request.ConstructBody(),
+            using var _ = await m_ServiceHttpClient.PostAsync(GetPublicRequestUri(request), request.ConstructBody(),
                 ServiceHttpClientOptions.Default(), cancellationToken);
         }
 
@@ -266,7 +257,7 @@ namespace Unity.Cloud.Assets
             cancellationToken.ThrowIfCancellationRequested();
 
             var request = AssetRequest.CheckProjectIsAssetSourceProjectRequest(assetDescriptor.ProjectId, assetDescriptor.AssetId);
-            using var response = await RateLimitedServiceClient(request, HttpMethod.Get).GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(),
+            using var response = await m_ServiceHttpClient.GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(),
                 cancellationToken);
 
             return bool.Parse(await response.GetContentAsStringAsync());
@@ -278,7 +269,7 @@ namespace Unity.Cloud.Assets
             cancellationToken.ThrowIfCancellationRequested();
 
             var request = AssetRequest.CheckAssetBelongsToProjectRequest(assetDescriptor.ProjectId, assetDescriptor.AssetId);
-            using var response = await RateLimitedServiceClient(request, HttpMethod.Get).GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(),
+            using var response = await m_ServiceHttpClient.GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(),
                 cancellationToken);
 
             return bool.Parse(await response.GetContentAsStringAsync());
@@ -288,7 +279,7 @@ namespace Unity.Cloud.Assets
         public async Task UpdateAssetStatusAsync(AssetDescriptor assetDescriptor, string statusName, CancellationToken cancellationToken)
         {
             var request = new AssetStatusRequest(assetDescriptor.ProjectId, assetDescriptor.AssetId, assetDescriptor.AssetVersion, statusName);
-            using var _ = await RateLimitedServiceClient(request, HttpClientExtensions.HttpMethodPatch).PatchAsync(GetPublicRequestUri(request), request.ConstructBody(),
+            using var _ = await m_ServiceHttpClient.PatchAsync(GetPublicRequestUri(request), request.ConstructBody(),
                 ServiceHttpClientOptions.Default(), cancellationToken);
         }
 
@@ -314,7 +305,7 @@ namespace Unity.Cloud.Assets
 
             httpRequestMessage.Headers.Add(blobTypeHeaderKey, blobTypeHeaderValue);
 
-            using var response = await RateLimitedServiceClient("UploadFile", HttpMethod.Put)
+            using var response = await m_ServiceHttpClient
                 .SendAsync(httpRequestMessage, ServiceHttpClientOptions.SkipDefaultAuthenticationOption(), HttpCompletionOption.ResponseContentRead, progress, cancellationToken);
 
             try
@@ -365,13 +356,13 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc />
         public async Task RemoveAssetMetadataAsync(AssetDescriptor assetDescriptor, string metadataType, IEnumerable<string> keys, CancellationToken cancellationToken)
         {
-            var request = new RemoveMetadataRequest(assetDescriptor.ProjectId,
+            var request = RemoveMetadataRequest.Get(assetDescriptor.ProjectId,
                 assetDescriptor.AssetId,
                 assetDescriptor.AssetVersion,
                 metadataType,
                 keys);
 
-            using var _ = await RateLimitedServiceClient(request, HttpMethod.Delete).DeleteAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(), cancellationToken);
+            using var _ = await m_ServiceHttpClient.DeleteAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(), cancellationToken);
         }
 
         /// <inheritdoc />
@@ -380,7 +371,57 @@ namespace Unity.Cloud.Assets
             return new Uri(m_PublicServiceHostResolver.GetResolvedRequestUri(relativePath));
         }
 
-        async IAsyncEnumerable<T> ListEntitiesAsync<T>(PaginationHelpers.GetTotalCount getTotalCount, Func<string, int, ApiRequest> getListRequest, Range range, [EnumeratorCancellation] CancellationToken cancellationToken, int maxPageSize = 1000)
+        /// <summary>
+        /// Utility method to list entities from paginated API endpoints that use offset and limit for pagination.
+        /// This method handles making multiple requests to retrieve all entities in the specified range.
+        /// </summary>
+        /// <remarks>These requests do not fit the standard for pagination and are simply an array of results; incidentally they cannot return a total count in their response. </remarks>
+        async IAsyncEnumerable<T> ListEntitiesAsync<T>(Func<int, int, ApiRequest> getListRequest, Range range, [EnumeratorCancellation] CancellationToken cancellationToken, int maxPageSize = 1000)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var (offset, length) = range.GetOffsetAndLength(int.MaxValue);
+
+            if (length == 0) yield break;
+
+            var pageSize = Math.Min(maxPageSize, length);
+
+            var count = 0;
+            do
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                var request = getListRequest(offset, pageSize);
+                using var response = await m_ServiceHttpClient.GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(), cancellationToken);
+
+                var jsonContent = await response.GetContentAsStringAsync();
+                cancellationToken.ThrowIfCancellationRequested();
+
+                var results = IsolatedSerialization.DeserializeWithDefaultConverters<T[]>(jsonContent);
+
+                if (results == null || results.Length == 0) break;
+
+                for (var i = 0; i < results.Length; ++i)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    yield return results[i];
+                }
+
+                // If we received fewer results than requested, we have reached the end of the list.
+                if (results.Length < pageSize) break;
+
+                // Increment the offset and count by the number of results returned.
+                offset += results.Length;
+                count += results.Length;
+            } while (count < length);
+        }
+
+        /// <summary>
+        /// Utility method to list entities from paginated API endpoints that use a next token for pagination.
+        /// This method handles making multiple requests to retrieve all entities in the specified range.
+        /// </summary>
+        async IAsyncEnumerable<T> ListEntitiesAsync<T>(PaginationExtensions.GetTotalCount getTotalCount, Func<string, int, ApiRequest> getListRequest, Range range, [EnumeratorCancellation] CancellationToken cancellationToken, int maxPageSize = 1000)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -398,7 +439,7 @@ namespace Unity.Cloud.Assets
                 cancellationToken.ThrowIfCancellationRequested();
 
                 var request = getListRequest(next, pageSize);
-                using var response = await RateLimitedServiceClient(request, HttpMethod.Get).GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(), cancellationToken);
+                using var response = await m_ServiceHttpClient.GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(), cancellationToken);
 
                 var jsonContent = await response.GetContentAsStringAsync();
                 cancellationToken.ThrowIfCancellationRequested();
@@ -432,10 +473,18 @@ namespace Unity.Cloud.Assets
             } while (count < length && !string.IsNullOrEmpty(next));
         }
 
+        /// <summary>
+        /// Overload of utility method to list entities from paginated API endpoints that use a next token for pagination.
+        /// This method simply converts the count request into a getTotalCount function and calls the main implementation.
+        /// </summary>
         IAsyncEnumerable<T> ListEntitiesAsync<T>(ApiRequest countRequest, Func<string, int, ApiRequest> getListRequest, Range range, CancellationToken cancellationToken, int maxPageSize = 1000)
             => ListEntitiesAsync<T>(token => GetTotalCount(countRequest, token), getListRequest, range, cancellationToken, maxPageSize);
 
-        async IAsyncEnumerable<T> ListEntitiesAsync<T>(PaginationHelpers.GetTotalCount getTotalCount, Func<int, int, ApiRequest> getListRequest, Range range, [EnumeratorCancellation] CancellationToken cancellationToken, int maxPageSize = 1000)
+        /// <summary>
+        /// Utility method to list entities from paginated API endpoints that use offset and limit for pagination.
+        /// This method handles making multiple requests to retrieve all entities in the specified range.
+        /// </summary>
+        async IAsyncEnumerable<T> ListEntitiesAsync<T>(PaginationExtensions.GetTotalCount getTotalCount, Func<int, int, ApiRequest> getListRequest, Range range, [EnumeratorCancellation] CancellationToken cancellationToken, int maxPageSize = 1000)
         {
             var (offset, length) = await range.GetOffsetAndLengthAsync(getTotalCount, cancellationToken);
             var pageSize = Math.Min(maxPageSize, Math.Max(offset, length));
@@ -446,7 +495,7 @@ namespace Unity.Cloud.Assets
                 cancellationToken.ThrowIfCancellationRequested();
 
                 var request = getListRequest(offset, pageSize);
-                using var response = await RateLimitedServiceClient(request, HttpMethod.Get).GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(), cancellationToken);
+                using var response = await m_ServiceHttpClient.GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(), cancellationToken);
 
                 var jsonContent = await response.GetContentAsStringAsync();
                 cancellationToken.ThrowIfCancellationRequested();
@@ -473,13 +522,20 @@ namespace Unity.Cloud.Assets
 
                 // Update the offset and page size for the next iteration
                 offset += pageSize;
-                pageSize = Math.Min(pageSize, length - offset);
+                pageSize = Math.Min(pageSize, length - count);
             } while (count < length);
         }
 
+        /// <summary>
+        /// Overload of utility method to list entities from paginated API endpoints that use offset and limit for pagination.
+        /// This method simply converts the count request into a getTotalCount function and calls the main implementation.
+        /// </summary>
         IAsyncEnumerable<T> ListEntitiesAsync<T>(ApiRequest countRequest, Func<int, int, ApiRequest> getListRequest, Range range, CancellationToken cancellationToken, int maxPageSize = 1000)
             => ListEntitiesAsync<T>(token => GetTotalCount(countRequest, token), getListRequest, range, cancellationToken, maxPageSize);
 
+        /// <summary>
+        /// Special utility method for listing assets from paginated API endpoints where the token for pagination is part of the request body.
+        /// </summary>
         async IAsyncEnumerable<IAssetData> ListAssetsAsync(ApiRequest request, SearchRequestParameters parameters, int offset, int length, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
             const int maxPageSize = 99;
@@ -518,6 +574,12 @@ namespace Unity.Cloud.Assets
             }
         }
 
+        /// <summary>
+        /// Utility method to advance the pagination token to the first page containing results for the specified offset.
+        /// This method makes multiple requests to advance the token to the correct page.
+        /// It returns the results of the first page containing results for the specified offset.
+        /// This is used in conjunction with <see cref="GetNextAsync{T}"/>
+        /// </summary>
         async Task<EntityPageDto<T>> AdvanceTokenToFirstPageAsync<T>(ApiRequest request, SearchRequestPagination pagination, int startPage, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -530,7 +592,7 @@ namespace Unity.Cloud.Assets
             string jsonContent;
             try
             {
-                response = await RateLimitedServiceClient(request, HttpMethod.Post).PostAsync(requestUri, request.ConstructBody(),
+                response = await m_ServiceHttpClient.PostAsync(requestUri, request.ConstructBody(),
                     ServiceHttpClientOptions.Default(), cancellationToken);
 
                 while (currentPage < startPage)
@@ -546,7 +608,7 @@ namespace Unity.Cloud.Assets
                     cancellationToken.ThrowIfCancellationRequested();
 
                     response?.Dispose(); // dispose of the response before re-assignment
-                    response = await RateLimitedServiceClient(request, HttpMethod.Post).PostAsync(requestUri, request.ConstructBody(),
+                    response = await m_ServiceHttpClient.PostAsync(requestUri, request.ConstructBody(),
                         ServiceHttpClientOptions.Default(), cancellationToken);
                 }
 
@@ -562,6 +624,11 @@ namespace Unity.Cloud.Assets
             return IsolatedSerialization.DeserializeWithDefaultConverters<EntityPageDto<T>>(jsonContent);
         }
 
+        /// <summary>
+        /// Utility method to get the next set of results from a paginated API endpoint using a pagination token.
+        /// This method makes multiple requests to retrieve results until the specified length is reached.
+        /// It is used in conjunction with <see cref="AdvanceTokenToFirstPageAsync{T}"/>
+        /// </summary>
         async IAsyncEnumerable<T> GetNextAsync<T>(ApiRequest request, SearchRequestPagination pagination, int index, int offset, int length, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
             var requestUri = GetPublicRequestUri(request);
@@ -573,7 +640,7 @@ namespace Unity.Cloud.Assets
 
                 if (string.IsNullOrEmpty(pagination.Token)) break;
 
-                using var response = await RateLimitedServiceClient(request, HttpMethod.Post).PostAsync(requestUri, request.ConstructBody(),
+                using var response = await m_ServiceHttpClient.PostAsync(requestUri, request.ConstructBody(),
                     ServiceHttpClientOptions.Default(), cancellationToken);
 
                 var jsonContent = await response.GetContentAsStringAsync();
@@ -609,63 +676,6 @@ namespace Unity.Cloud.Assets
             }
 
             return total;
-        }
-
-        IServiceHttpClient RateLimitedServiceClient(ApiRequest request, HttpMethod httpMethod)
-        {
-            return RateLimitedServiceClient(request, httpMethod.ToString());
-        }
-
-        IServiceHttpClient RateLimitedServiceClient(ApiRequest request, string httpMethod)
-        {
-#if UNITY_WEBGL && !UNITY_EDITOR
-            return m_ServiceHttpClient;
-#else
-            var requestKey = request.GetType() + httpMethod;
-            IServiceHttpClient client;
-
-            lock (m_Lock)
-            {
-                if (m_HttpClients.TryGetValue(requestKey, out client)) return client;
-
-                client = IsSlowRequest(request)
-                    ? new RateLimitedServiceHttpClient(m_ServiceHttpClient, k_QueueLimit, k_SlowTokensPerPeriod,
-                        k_SlowTokenLimit, TimeSpan.FromSeconds(k_SlowReplenishmentPeriod))
-                    : new RateLimitedServiceHttpClient(m_ServiceHttpClient, k_QueueLimit, k_DefaultTokensPerPeriod,
-                        k_DefaultTokenLimit, TimeSpan.FromSeconds(k_ReplenishmentPeriod));
-
-                m_HttpClients[requestKey] = client;
-            }
-
-            return client;
-#endif
-        }
-
-        IServiceHttpClient RateLimitedServiceClient(string requestType, HttpMethod httpMethod)
-        {
-#if UNITY_WEBGL && !UNITY_EDITOR
-            return m_ServiceHttpClient;
-#else
-            var requestKey = requestType + httpMethod;
-            IServiceHttpClient client;
-
-            lock (m_Lock)
-            {
-                if (m_HttpClients.TryGetValue(requestKey, out client)) return client;
-
-                client = new RateLimitedServiceHttpClient(m_ServiceHttpClient, k_QueueLimit, k_DefaultTokensPerPeriod,
-                    k_SlowTokenLimit, TimeSpan.FromSeconds(k_ReplenishmentPeriod));
-
-                m_HttpClients[requestKey] = client;
-            }
-
-            return client;
-#endif
-        }
-
-        static bool IsSlowRequest(ApiRequest request)
-        {
-            return request is SearchRequest or AcrossProjectsSearchRequest or SearchAndAggregateRequest or AcrossProjectsSearchAndAggregateRequest;
         }
 
         static Uri GetEscapedUri(string url)

@@ -15,7 +15,7 @@ namespace Unity.Cloud.Assets
                 asset.Properties = assetData.From(asset.Descriptor, includeFields);
 
             if (includeFields.AssetFields.HasFlag(AssetFields.metadata))
-                asset.MetadataEntity.Properties = assetData.Metadata?.From(assetDataSource, asset.Descriptor.OrganizationId) ?? new Dictionary<string, MetadataObject>();
+                asset.MetadataEntity.Properties = assetData.Metadata?.From(assetDataSource, asset.Descriptor) ?? new Dictionary<string, MetadataObject>();
 
             if (includeFields.AssetFields.HasFlag(AssetFields.systemMetadata))
                 asset.SystemMetadataEntity.Properties = assetData.SystemMetadata?.From() ?? new Dictionary<string, MetadataObject>();

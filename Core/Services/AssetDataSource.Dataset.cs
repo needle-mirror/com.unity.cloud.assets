@@ -17,7 +17,7 @@ namespace Unity.Cloud.Assets
             cancellationToken.ThrowIfCancellationRequested();
 
             var request = new CreateDatasetRequest(assetDescriptor.ProjectId, assetDescriptor.AssetId, assetDescriptor.AssetVersion, datasetCreation);
-            using var response = await RateLimitedServiceClient(request, HttpMethod.Post).PostAsync(GetPublicRequestUri(request), request.ConstructBody(),
+            using var response = await m_ServiceHttpClient.PostAsync(GetPublicRequestUri(request), request.ConstructBody(),
                 ServiceHttpClientOptions.Default(), cancellationToken);
 
             var jsonContent = await response.GetContentAsStringAsync();
@@ -49,6 +49,19 @@ namespace Unity.Cloud.Assets
             if (assetData?.Datasets == null) yield break;
 
             var datasets = assetData.Datasets.ToArray();
+            if (assetFields.DatasetFields.HasFlag(DatasetFields.files) && assetData.Files != null)
+            {
+                foreach (var file in assetData.Files)
+                {
+                    var dataset = datasets.FirstOrDefault(d => d.DatasetId == file.DatasetIds.FirstOrDefault());
+                    if (dataset == null) continue;
+
+                    dataset.Files ??= new List<FileData>();
+
+                    ((List<FileData>)dataset.Files).Add(file);
+                }
+            }
+
             var (start, length) = range.GetValidatedOffsetAndLength(datasets.Length);
             for (var i = start; i < start + length; ++i)
             {
@@ -73,7 +86,7 @@ namespace Unity.Cloud.Assets
                 ? GetDatasetAsync_FromLibrary(datasetDescriptor, includedFieldsFilter, cancellationToken)
                 : GetDatasetAsync_FromProject(datasetDescriptor, includedFieldsFilter, cancellationToken);
         }
-        
+
         async Task<IDatasetData> GetDatasetAsync_FromLibrary(DatasetDescriptor datasetDescriptor, FieldsFilter includedFieldsFilter, CancellationToken cancellationToken)
         {
             await foreach(var dataset in ListDatasetsAsync_FromLibrary(datasetDescriptor.AssetDescriptor, Range.All, includedFieldsFilter, cancellationToken))
@@ -83,16 +96,16 @@ namespace Unity.Cloud.Assets
                     return dataset;
                 }
             }
-            
+
             throw new NotFoundException("Dataset does not exist.");
         }
-        
+
         async Task<IDatasetData> GetDatasetAsync_FromProject(DatasetDescriptor datasetDescriptor, FieldsFilter includedFieldsFilter, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
             var request = new DatasetRequest(datasetDescriptor.ProjectId, datasetDescriptor.AssetId, datasetDescriptor.AssetVersion, datasetDescriptor.DatasetId, includedFieldsFilter);
-            using var response = await RateLimitedServiceClient(request, HttpMethod.Get).GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(),
+            using var response = await m_ServiceHttpClient.GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(),
                 cancellationToken);
 
             var jsonContent = await response.GetContentAsStringAsync();
@@ -105,7 +118,7 @@ namespace Unity.Cloud.Assets
         public async Task UpdateDatasetAsync(DatasetDescriptor datasetDescriptor, IDatasetUpdateData datasetUpdate, CancellationToken cancellationToken)
         {
             var request = new DatasetRequest(datasetDescriptor.ProjectId, datasetDescriptor.AssetId, datasetDescriptor.AssetVersion, datasetDescriptor.DatasetId, datasetUpdate);
-            using var _ = await RateLimitedServiceClient(request, HttpClientExtensions.HttpMethodPatch).PatchAsync(GetPublicRequestUri(request), request.ConstructBody(),
+            using var _ = await m_ServiceHttpClient.PatchAsync(GetPublicRequestUri(request), request.ConstructBody(),
                 ServiceHttpClientOptions.Default(), cancellationToken);
         }
 
@@ -113,14 +126,14 @@ namespace Unity.Cloud.Assets
         public async Task ReferenceFileFromDatasetAsync(DatasetDescriptor datasetDescriptor, DatasetId sourceDatasetId, string filePath, CancellationToken cancellationToken)
         {
             var request = new AddFileReferenceRequest(datasetDescriptor.ProjectId, datasetDescriptor.AssetId, datasetDescriptor.AssetVersion, sourceDatasetId, filePath, datasetDescriptor.DatasetId);
-            using var _ = await RateLimitedServiceClient(request, HttpMethod.Post).PostAsync(GetPublicRequestUri(request), request.ConstructBody(),
+            using var _ = await m_ServiceHttpClient.PostAsync(GetPublicRequestUri(request), request.ConstructBody(),
                 ServiceHttpClientOptions.Default(), cancellationToken);
         }
 
         public async Task RemoveFileFromDatasetAsync(DatasetDescriptor datasetDescriptor, string filePath, CancellationToken cancellationToken)
         {
             var request = new FileRequest(datasetDescriptor.ProjectId, datasetDescriptor.AssetId, datasetDescriptor.AssetVersion, datasetDescriptor.DatasetId, filePath);
-            using var _ = await RateLimitedServiceClient(request, HttpMethod.Delete).DeleteAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(), cancellationToken);
+            using var _ = await m_ServiceHttpClient.DeleteAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(), cancellationToken);
         }
 
         /// <inheritdoc />
@@ -129,7 +142,7 @@ namespace Unity.Cloud.Assets
             cancellationToken.ThrowIfCancellationRequested();
 
             var request = new CheckDatasetBelongsToAssetRequest(datasetDescriptor.ProjectId, datasetDescriptor.AssetId, datasetDescriptor.AssetVersion, datasetDescriptor.DatasetId);
-            using var response = await RateLimitedServiceClient(request, HttpMethod.Get).GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(),
+            using var response = await m_ServiceHttpClient.GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(),
                 cancellationToken);
 
             var jsonContent = await response.GetContentAsStringAsync();
@@ -143,13 +156,13 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc />
         public async Task RemoveDatasetMetadataAsync(DatasetDescriptor datasetDescriptor, string metadataType, IEnumerable<string> keys, CancellationToken cancellationToken)
         {
-            var request = new RemoveMetadataRequest(datasetDescriptor.ProjectId,
+            var request = RemoveMetadataRequest.Get(datasetDescriptor.ProjectId,
                 datasetDescriptor.AssetId,
                 datasetDescriptor.AssetVersion,
                 datasetDescriptor.DatasetId,
                 metadataType,
                 keys);
-            using var _ = await RateLimitedServiceClient(request, HttpMethod.Delete).DeleteAsync(GetPublicRequestUri(request), request.ConstructBody(),
+            using var _ = await m_ServiceHttpClient.DeleteAsync(GetPublicRequestUri(request), request.ConstructBody(),
                 ServiceHttpClientOptions.Default(), cancellationToken);
         }
     }

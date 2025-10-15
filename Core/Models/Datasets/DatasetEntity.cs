@@ -4,15 +4,12 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Runtime.CompilerServices;
-using System.Security.Cryptography;
 using Unity.Cloud.Common;
 
 namespace Unity.Cloud.Assets
 {
     class DatasetEntity : IDataset
     {
-        const int k_MD5_bufferSize = 4096;
-
         readonly IAssetDataSource m_DataSource;
         readonly CacheConfigurationWrapper m_CacheConfiguration;
 
@@ -92,6 +89,42 @@ namespace Unity.Cloud.Assets
         }
 
         /// <inheritdoc />
+        public DatasetUpdateHistoryQueryBuilder QueryUpdateHistory()
+        {
+            ThrowIfPathToLibrary();
+
+            return new DatasetUpdateHistoryQueryBuilder(m_DataSource, Descriptor);
+        }
+
+        /// <inheritdoc />
+        public async Task<DatasetUpdateHistory> GetUpdateHistoryAsync(int sequenceNumber, CancellationToken cancellationToken)
+        {
+            ThrowIfPathToLibrary();
+
+            var count = await m_DataSource.GetMetadataHistoryCountAsync(Descriptor, cancellationToken);
+
+            if (sequenceNumber < 0 || sequenceNumber >= count)
+            {
+                throw new InvalidArgumentException($"The sequence number must be between 0 and {count}.");
+            }
+
+            var range = new Range(count - 1 - sequenceNumber, count - sequenceNumber);
+            var query = m_DataSource
+                .ListMetadataHistoryAsync(Descriptor, new PaginationData {Range = range}, cancellationToken)
+                .GetAsyncEnumerator(cancellationToken);
+
+            if (await query.MoveNextAsync())
+            {
+                if (query.Current.MetadataSequenceNumber == sequenceNumber)
+                {
+                    return query.Current.From(m_DataSource, Descriptor);
+                }
+            }
+
+            throw new NotFoundException($"History with sequence number {sequenceNumber} not found for dataset.");
+        }
+
+        /// <inheritdoc />
         public async Task RefreshAsync(CancellationToken cancellationToken)
         {
             if (CacheConfiguration.HasCachingRequirements)
@@ -108,6 +141,14 @@ namespace Unity.Cloud.Assets
             ThrowIfPathToLibrary();
 
             await m_DataSource.UpdateDatasetAsync(Descriptor, datasetUpdate.From(), cancellationToken);
+        }
+
+        /// <inheritdoc />
+        public Task UpdateAsync(int updateHistorySequenceNumber, CancellationToken cancellationToken)
+        {
+            ThrowIfPathToLibrary();
+
+            return m_DataSource.RollbackMetadataHistoryAsync(Descriptor, updateHistorySequenceNumber, cancellationToken);
         }
 
         /// <inheritdoc />
@@ -220,11 +261,11 @@ namespace Unity.Cloud.Assets
         {
             ThrowIfPathToLibrary();
 
-            var filePath = fileCreation.Path.Replace('\\', '/');
-
             var creationData = fileCreation.From();
             creationData.SizeBytes = sourceStream.Length;
-            creationData.UserChecksum = await CalculateMD5ChecksumAsync(sourceStream, cancellationToken);
+            creationData.UserChecksum = await Utilities.CalculateMD5ChecksumAsync(sourceStream, cancellationToken);
+            
+            var filePath = creationData.Path;
 
             var uploadUrl = await m_DataSource.CreateFileAsync(Descriptor, creationData, cancellationToken);
             if (cancellationToken.IsCancellationRequested)
@@ -319,71 +360,6 @@ namespace Unity.Cloud.Assets
 
             var descriptor = new TransformationDescriptor(Descriptor, transformationId);
             return TransformationEntity.GetConfiguredAsync(m_DataSource, DefaultCacheConfiguration, descriptor, null, cancellationToken);
-        }
-
-        static async Task<string> CalculateMD5ChecksumAsync(Stream stream, CancellationToken cancellationToken)
-        {
-            var position = stream.Position;
-            try
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                //In this method, MD5 algorythm is used for calculating checksum of a stream or a file before uploading it.
-                //It is not used in a sensitive context.
-#pragma warning disable S4790 //Using weak hashing algorithms is security-sensitive
-                using (var md5 = MD5.Create())
-#pragma warning restore S4790
-                {
-#if UNITY_WEBGL && !UNITY_EDITOR
-                    await CalculateMD5ChecksumInternalAsync(md5, stream, cancellationToken);
-#else
-                    var result = new TaskCompletionSource<bool>();
-                    await Task.Run(async () =>
-                    {
-                        try
-                        {
-                            await CalculateMD5ChecksumInternalAsync(md5, stream, cancellationToken);
-                        }
-                        finally
-                        {
-                            result.SetResult(true);
-                        }
-                    }, cancellationToken);
-                    await result.Task;
-#endif
-                    return BitConverter.ToString(md5.Hash).Replace("-", "").ToLowerInvariant();
-                }
-            }
-            catch (Exception e)
-            {
-                throw new AggregateException(e);
-            }
-            finally
-            {
-                stream.Position = position;
-            }
-        }
-
-        static async Task CalculateMD5ChecksumInternalAsync(MD5 md5, Stream stream, CancellationToken cancellationToken)
-        {
-            var buffer = new byte[k_MD5_bufferSize];
-            int bytesRead;
-            do
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-#if UNITY_WEBGL && !UNITY_EDITOR
-                bytesRead = await Task.FromResult(stream.Read(buffer, 0, k_MD5_bufferSize));
-#else
-                bytesRead = await stream.ReadAsync(buffer, 0, k_MD5_bufferSize, cancellationToken);
-#endif
-                if (bytesRead > 0)
-                {
-                    md5.TransformBlock(buffer, 0, bytesRead, null, 0);
-                }
-            } while (bytesRead > 0);
-
-            md5.TransformFinalBlock(buffer, 0, 0);
-            await Task.CompletedTask;
         }
 
         /// <summary>

@@ -14,10 +14,10 @@ namespace Unity.Cloud.Assets
         {
             const int maxPageSize = 100;
 
-            var countRequest = LibraryRequest.ListLibrariesRequest(0, 1);
+            var countRequest = new ListLibrariesRequest(0, 1);
             return ListEntitiesAsync<LibraryData>(countRequest, GetListRequest, pagination.Range, cancellationToken, maxPageSize);
 
-            ApiRequest GetListRequest(int next, int pageSize) => LibraryRequest.ListLibrariesRequest(next, pageSize);
+            ApiRequest GetListRequest(int next, int pageSize) => new ListLibrariesRequest(next, pageSize);
         }
 
         /// <inheritdoc/>
@@ -25,8 +25,8 @@ namespace Unity.Cloud.Assets
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var request = LibraryRequest.GetLibraryRequest(assetLibraryId);
-            using var response = await RateLimitedServiceClient(request, HttpMethod.Get).GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(),
+            var request = ProjectOrLibraryRequest.GetLibraryRequest(assetLibraryId);
+            using var response = await m_ServiceHttpClient.GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(),
                 cancellationToken);
 
             var jsonContent = await response.GetContentAsStringAsync();
@@ -38,7 +38,7 @@ namespace Unity.Cloud.Assets
         /// <inheritdoc/>
         public Task<int> GetAssetCountAsync(AssetLibraryId assetLibraryId, CancellationToken cancellationToken)
         {
-            var request = LibraryRequest.GetAssetCountRequest(assetLibraryId);
+            var request = ProjectOrLibraryRequest.GetAssetCountRequest(assetLibraryId);
             return GetAssetCountAsync(request, cancellationToken);
         }
 
@@ -46,7 +46,7 @@ namespace Unity.Cloud.Assets
         public async IAsyncEnumerable<ILibraryJobData> ListLibraryJobsAsync(PaginationData pagination, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
             var request = new LibraryJobRequest();
-            using var response = await RateLimitedServiceClient(request, HttpMethod.Get).GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(),
+            using var response = await m_ServiceHttpClient.GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(),
                 cancellationToken);
 
             var jsonContent = await response.GetContentAsStringAsync();
@@ -69,7 +69,7 @@ namespace Unity.Cloud.Assets
             cancellationToken.ThrowIfCancellationRequested();
 
             var request = new LibraryJobRequest(assetLibraryJobId);
-            using var response = await RateLimitedServiceClient(request, HttpMethod.Get).GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(),
+            using var response = await m_ServiceHttpClient.GetAsync(GetPublicRequestUri(request), ServiceHttpClientOptions.Default(),
                 cancellationToken);
 
             var jsonContent = await response.GetContentAsStringAsync();
@@ -84,7 +84,7 @@ namespace Unity.Cloud.Assets
             cancellationToken.ThrowIfCancellationRequested();
 
             var request = new CreateLibraryJobRequest(assetLibraryId, destinationProjectId, libraryJobData);
-            using var response = await RateLimitedServiceClient(request, HttpMethod.Post).PostAsync(GetPublicRequestUri(request), request.ConstructBody(),
+            using var response = await m_ServiceHttpClient.PostAsync(GetPublicRequestUri(request), request.ConstructBody(),
                 ServiceHttpClientOptions.Default(), cancellationToken);
 
             var jsonContent = await response.GetContentAsStringAsync();

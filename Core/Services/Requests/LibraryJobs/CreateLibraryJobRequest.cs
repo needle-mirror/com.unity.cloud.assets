@@ -9,7 +9,7 @@ namespace Unity.Cloud.Assets
     /// <summary>
     /// Class for api library job requests.
     /// </summary>
-    class CreateLibraryJobRequest : LibraryRequest
+    class CreateLibraryJobRequest : ProjectOrLibraryRequest
     {
         readonly AssetToCopyData[] m_Data;
 

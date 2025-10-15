@@ -21,5 +21,8 @@ namespace Unity.Cloud.Assets
 
         [DataMember(Name = "files")]
         IEnumerable<FileData> Files { get; }
+
+        [DataMember(Name = "vcsMappingId")]
+        string VcsMappingId { get; }
     }
 }

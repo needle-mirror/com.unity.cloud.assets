@@ -107,7 +107,7 @@ To create a UI for selecting a library, do the following:
 4. Name your script `LibrarySelectionExampleUI`.
 5. Open the file and replace its contents with the following code sample:
 
-[!code-cs [behaviour-script](../Samples/Documentation/Manual/LibrarySelectionExampleUI.cs#Example)]
+[!code-cs [behaviour-script](../Samples/Documentation/Manual/AssetLibrarySelectionExampleUI.cs#Example)]
 
 This script generates a UI to list and select libraries.
 

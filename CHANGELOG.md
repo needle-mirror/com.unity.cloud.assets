@@ -5,6 +5,33 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [1.10.0] - 2025-10-15
+
+### Added
+- Added `FieldName` to `GroupableFieldValue` to know the name of the grouped field when doing group queries.
+- Added `VcsMappingId` in the `IDataset` properties.
+- Added `IAsset.QueryUpdateHistory` and `IAsset.GetUpdateHistoryAsync` to query and access the `AssetUpdateHistory` of an asset.
+- Added `IAsset.UpdateAsync(int, CancellationToken)` to update an asset back to a previous version.
+- Added `IDataset.QueryUpdateHistory` and `IDataset.GetUpdateHistoryAsync` to query and access the `DatasetUpdateHistory` of a dataset.
+- Added `IDataset.UpdateAsync(int, CancellationToken)` to update a dataset back to a previous version.
+- Added `IFile.QueryUpdateHistory` and `IFile.GetUpdateHistoryAsync` to query and access the `FileUpdateHistory` of a file.
+- Added `IFile.UpdateAsync(int, CancellationToken)` to update a file back to a previous version.
+
+### Changed
+- Documentation updates.
+- Built-in workflows updated to latest versions.
+
+### Fixed
+- Fixed group queries causing an exception when grouping with only one field.
+- Fixed issue when uploading files with `\` path separators.
+- Improved file content re-upload.
+
+### Removed
+- Removed Http client rate limiter to instead rely on the exponential backoff retry.
+
+### Deprecated
+- `AssetSearchCriteria.SourceProjectId` is not supported for asset searches. Use `IAssetProject.QueryAssets` to search for assets within a specific project.
+
 ## [1.9.0] - 2025-08-14
 
 ### Added
