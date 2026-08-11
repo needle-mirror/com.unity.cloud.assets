@@ -30,7 +30,7 @@ namespace Unity.Cloud.Documentation.Assets
         public override void Clear()
         {
             base.Clear();
-            
+
             m_ProjectCancellationTokenSrc.Cancel();
             m_ProjectCancellationTokenSrc.Dispose();
 
@@ -39,7 +39,7 @@ namespace Unity.Cloud.Documentation.Assets
             AvailableProjects.Clear();
             CurrentOrganization = null;
         }
-        
+
         public override void ClearParentSelection()
         {
             SetSelectedProject(null);

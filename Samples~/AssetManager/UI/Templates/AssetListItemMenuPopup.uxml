@@ -3,5 +3,7 @@
     <ui:VisualElement name="AssetMenu" class="ContextMenuContainer ContextMenu" style="transition-property: all; transition-duration: 0.25s; transition-timing-function: ease-out-back; transition-delay: 0s; position: absolute; left: -85px; background-color: rgb(36, 36, 36); border-top-left-radius: 4px; border-top-right-radius: 4px; border-bottom-right-radius: 4px; border-bottom-left-radius: 4px; padding-top: 2px; padding-right: 4px; padding-bottom: 2px; padding-left: 4px; top: auto; right: auto;">
         <ui:Button text="Open" display-tooltip-when-elided="true" name="Open" class="ContextMenuEntry" />
         <ui:Button text="Remove" display-tooltip-when-elided="true" name="Remove" class="ContextMenuEntry" />
+        <ui:Button text="Restore" display-tooltip-when-elided="true" name="Restore" class="ContextMenuEntry" style="display: none;" />
+        <ui:Button text="Delete" display-tooltip-when-elided="true" name="DeletePermanently" class="ContextMenuEntry" style="display: none;" />
     </ui:VisualElement>
 </ui:UXML>

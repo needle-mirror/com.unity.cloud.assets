@@ -4,7 +4,10 @@
     <Style src="../StyleSheets/AssetCreationPanelStyleSheet.uss?fileID=7433441132597879392&amp;guid=2a9d0e7b4e75049048525c21e638987e&amp;type=3#AssetCreationPanelStyleSheet" />
     <ui:VisualElement name="AssetListContainer" style="flex-grow: 1; background-color: rgb(19, 19, 19); padding-top: 9px; padding-bottom: 9px; padding-right: 9px; padding-left: 9px;">
         <ui:VisualElement style="flex-direction: row; align-items: center; justify-content: space-between; flex-shrink: 0;">
-            <ui:Label text="Manage Assets" display-tooltip-when-elided="true" name="AssetListLabel" class="title-label" />
+            <ui:VisualElement style="flex-direction: row; align-items: center; gap: 8px;">
+                <ui:Label text="Manage Assets" display-tooltip-when-elided="true" name="AssetListLabel" class="title-label" />
+                <ui:Button text="View Trash" display-tooltip-when-elided="true" name="ViewTrashButton" class="sample-button" />
+            </ui:VisualElement>
             <ui:Button text="Add Asset" display-tooltip-when-elided="true" name="AddAssetButton" class="sample-button button-blue" />
         </ui:VisualElement>
         <ui:VisualElement style="flex-direction: row; flex-shrink: 0; height: 30px; margin-top: 9px;">

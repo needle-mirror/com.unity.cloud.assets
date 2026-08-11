@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Unity.Cloud.Common;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -19,8 +20,10 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
         SearchBarUi m_SearchBarUi;
 
         readonly List<IAsset> m_ProjectAssetsList = new();
+        readonly List<ITrashedAsset> m_ProjectTrashedAssetsList = new();
 
         CancellationTokenSource m_NewListCancellationTokenSource = new();
+        bool m_IsViewingTrash = false;
 
         public event Action<IAsset> AssetSelected
         {
@@ -53,8 +56,13 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             var addButton = AssetListPanel.Q<Button>("AddAssetButton");
             addButton.RegisterCallback<ClickEvent>(_ => CreateAsset?.Invoke());
 
+            var viewTrashButton = AssetListPanel.Q<Button>("ViewTrashButton");
+            viewTrashButton.RegisterCallback<ClickEvent>(_ => OnViewTrashButtonClicked());
+
             m_AssetListUi.Initialize(AssetListPanel, MakeItem);
-            m_AssetListUi.RemoveAsset += OnRemoveAsset;
+            m_AssetListUi.RemoveAsset += OnTrashAsset;
+            m_AssetListUi.RestoreAsset += OnRestoreAsset;
+            m_AssetListUi.DeletePermanentlyAsset += OnDeletePermanentlyAsset;
 
             ProjectSelected += OnProjectSelected;
 
@@ -88,6 +96,10 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             m_SearchBarUi.AddSearchQuery -= OnSearchQueryChanged;
             m_SearchBarUi.ClearSearchQuery -= OnClearSearchQuery;
 
+            m_AssetListUi.RemoveAsset -= OnTrashAsset;
+            m_AssetListUi.RestoreAsset -= OnRestoreAsset;
+            m_AssetListUi.DeletePermanentlyAsset -= OnDeletePermanentlyAsset;
+
             ProjectSelected -= OnProjectSelected;
         }
 
@@ -113,6 +125,8 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
         async void OnProjectSelected()
         {
             m_AssetListUi.ClearSelection();
+            m_IsViewingTrash = false;
+            UpdateTrashViewUI();
 
             await OnProjectSelectedAsync();
         }
@@ -125,40 +139,66 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             var newListToken = GetNewListToken();
 
             m_ProjectAssetsList.Clear();
-            
-            m_SearchBarUi.DisplaySearchBar(SelectedProject);
+            m_ProjectTrashedAssetsList.Clear();
+
+            if (!m_IsViewingTrash)
+            {
+                m_SearchBarUi.DisplaySearchBar(SelectedProject);
+            }
 
             if (SelectedProject == null) return;
 
             var updateToken = m_SearchBarUi.GetSearchCancellationToken();
 
-            var assets = GetAssetsAsync(newListToken);
-
-            var nextDisplayTrigger = 40;
-            var assetList = new List<IAsset>();
-            try
+            if (m_IsViewingTrash)
             {
-                await foreach (var asset in assets)
+                var nextDisplayTrigger = 40;
+                try
                 {
-                    m_ProjectAssetsList.Add(asset);
-                    assetList.Add(asset);
-
-                    if (m_ProjectAssetsList.Count > nextDisplayTrigger && !updateToken.IsCancellationRequested)
+                    await foreach (var trashed in GetTrashedAssetsAsync(newListToken))
                     {
-                        nextDisplayTrigger *= 2;
+                        m_ProjectTrashedAssetsList.Add(trashed);
 
-                        m_AssetListUi.PopulateAssetsList(assetList);
+                        if (m_ProjectTrashedAssetsList.Count > nextDisplayTrigger && !updateToken.IsCancellationRequested)
+                        {
+                            nextDisplayTrigger *= 2;
+                            m_AssetListUi.PopulateTrashedAssetsList(m_ProjectTrashedAssetsList);
+                        }
                     }
                 }
-            }
-            catch (Exception e)
-            {
-                e.LogException();
-            }
+                catch (Exception e)
+                {
+                    e.LogException();
+                }
 
-            if (!updateToken.IsCancellationRequested)
+                if (!updateToken.IsCancellationRequested)
+                    m_AssetListUi.PopulateTrashedAssetsList(m_ProjectTrashedAssetsList);
+            }
+            else
             {
-                m_AssetListUi.PopulateAssetsList(assetList);
+                var nextDisplayTrigger = 40;
+                var assetList = new List<IAsset>();
+                try
+                {
+                    await foreach (var asset in GetAssetsAsync(newListToken))
+                    {
+                        m_ProjectAssetsList.Add(asset);
+                        assetList.Add(asset);
+
+                        if (m_ProjectAssetsList.Count > nextDisplayTrigger && !updateToken.IsCancellationRequested)
+                        {
+                            nextDisplayTrigger *= 2;
+                            m_AssetListUi.PopulateAssetsList(assetList);
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    e.LogException();
+                }
+
+                if (!updateToken.IsCancellationRequested)
+                    m_AssetListUi.PopulateAssetsList(m_ProjectAssetsList);
             }
         }
 
@@ -198,7 +238,15 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
         {
             _ = m_SearchBarUi.GetSearchCancellationToken();
 
-            RefreshAssetList(m_ProjectAssetsList);
+            if (m_IsViewingTrash)
+            {
+                m_AssetListUi.ClearAssetList();
+                m_AssetListUi.PopulateTrashedAssetsList(m_ProjectTrashedAssetsList);
+            }
+            else
+            {
+                RefreshAssetList(m_ProjectAssetsList);
+            }
         }
 
         void RefreshAssetList(IEnumerable<IAsset> assetsList)
@@ -207,9 +255,31 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             m_AssetListUi.PopulateAssetsList(assetsList);
         }
 
-        void OnRemoveAsset(IAsset asset)
+        async void OnTrashAsset(IAsset asset)
         {
-            _ = SelectedProject?.UnlinkAssetsAsync(new[] { asset }, CancellationToken.None);
+            if (SelectedProject == null) return;
+            await SelectedProject.TrashAssetsAsync(new[] { asset.Descriptor.AssetId }, CancellationToken.None);
+            await Task.Delay(500);
+            m_AssetListUi.ClearAssetList();
+            await OnProjectSelectedAsync();
+        }
+
+        async void OnRestoreAsset(AssetDescriptor descriptor)
+        {
+            if (SelectedProject == null) return;
+            await SelectedProject.RestoreTrashedAssetsAsync(new[] { descriptor.AssetId }, CancellationToken.None);
+            await Task.Delay(500);
+            m_AssetListUi.ClearAssetList();
+            await OnProjectSelectedAsync();
+        }
+
+        async void OnDeletePermanentlyAsset(AssetDescriptor descriptor)
+        {
+            if (SelectedProject == null) return;
+            await SelectedProject.DeleteAssetsFromTrashAsync(new[] { descriptor.AssetId }, CancellationToken.None);
+            await Task.Delay(500);
+            m_AssetListUi.ClearAssetList();
+            await OnProjectSelectedAsync();
         }
 
         CancellationToken GetNewListToken()
@@ -217,7 +287,7 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             m_NewListCancellationTokenSource?.Cancel();
             m_NewListCancellationTokenSource?.Dispose();
             m_NewListCancellationTokenSource = null;
-            
+
             m_NewListCancellationTokenSource = new CancellationTokenSource();
             return m_NewListCancellationTokenSource.Token;
         }
@@ -230,6 +300,54 @@ namespace Unity.Cloud.Assets.Samples.AssetManager
             Resources.UnloadUnusedAssets();
 
             DialogService.ShowMessage("Low Memory", "The application is running low on memory. Some assets may not be displayed correctly.");
+        }
+
+        void OnViewTrashButtonClicked()
+        {
+            m_IsViewingTrash = !m_IsViewingTrash;
+            UpdateTrashViewUI();
+            _ = OnProjectSelectedAsync();
+        }
+
+        void UpdateTrashViewUI()
+        {
+            var assetListLabel = AssetListPanel.Q<Label>("AssetListLabel");
+            var viewTrashButton = AssetListPanel.Q<Button>("ViewTrashButton");
+            var addAssetButton = AssetListPanel.Q<Button>("AddAssetButton");
+
+            if (m_IsViewingTrash)
+            {
+                assetListLabel.text = "Trash";
+                viewTrashButton.text = "View Assets";
+                addAssetButton.style.display = DisplayStyle.None;
+            }
+            else
+            {
+                assetListLabel.text = "Manage Assets";
+                viewTrashButton.text = "View Trash";
+                addAssetButton.style.display = DisplayStyle.Flex;
+            }
+
+            m_AssetListUi.SetViewingTrash(m_IsViewingTrash);
+        }
+
+        IAsyncEnumerable<ITrashedAsset> GetTrashedAssetsAsync(CancellationToken cancellationToken)
+        {
+            try
+            {
+                if (SelectedProject == null) return null;
+                return SelectedProject.QueryTrashedAssets().ExecuteAsync(cancellationToken);
+            }
+            catch (OperationCanceledException oe)
+            {
+                oe.LogException("GetTrashedAssetsAsync");
+                return null;
+            }
+            catch (Exception e)
+            {
+                e.LogException("GetTrashedAssetsAsync");
+                throw;
+            }
         }
     }
 }
